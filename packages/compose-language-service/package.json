@@ -1,0 +1,44 @@
+{
+    "name": "compose-language-service",
+    "author": "Microsoft Corporation",
+    "version": "0.0.1-alpha",
+    "description": "Language service for Docker Compose documents",
+    "license": "See LICENSE in the project root for license information.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/compose-language-service"
+    },
+    "bugs": {
+        "url": "https://github.com/microsoft/compose-language-service/issues"
+    },
+    "homepage": "https://github.com/microsoft/compose-language-service/blob/main/README.md",
+    "keywords": [
+        "vscode",
+        "docker"
+    ],
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "lint": "eslint --max-warnings 0 **/*.ts",
+        "test": "mocha --file lib/test/global.test.js lib/test/**/*.test.js",
+        "unittest": "npm test -- --grep /unit/i",
+        "pretest": "npm run build",
+        "prepack": "npm run build"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.2.14",
+        "@types/chai-as-promised": "^7.1.3",
+        "@types/mocha": "^8.2.0",
+        "@types/node": "^12.19.16",
+        "@typescript-eslint/eslint-plugin": "^4.15.0",
+        "@typescript-eslint/eslint-plugin-tslint": "^4.15.0",
+        "@typescript-eslint/parser": "^4.15.0",
+        "chai": "^4.3.0",
+        "chai-as-promised": "^7.1.1",
+        "eslint": "^7.19.0",
+        "mocha": "^8.2.1",
+        "tslint": "^6.1.3",
+        "typescript": "^4.1.3"
+    }
+}

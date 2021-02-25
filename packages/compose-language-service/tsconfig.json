@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "es2018",
+        "module": "commonjs",
+        "lib": [
+            "es2018",
+        ],
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "inlineSources": false,
+        "declaration": true,
+        "outDir": "lib",
+        "rootDir": "src",
+        "alwaysStrict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "stripInternal": true
+    }
+}
