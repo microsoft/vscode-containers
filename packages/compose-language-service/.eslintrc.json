@@ -19,5 +19,19 @@
         "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "args": "none"
+            }
+        ],
+        "@typescript-eslint/tslint/config": [
+            "error",
+            {
+                "rules": {
+                    "ordered-imports": true
+                }
+            }
+        ]
     }
 }
