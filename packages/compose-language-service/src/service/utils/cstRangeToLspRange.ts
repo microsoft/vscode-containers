@@ -5,11 +5,10 @@
 
 import { Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { CST } from 'yaml/cst';
 
-export function cstRangeToLspRange(document: TextDocument, cstRange: CST.Range | undefined): Range {
+export function cstRangeToLspRange(document: TextDocument, cstRange: [number, number] | undefined): Range {
     return {
-        start: document.positionAt(cstRange?.origStart ?? cstRange?.start ?? 0),
-        end: document.positionAt(cstRange?.origEnd ?? cstRange?.end ?? 0),
+        start: document.positionAt(cstRange?.[0] ?? 0),
+        end: document.positionAt(cstRange?.[1] ?? 0),
     };
 }

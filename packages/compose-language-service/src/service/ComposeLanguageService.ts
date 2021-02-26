@@ -14,9 +14,11 @@ import {
     Disposable,
     DocumentLink,
     DocumentLinkParams,
+    ErrorCodes,
     Hover,
     HoverParams,
     InitializeParams,
+    ResponseError,
     SemanticTokens,
     SemanticTokensBuilder,
     SemanticTokensParams,
@@ -29,14 +31,13 @@ import {
     TextDocumentSyncKind
 }
     from 'vscode-languageserver/node';
-import { parseCST, ParsedCST } from 'yaml';
+import { Document, parseDocument } from 'yaml';
 import { cstRangeToLspRange } from './utils/cstRangeToLspRange';
 import { debounce } from './utils/debounce';
-import { getErrors } from './utils/getErrors';
 
 export class ComposeLanguageService implements Disposable {
     private readonly documentManager: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-    private readonly documentCache: { [uri: string]: ParsedCST } = {};
+    private readonly documentCache: { [uri: string]: Document.Parsed } = {};
     private readonly subscriptions: Disposable[] = [];
 
     public constructor(private readonly connection: Connection, private readonly clientParams: InitializeParams) {
@@ -93,9 +94,14 @@ export class ComposeLanguageService implements Disposable {
         };
     }
 
-    public async onDidChangeContent(changed: TextDocumentChangeEvent<TextDocument>): Promise<void> {
-        const cst = parseCST(changed.document.getText());
-        cst.setOrigRanges();
+    public async onDidChangeContent(changed: TextDocumentChangeEvent<TextDocument>): Promise<void | ResponseError<void>> {
+        const cst = parseDocument(changed.document.getText(), { prettyErrors: true });
+
+        if (!cst) {
+            // TODO: Change this to throwing and internally catch
+            return new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');
+        }
+
         this.documentCache[changed.document.uri] = cst;
 
         this.sendDiagnostics(changed.document);
@@ -130,14 +136,12 @@ export class ComposeLanguageService implements Disposable {
         // I measured the fastest I could type actual words and it was about 50-100 ms between keystrokes (typing code would be slower)
         // So, I think 50 ms is a reasonable debounce delay for sending diagnostics
         debounce(50, { uri: document.uri, callId: 'parse' }, async () => {
-            const errors = getErrors(this.documentCache[document.uri]);
-
             const diagnostics: Diagnostic[] = [];
 
-            for (const error of errors) {
+            for (const error of [...this.documentCache[document.uri].errors, ...this.documentCache[document.uri].warnings]) {
                 diagnostics.push(
                     Diagnostic.create(
-                        cstRangeToLspRange(document, error.range),
+                        cstRangeToLspRange(document, /* TODO: error.range */[0, 0]),
                         error.message,
                         error.name === 'YAMLWarning' ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error
                     )
