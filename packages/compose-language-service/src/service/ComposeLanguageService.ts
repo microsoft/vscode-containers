@@ -9,6 +9,8 @@ import {
     CompletionItem,
     CompletionParams,
     Connection,
+    Diagnostic,
+    DiagnosticSeverity,
     Disposable,
     DocumentLink,
     DocumentLinkParams,
@@ -28,6 +30,9 @@ import {
 }
     from 'vscode-languageserver/node';
 import { parseCST, ParsedCST } from 'yaml';
+import { cstRangeToLspRange } from './utils/cstRangeToLspRange';
+import { debounce } from './utils/debounce';
+import { getErrors } from './utils/getErrors';
 
 export class ComposeLanguageService implements Disposable {
     private readonly documentManager: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -36,7 +41,7 @@ export class ComposeLanguageService implements Disposable {
 
     public constructor(private readonly connection: Connection, private readonly clientParams: InitializeParams) {
         // Hook up the document listener
-        this.subscriptions.push(this.documentManager.onDidChangeContent(this.onDidChangeContent, this));
+        this.documentManager.onDidChangeContent(this.onDidChangeContent, this, this.subscriptions);
 
         // Hook up all the LSP listeners
         this.connection.onCompletion(async (params, token) => this.onCompletion(params, token));
@@ -93,12 +98,11 @@ export class ComposeLanguageService implements Disposable {
         cst.setOrigRanges();
         this.documentCache[changed.document.uri] = cst;
 
-        // TODO: send diagnostics?
-        console.log('Loaded doc.');
+        this.sendDiagnostics(changed.document);
     }
 
-    public async onCompletion(params: CompletionParams, token: CancellationToken): Promise<CompletionItem[]> {
-        return [];
+    public async onCompletion(params: CompletionParams, token: CancellationToken): Promise<CompletionItem[] | undefined> {
+        return undefined;
     }
 
     public async onHover(params: HoverParams, token: CancellationToken): Promise<Hover | undefined> {
@@ -109,12 +113,41 @@ export class ComposeLanguageService implements Disposable {
         return undefined;
     }
 
-    public async onDocumentLinks(params: DocumentLinkParams, token: CancellationToken): Promise<DocumentLink[]> {
-        return [];
+    public async onDocumentLinks(params: DocumentLinkParams, token: CancellationToken): Promise<DocumentLink[] | undefined> {
+        return undefined;
     }
 
     public async onSemanticTokens(params: SemanticTokensParams, token: CancellationToken): Promise<SemanticTokens> {
         const builder = new SemanticTokensBuilder();
         return builder.build();
+    }
+
+    public sendDiagnostics(document: TextDocument): void {
+        if (!this.clientParams.capabilities.textDocument?.publishDiagnostics) {
+            return;
+        }
+
+        // I measured the fastest I could type actual words and it was about 50-100 ms between keystrokes (typing code would be slower)
+        // So, I think 50 ms is a reasonable debounce delay for sending diagnostics
+        debounce(50, { uri: document.uri, callId: 'parse' }, async () => {
+            const errors = getErrors(this.documentCache[document.uri]);
+
+            const diagnostics: Diagnostic[] = [];
+
+            for (const error of errors) {
+                diagnostics.push(
+                    Diagnostic.create(
+                        cstRangeToLspRange(document, error.range),
+                        error.message,
+                        error.name === 'YAMLWarning' ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error
+                    )
+                );
+            }
+
+            this.connection.sendDiagnostics({
+                uri: document.uri,
+                diagnostics: diagnostics,
+            });
+        });
     }
 }
