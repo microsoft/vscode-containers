@@ -15,6 +15,7 @@ import {
     DocumentLink,
     DocumentLinkParams,
     ErrorCodes,
+    Event,
     Hover,
     HoverParams,
     InitializeParams,
@@ -22,8 +23,9 @@ import {
     SemanticTokens,
     SemanticTokensBuilder,
     SemanticTokensParams,
-    SemanticTokenTypes,
+    // SemanticTokenTypes,
     ServerCapabilities,
+    ServerRequestHandler,
     SignatureHelp,
     SignatureHelpParams,
     TextDocumentChangeEvent,
@@ -32,6 +34,7 @@ import {
 }
     from 'vscode-languageserver/node';
 import { Document, parseDocument } from 'yaml';
+import { Pair, Scalar, YAMLMap } from 'yaml/dist/ast';
 import { cstRangeToLspRange } from './utils/cstRangeToLspRange';
 import { debounce } from './utils/debounce';
 
@@ -41,15 +44,15 @@ export class ComposeLanguageService implements Disposable {
     private readonly subscriptions: Disposable[] = [];
 
     public constructor(private readonly connection: Connection, private readonly clientParams: InitializeParams) {
-        // Hook up the document listener
-        this.documentManager.onDidChangeContent(this.onDidChangeContent, this, this.subscriptions);
+        // Hook up the document listener, which creates a Disposable which will be added to this.subscriptions
+        this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, this.onDidChangeContent);
 
-        // Hook up all the LSP listeners
-        this.connection.onCompletion(async (params, token) => this.onCompletion(params, token));
-        this.connection.onHover(async (params, token) => this.onHover(params, token));
-        this.connection.onSignatureHelp(async (params, token) => this.onSignatureHelp(params, token));
-        this.connection.onDocumentLinks(async (params, token) => this.onDocumentLinks(params, token));
-        this.connection.languages.semanticTokens.on(async (params, token) => this.onSemanticTokens(params, token));
+        // Hook up all the LSP listeners, which do not create Disposables
+        this.createLspHandler(this.connection.onCompletion, this.onCompletion);
+        this.createLspHandler(this.connection.onHover, this.onHover);
+        this.createLspHandler(this.connection.onSignatureHelp, this.onSignatureHelp);
+        this.createLspHandler(this.connection.onDocumentLinks, this.onDocumentLinks);
+        this.createLspHandler(this.connection.languages.semanticTokens.on, this.onSemanticTokens);
 
         // Start the document listener
         this.documentManager.listen(this.connection);
@@ -64,28 +67,28 @@ export class ComposeLanguageService implements Disposable {
     public get capabilities(): ServerCapabilities {
         return {
             textDocumentSync: TextDocumentSyncKind.Incremental,
-            completionProvider: {
-                triggerCharacters: ['-', ':'],
-                resolveProvider: false,
-            },
-            hoverProvider: true,
-            signatureHelpProvider: {
-                triggerCharacters: ['-', ':'],
-            },
+            // completionProvider: {
+            //     triggerCharacters: ['-', ':'],
+            //     resolveProvider: false,
+            // },
+            // hoverProvider: true,
+            // signatureHelpProvider: {
+            //     triggerCharacters: ['-', ':'],
+            // },
             documentLinkProvider: {
                 resolveProvider: false,
             },
-            semanticTokensProvider: {
-                full: {
-                    delta: false,
-                },
-                legend: {
-                    tokenTypes: [
-                        SemanticTokenTypes.variable,
-                    ],
-                    tokenModifiers: [],
-                },
-            },
+            // semanticTokensProvider: {
+            //     full: {
+            //         delta: false,
+            //     },
+            //     legend: {
+            //         tokenTypes: [
+            //             SemanticTokenTypes.variable,
+            //         ],
+            //         tokenModifiers: [],
+            //     },
+            // },
             workspace: {
                 workspaceFolders: {
                     supported: true,
@@ -94,12 +97,11 @@ export class ComposeLanguageService implements Disposable {
         };
     }
 
-    public async onDidChangeContent(changed: TextDocumentChangeEvent<TextDocument>): Promise<void | ResponseError<void>> {
+    public async onDidChangeContent(changed: TextDocumentChangeEvent<TextDocument>): Promise<void> {
         const cst = parseDocument(changed.document.getText(), { prettyErrors: true });
 
         if (!cst) {
-            // TODO: Change this to throwing and internally catch
-            return new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');
+            throw new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');
         }
 
         this.documentCache[changed.document.uri] = cst;
@@ -120,7 +122,24 @@ export class ComposeLanguageService implements Disposable {
     }
 
     public async onDocumentLinks(params: DocumentLinkParams, token: CancellationToken): Promise<DocumentLink[] | undefined> {
-        return undefined;
+        const doc = this.documentCache[params.textDocument.uri];
+        const textDoc = this.documentManager.get(params.textDocument.uri);
+        if (!doc || !textDoc) {
+            throw new ResponseError(ErrorCodes.ParseError, 'Document not found in cache.');
+        }
+
+        const results: DocumentLink[] = [];
+        const services = (doc.contents as YAMLMap)?.get('services')?.items?.map((pair: Pair) => pair?.value) as YAMLMap[] ?? [];
+
+        for (const service of services) {
+            const image = service?.get('image', true) as Scalar | undefined;
+
+            if (typeof image?.value === 'string') {
+                results.push(DocumentLink.create(cstRangeToLspRange(textDoc, image.range), 'https://microsoft.com'));
+            }
+        }
+
+        return results;
     }
 
     public async onSemanticTokens(params: SemanticTokensParams, token: CancellationToken): Promise<SemanticTokens> {
@@ -133,15 +152,14 @@ export class ComposeLanguageService implements Disposable {
             return;
         }
 
-        // I measured the fastest I could type actual words and it was about 50-100 ms between keystrokes (typing code would be slower)
-        // So, I think 50 ms is a reasonable debounce delay for sending diagnostics
-        debounce(50, { uri: document.uri, callId: 'parse' }, async () => {
+        // Diagnostics will be sent half a second after the changes stop
+        debounce(500, { uri: document.uri, callId: 'parse' }, async () => {
             const diagnostics: Diagnostic[] = [];
 
             for (const error of [...this.documentCache[document.uri].errors, ...this.documentCache[document.uri].warnings]) {
                 diagnostics.push(
                     Diagnostic.create(
-                        cstRangeToLspRange(document, /* TODO: error.range */[0, 0]),
+                        cstRangeToLspRange(document, [error.offset, error.offset]), // TODO: range?
                         error.message,
                         error.name === 'YAMLWarning' ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error
                     )
@@ -152,6 +170,40 @@ export class ComposeLanguageService implements Disposable {
                 uri: document.uri,
                 diagnostics: diagnostics,
             });
+        }, this);
+    }
+
+    private createLspHandler<P, R, PR, E>(event: (handler: ServerRequestHandler<P, R, PR, E>) => void, handler: ServerRequestHandler<P, R, PR, E>): void {
+        const boundHandler = handler.bind(this);
+
+        event(async (params, token, workDoneProgress, resultProgress) => {
+            try {
+                return await boundHandler(params, token, workDoneProgress, resultProgress);
+            } catch (error) {
+                if (error instanceof ResponseError) {
+                    return error;
+                } else if (error instanceof Error) {
+                    return new ResponseError(ErrorCodes.UnknownErrorCode, error.message, error);
+                }
+
+                return new ResponseError(ErrorCodes.InternalError, error.toString());
+            }
         });
+    }
+
+    private createDocumentManagerHandler(event: Event<TextDocumentChangeEvent<TextDocument>>, handler: (params: TextDocumentChangeEvent<TextDocument>) => Promise<void>): void {
+        event(async (params: TextDocumentChangeEvent<TextDocument>) => {
+            try {
+                return await handler.call(this, params);
+            } catch (error) {
+                if (error instanceof ResponseError) {
+                    return error;
+                } else if (error instanceof Error) {
+                    return new ResponseError(ErrorCodes.UnknownErrorCode, error.message, error);
+                }
+
+                return new ResponseError(ErrorCodes.InternalError, error.toString());
+            }
+        }, this, this.subscriptions);
     }
 }
