@@ -10,8 +10,7 @@
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint",
-        "@typescript-eslint/tslint"
+        "@typescript-eslint"
     ],
     "extends": [
         "eslint:recommended",
@@ -23,14 +22,6 @@
             "error",
             {
                 "args": "none"
-            }
-        ],
-        "@typescript-eslint/tslint/config": [
-            "error",
-            {
-                "rules": {
-                    "ordered-imports": true
-                }
             }
         ]
     }
