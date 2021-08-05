@@ -6,8 +6,7 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
-import { Document, parseDocument } from 'yaml';
-import { Pair, Scalar, YAMLMap } from 'yaml/dist/ast';
+import { isMap, isScalar, parseDocument } from 'yaml';
 
 before('Global setup', function () {
     console.log('Global setup');
@@ -17,15 +16,18 @@ before('Global setup', function () {
 
 describe('Hello', function () {
     it('Should run a test', function () {
-        const doc = parseDocument(fs.readFileSync('D:\\compose-language-service\\src\\test\\samples\\docker-compose.yml', { encoding: 'utf-8' })) as Document.Parsed;
+        const doc = parseDocument(fs.readFileSync('src/test/samples/docker-compose.yml', { encoding: 'utf-8' }));
 
-        const services = (doc.contents as YAMLMap)?.get('services')?.items?.map((pair: Pair) => pair.value) as YAMLMap[] ?? [];
-
-        for (const service of services) {
-            const image = service?.get('image', true) as Scalar | undefined;
-
-            if (image) {
-                return;
+        const serviceMap = doc.getIn(['services']);
+        if (isMap(serviceMap)) {
+            for (const service of serviceMap.items) {
+                if (isMap(service.value)) {
+                    const image = service.value.getIn(['image'], true);
+                    if (isScalar(image)) {
+                        const imageName = image.value;
+                        console.log(imageName);
+                    }
+                }
             }
         }
     });

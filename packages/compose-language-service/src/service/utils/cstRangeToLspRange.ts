@@ -6,7 +6,7 @@
 import { Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-export function cstRangeToLspRange(document: TextDocument, cstRange: [number | undefined, number | undefined] | null | undefined): Range {
+export function cstRangeToLspRange(document: TextDocument, cstRange: [number, number, number?] | null | undefined): Range {
     return {
         start: document.positionAt(cstRange?.[0] ?? 0),
         end: document.positionAt(cstRange?.[1] ?? 0),

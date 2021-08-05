@@ -10,7 +10,7 @@ const connection: Connection = createConnection(ProposedFeatures.all);
 
 // Hook up the connection
 connection.onInitialize((params: InitializeParams) => {
-    const service = new ComposeLanguageService(connection, params);
+    const service = new ComposeLanguageService(params, connection);
 
     connection.onShutdown(() => {
         service.dispose();

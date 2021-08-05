@@ -19,7 +19,7 @@
     "main": "lib/server.js",
     "scripts": {
         "build": "tsc",
-        "lint": "eslint --max-warnings 0 **/*.ts",
+        "lint": "eslint --max-warnings 0 src --ext ts",
         "test": "mocha --file lib/test/global.test.js lib/test/**/*.test.js",
         "unittest": "npm test -- --grep /unit/i",
         "pretest": "npm run build",
