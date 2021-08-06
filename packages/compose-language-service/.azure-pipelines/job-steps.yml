@@ -1,0 +1,42 @@
+steps:
+  - template: before-all.yml
+
+  - task: Npm@1
+    displayName: 'Install'
+    inputs:
+      command: ci
+
+  - task: Npm@1
+    displayName: 'Lint'
+    inputs:
+      command: custom
+      customCommand: run lint
+
+  - task: Npm@1
+    displayName: 'Test'
+    inputs:
+      command: custom
+      customCommand: test
+
+  - task: Npm@1
+    displayName: 'Pack'
+    inputs:
+      command: custom
+      customCommand: pack
+    condition: and(eq(variables['Agent.OS'], 'Linux'), ne(variables['System.PullRequest.IsFork'], 'True'))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Package'
+    inputs:
+      Contents: 'compose-language-service*.tgz'
+      TargetFolder: '$(build.artifactstagingdirectory)'
+    condition: and(eq(variables['Agent.OS'], 'Linux'), ne(variables['System.PullRequest.IsFork'], 'True'))
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Package'
+    inputs:
+      PathtoPublish: '$(build.artifactstagingdirectory)'
+      ArtifactName: 'compose-language-service'
+    condition: and(eq(variables['Agent.OS'], 'Linux'), ne(variables['System.PullRequest.IsFork'], 'True'))
+
+  - template: after-all.yml

@@ -1,0 +1,9 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+        {
+            "file": "node_modules\\enquirer\\README.md",
+            "_justification": "No need to scan external node modules."
+        }
+    ]
+}

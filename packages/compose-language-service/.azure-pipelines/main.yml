@@ -1,0 +1,30 @@
+jobs:
+  - job: Windows
+    pool:
+      vmImage: windows-latest
+    steps:
+      - template: job-steps.yml
+
+  - job: Linux
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - template: job-steps.yml
+
+trigger:
+  branches:
+    include:
+      - '*'
+
+pr:
+  branches:
+    include:
+      - main
+
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - main
+    always: false

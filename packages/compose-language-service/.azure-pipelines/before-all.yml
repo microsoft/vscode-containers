@@ -1,0 +1,5 @@
+steps:
+  - task: NodeTool@0
+    displayName: 'Use Node 14.x'
+    inputs:
+      versionSpec: 14.x
