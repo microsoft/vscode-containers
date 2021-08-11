@@ -5,4 +5,5 @@ lib/test/**
 src
 tsconfig.json
 .github
+.azure-pipelines
 *.tgz
