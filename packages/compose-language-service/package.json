@@ -1,5 +1,5 @@
 {
-    "name": "compose-language-service",
+    "name": "@microsoft/compose-language-service",
     "author": "Microsoft Corporation",
     "version": "0.0.1-alpha",
     "publisher": "ms-azuretools",
