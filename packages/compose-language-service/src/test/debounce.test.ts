@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Document } from 'yaml';
+describe('debounce', () => {
+    xit('Should filter multiple calls into one');
 
-export interface ProviderParams {
-    parsedDocument: Document,
-    textDocument: TextDocument,
-}
+    xit('Should call the callback after the debounce delay');
+
+    xit('Should debounce separate call IDs separately');
+});

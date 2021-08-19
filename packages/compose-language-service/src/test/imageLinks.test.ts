@@ -31,6 +31,7 @@ describe('ImageLinkProvider', () => {
     describe('Common scenarios', async () => {
         it('Should provide links for general Docker Hub images', async () => {
             const testObject = {
+                version: '123',
                 services: {
                     a: {
                         image: 'alpine'
@@ -44,15 +45,15 @@ describe('ImageLinkProvider', () => {
             const expected = [
                 {
                     range: Range.create(
-                        Position.create(2, 11),
-                        Position.create(2, 17)
+                        Position.create(3, 11),
+                        Position.create(3, 17)
                     ),
                     target: 'https://hub.docker.com/_/alpine'
                 },
                 {
                     range: Range.create(
-                        Position.create(4, 11),
-                        Position.create(4, 16)
+                        Position.create(5, 11),
+                        Position.create(5, 16)
                     ),
                     target: 'https://hub.docker.com/_/mysql'
                 },

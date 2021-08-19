@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Connection, createConnection, InitializeParams, ProposedFeatures } from 'vscode-languageserver/node';
+import { Connection, InitializeParams, ProposedFeatures } from 'vscode-languageserver';
+import { createConnection } from 'vscode-languageserver/node';
 import { ComposeLanguageService } from './service/ComposeLanguageService';
 
 const connection: Connection = createConnection(ProposedFeatures.all);

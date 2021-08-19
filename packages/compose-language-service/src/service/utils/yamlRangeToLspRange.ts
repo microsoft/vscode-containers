@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Range } from 'vscode-languageserver';
+import { Range as LspRange } from 'vscode-languageserver';
+import { Range as YamlRange } from 'yaml/dist/nodes/Node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-export function cstRangeToLspRange(document: TextDocument, cstRange: [number, number, number?] | null | undefined): Range {
+export function yamlRangeToLspRange(document: TextDocument, yamlRange: YamlRange | [number, number]): LspRange {
     return {
-        start: document.positionAt(cstRange?.[0] ?? 0),
-        end: document.positionAt(cstRange?.[1] ?? 0),
+        start: document.positionAt(yamlRange[0]),
+        end: document.positionAt(yamlRange[1]),
     };
 }

@@ -47,5 +47,4 @@ export class TestConnection implements Disposable {
         this.client.sendNotification(DidOpenTextDocumentNotification.type, openParams);
         return uri;
     }
-
 }

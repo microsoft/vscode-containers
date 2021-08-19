@@ -32,20 +32,21 @@ import {
     TextDocumentSyncKind
 }
     from 'vscode-languageserver';
-import { Document, parseDocument } from 'yaml';
-import { cstRangeToLspRange } from './utils/cstRangeToLspRange';
+import { Composer, isDocument, Parser } from 'yaml';
+import { yamlRangeToLspRange } from './utils/yamlRangeToLspRange';
 import { debounce } from './utils/debounce';
 import { ImageLinkProvider } from './ImageLinkProvider';
-import { ProviderParams } from './ProviderParams';
+import { CachedDocument } from './CachedDocument';
 
 export class ComposeLanguageService implements Disposable {
     private readonly documentManager: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-    private readonly documentCache: { [uri: string]: Document } = {};
+    private readonly documentCache: { [uri: string]: CachedDocument } = {};
     private readonly subscriptions: Disposable[] = [];
 
     public constructor(private readonly connection: Connection, private readonly clientParams: InitializeParams) {
         // Hook up the document listener, which creates a Disposable which will be added to this.subscriptions
         this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, this.onDidChangeContent);
+
 
         // Hook up all the LSP listeners, which do not create Disposables
         // this.createLspHandler(this.connection.onCompletion, this.onCompletion);
@@ -98,15 +99,26 @@ export class ComposeLanguageService implements Disposable {
     }
 
     public async onDidChangeContent(changed: TextDocumentChangeEvent<TextDocument>): Promise<void> {
-        const parsedDocument = parseDocument(changed.document.getText(), { prettyErrors: true });
+        const tokens = new Parser().parse(changed.document.getText());
+        const [cstDocument] = tokens;
+        const composedTokens = new Composer().compose([cstDocument]);
+        const [parsedDocument] = composedTokens;
 
-        if (!parsedDocument) {
+        if (cstDocument.type !== 'document') {
             throw new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');
         }
 
-        this.documentCache[changed.document.uri] = parsedDocument;
+        if (!isDocument(parsedDocument)) {
+            throw new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');
+        }
 
-        this.sendDiagnostics(changed.document);
+        this.documentCache[changed.document.uri] = {
+            textDocument: changed.document,
+            cst: cstDocument,
+            yamlDocument: parsedDocument,
+        };
+
+        this.sendDiagnostics(this.documentCache[changed.document.uri]);
     }
 
     /*
@@ -128,19 +140,19 @@ export class ComposeLanguageService implements Disposable {
     }
     */
 
-    public sendDiagnostics(document: TextDocument): void {
+    public sendDiagnostics(cachedDocument: CachedDocument): void {
         if (!this.clientParams.capabilities.textDocument?.publishDiagnostics) {
             return;
         }
 
         // Diagnostics will be sent half a second after the changes stop
-        debounce(500, { uri: document.uri, callId: 'parse' }, async () => {
+        debounce(500, { uri: cachedDocument.textDocument.uri, callId: 'diagnostics' }, async () => {
             const diagnostics: Diagnostic[] = [];
 
-            for (const error of [...this.documentCache[document.uri].errors, ...this.documentCache[document.uri].warnings]) {
+            for (const error of [...cachedDocument.yamlDocument.errors, ...cachedDocument.yamlDocument.warnings]) {
                 diagnostics.push(
                     Diagnostic.create(
-                        cstRangeToLspRange(document, error.pos),
+                        yamlRangeToLspRange(cachedDocument.textDocument, error.pos),
                         error.message,
                         error.name === 'YAMLWarning' ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error,
                         error.code
@@ -149,7 +161,7 @@ export class ComposeLanguageService implements Disposable {
             }
 
             this.connection.sendDiagnostics({
-                uri: document.uri,
+                uri: cachedDocument.textDocument.uri,
                 diagnostics: diagnostics,
             });
         }, this);
@@ -157,17 +169,17 @@ export class ComposeLanguageService implements Disposable {
 
     private createLspHandler<P extends { textDocument: TextDocumentIdentifier }, R, PR, E>(
         event: (handler: ServerRequestHandler<P, R, PR, E>) => void,
-        handler: ServerRequestHandler<P & ProviderParams, R, PR, E>
+        handler: ServerRequestHandler<P & { cachedDocument: CachedDocument }, R, PR, E>
     ): void {
         event(async (params, token, workDoneProgress, resultProgress) => {
             try {
-                const parsedDocument = this.documentCache[params.textDocument.uri];
+                const cachedDocument = this.documentCache[params.textDocument.uri];
                 const textDocument = this.documentManager.get(params.textDocument.uri);
-                if (!parsedDocument || !textDocument) {
+                if (!cachedDocument || !textDocument) {
                     throw new ResponseError(ErrorCodes.ParseError, 'Document not found in cache.');
                 }
 
-                return await handler({ ...params, parsedDocument, textDocument }, token, workDoneProgress, resultProgress);
+                return await handler.call(this, { ...params, cachedDocument, textDocument }, token, workDoneProgress, resultProgress);
             } catch (error) {
                 if (error instanceof ResponseError) {
                     return error;
