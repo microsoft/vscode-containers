@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import { DocumentLink, DocumentLinkRequest, Position, Range, ResponseError } from 'vscode-languageserver';
-import { TestConnection } from './utils/TestConnection';
+import { TestConnection } from '../utils/TestConnection';
 
 interface ImageLinkTestObject {
     services: {
@@ -190,6 +190,7 @@ describe('ImageLinkProvider', () => {
             const testObject = {
                 services: {
                     a: {
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         'container_name': 'a'
                     },
                 }

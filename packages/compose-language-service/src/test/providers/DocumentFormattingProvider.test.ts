@@ -3,11 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { CST, Document as YamlDocument } from 'yaml';
+// TODO
+describe('DocumentFormattingProvider', () => {
+    xit('Should fix up bad spacing without semantically changing anything');
 
-export interface CachedDocument {
-    textDocument: TextDocument;
-    cst: CST.Document;
-    yamlDocument: YamlDocument;
-}
+    xit('Should not try formatting unless the document is syntactically correct');
+});

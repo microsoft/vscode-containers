@@ -29,7 +29,8 @@
             "resolveSourceMapLocations": [
                 "${workspaceFolder}/**",
                 "!**/node_modules/**"
-            ]
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "type": "pwa-node",
@@ -49,7 +50,8 @@
             "resolveSourceMapLocations": [
                 "${workspaceFolder}/**",
                 "!**/node_modules/**"
-            ]
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }

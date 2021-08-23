@@ -28,7 +28,7 @@ export function debounce(delay: number, id: DebounceId, callback: () => Promise<
         delete activeDebounces[idString];
 
         // Fire it
-        callback.call(thisArg);
+        void callback.call(thisArg);
     }, delay);
 
     // Keep track of the active debounce
