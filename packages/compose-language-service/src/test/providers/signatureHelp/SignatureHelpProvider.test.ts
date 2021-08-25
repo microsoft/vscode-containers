@@ -4,16 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 // TODO
-describe('KeyHoverProvider', () => {
-    xit('Should provide hovers for known keys');
-
-    xit('Should not provide hovers for unknown keys');
-
-    xit('Should not provide hovers for nonscalar keys');
-
-    xit('Should not provide hovers for values');
-
-    xit('Should not provide hovers for separators');
-
-    xit('Should not provide hovers for comments');
+describe('SignatureHelpProvider', () => {
+    xit('Should todo');
 });

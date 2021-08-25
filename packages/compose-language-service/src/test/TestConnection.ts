@@ -8,8 +8,19 @@ import { Connection, DidOpenTextDocumentNotification, DidOpenTextDocumentParams,
 import { DocumentUri } from 'vscode-languageserver-textdocument';
 import { createConnection } from 'vscode-languageserver/node';
 import { Document } from 'yaml';
-import { ComposeLanguageService } from '../../service/ComposeLanguageService';
-import { DefaultInitializeParams } from './DefaultInitializeParams';
+import { ComposeLanguageService } from '../service/ComposeLanguageService';
+
+export const DefaultInitializeParams: InitializeParams = {
+    capabilities: {
+        textDocument: {
+            documentLink: {},
+            moniker: {},
+        },
+    },
+    processId: 1,
+    rootUri: null,
+    workspaceFolders: null,
+};
 
 export class TestConnection implements Disposable {
     public readonly server: Connection;

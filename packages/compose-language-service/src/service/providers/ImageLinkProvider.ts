@@ -5,18 +5,23 @@
 
 import { CancellationToken, DocumentLink, DocumentLinkParams } from 'vscode-languageserver';
 import { isMap, isScalar } from 'yaml';
-import { ComposeDocument } from '../ComposeDocument';
+import { ExtendedParams } from '../ExtendedParams';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
+import { ProviderBase } from './ProviderBase';
 
 const dockerHubImageRegex = /^(?<imageName>[\w.-]+)(?<tag>:[\w.-]+)?$/i;
 const dockerHubNamespacedImageRegex = /^(?<namespace>[a-z0-9]+)\/(?<imageName>[\w.-]+)(?<tag>:[\w.-]+)?$/i;
 const mcrImageRegex = /^mcr.microsoft.com\/(?<namespace>([a-z0-9]+\/)+)(?<imageName>[\w.-]+)(?<tag>:[\w.-]+)?$/i;
 
-export class ImageLinkProvider {
-    public static async onDocumentLinks(params: DocumentLinkParams & { doc: ComposeDocument }, token: CancellationToken): Promise<DocumentLink[] | undefined> {
+export class ImageLinkProvider extends ProviderBase {
+    public onDocumentLinks(params: DocumentLinkParams & ExtendedParams, token: CancellationToken): DocumentLink[] | undefined {
+        if (!this.clientCapabilities.textDocument?.documentLink) {
+            return undefined;
+        }
+
         const results: DocumentLink[] = [];
 
-        const serviceMap = params.doc.yamlDocument.getIn(['services']);
+        const serviceMap = params.document.yamlDocument.getIn(['services']);
         if (isMap(serviceMap)) {
             for (const service of serviceMap.items) {
                 // Within each loop we'll check for cancellation (though this is expected to be very fast)
@@ -31,7 +36,7 @@ export class ImageLinkProvider {
                         const link = ImageLinkProvider.getLinkForImage(image.value);
 
                         if (link && image.range) {
-                            results.push(DocumentLink.create(yamlRangeToLspRange(params.doc.textDocument, [image.range[0] + link.start, image.range[0] + link.start + link.length]), link.uri));
+                            results.push(DocumentLink.create(yamlRangeToLspRange(params.document.textDocument, [image.range[0] + link.start, image.range[0] + link.start + link.length]), link.uri));
                         }
                     }
                 }

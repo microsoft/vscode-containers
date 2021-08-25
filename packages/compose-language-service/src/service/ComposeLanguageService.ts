@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+    ClientCapabilities,
     Connection,
     Disposable,
     ErrorCodes,
@@ -19,29 +20,28 @@ import {
 }
     from 'vscode-languageserver';
 import { ComposeDocument } from './ComposeDocument';
+import { ExtendedParams } from './ExtendedParams';
+import { MultiCompletionProvider } from './providers/completion/MultiCompletionProvider';
 import { DiagnosticProvider } from './providers/DiagnosticProvider';
 import { DocumentFormattingProvider } from './providers/DocumentFormattingProvider';
 import { ImageLinkProvider } from './providers/ImageLinkProvider';
 import { KeyHoverProvider } from './providers/KeyHoverProvider';
+import { MultiSignatureHelpProvider } from './providers/signatureHelp/MultiSignatureHelpProvider';
 
 export class ComposeLanguageService implements Disposable {
     private readonly documentManager: TextDocuments<ComposeDocument> = new TextDocuments(ComposeDocument.DocumentManagerConfig);
     private readonly subscriptions: Disposable[] = [];
 
-    public constructor(private readonly connection: Connection, private readonly clientParams: InitializeParams) {
+    public constructor(public readonly connection: Connection, private readonly clientParams: InitializeParams) {
         // Hook up the document listeners, which create a Disposable which will be added to this.subscriptions
-        if (this.clientParams.capabilities.textDocument?.publishDiagnostics) {
-            this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, DiagnosticProvider.onDidChangeContent);
-        }
+        this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, new DiagnosticProvider(this).onDidChangeContent);
 
-        // Hook up all the LSP listeners, which do not create Disposables
-        // These all await a request from the client so we don't need to check for client capabilities
-        // this.createLspHandler(this.connection.onCompletion, this.onCompletion);
-        this.createLspHandler(this.connection.onHover, KeyHoverProvider.onHover);
-        // this.createLspHandler(this.connection.onSignatureHelp, this.onSignatureHelp);
-        this.createLspHandler(this.connection.onDocumentLinks, ImageLinkProvider.onDocumentLinks);
-        this.createLspHandler(this.connection.onDocumentFormatting, DocumentFormattingProvider.onDocumentFormatting);
-        // this.createLspHandler(this.connection.languages.semanticTokens.on, this.onSemanticTokens);
+        // Hook up all the LSP listeners, which do not create Disposables for some reason
+        this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider(this).on);
+        this.createLspHandler(this.connection.onHover, new KeyHoverProvider(this).onHover);
+        this.createLspHandler(this.connection.onSignatureHelp, new MultiSignatureHelpProvider(this).on);
+        this.createLspHandler(this.connection.onDocumentLinks, new ImageLinkProvider(this).onDocumentLinks);
+        this.createLspHandler(this.connection.onDocumentFormatting, new DocumentFormattingProvider(this).onDocumentFormatting);
 
         // Start the document listener
         this.documentManager.listen(this.connection);
@@ -62,14 +62,14 @@ export class ComposeLanguageService implements Disposable {
                 willSaveWaitUntil: false,
                 save: false,
             },
-            // completionProvider: {
-            //     triggerCharacters: ['-', ':'],
-            //     resolveProvider: false,
-            // },
+            completionProvider: {
+                triggerCharacters: ['-', ':'],
+                resolveProvider: false,
+            },
             hoverProvider: true,
-            // signatureHelpProvider: {
-            //     triggerCharacters: ['-', ':'],
-            // },
+            signatureHelpProvider: {
+                triggerCharacters: ['-', ':'],
+            },
             documentLinkProvider: {
                 resolveProvider: false,
             },
@@ -93,18 +93,29 @@ export class ComposeLanguageService implements Disposable {
         };
     }
 
+    public get clientCapabilities(): ClientCapabilities {
+        return this.clientParams.capabilities;
+    }
+
     private createLspHandler<P extends { textDocument: TextDocumentIdentifier }, R, PR, E>(
         event: (handler: ServerRequestHandler<P, R, PR, E>) => void,
-        handler: ServerRequestHandler<P & { doc: ComposeDocument }, R, PR, E>
+        handler: ServerRequestHandler<P & ExtendedParams, R, PR, E>
     ): void {
         event(async (params, token, workDoneProgress, resultProgress) => {
             try {
                 const doc = this.documentManager.get(params.textDocument.uri);
                 if (!doc) {
-                    throw new ResponseError(ErrorCodes.ParseError, 'Document not found in cache.');
+                    throw new ResponseError(ErrorCodes.InvalidParams, 'Document not found in cache.');
                 }
 
-                return await handler.call(this, { ...params, doc }, token, workDoneProgress, resultProgress);
+                const extendedParams = {
+                    ...params,
+                    document: doc,
+                    clientCapabilities: this.clientParams.capabilities,
+                    connection: this.connection,
+                };
+
+                return await Promise.resolve(handler.call(this, extendedParams, token, workDoneProgress, resultProgress));
             } catch (error) {
                 if (error instanceof ResponseError) {
                     return error;
@@ -119,11 +130,18 @@ export class ComposeLanguageService implements Disposable {
 
     private createDocumentManagerHandler(
         event: Event<TextDocumentChangeEvent<ComposeDocument>>,
-        handler: (params: TextDocumentChangeEvent<ComposeDocument> & { connection: Connection }) => Promise<void>
+        handler: (params: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams) => Promise<void> | void
     ): void {
         event(async (params: TextDocumentChangeEvent<ComposeDocument>) => {
             try {
-                return await handler.call(this, { ...params, connection: this.connection });
+                const extendedParams = {
+                    ...params,
+                    document: params.document,
+                    clientCapabilities: this.clientParams.capabilities,
+                    connection: this.connection,
+                };
+
+                return await Promise.resolve(handler.call(this, extendedParams));
             } catch (error) {
                 if (error instanceof ResponseError) {
                     return error;
