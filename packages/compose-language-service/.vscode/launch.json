@@ -5,15 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Attach",
-            "port": 6009,
-            "request": "attach",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "pwa-node"
-        },
-        {
             "type": "pwa-node",
             "request": "launch",
             "name": "Mocha All",
@@ -52,6 +43,35 @@
                 "!**/node_modules/**"
             ],
             "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "Test Client Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/src/test/clientExtension",
+                "--disable-extension=ms-azuretools.vscode-docker", // Keep the Docker extension from running so it doesn't interfere with testing
+            ],
+            "preLaunchTask": "${defaultBuildTask}",
+        },
+        {
+            "name": "Server Attach",
+            "port": 6009,
+            "request": "attach",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node",
+            "timeout": 20000
+        },
+    ],
+    "compounds": [
+        {
+            "name": "Client + Server",
+            "configurations": [
+                "Test Client Extension",
+                "Server Attach"
+            ],
         }
     ]
 }

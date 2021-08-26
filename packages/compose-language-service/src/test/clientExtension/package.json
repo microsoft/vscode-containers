@@ -1,0 +1,15 @@
+{
+    "name": "compose-languageserver-testclient",
+    "publisher": "ms-azuretools",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.52.0"
+    },
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./extension.js",
+    "dependencies": {
+        "vscode-languageclient": "^7.0.0"
+    }
+}
