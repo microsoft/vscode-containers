@@ -14,7 +14,7 @@ export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingP
             return undefined;
         }
 
-        if (params.document.yamlDocument.errors.length) {
+        if (params.document.yamlDocument.value.errors.length) {
             // Won't return formatting info unless the document is syntactically correct
             return undefined;
         }
@@ -30,7 +30,7 @@ export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingP
             params.document.textDocument.positionAt(params.document.textDocument.getText().length - 1)
         );
 
-        const formatted = params.document.yamlDocument.toString(options);
+        const formatted = params.document.yamlDocument.value.toString(options);
 
         // It's heavy-handed but the replacement is for the entire document
         // TODO is this terrible?

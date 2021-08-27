@@ -21,7 +21,10 @@
                 "${workspaceFolder}/**",
                 "!**/node_modules/**"
             ],
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "openOnSessionStart",
+            "presentation": {
+                "group": "Mocha",
+            }
         },
         {
             "type": "pwa-node",
@@ -42,7 +45,10 @@
                 "${workspaceFolder}/**",
                 "!**/node_modules/**"
             ],
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "openOnSessionStart",
+            "presentation": {
+                "group": "Mocha",
+            }
         },
         {
             "name": "Test Client Extension",
@@ -53,6 +59,9 @@
                 "--disable-extension=ms-azuretools.vscode-docker", // Keep the Docker extension from running so it doesn't interfere with testing
             ],
             "preLaunchTask": "${defaultBuildTask}",
+            "presentation": {
+                "hidden": true,
+            }
         },
         {
             "name": "Server Attach",
@@ -62,7 +71,11 @@
                 "<node_internals>/**"
             ],
             "type": "pwa-node",
-            "timeout": 20000
+            "timeout": 20000,
+            "presentation": {
+                "group": "Live testing",
+                "order": 2
+            }
         },
     ],
     "compounds": [
@@ -72,6 +85,10 @@
                 "Test Client Extension",
                 "Server Attach"
             ],
+            "presentation": {
+                "group": "Live testing",
+                "order": 1
+            }
         }
     ]
 }

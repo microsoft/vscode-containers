@@ -19,7 +19,7 @@ export class DiagnosticProvider extends ProviderBase<TextDocumentChangeEvent<Com
         debounce(500, { uri: params.document.textDocument.uri, callId: 'diagnostics' }, () => {
             const diagnostics: Diagnostic[] = [];
 
-            for (const error of [...params.document.yamlDocument.errors, ...params.document.yamlDocument.warnings]) {
+            for (const error of [...params.document.yamlDocument.value.errors, ...params.document.yamlDocument.value.warnings]) {
                 diagnostics.push(
                     Diagnostic.create(
                         yamlRangeToLspRange(params.document.textDocument, error.pos),

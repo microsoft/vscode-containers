@@ -21,7 +21,7 @@ export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & Extende
 
         const results: DocumentLink[] = [];
 
-        const serviceMap = params.document.yamlDocument.getIn(['services']);
+        const serviceMap = params.document.yamlDocument.value.getIn(['services']);
         if (isMap(serviceMap)) {
             for (const service of serviceMap.items) {
                 // Within each loop we'll check for cancellation (though this is expected to be very fast)

@@ -19,13 +19,13 @@ export class ExtendedPosition {
     public static build(doc: ComposeDocument, position: Position): ExtendedPosition {
         const offset = doc.textDocument.offsetAt(position);
 
-        const { item, path } = ExtendedPosition.loadItemAndPath(doc.documentCst, offset);
+        const { item, path } = ExtendedPosition.loadItemAndPath(doc.documentCst.value, offset);
         if (!item || !path) {
             throw new Error(`Failed to load item at position (${position.line}, ${position.character}).`);
         }
 
         const itemType = ExtendedPosition.loadType(item, offset);
-        const logicalPath = ExtendedPosition.loadLogicalPath(doc.documentCst, item, path, itemType);
+        const logicalPath = ExtendedPosition.loadLogicalPath(doc.documentCst.value, item, path, itemType);
 
         return new ExtendedPosition(item, itemType, logicalPath);
     }
