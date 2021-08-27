@@ -23,6 +23,12 @@ export class MultiSignatureHelpProvider extends MultiProviderBase<SignatureHelpP
 
     public override on(params: SignatureHelpParams & ExtendedParams, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter): SignatureHelp | undefined {
         if (!this.clientCapabilities.textDocument?.signatureHelp) {
+            // Client is not capable of signature help (why did they request it?)
+            return undefined;
+        }
+
+        if (params.context?.isRetrigger && params.context.triggerCharacter === '\n') {
+            // User hit enter, we should stop the current signature suggestion
             return undefined;
         }
 

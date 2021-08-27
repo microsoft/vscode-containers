@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClientCapabilities, Connection } from 'vscode-languageserver';
+import { CancellationToken, ClientCapabilities, Connection, HandlerResult, ResultProgressReporter, WorkDoneProgressReporter } from 'vscode-languageserver';
 import { ComposeLanguageService } from '../ComposeLanguageService';
 
-export abstract class ProviderBase {
+export abstract class ProviderBase<P, R, PR, E> {
     public constructor(private readonly languageService: ComposeLanguageService) { }
 
     protected get clientCapabilities(): ClientCapabilities {
@@ -16,4 +16,6 @@ export abstract class ProviderBase {
     protected get connection(): Connection {
         return this.languageService.connection;
     }
+
+    public abstract on(params: P, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter, resultProgress?: ResultProgressReporter<PR>): HandlerResult<R, E>;
 }

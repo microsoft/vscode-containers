@@ -10,8 +10,8 @@ import { debounce } from '../utils/debounce';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
 import { ProviderBase } from './ProviderBase';
 
-export class DiagnosticProvider extends ProviderBase {
-    public onDidChangeContent(params: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams): void {
+export class DiagnosticProvider extends ProviderBase<TextDocumentChangeEvent<ComposeDocument> & ExtendedParams, void, never, never> {
+    public on(params: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams): void {
         if (!this.clientCapabilities.textDocument?.publishDiagnostics) {
             return;
         }
@@ -25,7 +25,7 @@ export class DiagnosticProvider extends ProviderBase {
                         yamlRangeToLspRange(params.document.textDocument, error.pos),
                         error.message,
                         error.name === 'YAMLWarning' ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error,
-                        error.code
+                        error.code,
                     )
                 );
             }

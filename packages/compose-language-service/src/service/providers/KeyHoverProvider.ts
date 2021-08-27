@@ -11,7 +11,7 @@ import { ExtendedPosition } from '../ExtendedPosition';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
 import { ProviderBase } from './ProviderBase';
 
-export class KeyHoverProvider extends ProviderBase {
+export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams, Hover | undefined, never, never> {
     private readonly preferMarkdown: boolean;
 
     public constructor(languageService: ComposeLanguageService) {
@@ -22,7 +22,7 @@ export class KeyHoverProvider extends ProviderBase {
         this.preferMarkdown = contentFormat?.length ? contentFormat?.[0] === MarkupKind.Markdown : false;
     }
 
-    public onHover(params: HoverParams & ExtendedParams, token: CancellationToken): Hover | undefined {
+    public on(params: HoverParams & ExtendedParams, token: CancellationToken): Hover | undefined {
         if (!this.clientCapabilities.textDocument?.hover) {
             return undefined;
         }

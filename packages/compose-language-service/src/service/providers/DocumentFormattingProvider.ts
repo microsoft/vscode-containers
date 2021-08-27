@@ -8,8 +8,8 @@ import { ToStringOptions } from 'yaml';
 import { ExtendedParams } from '../ExtendedParams';
 import { ProviderBase } from './ProviderBase';
 
-export class DocumentFormattingProvider extends ProviderBase {
-    public onDocumentFormatting(params: DocumentFormattingParams & ExtendedParams, token: CancellationToken): TextEdit[] | undefined {
+export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingParams & ExtendedParams, TextEdit[] | undefined, never, never> {
+    public on(params: DocumentFormattingParams & ExtendedParams, token: CancellationToken): TextEdit[] | undefined {
         if (!this.clientCapabilities.textDocument?.formatting) {
             return undefined;
         }

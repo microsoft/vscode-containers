@@ -6,6 +6,7 @@
 import { Position } from 'vscode-languageserver';
 import { ComposeDocument } from './ComposeDocument';
 import { ExtendedPosition } from './ExtendedPosition';
+import { Lazy } from './utils/Lazy';
 
 export interface ExtendedParams {
     document: ComposeDocument;
@@ -13,5 +14,5 @@ export interface ExtendedParams {
 
 export interface ExtendedPositionParams extends ExtendedParams {
     position: Position;
-    extendedPosition: ExtendedPosition;
+    extendedPosition: Lazy<ExtendedPosition>;
 }

@@ -6,9 +6,10 @@
 import { CancellationToken, Position, ResultProgressReporter, WorkDoneProgressReporter } from 'vscode-languageserver';
 import { ExtendedParams, ExtendedPositionParams } from '../ExtendedParams';
 import { ExtendedPosition } from '../ExtendedPosition';
+import { Lazy } from '../utils/Lazy';
 import { ProviderBase } from './ProviderBase';
 
-export abstract class MultiProviderBase<P extends ExtendedParams & { position: Position }, R, PR> extends ProviderBase {
+export abstract class MultiProviderBase<P extends ExtendedParams & { position: Position }, R, PR> extends ProviderBase<P, R | undefined, PR, never> {
     protected readonly subproviders: SubproviderBase<P & ExtendedPositionParams, R, PR>[] = [];
 
     public register(subprovider: SubproviderBase<P & ExtendedPositionParams, R, PR>): void {
@@ -16,9 +17,11 @@ export abstract class MultiProviderBase<P extends ExtendedParams & { position: P
     }
 
     public on(params: P, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter, resultProgress?: ResultProgressReporter<PR>): R | undefined {
+        // TODO: when working through a signature the client makes many requests; is it wasteful to recompute the position like this every time?
+        // Does that apply only to signatures or to completions too?
         const extendedParams: P & ExtendedPositionParams = {
             ...params,
-            extendedPosition: ExtendedPosition.build(params.document, params.position),
+            extendedPosition: new Lazy<ExtendedPosition>(() => ExtendedPosition.build(params.document, params.position)),
         };
 
         const subresults: (R | undefined)[] = [];
