@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken, SignatureHelp, SignatureHelpParams, WorkDoneProgressReporter } from 'vscode-languageserver';
-import { ComposeLanguageService } from '../../ComposeLanguageService';
 import { ExtendedParams } from '../../ExtendedParams';
 import { MultiProviderBase } from '../MultiProviderBase';
 import { PortsSignatureHelpProvider } from './PortsSignatureHelpProvider';
@@ -15,14 +14,14 @@ import { PortsSignatureHelpProvider } from './PortsSignatureHelpProvider';
  * Importantly, if any fail before a result is found, we will throw an error--all other providers will be ignored
  */
 export class MultiSignatureHelpProvider extends MultiProviderBase<SignatureHelpParams & ExtendedParams, SignatureHelp, never> {
-    public constructor(languageService: ComposeLanguageService) {
-        super(languageService);
+    public constructor() {
+        super();
 
         this.register(new PortsSignatureHelpProvider());
     }
 
     public override on(params: SignatureHelpParams & ExtendedParams, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter): SignatureHelp | undefined {
-        if (!this.clientCapabilities.textDocument?.signatureHelp) {
+        if (!params.clientCapabilities.textDocument?.signatureHelp) {
             // Client is not capable of signature help (why did they request it?)
             return undefined;
         }

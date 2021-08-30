@@ -10,7 +10,7 @@ import { ProviderBase } from './ProviderBase';
 
 export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingParams & ExtendedParams, TextEdit[] | undefined, never, never> {
     public on(params: DocumentFormattingParams & ExtendedParams, token: CancellationToken): TextEdit[] | undefined {
-        if (!this.clientCapabilities.textDocument?.formatting) {
+        if (!params.clientCapabilities.textDocument?.formatting) {
             return undefined;
         }
 

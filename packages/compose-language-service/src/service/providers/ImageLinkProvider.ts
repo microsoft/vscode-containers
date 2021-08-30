@@ -15,7 +15,7 @@ const mcrImageRegex = /^mcr.microsoft.com\/(?<namespace>([a-z0-9]+\/)+)(?<imageN
 
 export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & ExtendedParams, DocumentLink[] | undefined, never, never> {
     public on(params: DocumentLinkParams & ExtendedParams, token: CancellationToken): DocumentLink[] | undefined {
-        if (!this.clientCapabilities.textDocument?.documentLink) {
+        if (!params.clientCapabilities.textDocument?.documentLink) {
             return undefined;
         }
 

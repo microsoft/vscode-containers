@@ -14,7 +14,7 @@ import { MultiProviderBase } from '../MultiProviderBase';
  */
 export class MultiCompletionProvider extends MultiProviderBase<CompletionParams & ExtendedParams, CompletionItem[], never> {
     public override on(params: CompletionParams & ExtendedParams, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter): CompletionItem[] | undefined {
-        if (!this.clientCapabilities.textDocument?.completion) {
+        if (!params.clientCapabilities.textDocument?.completion) {
             return undefined;
         }
 

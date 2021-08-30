@@ -12,7 +12,7 @@ import { ProviderBase } from './ProviderBase';
 
 export class DiagnosticProvider extends ProviderBase<TextDocumentChangeEvent<ComposeDocument> & ExtendedParams, void, never, never> {
     public on(params: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams): void {
-        if (!this.clientCapabilities.textDocument?.publishDiagnostics) {
+        if (!params.clientCapabilities.textDocument?.publishDiagnostics) {
             return;
         }
 
@@ -30,7 +30,7 @@ export class DiagnosticProvider extends ProviderBase<TextDocumentChangeEvent<Com
                 );
             }
 
-            this.connection.sendDiagnostics({
+            params.connection.sendDiagnostics({
                 uri: params.document.textDocument.uri,
                 diagnostics: diagnostics,
             });

@@ -5,27 +5,19 @@
 
 import { CancellationToken, Hover, HoverParams, MarkupContent, MarkupKind } from 'vscode-languageserver';
 import { CST } from 'yaml';
-import { ComposeLanguageService } from '../ComposeLanguageService';
 import { ExtendedParams } from '../ExtendedParams';
 import { ExtendedPosition } from '../ExtendedPosition';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
 import { ProviderBase } from './ProviderBase';
 
 export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams, Hover | undefined, never, never> {
-    private readonly preferMarkdown: boolean;
-
-    public constructor(languageService: ComposeLanguageService) {
-        super(languageService);
-
-        // Determine client's preferred content format. If `contentFormat` is undefined or empty, we assume plaintext.
-        const contentFormat = this.clientCapabilities.textDocument?.hover?.contentFormat;
-        this.preferMarkdown = contentFormat?.length ? contentFormat?.[0] === MarkupKind.Markdown : false;
-    }
-
     public on(params: HoverParams & ExtendedParams, token: CancellationToken): Hover | undefined {
-        if (!this.clientCapabilities.textDocument?.hover) {
+        if (!params.clientCapabilities.textDocument?.hover) {
             return undefined;
         }
+
+        const contentFormat = params.clientCapabilities.textDocument.hover.contentFormat;
+        const preferMarkdown = contentFormat?.length ? contentFormat?.[0] === MarkupKind.Markdown : false;
 
         const extendedPosition = ExtendedPosition.build(params.document, params.position);
 
@@ -34,7 +26,7 @@ export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams,
 
             if (keyInfo) {
                 return {
-                    contents: this.preferMarkdown ? keyInfo.markdownContents : keyInfo.plaintextContents,
+                    contents: (preferMarkdown && keyInfo.markdownContents) || keyInfo.plaintextContents,
                     range: yamlRangeToLspRange(params.document.textDocument, [extendedPosition.item.key.offset, extendedPosition.item.key.offset + extendedPosition.item.key.source.length]),
                 };
             }
@@ -46,19 +38,19 @@ export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams,
 
 interface ComposeKeyInformation {
     pathRegex: RegExp,
-    markdownContents: MarkupContent,
     plaintextContents: MarkupContent,
+    markdownContents?: MarkupContent,
 }
 
 const ComposeKeyInfo: ComposeKeyInformation[] = [
     {
         pathRegex: /^\/services$/i,
-        markdownContents: {
-            kind: 'markdown',
-            value: 'The services in your compose project',
-        },
         plaintextContents: {
             kind: 'plaintext',
+            value: 'The services in your compose project',
+        },
+        markdownContents: {
+            kind: 'markdown',
             value: 'The services in your compose project',
         },
     },

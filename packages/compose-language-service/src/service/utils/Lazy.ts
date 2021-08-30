@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class Lazy<T> {
-    private _value: T | undefined;
+    #value: T | undefined;
 
     public constructor(private readonly valueFactory: () => T) {
     }
 
     public get value(): T {
-        if (!this._value) {
-            this._value = this.valueFactory();
+        if (!this.#value) {
+            this.#value = this.valueFactory();
         }
 
-        return this._value;
+        return this.#value;
     }
 }
