@@ -84,6 +84,7 @@ export class ExtendedPosition {
         return 'value';
     }
 
+    // TODO Potentially a faster but less accurate way to get the path would be to walk backwards up the document, watching the indentation
     private static loadLogicalPath(cst: CST.Document, item: CST.CollectionItem, path: CST.VisitPath, itemType: ItemType): string {
         const resultParts: string[] = [];
 

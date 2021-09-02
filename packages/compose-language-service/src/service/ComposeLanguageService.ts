@@ -63,7 +63,7 @@ export class ComposeLanguageService implements Disposable {
                 save: false,
             },
             completionProvider: {
-                triggerCharacters: ['-', ':'],
+                triggerCharacters: ['-', ':', ' ', '"'],
                 resolveProvider: false,
             },
             hoverProvider: true,

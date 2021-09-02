@@ -18,13 +18,11 @@ interface ExtendedSignatureInformation extends SignatureInformation {
 
 export class SignatureCollection extends Array<ExtendedSignatureInformation>{
     public getActiveSignature(params: SignatureHelpParams & ExtendedParams): { activeSignature: number | null, activeParameter: number | null } {
-        const lineContent = params.document.lineAt(params.position);
-
         let activeSignature: number | null = null;
         let activeParameter: number | null = null;
 
         for (let i = 0; i < this.length; i++) {
-            const match = this[i].matcher.exec(lineContent ?? '');
+            const match = this[i].matcher.exec(params.document.lineAt(params.position));
 
             if (match) {
                 // Found a signature that matches the current line contents

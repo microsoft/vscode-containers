@@ -6,6 +6,7 @@
 import { CancellationToken, CompletionItem, CompletionParams, WorkDoneProgressReporter } from 'vscode-languageserver';
 import { ExtendedParams } from '../../ExtendedParams';
 import { MultiProviderBase } from '../MultiProviderBase';
+import { VolumesCompletionProvider } from './VolumesCompletionProvider';
 
 /**
  * Completions are one of the more involved features so we will split up the code, with this multi-provider calling each of them
@@ -13,6 +14,12 @@ import { MultiProviderBase } from '../MultiProviderBase';
  * Importantly, if any fail, we will throw an error--all other results will be ignored
  */
 export class MultiCompletionProvider extends MultiProviderBase<CompletionParams & ExtendedParams, CompletionItem[], never> {
+    public constructor() {
+        super();
+
+        this.register(new VolumesCompletionProvider());
+    }
+
     public override on(params: CompletionParams & ExtendedParams, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter): CompletionItem[] | undefined {
         if (!params.clientCapabilities.textDocument?.completion) {
             return undefined;

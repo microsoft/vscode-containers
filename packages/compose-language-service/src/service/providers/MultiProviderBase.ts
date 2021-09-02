@@ -27,6 +27,11 @@ export abstract class MultiProviderBase<P extends ExtendedParams & { position: P
         const subresults: (R | undefined)[] = [];
 
         for (const subprovider of this.subproviders) {
+            // Within each loop we'll check for cancellation
+            if (token.isCancellationRequested) {
+                return undefined;
+            }
+
             subresults.push(subprovider.on(extendedParams, token, workDoneProgress, resultProgress));
         }
 
