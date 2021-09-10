@@ -1,6 +1,18 @@
 # Docker Compose Language Service (Preview)
 
+[![Node CI Build and Test](https://github.com/microsoft/compose-language-service/actions/workflows/node.js.yml/badge.svg)](https://github.com/microsoft/compose-language-service/actions/workflows/node.js.yml)
+
+## Overview
+
 This project contains a language service for Docker Compose, implementing the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/). It is shipped in the [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) extension for Visual Studio Code.
+
+## Features
+
+The Compose Language Service offers some common language service features like completions, signatures, diagnostics, document formatting, and hover hints. In addition, it contains some Docker-specific features like image names becoming hyperlinks to their corresponding pages on Docker Hub.
+
+The language service is intended to work primarily for the [Compose file version 3 spec](https://docs.docker.com/compose/compose-file/compose-file-v3/)--it will not support properties specific to versions 1 or 2--but it shouldn't interfere with development in such documents either.
+
+The language service is a work-in-progress, and will continue adding new features and functionality each release.
 
 ## Contributing
 
