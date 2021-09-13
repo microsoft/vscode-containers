@@ -16,7 +16,7 @@ interface ExtendedSignatureInformation extends SignatureInformation {
     matcher: RegExp;
 }
 
-export class SignatureCollection extends Array<ExtendedSignatureInformation>{
+export class SignatureCollection extends Array<ExtendedSignatureInformation> {
     public getActiveSignature(params: SignatureHelpParams & ExtendedParams): { activeSignature: number | null, activeParameter: number | null } {
         let activeSignature: number | null = null;
         let activeParameter: number | null = null;

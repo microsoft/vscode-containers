@@ -10,10 +10,14 @@ export class Lazy<T> {
     }
 
     public get value(): T {
-        if (!this.#value) {
+        if (this.#value === undefined) {
             this.#value = this.valueFactory();
         }
 
         return this.#value;
+    }
+
+    public hasValue(): boolean {
+        return (this.#value !== undefined);
     }
 }

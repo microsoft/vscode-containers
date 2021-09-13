@@ -21,7 +21,7 @@ export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams,
 
         const extendedPosition = ExtendedPosition.build(params.document, params.position);
 
-        if (extendedPosition.itemType === 'key' && CST.isScalar(extendedPosition.item.key)) {
+        if (extendedPosition.itemType === 'key' && CST.isScalar(extendedPosition.parent.key)) {
             const keyInfo = ComposeKeyInfo.find((k) => k.pathRegex.test(extendedPosition.logicalPath));
 
             if (keyInfo) {
@@ -30,7 +30,7 @@ export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams,
                         kind: preferMarkdown ? MarkupKind.Markdown : MarkupKind.PlainText, // If Markdown is preferred, even plaintext will be treated as Markdown--it renders better, has line wrapping, etc.
                         value: (preferMarkdown && keyInfo.markdownContents) || keyInfo.plaintextContents,
                     },
-                    range: yamlRangeToLspRange(params.document.textDocument, [extendedPosition.item.key.offset, extendedPosition.item.key.offset + extendedPosition.item.key.source.length]),
+                    range: yamlRangeToLspRange(params.document.textDocument, [extendedPosition.parent.key.offset, extendedPosition.parent.key.offset + extendedPosition.parent.key.source.length]),
                 };
             }
         }

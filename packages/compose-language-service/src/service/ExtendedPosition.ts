@@ -11,7 +11,7 @@ type ItemType = 'start' | 'key' | 'sep' | 'value';
 
 export class ExtendedPosition {
     private constructor(
-        public readonly item: CST.CollectionItem,
+        public readonly parent: CST.CollectionItem,
         public readonly itemType: ItemType,
         public readonly logicalPath: string,
     ) { }
@@ -85,6 +85,7 @@ export class ExtendedPosition {
     }
 
     // TODO Potentially a faster but less accurate way to get the path would be to walk backwards up the document, watching the indentation
+    // TODO make sure it's actually faster
     private static loadLogicalPath(cst: CST.Document, item: CST.CollectionItem, path: CST.VisitPath, itemType: ItemType): string {
         const resultParts: string[] = [];
 

@@ -28,7 +28,7 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy Package'
     inputs:
-      Contents: 'compose-language-service*.tgz'
+      Contents: 'microsoft-compose-language-service*.tgz'
       TargetFolder: '$(build.artifactstagingdirectory)'
     condition: and(eq(variables['Agent.OS'], 'Linux'), ne(variables['System.PullRequest.IsFork'], 'True'))
 
@@ -36,7 +36,7 @@ steps:
     displayName: 'Publish Package'
     inputs:
       PathtoPublish: '$(build.artifactstagingdirectory)'
-      ArtifactName: 'compose-language-service'
+      ArtifactName: 'microsoft-compose-language-service'
     condition: and(eq(variables['Agent.OS'], 'Linux'), ne(variables['System.PullRequest.IsFork'], 'True'))
 
   - template: after-all.yml
