@@ -9,17 +9,13 @@
         "sourceMap": true,
         "inlineSources": false,
         "declaration": true,
-        "outDir": "lib",
-        "rootDir": "src",
+        "outDir": "./dist",
+        "rootDir": ".",
         "alwaysStrict": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "stripInternal": true,
-    },
-    "exclude": [
-        "src/test/clientExtension",
-        "lib"
-    ],
+    }
 }

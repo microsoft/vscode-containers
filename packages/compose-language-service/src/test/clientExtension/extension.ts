@@ -3,24 +3,26 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const langClient = require("vscode-languageclient/node");
+import * as vscode from 'vscode';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { DocumentSettingsClientFeature } from './DocumentSettingsClientFeature';
 
-exports.activate = function activate(context) {
+export function activate(context: vscode.ExtensionContext): void {
     const serverModule = context.asAbsolutePath('../../../lib/server.js');
 
-    const serverOptions = {
+    const serverOptions: ServerOptions = {
         run: {
             module: serverModule,
-            transport: langClient.TransportKind.ipc,
+            transport: TransportKind.ipc,
         },
         debug: {
             module: serverModule,
-            transport: langClient.TransportKind.ipc,
+            transport: TransportKind.ipc,
             options: { execArgv: ['--nolazy', '--inspect=6009'] },
         },
     };
 
-    const clientOptions = {
+    const clientOptions: LanguageClientOptions = {
         documentSelector: [
             {
                 language: 'dockercompose'
@@ -28,9 +30,12 @@ exports.activate = function activate(context) {
         ],
     };
 
-    const client = new langClient.LanguageClient('compose-language-server', serverOptions, clientOptions, true);
+    const client = new LanguageClient('compose-language-server', serverOptions, clientOptions, true);
+    client.registerFeature(new DocumentSettingsClientFeature(client));
 
     context.subscriptions.push(client.start());
 }
 
-exports.deactivate = function deactivate() { }
+export function deactivate(): void {
+    // Do nothing
+}

@@ -9,6 +9,7 @@
         "project": "tsconfig.json",
         "sourceType": "module"
     },
+    "ignorePatterns": "src/test/clientExtension",
     "plugins": [
         "@typescript-eslint"
     ],

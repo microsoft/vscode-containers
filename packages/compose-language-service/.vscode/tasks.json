@@ -16,7 +16,21 @@
                 "reveal": "never"
             },
             "isBackground": true,
-            "label": "tsc: watch"
+            "label": "tsc-watch: language service"
+        },
+        {
+            "type": "typescript",
+            "tsconfig": "src/test/clientExtension/tsconfig.json",
+            "option": "watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "never"
+            },
+            "isBackground": true,
+            "label": "tsc-watch: client extension"
         }
     ]
 }
