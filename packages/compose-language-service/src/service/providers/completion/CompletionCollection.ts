@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CompletionItem, CompletionParams, InsertTextFormat, TextEdit } from 'vscode-languageserver';
-import { ExtendedParams } from '../../ExtendedParams';
+import { CompletionItem, CompletionParams } from 'vscode-languageserver';
+import { ExtendedPositionParams } from '../../ExtendedParams';
 
 interface ExtendedCompletionItem extends CompletionItem {
     /**
@@ -12,35 +12,30 @@ interface ExtendedCompletionItem extends CompletionItem {
      */
     matcher?: RegExp;
 
-    /**
-     * The insertion text does not need to be the same as the label
-     */
-    insertionText: string;
+    // TODO: in the long run, we should use `InsertReplaceEdit` to avoid client-side interpretation and make a more client-agnostic server
+    // TODO: However, using `insertText` instead of `textEdit`, the behavior for 24x7 completions is closer in-line to what we want at least in VSCode
 }
 
 export class CompletionCollection extends Array<ExtendedCompletionItem> {
-    public getActiveCompletionItems(params: CompletionParams & ExtendedParams): CompletionItem[] {
-        const results: CompletionItem[] = [];
+    public constructor(private readonly locationRequirements: CompletionLocationRequirements, ...items: ExtendedCompletionItem[]) {
+        super(...items);
+    }
 
-        for (const m of this) {
-            const match = m.matcher?.exec(params.document.lineAt(params.position));
-
-            if (match || !m.matcher) {
-                const ci = CompletionItem.create(m.label);
-                ci.insertTextFormat = m.insertTextFormat ?? InsertTextFormat.Snippet;
-                ci.textEdit = TextEdit.insert(params.position, m.insertionText);
-
-                // Copy additional properties
-                // TODO: this doesn't copy everything; what else should be added?
-                ci.detail = m.detail;
-                ci.documentation = m.documentation;
-                ci.commitCharacters = m.commitCharacters;
-                ci.filterText = m.filterText;
-
-                results.push(ci);
-            }
+    public async getActiveCompletionItems(params: CompletionParams & ExtendedPositionParams): Promise<CompletionItem[] | undefined> {
+        if (this.locationRequirements.logicalPaths !== undefined && !this.locationRequirements.logicalPaths.some(p => p.test(params.path ?? ''))) {
+            return undefined;
         }
 
-        return results;
+        if (this.locationRequirements.indentationDepth !== undefined && this.locationRequirements.indentationDepth !== (await params.document.indentationDepthAt(params))) {
+            return undefined;
+        }
+
+        const line = params.document.lineAt(params.position);
+        return this.filter(eci => !eci.matcher || eci.matcher.test(line));
     }
+}
+
+interface CompletionLocationRequirements {
+    logicalPaths?: RegExp[];
+    indentationDepth?: number;
 }

@@ -88,7 +88,8 @@
             "presentation": {
                 "group": "Live testing",
                 "order": 1
-            }
+            },
+            "preLaunchTask": "tsc-watch: language service"
         }
     ]
 }

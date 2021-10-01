@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// TODO
-describe('CompletionProvider', () => {
-    xit('Should todo');
-});
+import { CompletionCollection } from './CompletionCollection';
+
+export const PortsCompletionCollection = new CompletionCollection(
+    { logicalPaths: [/foo/i], indentationDepth: 3 },
+    ...[
+    ]
+);

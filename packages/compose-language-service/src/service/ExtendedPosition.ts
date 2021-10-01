@@ -9,9 +9,12 @@ import { ComposeDocument } from './ComposeDocument';
 
 type ItemType = 'start' | 'key' | 'sep' | 'value';
 
+/**
+ * @deprecated Use `ComposeDocument.pathAt` instead
+ */
 export class ExtendedPosition {
     private constructor(
-        public readonly parent: CST.CollectionItem,
+        public readonly parentCollectionItem: CST.CollectionItem,
         public readonly itemType: ItemType,
         public readonly logicalPath: string,
     ) { }

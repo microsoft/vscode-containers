@@ -4,6 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 // TODO
-describe('SignatureHelpProvider', () => {
+describe('RootCompletionCollection', () => {
     xit('Should todo');
 });

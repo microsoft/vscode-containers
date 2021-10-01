@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class Lazy<T> {
-    #value: T | undefined;
+    /* private */ #value: T | undefined;
 
     public constructor(private readonly valueFactory: () => T) {
     }
@@ -19,5 +19,9 @@ export class Lazy<T> {
 
     public hasValue(): boolean {
         return (this.#value !== undefined);
+    }
+
+    public clear(): void {
+        this.#value = undefined;
     }
 }

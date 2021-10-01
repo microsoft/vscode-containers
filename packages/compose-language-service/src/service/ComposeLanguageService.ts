@@ -13,20 +13,19 @@ import {
     ServerCapabilities,
     ServerRequestHandler,
     TextDocumentChangeEvent,
-    TextDocumentIdentifier,
     TextDocuments,
     TextDocumentSyncKind,
 }
     from 'vscode-languageserver';
+import { DocumentSettingsNotificationParams, DocumentSettingsNotificationType } from '../client/DocumentSettings';
 import { ComposeDocument } from './ComposeDocument';
-import { ExtendedParams } from './ExtendedParams';
+import { ExtendedParams, TextDocumentParams } from './ExtendedParams';
 import { MultiCompletionProvider } from './providers/completion/MultiCompletionProvider';
 import { DiagnosticProvider } from './providers/DiagnosticProvider';
 import { DocumentFormattingProvider } from './providers/DocumentFormattingProvider';
 import { ImageLinkProvider } from './providers/ImageLinkProvider';
 import { KeyHoverProvider } from './providers/KeyHoverProvider';
 import { ProviderBase } from './providers/ProviderBase';
-import { MultiSignatureHelpProvider } from './providers/signatureHelp/MultiSignatureHelpProvider';
 
 export class ComposeLanguageService implements Disposable {
     private readonly documentManager: TextDocuments<ComposeDocument> = new TextDocuments(ComposeDocument.DocumentManagerConfig);
@@ -41,9 +40,11 @@ export class ComposeLanguageService implements Disposable {
         // Hook up all the LSP listeners, which do not create Disposables for some reason
         this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider());
         this.createLspHandler(this.connection.onHover, new KeyHoverProvider());
-        this.createLspHandler(this.connection.onSignatureHelp, new MultiSignatureHelpProvider());
         this.createLspHandler(this.connection.onDocumentLinks, new ImageLinkProvider());
         this.createLspHandler(this.connection.onDocumentFormatting, new DocumentFormattingProvider());
+
+        // Hook up one additional notification handler
+        this.connection.onNotification(DocumentSettingsNotificationType, this.onDidChangeDocumentSettings);
 
         // Start the document listener
         this.documentManager.listen(this.connection);
@@ -69,25 +70,10 @@ export class ComposeLanguageService implements Disposable {
                 resolveProvider: false,
             },
             hoverProvider: true,
-            signatureHelpProvider: {
-                triggerCharacters: ['-', ':'],
-                retriggerCharacters: ['\n'],
-            },
             documentLinkProvider: {
                 resolveProvider: false,
             },
             documentFormattingProvider: true,
-            // semanticTokensProvider: {
-            //     full: {
-            //         delta: false,
-            //     },
-            //     legend: {
-            //         tokenTypes: [
-            //             SemanticTokenTypes.variable,
-            //         ],
-            //         tokenModifiers: [],
-            //     },
-            // },
             workspace: {
                 workspaceFolders: {
                     supported: true,
@@ -96,7 +82,15 @@ export class ComposeLanguageService implements Disposable {
         };
     }
 
-    private createLspHandler<P extends { textDocument: TextDocumentIdentifier }, R, PR, E>(
+    private onDidChangeDocumentSettings(params: DocumentSettingsNotificationParams): void {
+        const composeDoc = this.documentManager.get(params.textDocument.uri);
+
+        if (composeDoc) {
+            composeDoc.updateSettings(params);
+        }
+    }
+
+    private createLspHandler<P extends TextDocumentParams, R, PR, E>(
         event: (handler: ServerRequestHandler<P, R, PR, E>) => void,
         handler: ProviderBase<P & ExtendedParams, R, PR, E>
     ): void {
@@ -129,6 +123,7 @@ export class ComposeLanguageService implements Disposable {
             try {
                 const extendedParams = {
                     ...params,
+                    textDocument: params.document.id,
                     document: params.document,
                     clientCapabilities: this.clientParams.capabilities,
                     connection: this.connection,
