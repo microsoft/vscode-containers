@@ -3,15 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, Hover, HoverParams, MarkupKind } from 'vscode-languageserver';
-import { CST } from 'yaml';
-import { ExtendedParams } from '../ExtendedParams';
-import { ExtendedPosition } from '../ExtendedPosition';
-import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
+import { CancellationToken, Hover, HoverParams, MarkupKind, Position, Range } from 'vscode-languageserver';
+import { KeyValueRegex } from '../ComposeDocument';
+import { ExtendedPositionParams } from '../ExtendedParams';
 import { ProviderBase } from './ProviderBase';
 
-export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams, Hover | undefined, never, never> {
-    public on(params: HoverParams & ExtendedParams, token: CancellationToken): Hover | undefined {
+export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedPositionParams, Hover | undefined, never, never> {
+    public async on(params: HoverParams & ExtendedPositionParams, token: CancellationToken): Promise<Hover | undefined> {
         if (!params.clientCapabilities.textDocument?.hover) {
             return undefined;
         }
@@ -19,20 +17,23 @@ export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams,
         const contentFormat = params.clientCapabilities.textDocument.hover.contentFormat;
         const preferMarkdown = contentFormat?.length ? contentFormat?.[0] === MarkupKind.Markdown : false;
 
-        const extendedPosition = ExtendedPosition.build(params.document, params.position);
+        const positionInfo = await params.document.getPositionInfo(params);
+        const keyInfo = ComposeKeyInfo.find((k) => k.pathRegex.test(positionInfo.path));
 
-        if (extendedPosition.itemType === 'key' && CST.isScalar(extendedPosition.parentCollectionItem.key)) {
-            const keyInfo = ComposeKeyInfo.find((k) => k.pathRegex.test(extendedPosition.logicalPath));
+        if (keyInfo) {
+            const line = params.document.lineAt(params.position);
+            const match = KeyValueRegex.exec(line);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const keyName = match!.groups!['keyName'];
+            const keyIndex = line.indexOf(keyName);
 
-            if (keyInfo) {
-                return {
-                    contents: {
-                        kind: preferMarkdown ? MarkupKind.Markdown : MarkupKind.PlainText, // If Markdown is preferred, even plaintext will be treated as Markdown--it renders better, has line wrapping, etc.
-                        value: (preferMarkdown && keyInfo.markdownContents) || keyInfo.plaintextContents,
-                    },
-                    range: yamlRangeToLspRange(params.document.textDocument, [extendedPosition.parentCollectionItem.key.offset, extendedPosition.parentCollectionItem.key.offset + extendedPosition.parentCollectionItem.key.source.length]),
-                };
-            }
+            return {
+                contents: {
+                    kind: preferMarkdown ? MarkupKind.Markdown : MarkupKind.PlainText, // If Markdown is preferred, even plaintext will be treated as Markdown--it renders better, has line wrapping, etc.
+                    value: (preferMarkdown && keyInfo.markdownContents) || keyInfo.plaintextContents,
+                },
+                range: Range.create(Position.create(params.position.line, keyIndex), Position.create(params.position.line, keyIndex + keyName.length)),
+            };
         }
 
         return undefined;

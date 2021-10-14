@@ -6,7 +6,12 @@
 import { NotificationType, RequestType } from 'vscode-languageserver-protocol';
 import { TextDocumentParams } from '../service/ExtendedParams';
 
-// TODO: should we get these from @types/vscode instead? It seems there's some type conflict between `Thenable<T>` from @types/vscode and vscode-jsonrpc preventing @types/vscode from working nicely
+export interface DocumentSettingsClientCapabilities {
+    request: boolean;
+    notify: boolean;
+}
+
+// TODO: can we get these from @types/vscode instead? It seems there's some type conflict between `Thenable<T>` from @types/vscode and vscode-jsonrpc preventing @types/vscode from working nicely
 export const LF = 1;
 export const CRLF = 2;
 type EndOfLine = typeof LF | typeof CRLF;
@@ -18,12 +23,18 @@ export interface DocumentSettings {
 
 export type DocumentSettingsParams = TextDocumentParams;
 
-export interface DocumentSettingsClientCapabilities {
-    request: boolean;
-    notify: boolean;
+// Use the same syntax as the LSP
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace DocumentSettingsRequest {
+    export const method = '$/textDocument/documentSettings' as const;
+    export const type = new RequestType<DocumentSettingsParams, DocumentSettings | null, never>(method);
 }
 
 export type DocumentSettingsNotificationParams = DocumentSettingsParams & DocumentSettings;
 
-export const DocumentSettingsRequestType = new RequestType<DocumentSettingsParams, DocumentSettings, never>('$/textDocument/documentSettings');
-export const DocumentSettingsNotificationType = new NotificationType<DocumentSettingsNotificationParams>('$/textDocument/documentSettings/didChange');
+// Use the same syntax as the LSP
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace DocumentSettingsNotification {
+    export const method = '$/textDocument/documentSettings/didChange' as const;
+    export const type = new NotificationType<DocumentSettingsNotificationParams>(method);
+}

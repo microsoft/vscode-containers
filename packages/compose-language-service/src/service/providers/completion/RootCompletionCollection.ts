@@ -6,10 +6,26 @@
 import { InsertTextFormat } from 'vscode-languageserver';
 import { CompletionCollection } from './CompletionCollection';
 
-const PositionAtRootRegex = /^\/$/i; // e.g. `/`
+/**
+ * The position given when the cursor is at the root, i.e. at the | below:
+|
+services:
+  foo:
+    a: b
+ */
+const PositionAtRootPathRegex = /^\/$/i; // e.g. /
+
+/**
+ * The position given when the cursor is in a partially-typed root key, i.e. at the | below:
+val|
+services:
+  foo:
+    a: b
+ */
+const PositionInRootKeyPathRegex = /^\/<value>$/i; // e.g. /<value>
 
 export const RootCompletionCollection = new CompletionCollection(
-    { logicalPaths: [PositionAtRootRegex], indentationDepth: 0 },
+    { logicalPaths: [PositionAtRootPathRegex, PositionInRootKeyPathRegex], indentationDepth: 0 },
     ...[
         {
             label: 'configs:',

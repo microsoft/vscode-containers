@@ -7,7 +7,7 @@ import { InsertTextFormat } from 'vscode-languageserver';
 import { CompletionCollection } from './CompletionCollection';
 
 export const VolumesCompletionCollection = new CompletionCollection(
-    { logicalPaths: [/^\/services\/\w+\/volumes\/.+$/i], indentationDepth: 3 },
+    { logicalPaths: [/^\/services\/[.\w-]+\/volumes\/<item>\/.*$/i], indentationDepth: 3 },
     ...[
         {
             // Matches `  - ""` or `  -`, with allowances for other amounts of whitespace/quoting

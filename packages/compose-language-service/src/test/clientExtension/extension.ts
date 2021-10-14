@@ -22,16 +22,24 @@ export function activate(context: vscode.ExtensionContext): void {
         },
     };
 
+    const serverOutputChannel = vscode.window.createOutputChannel('Compose Language Service');
+    const clientOutputChannel = vscode.window.createOutputChannel('Compose Client Extension');
+
     const clientOptions: LanguageClientOptions = {
         documentSelector: [
             {
                 language: 'dockercompose'
             },
         ],
+        outputChannel: serverOutputChannel,
     };
 
     const client = new LanguageClient('compose-language-server', serverOptions, clientOptions, true);
     client.registerFeature(new DocumentSettingsClientFeature(client));
+
+    context.subscriptions.push(client.onTelemetry((e) => {
+        clientOutputChannel.appendLine(JSON.stringify(e));
+    }));
 
     context.subscriptions.push(client.start());
 }

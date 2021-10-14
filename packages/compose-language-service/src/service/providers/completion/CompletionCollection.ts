@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CompletionItem, CompletionParams } from 'vscode-languageserver';
-import { ExtendedPositionParams } from '../../ExtendedParams';
+import { CompletionItem } from 'vscode-languageserver';
+import { ExtendedCompletionParams } from '../../ExtendedParams';
 
 interface ExtendedCompletionItem extends CompletionItem {
     /**
@@ -21,12 +21,12 @@ export class CompletionCollection extends Array<ExtendedCompletionItem> {
         super(...items);
     }
 
-    public async getActiveCompletionItems(params: CompletionParams & ExtendedPositionParams): Promise<CompletionItem[] | undefined> {
-        if (this.locationRequirements.logicalPaths !== undefined && !this.locationRequirements.logicalPaths.some(p => p.test(params.path ?? ''))) {
+    public getActiveCompletionItems(params: ExtendedCompletionParams): CompletionItem[] | undefined {
+        if (this.locationRequirements.logicalPaths !== undefined && !this.locationRequirements.logicalPaths.some(p => p.test(params.positionInfo.path ?? ''))) {
             return undefined;
         }
 
-        if (this.locationRequirements.indentationDepth !== undefined && this.locationRequirements.indentationDepth !== (await params.document.indentationDepthAt(params))) {
+        if (this.locationRequirements.indentationDepth !== undefined && this.locationRequirements.indentationDepth !== params.positionInfo.indentDepth) {
             return undefined;
         }
 

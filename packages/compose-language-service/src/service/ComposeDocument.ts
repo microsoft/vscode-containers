@@ -6,8 +6,8 @@
 import { ErrorCodes, Position, Range, ResponseError, TextDocumentIdentifier, TextDocumentsConfiguration } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { CST, Document as YamlDocument, Parser, Composer, isDocument } from 'yaml';
-import { CRLF, DocumentSettings, DocumentSettingsParams, DocumentSettingsRequestType, LF } from '../client/DocumentSettings';
-import { ExtendedParams, ExtendedPositionParams } from './ExtendedParams';
+import { CRLF, DocumentSettings, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
+import { ExtendedParams, ExtendedPositionParams, PositionInfo } from './ExtendedParams';
 import { Lazy } from './utils/Lazy';
 
 const EmptyDocumentCST: CST.Document = {
@@ -50,6 +50,11 @@ export class ComposeDocument {
         return this;
     }
 
+    /**
+     * Gets the text of a line at a given line number or position, including the line break (`\n` or `\r\n`) at the end if present
+     * @param line The line number or `Position`
+     * @returns The line text
+     */
     public lineAt(line: Position | number): string {
         // Flatten to a position at the start of the line
         const startOfLine = (typeof line === 'number') ? Position.create(line, 0) : Position.create(line.line, 0);
@@ -62,77 +67,17 @@ export class ComposeDocument {
         return this.textDocument.getText(Range.create(startOfLine, endOfLine));
     }
 
-    public async indentationDepthAt(params: ExtendedPositionParams): Promise<number> {
-        const startOfLine = Position.create(params.position.line, 0);
-        const linePart = this.textDocument.getText(Range.create(startOfLine, params.position)); // Get the line up to the cursor position
-
-        const matchParts = /^(?<indentation>[ ]*)(?<itemIndicator>-[ ]*)?(?<content>.*)$/i.exec(linePart);
-
-        if (matchParts?.groups?.['indentation']) {
-            // TODO: should item indicator be counted as one extra indent? YAML allows for item indicators that have the `-` at the same indentation as the parent key
-            return matchParts.groups['indentation'].length / (await this.getSettings(params)).tabSize;
-        }
-
-        return 0;
-    }
-
-    public async parentKeyOf(params: ExtendedPositionParams): Promise<{ key: string, position: Position } | undefined> {
-        let startLine: number;
-        let positionIndentDepth: number;
-
-        const startOfLine = Position.create(params.position.line, 0);
-        const linePart = this.textDocument.getText(Range.create(startOfLine, params.position)); // Get the line up to the cursor position
-
-        if (/^(?<indentation>[ ]*)(?<key>[\w-]+:[ ]+)/i.test(linePart)) {
-            // First, we need to determine if this is a fully-contained `key: [value]` line, and the cursor position is after the `: `. If so, the parent key is `key`.
-            // Consequently, we will start the search below at the current line, with indentation assumed as MaximumLineLength
-            // When the search proceeds, it will terminate at the first loop with `key` as the result
-            startLine = params.position.line;
-            positionIndentDepth = MaximumLineLength;
-        } else {
-            // Otherwise, we need to roll upwards starting one line above the position, until we find a key line that is less-indented than the current line
-            startLine = params.position.line - 1;
-            positionIndentDepth = await this.indentationDepthAt(params);
-        }
-
-        for (let l = startLine; l >= 0; l--) {
-            const line = this.lineAt(l);
-            const keyMatchParts = /^(?<indentation>[ ]*)(?<key>[\w-]+:[ ]*)(?<content>.*)(?<eol>\r?\n)?$/i.exec(line);
-
-            if (keyMatchParts?.groups?.['indentation'] !== undefined && keyMatchParts?.groups?.['key']) {
-                const indentation = keyMatchParts.groups['indentation'];
-                const key = keyMatchParts.groups['key'].replace(/[\s:]/ig, '');
-                const keyPosition = Position.create(l, indentation.length);
-
-                const keyIndentDepth = await this.indentationDepthAt({ ...params, position: keyPosition });
-
-                if (keyIndentDepth < positionIndentDepth) {
-                    return {
-                        key: key,
-                        position: keyPosition,
-                    };
-                }
-            }
-        }
-
-        return undefined;
-    }
-
-    public async pathAt(params: ExtendedPositionParams): Promise<string> {
-        const pathParts: string[] = [];
-        let parent: { key: string, position: Position } | undefined = { key: '', position: params.position };
-
-        while ((parent = await this.parentKeyOf({ ...params, position: parent.position }))) {
-            pathParts.unshift(parent.key);
-        }
-
-        return '/' + pathParts.join('/');
-    }
-
+    /**
+     * Gets settings from the document. If already populated, that will be returned. If supported, the info will be requested from the client.
+     * Otherwise, the settings will be heuristically guessed based on document contents.
+     * Note: The client is also directed to notify the server if the settings change, via the `DocumentSettingsNotification` notification.
+     * @param params The `ExtendedParams`, used for checking capabilities and getting the connection
+     * @returns The document settings (tab size, line endings, etc.)
+     */
     public async getSettings(params: ExtendedParams): Promise<DocumentSettings> {
         // First, try asking the client, if the capability is present
         if (!this.documentSettings && params.clientCapabilities.experimental?.documentSettings?.request) {
-            const result = await params.connection.sendRequest<DocumentSettingsParams, DocumentSettings | null, never>(DocumentSettingsRequestType, { textDocument: this.id });
+            const result = await params.connection.sendRequest(DocumentSettingsRequest.type, { textDocument: this.id });
             if (result) {
                 this.documentSettings = result;
             }
@@ -146,8 +91,59 @@ export class ComposeDocument {
         return this.documentSettings;
     }
 
+    /**
+     * Updates the settings (tab size, line endings, etc.) for the document. This is meant to be called by the server upon receiving a `DocumentSettingsNotification`.
+     * @param params The new settings for the document
+     */
     public updateSettings(params: DocumentSettings): void {
         this.documentSettings = params;
+    }
+
+    /**
+     * Gets information about the position, including the tab depth and a logical path describing where in the YAML tree the position is
+     * @param params The `ExtendedPositionParams` for the position being queried
+     * @returns A `PositionInfo` object with tab depth and logical path
+     * @example If the position is in a service foo's `image` key, the logical path would be `/services/foo/image`.
+     */
+    public async getPositionInfo(params: ExtendedPositionParams): Promise<PositionInfo> {
+        const { tabSize } = await this.getSettings(params);
+        const partialPositionInfo = this.getFirstLinePositionInfo(params, tabSize);
+        const fullPathParts = [...partialPositionInfo.pathParts];
+
+        // We no longer need to consider position, since the cursor is inherently below this point
+        // So now we just scroll upward, ignoring any lines with equal or more indentation than the first line (where the cursor is)
+        let currentIndentDepth = partialPositionInfo.cursorIndentDepth;
+
+        for (let i = params.position.line - 1; i >= 0 && currentIndentDepth > 0; i--) {
+            const currentLine = this.lineAt(i);
+            let indentDepth = MaximumLineLength;
+            let result: RegExpExecArray | null;
+
+            /* eslint-disable @typescript-eslint/no-non-null-assertion */
+            if ((result = ItemValueRegex.exec(currentLine))) {
+                indentDepth = result.groups!['indent'].length / tabSize;
+
+                if (indentDepth < currentIndentDepth) {
+                    // If this line is an ItemValue and less indented, then add `<item>` to the path
+                    currentIndentDepth = indentDepth;
+                    fullPathParts.unshift(Item);
+                }
+            } else if ((result = KeyValueRegex.exec(currentLine))) {
+                indentDepth = result.groups!['indent'].length / tabSize;
+
+                if (indentDepth < currentIndentDepth) {
+                    // If this line is a KeyValue (which also includes keys alone) and less indented, add that key to the path
+                    currentIndentDepth = indentDepth;
+                    fullPathParts.unshift(result.groups!['keyName']);
+                }
+            }
+            /* eslint-enable @typescript-eslint/no-non-null-assertion */
+        }
+
+        return {
+            path: '/' + fullPathParts.join('/'), // Combine the path
+            indentDepth: partialPositionInfo.cursorIndentDepth, // Indent depth is determined entirely from `getFirstLinePositionInfo`
+        };
     }
 
     public static DocumentManagerConfig: TextDocumentsConfiguration<ComposeDocument> = {
@@ -186,7 +182,7 @@ export class ComposeDocument {
 
         // For tab size, look for the first key with nonzero indentation. If none found, assume 2.
         let tabSize = 2;
-        const indentedKeyLineMatch = /^(?<indentation>[ ]+)(?<key>[\w-]+:\s*)$/im.exec(documentText);
+        const indentedKeyLineMatch = /^(?<indentation>[ ]+)(?<key>[.\w-]+:\s*)$/im.exec(documentText);
 
         if (indentedKeyLineMatch?.groups?.['indentation']) {
             tabSize = indentedKeyLineMatch.groups['indentation'].length;
@@ -197,4 +193,150 @@ export class ComposeDocument {
             tabSize,
         };
     }
+
+    /**
+     * This method is responsible for determining the part of the logical path for the line where the cursor is, given the
+     * cursor's position.
+     * This is similar to the body of `getPositionInfo` but differs in a key way--the position is on this line, so the
+     * character position can fundamentally affect what the logical path is
+     * @param params Parameters including position
+     * @param tabSize The tab size (needed to determine indent depth)
+     * @returns The part(s) of the logical path at the current line
+     */
+    private getFirstLinePositionInfo(params: ExtendedPositionParams, tabSize: number): { pathParts: string[], cursorIndentDepth: number } {
+        const currentLine = this.lineAt(params.position);
+        const pathParts: string[] = [];
+        let cursorIndentDepth = 0;
+
+        let result: RegExpExecArray | null;
+
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        if ((result = ItemKeyValueRegex.exec(currentLine))) {
+            // First, see if it's an ItemKeyValue, i.e. `  - foo: bar`
+            const itemSepPosition = currentLine.indexOf(result.groups!['itemInd']);
+            const keySepPosition = currentLine.indexOf(result.groups!['keyInd'], itemSepPosition);
+            const indentLength = result.groups!['indent'].length;
+            const keyName = result.groups!['keyName'];
+
+            cursorIndentDepth = indentLength / tabSize + 1; // We will add 1 to the indent depth, because YAML is too permissive and allows item lists at the same indent depth as their parent key
+
+            if (params.position.character > keySepPosition) {
+                // If the position is after the key separator, we're in the value
+                pathParts.unshift(Value);
+                pathParts.unshift(keyName);
+                pathParts.unshift(Item);
+            } else if (params.position.character === keySepPosition) {
+                // If the position is at the key separator, we're on the separator
+                pathParts.unshift(Sep);
+                pathParts.unshift(keyName);
+                pathParts.unshift(Item);
+            } else if (params.position.character > itemSepPosition) {
+                // Otherwise if the position is after the item separator, we're in the key
+                pathParts.unshift(keyName);
+                pathParts.unshift(Item);
+            } else if (params.position.character === itemSepPosition) {
+                // If we're at the item separator, we're at the item separator (of course)
+                pathParts.unshift(Sep);
+                pathParts.unshift(Item); // TODO: sometimes we get <item>/<item> because of that indent+1 behavior
+            } else if (params.position.character < indentLength) {
+                // Otherwise if we're somewhere within the indentation, we're not at a "position" within this line, but we do need to consider the indent depth
+                cursorIndentDepth = params.position.character / tabSize;
+            }
+        } else if ((result = KeyValueRegex.exec(currentLine))) {
+            // Next, check if it's a standard KeyValue, i.e. `  foo: bar`
+            const keySepPosition = currentLine.indexOf(result.groups!['keyInd']);
+            const indentLength = result.groups!['indent'].length;
+            const keyName = result.groups!['keyName'];
+
+            cursorIndentDepth = indentLength / tabSize;
+
+            if (params.position.character > keySepPosition) {
+                // If the position is after the key separator, we're in the value
+                pathParts.unshift(Value);
+                pathParts.unshift(keyName);
+            } else if (params.position.character === keySepPosition) {
+                // If the position is at the key separator, we're on the separator
+                pathParts.unshift(Sep);
+                pathParts.unshift(keyName); // TODO: the position is right here for hover, but not completions--if you do complete at the `:` in a key it thinks you're on the value
+            } else if (params.position.character > indentLength) {
+                // If the position is after the indent, we're in the key
+                pathParts.unshift(keyName);
+            } else if (params.position.character < indentLength) {
+                // Otherwise if we're somewhere within the indentation, we're not at a "position" within this line, but we do need to consider the indent depth
+                cursorIndentDepth = params.position.character / tabSize;
+            }
+        } else if ((result = ItemValueRegex.exec(currentLine))) {
+            // Next, check if it's an ItemValue, i.e. `  - foo`
+            const itemSepPosition = currentLine.indexOf(result.groups!['itemInd']);
+            const indentLength = result.groups!['indent'].length;
+
+            cursorIndentDepth = indentLength / tabSize + 1; // We will add 1 to the indent depth, because YAML is too permissive and allows item lists at the same indent depth as their parent key
+
+            if (params.position.character > itemSepPosition) {
+                // If the position is after the item separator, we're in the value
+                pathParts.unshift(Value);
+                pathParts.unshift(Item);
+            } else if (params.position.character === itemSepPosition) {
+                // If we're at the item separator, we're at the item separator (of course)
+                pathParts.unshift(Sep);
+                pathParts.unshift(Item);
+            } else if (params.position.character < indentLength) {
+                // Otherwise if we're somewhere within the indentation, we're not at a "position" within this line, but we do need to consider the indent depth
+                cursorIndentDepth = params.position.character / tabSize;
+            }
+        } else if ((result = ValueRegex.exec(currentLine))) {
+            // Next, check if it's a value alone, i.e. `  foo`
+            const indentLength = result.groups!['indent'].length;
+
+            cursorIndentDepth = indentLength / tabSize;
+
+            if (params.position.character > indentLength) {
+                // If the position is after the indent, we're in the value
+                pathParts.unshift(Value);
+            } else if (params.position.character < indentLength) {
+                // Otherwise if we're somewhere within the indentation, we're not at a "position" within this line, but we do need to consider the indent depth
+                cursorIndentDepth = params.position.character / tabSize;
+            }
+        } else if ((result = WhitespaceRegex.exec(currentLine))) {
+            // Last, check if it's whitespace only
+            const indentLength = result.groups!['indent'].length;
+
+            cursorIndentDepth = indentLength / tabSize;
+
+            if (params.position.character < indentLength) {
+                // Simply need to determine the indent depth
+                cursorIndentDepth = params.position.character / tabSize;
+            }
+        }
+        /* eslint-enable @typescript-eslint/no-non-null-assertion */
+
+        return {
+            pathParts,
+            cursorIndentDepth,
+        };
+    }
 }
+
+// IMPORTANT: For all of these regular expressions, the groups present *and* their names are very important.
+// Removal or alteration would break `getPositionInfo` and `getFirstLinePositionInfo`
+
+// A regex for matching a standard key/value line, i.e. `key: value`
+// Exported for use by KeyHoverProvider
+export const KeyValueRegex = /^(?<indent> *)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:)\s+))(?<value>.*)$/im;
+
+// A regex for matching an item/value line, i.e. `- value`
+const ItemValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) +)(?<value>.*)$/im;
+
+// A regex for matching an item/key/value line, i.e. `- key: value`. This will be the top line of a flow map.
+const ItemKeyValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) +)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:)\s+))(?<value>.*)$/im;
+
+// A regex for matching any value line
+const ValueRegex = /^(?<indent> *)(?<value>\S+)$/im;
+
+// A regex for matching a whitespace-only line
+const WhitespaceRegex = /^(?<indent> *)$/im;
+
+// Constants for marking non-key parts of a logical path
+const Value = '<value>';
+const Item = '<item>';
+const Sep = '<sep>';

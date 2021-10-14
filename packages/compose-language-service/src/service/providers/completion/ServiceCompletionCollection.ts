@@ -13,19 +13,19 @@ services:
     |
     a: b
  */
-const PositionAfterServiceNamePathRegex = /^\/services\/[\w -]+$/i; // e.g. /services/<sep>
+const PositionAtServicePathRegex = /^\/services\/[.\w-]+$/i; // e.g. /services/foo
 
 /**
- * The position given when the cursor is inbetween properties in a service, i.e. at the | below:
+ * The position given when the cursor is in a partially-typed properties in a service, i.e. at the | below:
 services:
   foo:
     a: b
-    |
+    b|
  */
-const PositionInServiceConfigPathRegex = /^\/services\/[\w -]+\/<start>$/i; // e.g. /services/foo/<start>
+const PositionInServiceKeyPathRegex = /^\/services\/[.\w-]+\/<value>$/i; // e.g. /services/foo/<value>
 
 export const ServiceCompletionCollection = new CompletionCollection(
-    { logicalPaths: [PositionAfterServiceNamePathRegex, PositionInServiceConfigPathRegex], indentationDepth: 2 },
+    { logicalPaths: [PositionAtServicePathRegex, PositionInServiceKeyPathRegex], indentationDepth: 2 },
     ...[
         {
             label: 'build:',
