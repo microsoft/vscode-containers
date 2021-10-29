@@ -39,6 +39,13 @@ describe('ImageLinkProvider', () => {
                     b: {
                         image: 'mysql:latest'
                     },
+                    // TODO: find a way to get the yaml library to translate these strings literally to keep the quotes
+                    // c: {
+                    //     image: '"redis"'
+                    // },
+                    // d: {
+                    //     image: '\'hello-world:latest\''
+                    // }
                 }
             };
 
@@ -57,6 +64,20 @@ describe('ImageLinkProvider', () => {
                     ),
                     target: 'https://hub.docker.com/_/mysql'
                 },
+                // {
+                //     range: Range.create(
+                //         Position.create(7, 12),
+                //         Position.create(7, 17)
+                //     ),
+                //     target: 'https://hub.docker.com/_/redis'
+                // },
+                // {
+                //     range: Range.create(
+                //         Position.create(9, 12),
+                //         Position.create(9, 23)
+                //     ),
+                //     target: 'https://hub.docker.com/_/hello-world'
+                // },
             ];
 
             await requestAndCompare(testConnection, testObject, expected);

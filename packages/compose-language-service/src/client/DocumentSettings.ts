@@ -3,13 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { NotificationType, RequestType } from 'vscode-languageserver-protocol';
+import { ClientCapabilities, NotificationType, RequestType } from 'vscode-languageserver-protocol';
 import { TextDocumentParams } from '../service/ExtendedParams';
 
-export interface DocumentSettingsClientCapabilities {
-    request: boolean;
-    notify: boolean;
-}
+export type ComposeLanguageClientCapabilities = ClientCapabilities & { experimental?: { documentSettings?: { request: boolean, notify: boolean } } };
 
 // TODO: can we get these from @types/vscode instead? It seems there's some type conflict between `Thenable<T>` from @types/vscode and vscode-jsonrpc preventing @types/vscode from working nicely
 export const LF = 1;

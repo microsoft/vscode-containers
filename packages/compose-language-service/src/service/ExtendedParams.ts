@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClientCapabilities, CompletionParams, Connection, TextDocumentIdentifier, TextDocumentPositionParams } from 'vscode-languageserver';
-import { DocumentSettingsClientCapabilities } from '../client/DocumentSettings';
+import { CompletionParams, TextDocumentIdentifier, TextDocumentPositionParams } from 'vscode-languageserver';
 import { ComposeDocument } from './ComposeDocument';
 
 export interface TextDocumentParams {
@@ -13,8 +12,6 @@ export interface TextDocumentParams {
 
 export interface ExtendedParams extends TextDocumentParams {
     document: ComposeDocument;
-    clientCapabilities: ClientCapabilities & { experimental?: { documentSettings?: DocumentSettingsClientCapabilities } };
-    connection: Connection;
 }
 
 export interface ExtendedPositionParams extends ExtendedParams, TextDocumentPositionParams {

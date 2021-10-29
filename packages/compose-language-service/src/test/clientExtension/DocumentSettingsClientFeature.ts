@@ -6,20 +6,15 @@
 import * as vscode from 'vscode';
 import { ClientCapabilities, StaticFeature } from 'vscode-languageclient';
 import { LanguageClient } from 'vscode-languageclient/node';
+import { DocumentSettings, DocumentSettingsNotificationParams, DocumentSettingsParams } from '../../../lib/client/DocumentSettings'; // Dev-time-only imports, with `require` below for the real imports, to avoid desync issues or needing to actually install the langserver package
 
-import { DocumentSettings, DocumentSettingsClientCapabilities, DocumentSettingsNotificationParams, DocumentSettingsParams } from '../../../lib/client/DocumentSettings'; // Dev-time-only imports
-
-// Duplicating these from src/client/DocumentSettings means the above imports from `DocumentSettings` can stay dev-time-only
-const DocumentSettingsRequestMethodType = '$/textDocument/documentSettings';
-const DocumentSettingsChangeNotificationMethodType = '$/textDocument/documentSettings/didChange';
-
-export class DocumentSettingsClientFeature implements StaticFeature {
+export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disposable {
     private disposables: vscode.Disposable[] = [];
 
     public constructor(private readonly client: LanguageClient) { }
 
     public fillClientCapabilities(capabilities: ClientCapabilities): void {
-        const documentSettings: DocumentSettingsClientCapabilities = {
+        const documentSettings = {
             notify: true,
             request: true,
         };
@@ -33,7 +28,7 @@ export class DocumentSettingsClientFeature implements StaticFeature {
     public initialize(): void {
         this.disposables.push(
             this.client.onRequest(
-                DocumentSettingsRequestMethodType,
+                require('../../../../lib/client/DocumentSettings').DocumentSettingsRequest,
                 (params: DocumentSettingsParams): DocumentSettings | undefined => {
                     const textEditor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === params.textDocument.uri);
 
@@ -58,7 +53,7 @@ export class DocumentSettingsClientFeature implements StaticFeature {
                         tabSize: Number(e.options.tabSize),
                     };
 
-                    this.client.sendNotification(DocumentSettingsChangeNotificationMethodType, params);
+                    this.client.sendNotification(require('../../../../lib/client/DocumentSettings').DocumentSettingsNotification, params);
                 }
             )
         );

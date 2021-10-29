@@ -17,7 +17,7 @@ interface ExtendedCompletionItem extends CompletionItem {
 }
 
 export class CompletionCollection extends Array<ExtendedCompletionItem> {
-    public constructor(private readonly locationRequirements: CompletionLocationRequirements, ...items: ExtendedCompletionItem[]) {
+    public constructor(public readonly name: string, private readonly locationRequirements: CompletionLocationRequirements, ...items: ExtendedCompletionItem[]) {
         super(...items);
     }
 

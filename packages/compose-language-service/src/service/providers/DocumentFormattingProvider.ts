@@ -10,10 +10,6 @@ import { ProviderBase } from './ProviderBase';
 
 export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingParams & ExtendedParams, TextEdit[] | undefined, never, never> {
     public on(params: DocumentFormattingParams & ExtendedParams, token: CancellationToken): TextEdit[] | undefined {
-        if (!params.clientCapabilities.textDocument?.formatting) {
-            return undefined;
-        }
-
         if (params.document.yamlDocument.value.errors.length) {
             // Won't return formatting info unless the document is syntactically correct
             return undefined;

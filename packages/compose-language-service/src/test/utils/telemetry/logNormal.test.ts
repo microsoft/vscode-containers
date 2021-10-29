@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// TODO
-describe('RootCompletionCollection', () => {
+describe('(Unit) logNormal', () => {
     xit('Should have tests');
 });

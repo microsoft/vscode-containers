@@ -5,6 +5,7 @@
 
 import { CancellationToken, CompletionItem, CompletionParams, WorkDoneProgressReporter } from 'vscode-languageserver';
 import { ExtendedCompletionParams, ExtendedParams, ExtendedPositionParams } from '../../ExtendedParams';
+import { getCurrentContext } from '../../utils/ActionContext';
 import { ProviderBase } from '../ProviderBase';
 import { CompletionCollection } from './CompletionCollection';
 import { RootCompletionCollection } from './RootCompletionCollection';
@@ -30,12 +31,15 @@ export class MultiCompletionProvider extends ProviderBase<CompletionParams & Ext
     }
 
     public override async on(params: CompletionParams & ExtendedPositionParams, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter): Promise<CompletionItem[] | undefined> {
+        const ctx = getCurrentContext();
+
         const extendedParams: ExtendedCompletionParams = {
             ...params,
             positionInfo: await params.document.getPositionInfo(params),
         };
 
         const results: CompletionItem[] = [];
+        const respondingCollections: string[] = [];
 
         for (const collection of this.completionCollections) {
             // Within each loop we'll check for cancellation
@@ -45,9 +49,13 @@ export class MultiCompletionProvider extends ProviderBase<CompletionParams & Ext
 
             const subresults = collection.getActiveCompletionItems(extendedParams);
 
-            if (subresults) {
+            if (subresults?.length) {
+                respondingCollections.push(collection.name);
                 results.push(...subresults);
             }
+
+            // The set of collections that answer will be attached as a property
+            ctx.telemetry.properties.respondingCollections = respondingCollections.sort().join(',');
         }
 
         return results.length > 0 ? results : undefined;

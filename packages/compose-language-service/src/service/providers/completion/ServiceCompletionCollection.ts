@@ -25,6 +25,7 @@ services:
 const PositionInServiceKeyPathRegex = /^\/services\/[.\w-]+\/<value>$/i; // e.g. /services/foo/<value>
 
 export const ServiceCompletionCollection = new CompletionCollection(
+    'service',
     { logicalPaths: [PositionAtServicePathRegex, PositionInServiceKeyPathRegex], indentationDepth: 2 },
     ...[
         {

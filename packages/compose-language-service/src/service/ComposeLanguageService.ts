@@ -18,6 +18,7 @@ import {
 }
     from 'vscode-languageserver';
 import { DocumentSettingsNotificationParams, DocumentSettingsNotification } from '../client/DocumentSettings';
+import { initEvent } from '../client/TelemetryEvent';
 import { ComposeDocument } from './ComposeDocument';
 import { ExtendedParams, TextDocumentParams } from './ExtendedParams';
 import { MultiCompletionProvider } from './providers/completion/MultiCompletionProvider';
@@ -26,12 +27,13 @@ import { DocumentFormattingProvider } from './providers/DocumentFormattingProvid
 import { ImageLinkProvider } from './providers/ImageLinkProvider';
 import { KeyHoverProvider } from './providers/KeyHoverProvider';
 import { ProviderBase } from './providers/ProviderBase';
+import { ActionContext, runWithContext } from './utils/ActionContext';
+import { TelemetryAggregator } from './utils/telemetry/TelemetryAggregator';
 
 export class ComposeLanguageService implements Disposable {
     private readonly documentManager: TextDocuments<ComposeDocument> = new TextDocuments(ComposeDocument.DocumentManagerConfig);
     private readonly subscriptions: Disposable[] = [];
-
-    // TODO: telemetry! Aggregation!
+    private readonly telemetryAggregator: TelemetryAggregator;
 
     public constructor(public readonly connection: Connection, private readonly clientParams: InitializeParams) {
         // Hook up the document listeners, which create a Disposable which will be added to this.subscriptions
@@ -44,10 +46,13 @@ export class ComposeLanguageService implements Disposable {
         this.createLspHandler(this.connection.onDocumentFormatting, new DocumentFormattingProvider());
 
         // Hook up one additional notification handler
-        this.connection.onNotification(DocumentSettingsNotification.type, this.onDidChangeDocumentSettings);
+        this.connection.onNotification(DocumentSettingsNotification.method, (params) => this.onDidChangeDocumentSettings(params));
 
         // Start the document listener
         this.documentManager.listen(this.connection);
+
+        // Start the telemetry aggregator
+        this.subscriptions.push(this.telemetryAggregator = new TelemetryAggregator(this.connection, clientParams.initializationOptions?.telemetryAggregationInterval));
     }
 
     public dispose(): void {
@@ -83,6 +88,7 @@ export class ComposeLanguageService implements Disposable {
     }
 
     private onDidChangeDocumentSettings(params: DocumentSettingsNotificationParams): void {
+        // TODO: Telemetrize this?
         const composeDoc = this.documentManager.get(params.textDocument.uri);
 
         if (composeDoc) {
@@ -95,23 +101,21 @@ export class ComposeLanguageService implements Disposable {
         handler: ProviderBase<P & ExtendedParams, R, PR, E>
     ): void {
         event(async (params, token, workDoneProgress, resultProgress) => {
-            try {
+
+            return await this.callWithTelemetryAndErrorHandling(handler.constructor.name, async () => {
                 const doc = this.documentManager.get(params.textDocument.uri);
                 if (!doc) {
                     throw new ResponseError(ErrorCodes.InvalidParams, 'Document not found in cache.');
                 }
 
-                const extendedParams = {
+                const extendedParams: P & ExtendedParams = {
                     ...params,
                     document: doc,
-                    clientCapabilities: this.clientParams.capabilities,
-                    connection: this.connection,
                 };
 
                 return await Promise.resolve(handler.on(extendedParams, token, workDoneProgress, resultProgress));
-            } catch (error) {
-                return ComposeLanguageService.flattenError(error);
-            }
+            });
+
         });
     }
 
@@ -120,30 +124,58 @@ export class ComposeLanguageService implements Disposable {
         handler: (params: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams) => Promise<void> | void
     ): void {
         event(async (params: TextDocumentChangeEvent<ComposeDocument>) => {
-            try {
-                const extendedParams = {
+
+            return await this.callWithTelemetryAndErrorHandling(handler.name, async () => {
+                const extendedParams: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams = {
                     ...params,
                     textDocument: params.document.id,
-                    document: params.document,
-                    clientCapabilities: this.clientParams.capabilities,
-                    connection: this.connection,
                 };
 
                 return await Promise.resolve(handler(extendedParams));
-            } catch (error) {
-                return ComposeLanguageService.flattenError(error);
-            }
+            });
+
         }, this, this.subscriptions);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private static flattenError<E>(error: any): ResponseError<E> {
-        if (error instanceof ResponseError) {
-            return error;
-        } else if (error instanceof Error) {
-            return new ResponseError(ErrorCodes.UnknownErrorCode, error.message, error as unknown as E);
-        }
+    private async callWithTelemetryAndErrorHandling<R, E>(callbackId: string, callback: () => Promise<R>): Promise<R | ResponseError<E>> {
+        const actionContext: ActionContext = {
+            clientCapabilities: this.clientParams.capabilities,
+            connection: this.connection,
+            telemetry: initEvent(callbackId),
+        };
 
-        return new ResponseError(ErrorCodes.InternalError, error.toString());
+        const startTime = process.hrtime.bigint();
+
+        try {
+            return await runWithContext(actionContext, callback);
+        } catch (error) {
+            let responseError: ResponseError<E>;
+            let stack: string | undefined;
+
+            if (error instanceof ResponseError) {
+                responseError = error;
+                stack = error.stack;
+            } else if (error instanceof Error) {
+                responseError = new ResponseError(ErrorCodes.UnknownErrorCode, error.message, error as unknown as E);
+                stack = error.stack;
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                responseError = new ResponseError(ErrorCodes.InternalError, (error as any).toString ? (error as any).toString() : 'Unknown error');
+            }
+
+            actionContext.telemetry.properties.result = 'Failed';
+            actionContext.telemetry.properties.error = responseError.code.toString();
+            actionContext.telemetry.properties.errorMessage = responseError.message;
+            actionContext.telemetry.properties.stack = stack;
+
+            return responseError;
+        } finally {
+            const endTime = process.hrtime.bigint();
+            const elapsedMicroseconds = Number((endTime - startTime) / BigInt(1000));
+            actionContext.telemetry.measurements.duration = elapsedMicroseconds;
+
+            // The aggregator will internally handle suppressing / etc.
+            this.telemetryAggregator.logEvent(actionContext.telemetry);
+        }
     }
 }

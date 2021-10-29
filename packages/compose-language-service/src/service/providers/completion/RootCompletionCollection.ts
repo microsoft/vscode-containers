@@ -25,6 +25,7 @@ services:
 const PositionInRootKeyPathRegex = /^\/<value>$/i; // e.g. /<value>
 
 export const RootCompletionCollection = new CompletionCollection(
+    'root',
     { logicalPaths: [PositionAtRootPathRegex, PositionInRootKeyPathRegex], indentationDepth: 0 },
     ...[
         {

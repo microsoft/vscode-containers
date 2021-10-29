@@ -6,8 +6,9 @@
 import { ErrorCodes, Position, Range, ResponseError, TextDocumentIdentifier, TextDocumentsConfiguration } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { CST, Document as YamlDocument, Parser, Composer, isDocument } from 'yaml';
-import { CRLF, DocumentSettings, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
-import { ExtendedParams, ExtendedPositionParams, PositionInfo } from './ExtendedParams';
+import { CRLF, DocumentSettings, DocumentSettingsParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
+import { ExtendedPositionParams, PositionInfo } from './ExtendedParams';
+import { getCurrentContext } from './utils/ActionContext';
 import { Lazy } from './utils/Lazy';
 
 const EmptyDocumentCST: CST.Document = {
@@ -71,15 +72,18 @@ export class ComposeDocument {
      * Gets settings from the document. If already populated, that will be returned. If supported, the info will be requested from the client.
      * Otherwise, the settings will be heuristically guessed based on document contents.
      * Note: The client is also directed to notify the server if the settings change, via the `DocumentSettingsNotification` notification.
-     * @param params The `ExtendedParams`, used for checking capabilities and getting the connection
      * @returns The document settings (tab size, line endings, etc.)
      */
-    public async getSettings(params: ExtendedParams): Promise<DocumentSettings> {
+    public async getSettings(): Promise<DocumentSettings> {
         // First, try asking the client, if the capability is present
-        if (!this.documentSettings && params.clientCapabilities.experimental?.documentSettings?.request) {
-            const result = await params.connection.sendRequest(DocumentSettingsRequest.type, { textDocument: this.id });
-            if (result) {
-                this.documentSettings = result;
+        if (!this.documentSettings) {
+            const ctx = getCurrentContext();
+
+            if (ctx.clientCapabilities?.experimental?.documentSettings?.request) {
+                const result = await ctx.connection.sendRequest<DocumentSettingsParams, DocumentSettings | null, never>(DocumentSettingsRequest.type, { textDocument: this.id });
+                if (result) {
+                    this.documentSettings = result;
+                }
             }
         }
 
@@ -106,7 +110,7 @@ export class ComposeDocument {
      * @example If the position is in a service foo's `image` key, the logical path would be `/services/foo/image`.
      */
     public async getPositionInfo(params: ExtendedPositionParams): Promise<PositionInfo> {
-        const { tabSize } = await this.getSettings(params);
+        const { tabSize } = await this.getSettings();
         const partialPositionInfo = this.getFirstLinePositionInfo(params, tabSize);
         const fullPathParts = [...partialPositionInfo.pathParts];
 
@@ -131,7 +135,9 @@ export class ComposeDocument {
             } else if ((result = KeyValueRegex.exec(currentLine))) {
                 indentDepth = result.groups!['indent'].length / tabSize;
 
-                if (indentDepth < currentIndentDepth) {
+                if (indentDepth < currentIndentDepth ||
+                    (indentDepth === currentIndentDepth && fullPathParts[0] === Item)) // YAML is too permissive and allows for items to have the same indentation as their parent key, so need to account for that
+                {
                     // If this line is a KeyValue (which also includes keys alone) and less indented, add that key to the path
                     currentIndentDepth = indentDepth;
                     fullPathParts.unshift(result.groups!['keyName']);
@@ -167,7 +173,6 @@ export class ComposeDocument {
         const [yamlDocument] = composedTokens;
 
         if (!isDocument(yamlDocument)) {
-            // TODO: empty documents are a normal thing but will not have a YamlDocument, that should be handled differently than erroring
             throw new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');
         }
 
@@ -218,7 +223,7 @@ export class ComposeDocument {
             const indentLength = result.groups!['indent'].length;
             const keyName = result.groups!['keyName'];
 
-            cursorIndentDepth = indentLength / tabSize + 1; // We will add 1 to the indent depth, because YAML is too permissive and allows item lists at the same indent depth as their parent key
+            cursorIndentDepth = indentLength / tabSize;
 
             if (params.position.character > keySepPosition) {
                 // If the position is after the key separator, we're in the value
@@ -237,7 +242,7 @@ export class ComposeDocument {
             } else if (params.position.character === itemSepPosition) {
                 // If we're at the item separator, we're at the item separator (of course)
                 pathParts.unshift(Sep);
-                pathParts.unshift(Item); // TODO: sometimes we get <item>/<item> because of that indent+1 behavior
+                pathParts.unshift(Item);
             } else if (params.position.character < indentLength) {
                 // Otherwise if we're somewhere within the indentation, we're not at a "position" within this line, but we do need to consider the indent depth
                 cursorIndentDepth = params.position.character / tabSize;
@@ -257,7 +262,7 @@ export class ComposeDocument {
             } else if (params.position.character === keySepPosition) {
                 // If the position is at the key separator, we're on the separator
                 pathParts.unshift(Sep);
-                pathParts.unshift(keyName); // TODO: the position is right here for hover, but not completions--if you do complete at the `:` in a key it thinks you're on the value
+                pathParts.unshift(keyName);
             } else if (params.position.character > indentLength) {
                 // If the position is after the indent, we're in the key
                 pathParts.unshift(keyName);
@@ -270,7 +275,7 @@ export class ComposeDocument {
             const itemSepPosition = currentLine.indexOf(result.groups!['itemInd']);
             const indentLength = result.groups!['indent'].length;
 
-            cursorIndentDepth = indentLength / tabSize + 1; // We will add 1 to the indent depth, because YAML is too permissive and allows item lists at the same indent depth as their parent key
+            cursorIndentDepth = indentLength / tabSize;
 
             if (params.position.character > itemSepPosition) {
                 // If the position is after the item separator, we're in the value
@@ -325,10 +330,10 @@ export class ComposeDocument {
 export const KeyValueRegex = /^(?<indent> *)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:)\s+))(?<value>.*)$/im;
 
 // A regex for matching an item/value line, i.e. `- value`
-const ItemValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) +)(?<value>.*)$/im;
+const ItemValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) *)(?<value>.*)$/im;
 
 // A regex for matching an item/key/value line, i.e. `- key: value`. This will be the top line of a flow map.
-const ItemKeyValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) +)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:)\s+))(?<value>.*)$/im;
+const ItemKeyValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) *)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:)\s+))(?<value>.*)$/im;
 
 // A regex for matching any value line
 const ValueRegex = /^(?<indent> *)(?<value>\S+)$/im;

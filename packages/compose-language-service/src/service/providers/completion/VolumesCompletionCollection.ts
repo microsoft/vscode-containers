@@ -7,6 +7,7 @@ import { InsertTextFormat } from 'vscode-languageserver';
 import { CompletionCollection } from './CompletionCollection';
 
 export const VolumesCompletionCollection = new CompletionCollection(
+    'volumes',
     { logicalPaths: [/^\/services\/[.\w-]+\/volumes\/<item>\/.*$/i], indentationDepth: 3 },
     ...[
         {

@@ -6,6 +6,7 @@
 import { CompletionCollection } from './CompletionCollection';
 
 export const PortsCompletionCollection = new CompletionCollection(
+    'ports',
     { logicalPaths: [/foo/i], indentationDepth: 3 },
     ...[
     ]

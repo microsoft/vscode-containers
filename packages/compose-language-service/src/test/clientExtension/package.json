@@ -15,5 +15,19 @@
     },
     "devDependencies": {
         "@types/vscode": "1.52"
+    },
+    "contributes": {
+        "configurationDefaults": {
+            "[dockercompose]": {
+                "editor.insertSpaces": true,
+                "editor.tabSize": 2,
+                "editor.autoIndent": "advanced",
+                "editor.quickSuggestions": {
+                    "other": true,
+                    "comments": false,
+                    "strings": true
+                }
+            }
+        }
     }
 }

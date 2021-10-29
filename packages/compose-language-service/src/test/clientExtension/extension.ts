@@ -32,6 +32,9 @@ export function activate(context: vscode.ExtensionContext): void {
             },
         ],
         outputChannel: serverOutputChannel,
+        initializationOptions: {
+            telemetryAggregationInterval: 20 * 1000, // Used to speed up the telemetry aggregation cycle
+        },
     };
 
     const client = new LanguageClient('compose-language-server', serverOptions, clientOptions, true);
