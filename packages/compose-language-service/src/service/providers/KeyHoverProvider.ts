@@ -27,7 +27,12 @@ export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams,
             if (keyName) {
                 const keyIndex = line.indexOf(keyName);
 
-                ctx.telemetry.properties.hoverMatch = keyInfo.pathRegex.source;
+                // Attach the last item after the / as the key info
+                try {
+                    ctx.telemetry.properties.hoverMatch = keyInfo.pathRegex.source.split('/').pop()?.replace(/[^\w]/ig, '');
+                } catch {
+                    ctx.telemetry.properties.hoverMatch = 'unknown';
+                }
 
                 return {
                     contents: {
