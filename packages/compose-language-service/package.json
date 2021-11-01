@@ -24,7 +24,8 @@
         "test": "mocha --file lib/test/global.test.js lib/test/**/*.test.js",
         "unittest": "npm test -- --grep /unit/i",
         "pretest": "npm run build",
-        "prepack": "npm run build"
+        "prepack": "npm run build",
+        "postinstall": "cd ./src/test/clientExtension && npm install"
     },
     "devDependencies": {
         "@types/chai": "^4.2.14",
