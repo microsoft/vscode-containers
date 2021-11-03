@@ -263,7 +263,7 @@ export class ComposeDocument {
                 // If the position is at the key separator, we're on the separator
                 pathParts.unshift(Sep);
                 pathParts.unshift(keyName);
-            } else if (params.position.character > indentLength) {
+            } else if (params.position.character >= indentLength) {
                 // If the position is after the indent, we're in the key
                 pathParts.unshift(keyName);
             } else if (params.position.character < indentLength) {
@@ -295,7 +295,7 @@ export class ComposeDocument {
 
             cursorIndentDepth = indentLength / tabSize;
 
-            if (params.position.character > indentLength) {
+            if (params.position.character >= indentLength) {
                 // If the position is after the indent, we're in the value
                 pathParts.unshift(Value);
             } else if (params.position.character < indentLength) {

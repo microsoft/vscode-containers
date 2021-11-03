@@ -6,7 +6,7 @@
 import { CompletionParams, TextDocumentIdentifier, TextDocumentPositionParams } from 'vscode-languageserver';
 import { ComposeDocument } from './ComposeDocument';
 
-export interface TextDocumentParams {
+export interface TextDocumentParams { // This interface ought to exist in `vscode-languageserver`, like `TextDocumentPositionParams`, but here we are...
     textDocument: TextDocumentIdentifier;
 }
 

@@ -5,5 +5,12 @@
 
 // TODO
 describe('ServiceCompletionCollection', () => {
-    xit('Should have tests');
+    describe('Common scenarios', () => {
+        xit('Should have tests');
+    });
+
+    describe('Error scenarios', () => {
+        xit('Should return an error for nonexistent files');
+        xit('Should have tests');
+    });
 });

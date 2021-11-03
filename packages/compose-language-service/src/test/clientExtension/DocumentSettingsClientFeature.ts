@@ -28,7 +28,7 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
     public initialize(): void {
         this.disposables.push(
             this.client.onRequest(
-                require('../../../../lib/client/DocumentSettings').DocumentSettingsRequest,
+                require('../../../../lib/client/DocumentSettings').DocumentSettingsRequest.type,
                 (params: DocumentSettingsParams): DocumentSettings | undefined => {
                     const textEditor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === params.textDocument.uri);
 
@@ -53,7 +53,7 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
                         tabSize: Number(e.options.tabSize),
                     };
 
-                    this.client.sendNotification(require('../../../../lib/client/DocumentSettings').DocumentSettingsNotification, params);
+                    this.client.sendNotification(require('../../../../lib/client/DocumentSettings').DocumentSettingsNotification.type, params);
                 }
             )
         );

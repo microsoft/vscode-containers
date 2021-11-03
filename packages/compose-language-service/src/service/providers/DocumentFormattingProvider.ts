@@ -23,7 +23,7 @@ export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingP
 
         const range = Range.create(
             params.document.textDocument.positionAt(0),
-            params.document.textDocument.positionAt(params.document.textDocument.getText().length - 1)
+            params.document.textDocument.positionAt(params.document.textDocument.getText().length) // This technically goes past the end of the doc, but it's OK because the protocol accepts this (positions past the end of the doc are rounded backward)
         );
 
         const formatted = params.document.yamlDocument.value.toString(options);

@@ -4,17 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { DocumentLink, DocumentLinkRequest, Position, Range, ResponseError } from 'vscode-languageserver';
+import { DocumentLink, DocumentLinkRequest, DocumentUri, Range, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../TestConnection';
-
-interface ImageLinkTestObject {
-    services: {
-        [key: string]: {
-            image: string;
-            [key: string]: unknown;
-        }
-    };
-}
 
 interface ExpectedImageLink {
     range: Range;
@@ -23,12 +14,11 @@ interface ExpectedImageLink {
 
 describe('ImageLinkProvider', () => {
     let testConnection: TestConnection;
-
-    before('Populate the language server with a compose document', async () => {
+    before('Prepare a language server for testing', async () => {
         testConnection = new TestConnection();
     });
 
-    describe('Common scenarios', async () => {
+    describe('Common scenarios', () => {
         it('Should provide links for general Docker Hub images', async () => {
             const testObject = {
                 version: '123',
@@ -39,48 +29,46 @@ describe('ImageLinkProvider', () => {
                     b: {
                         image: 'mysql:latest'
                     },
-                    // TODO: find a way to get the yaml library to translate these strings literally to keep the quotes
-                    // c: {
-                    //     image: '"redis"'
-                    // },
-                    // d: {
-                    //     image: '\'hello-world:latest\''
-                    // }
                 }
             };
 
             const expected = [
                 {
-                    range: Range.create(
-                        Position.create(3, 11),
-                        Position.create(3, 17)
-                    ),
+                    range: Range.create(3, 11, 3, 17),
                     target: 'https://hub.docker.com/_/alpine'
                 },
                 {
-                    range: Range.create(
-                        Position.create(5, 11),
-                        Position.create(5, 16)
-                    ),
+                    range: Range.create(5, 11, 5, 16),
                     target: 'https://hub.docker.com/_/mysql'
                 },
-                // {
-                //     range: Range.create(
-                //         Position.create(7, 12),
-                //         Position.create(7, 17)
-                //     ),
-                //     target: 'https://hub.docker.com/_/redis'
-                // },
-                // {
-                //     range: Range.create(
-                //         Position.create(9, 12),
-                //         Position.create(9, 23)
-                //     ),
-                //     target: 'https://hub.docker.com/_/hello-world'
-                // },
             ];
 
-            await requestAndCompare(testConnection, testObject, expected);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, expected);
+        });
+
+        it('Should provide links with the correct location for quoted images', async () => {
+            const testObject = `version: '123'
+services:
+  a:
+    image: 'alpine'
+  b:
+    image: "mysql:latest"
+`;
+
+            const expected = [
+                {
+                    range: Range.create(3, 12, 3, 18),
+                    target: 'https://hub.docker.com/_/alpine'
+                },
+                {
+                    range: Range.create(5, 12, 5, 17),
+                    target: 'https://hub.docker.com/_/mysql'
+                },
+            ];
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, expected);
         });
 
         it('Should provide links for namespaced Docker Hub images', async () => {
@@ -97,22 +85,17 @@ describe('ImageLinkProvider', () => {
 
             const expected = [
                 {
-                    range: Range.create(
-                        Position.create(2, 11),
-                        Position.create(2, 25)
-                    ),
+                    range: Range.create(2, 11, 2, 25),
                     target: 'https://hub.docker.com/r/library/alpine'
                 },
                 {
-                    range: Range.create(
-                        Position.create(4, 11),
-                        Position.create(4, 24)
-                    ),
+                    range: Range.create(4, 11, 4, 24),
                     target: 'https://hub.docker.com/r/library/mysql'
                 },
             ];
 
-            await requestAndCompare(testConnection, testObject, expected);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, expected);
         });
 
         it('Should provide links for MCR images', async () => {
@@ -135,36 +118,25 @@ describe('ImageLinkProvider', () => {
 
             const expected = [
                 {
-                    range: Range.create(
-                        Position.create(2, 11),
-                        Position.create(2, 39)
-                    ),
+                    range: Range.create(2, 11, 2, 39),
                     target: 'https://hub.docker.com/_/microsoft-dotnet-sdk'
                 },
                 {
-                    range: Range.create(
-                        Position.create(4, 11),
-                        Position.create(4, 42)
-                    ),
+                    range: Range.create(4, 11, 4, 42),
                     target: 'https://hub.docker.com/_/microsoft-dotnet-aspnet'
                 },
                 {
-                    range: Range.create(
-                        Position.create(6, 11),
-                        Position.create(6, 44)
-                    ),
+                    range: Range.create(6, 11, 6, 44),
                     target: 'https://hub.docker.com/_/microsoft-dotnet-core-sdk'
                 },
                 {
-                    range: Range.create(
-                        Position.create(8, 11),
-                        Position.create(8, 47)
-                    ),
+                    range: Range.create(8, 11, 8, 47),
                     target: 'https://hub.docker.com/_/microsoft-dotnet-core-aspnet'
                 },
             ];
 
-            await requestAndCompare(testConnection, testObject, expected);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, expected);
         });
 
         it('Should NOT provide links for services with `build` section', async () => {
@@ -177,7 +149,8 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links for other hosts', async () => {
@@ -192,7 +165,8 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links for multi-namespaced images', async () => {
@@ -204,7 +178,8 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links for services without image tag', async () => {
@@ -217,11 +192,12 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
     });
 
-    describe('Error scenarios', async () => {
+    describe('Error scenarios', () => {
         it('Should return an error for nonexistent files', () => {
             return testConnection
                 .client.sendRequest(DocumentLinkRequest.type, { textDocument: { uri: 'file:///bogus' } })
@@ -229,7 +205,8 @@ describe('ImageLinkProvider', () => {
         });
 
         it('Should NOT provide links if `services` isn\'t present', async () => {
-            await requestAndCompare(testConnection, {}, []);
+            const uri = testConnection.sendObjectAsYamlDocument({});
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links if `services` isn\'t a map', async () => {
@@ -237,7 +214,8 @@ describe('ImageLinkProvider', () => {
                 services: 'a'
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links if `services` is empty', async () => {
@@ -245,7 +223,8 @@ describe('ImageLinkProvider', () => {
                 services: {}
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links if the service itself isn\'t a map', async () => {
@@ -255,7 +234,8 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links if the service itself is empty', async () => {
@@ -265,7 +245,8 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links if the image isn\'t a scalar', async () => {
@@ -277,7 +258,8 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links if the image isn\'t a string scalar', async () => {
@@ -287,7 +269,8 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
 
         it('Should NOT provide links if the image is empty', async () => {
@@ -297,10 +280,9 @@ describe('ImageLinkProvider', () => {
                 }
             };
 
-            await requestAndCompare(testConnection, testObject, []);
+            const uri = testConnection.sendObjectAsYamlDocument(testObject);
+            await requestImageLinksAndCompare(testConnection, uri, []);
         });
-
-        xit('Should NOT provide links if the client does not support it');
     });
 
     after('Cleanup', () => {
@@ -308,11 +290,10 @@ describe('ImageLinkProvider', () => {
     });
 });
 
-async function requestAndCompare(testConnection: TestConnection, testObject: ImageLinkTestObject | unknown, expected: ExpectedImageLink[]): Promise<void> {
-    const uri = testConnection.sendObjectAsYamlDocument(testObject);
+async function requestImageLinksAndCompare(testConnection: TestConnection, uri: DocumentUri, expected: ExpectedImageLink[]): Promise<void> {
     const result = await testConnection.client.sendRequest(DocumentLinkRequest.type, { textDocument: { uri } }) as DocumentLink[];
 
-    expect(result).to.be.ok;
+    expect(result).to.be.ok; // Should always be OK result even if 0 links
 
     if (expected.length > 0) {
         result.should.not.be.empty;

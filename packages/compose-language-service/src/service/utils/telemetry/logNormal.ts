@@ -13,7 +13,15 @@
  */
 export function logNormal(values: number[]): { mu: number, sigma: number, median: number } {
     if (!values?.length) {
-        return { mu: 0, sigma: 0, median: 0 };
+        // If there's no elements, return all 0's
+        return { mu: 0, sigma: 0, median: 0, };
+    } else if (values.length === 1) {
+        // If there's only 1 element sigma must be 0
+        return {
+            median: round(values[0], 3),
+            mu: round(ln(values[0]), 3),
+            sigma: 0,
+        };
     }
 
     const n = values.length;
@@ -24,16 +32,10 @@ export function logNormal(values: number[]): { mu: number, sigma: number, median
     const mu = sum(lnValues) / n;
 
     // Sigma is calculated from the natural logs and their squares
-    // If there's only 1 element sigma must be 0
-    let sigma: number;
-    if (n > 1) {
-        sigma = Math.sqrt(
-            (n * sum(sqLnValues) - sq(sum(lnValues))) /
-            (n * (n - 1))
-        );
-    } else {
-        sigma = 0;
-    }
+    const sigma = Math.sqrt(
+        (n * sum(sqLnValues) - sq(sum(lnValues))) /
+        (n * (n - 1))
+    );
 
     return {
         mu: round(mu, 3),

@@ -4,5 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 describe('(Unit) TelemetryAggregator', () => {
-    xit('Should have tests');
+    describe('Common scenarios', () => {
+        xit('Should have tests');
+    });
+
+    describe('Error scenarios', () => {
+        xit('Should have tests');
+    });
 });

@@ -5,7 +5,15 @@
 
 // TODO
 describe('DiagnosticProvider', () => {
-    xit('Should provide diagnostics for malformed yaml');
+    describe('Common scenarios', () => {
+        xit('Should provide diagnostics for malformed yaml');
 
-    xit('Should provide diagnostics for malformed compose documents');
+        xit('Should provide nothing for valid compose documents');
+
+        xit('Should provide diagnostics for malformed compose documents');
+    });
+
+    describe('Error scenarios', () => {
+        xit('Should return an error for nonexistent files');
+    });
 });

@@ -4,19 +4,35 @@
  *--------------------------------------------------------------------------------------------*/
 
 describe('(Unit) ComposeDocument', () => {
-    xit('Should have tests');
+    describe('Common scenarios', () => {
+        xit('Should have tests');
 
-    xit('Path should be correct for keys at root');
+        xit('Position info should be correct for keys at root');
 
-    xit('Path should be correct for keys at not-root');
+        xit('Position info should be correct for keys at not-root');
 
-    xit('Path should be correct for separator after keys');
+        xit('Position info should be correct for separator after keys');
 
-    xit('Path should be correct for scalar values of keys');
+        xit('Position info should be correct for scalar values of keys');
 
-    xit('Path should be correct for collection values of keys');
+        xit('Position info should be correct for collection values of keys');
 
-    xit('Path should be correct for collection values that are flow maps');
+        xit('Position info should be correct for collection values that are flow maps');
 
-    xit('Path should be correct for whitespace-only lines');
+        xit('Position info should be correct for whitespace-only lines');
+
+        xit('Should give lines correctly');
+
+        xit('Should guess document settings correctly if the client doesn\'t support DocumentSettings');
+
+        xit('Should ask client for document settings if the client does support DocumentSettings');
+    });
+
+    describe('Error scenarios', () => {
+        xit('Should NOT throw for an empty document');
+
+        xit('Should NOT throw for an invalid document');
+
+        xit('Should NOT throw for a compound document');
+    });
 });
