@@ -17,6 +17,8 @@ const mcrImageRegex = /^mcr.microsoft.com\/(?<namespace>([a-z0-9]+\/)+)(?<imageN
 export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & ExtendedParams, DocumentLink[] | undefined, never, never> {
     public on(params: DocumentLinkParams & ExtendedParams, token: CancellationToken): DocumentLink[] | undefined {
         const ctx = getCurrentContext();
+        ctx.telemetry.properties.isActivationEvent = 'true'; // This happens automatically so we'll treat it as isActivationEvent === true
+
         const results: DocumentLink[] = [];
         const imageTypes = new Set<string>();
 

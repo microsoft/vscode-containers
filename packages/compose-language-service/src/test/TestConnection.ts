@@ -8,17 +8,8 @@ import { Connection, DidOpenTextDocumentNotification, DidOpenTextDocumentParams,
 import { DocumentUri } from 'vscode-languageserver-textdocument';
 import { createConnection } from 'vscode-languageserver/node';
 import { Document } from 'yaml';
-import { ComposeLanguageClientCapabilities, DocumentSettings, DocumentSettingsNotification, DocumentSettingsParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
+import { DocumentSettings, DocumentSettingsNotification, DocumentSettingsParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
 import { ComposeLanguageService } from '../service/ComposeLanguageService';
-
-export const DocumentSettingsClientCapability: ComposeLanguageClientCapabilities = {
-    experimental: {
-        documentSettings: {
-            notify: true,
-            request: true,
-        }
-    }
-};
 
 export const DefaultInitializeParams: InitializeParams = {
     capabilities: {},

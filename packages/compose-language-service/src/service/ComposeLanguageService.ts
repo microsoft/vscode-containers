@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+    CancellationToken,
     Connection,
     Disposable,
     ErrorCodes,
@@ -37,7 +38,7 @@ export class ComposeLanguageService implements Disposable {
 
     public constructor(public readonly connection: Connection, private readonly clientParams: InitializeParams) {
         // Hook up the document listeners, which create a Disposable which will be added to this.subscriptions
-        this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, new DiagnosticProvider().on);
+        this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, new DiagnosticProvider(clientParams.initializationOptions?.diagnosticDelay));
 
         // Hook up all the LSP listeners, which do not create Disposables for some reason
         this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider());
@@ -119,19 +120,19 @@ export class ComposeLanguageService implements Disposable {
         });
     }
 
-    private createDocumentManagerHandler(
-        event: Event<TextDocumentChangeEvent<ComposeDocument>>,
-        handler: (params: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams) => Promise<void> | void
+    private createDocumentManagerHandler<P extends TextDocumentChangeEvent<ComposeDocument>>(
+        event: Event<P>,
+        handler: ProviderBase<P & ExtendedParams, void, never, never>
     ): void {
-        event(async (params: TextDocumentChangeEvent<ComposeDocument>) => {
+        event(async (params) => {
 
-            return await this.callWithTelemetryAndErrorHandling(handler.name, async () => {
-                const extendedParams: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams = {
+            return await this.callWithTelemetryAndErrorHandling(handler.constructor.name, async () => {
+                const extendedParams: P & ExtendedParams = {
                     ...params,
                     textDocument: params.document.id,
                 };
 
-                return await Promise.resolve(handler(extendedParams));
+                return await Promise.resolve(handler.on(extendedParams, CancellationToken.None));
             });
 
         }, this, this.subscriptions);

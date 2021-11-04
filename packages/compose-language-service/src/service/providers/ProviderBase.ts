@@ -6,5 +6,5 @@
 import { CancellationToken, HandlerResult, ResultProgressReporter, WorkDoneProgressReporter } from 'vscode-languageserver';
 
 export abstract class ProviderBase<P, R, PR, E> {
-    public abstract on(params: P, token: CancellationToken, workDoneProgress: WorkDoneProgressReporter, resultProgress?: ResultProgressReporter<PR>): HandlerResult<R, E>;
+    public abstract on(params: P, token: CancellationToken, workDoneProgress?: WorkDoneProgressReporter, resultProgress?: ResultProgressReporter<PR>): HandlerResult<R, E>;
 }

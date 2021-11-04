@@ -40,7 +40,8 @@ export interface TelemetryEvent {
 }
 
 interface TelemetryProperties {
-    result?: 'Succeeded' | 'Failed' | 'Canceled';
+    isActivationEvent: 'true' | 'false';
+    result: 'Succeeded' | 'Failed' | 'Canceled';
     error?: string;
     errorMessage?: string;
     stack?: string;
@@ -63,6 +64,7 @@ export function initEvent(eventName: string): TelemetryEvent {
     return {
         eventName: eventName,
         properties: {
+            isActivationEvent: 'false',
             result: 'Succeeded',
         },
         measurements: {},
