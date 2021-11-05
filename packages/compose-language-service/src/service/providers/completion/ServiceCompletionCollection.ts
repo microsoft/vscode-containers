@@ -125,13 +125,13 @@ export const ServiceCompletionCollection = new CompletionCollection(
         },
         {
             label: 'ports:',
-            insertText: 'ports:\n  - ${1:port}$0',
+            insertText: 'ports:\n  -$0',
             insertTextFormat: InsertTextFormat.Snippet,
             insertTextMode: InsertTextMode.adjustIndentation,
         },
         {
             label: 'volumes:',
-            insertText: 'volumes:\n  - ${1:volume}$0',
+            insertText: 'volumes:\n  -$0',
             insertTextFormat: InsertTextFormat.Snippet,
             insertTextMode: InsertTextMode.adjustIndentation,
         },

@@ -8,6 +8,7 @@ import { ExtendedCompletionParams, ExtendedParams, ExtendedPositionParams } from
 import { getCurrentContext } from '../../utils/ActionContext';
 import { ProviderBase } from '../ProviderBase';
 import { CompletionCollection } from './CompletionCollection';
+import { PortsCompletionCollection } from './PortsCompletionCollection';
 import { RootCompletionCollection } from './RootCompletionCollection';
 import { ServiceCompletionCollection } from './ServiceCompletionCollection';
 import { VolumesCompletionCollection } from './VolumesCompletionCollection';
@@ -27,6 +28,7 @@ export class MultiCompletionProvider extends ProviderBase<CompletionParams & Ext
             RootCompletionCollection,
             ServiceCompletionCollection,
             VolumesCompletionCollection,
+            PortsCompletionCollection,
         ];
     }
 
