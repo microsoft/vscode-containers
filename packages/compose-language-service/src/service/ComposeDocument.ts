@@ -216,6 +216,19 @@ export class ComposeDocument {
         let result: RegExpExecArray | null;
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        if ((result = LineWithCommentRegex.exec(currentLine))) {
+            const commentSepPosition = currentLine.indexOf(result.groups!['commentSep']);
+
+            // If the cursor is in a comment, then it's not "in" the document per se, but in the comment
+            // So the path will only be "/<comment>", and the cursorIndentDepth is set to -1 to short-circuit the loop above
+            if (params.position.character > commentSepPosition) {
+                return {
+                    pathParts: [Comment],
+                    cursorIndentDepth: -1,
+                };
+            }
+        }
+
         if ((result = ItemKeyValueRegex.exec(currentLine))) {
             // First, see if it's an ItemKeyValue, i.e. `  - foo: bar`
             const itemSepPosition = currentLine.indexOf(result.groups!['itemInd']);
@@ -341,7 +354,13 @@ const ValueRegex = /^(?<indent> *)(?<value>\S+)$/im;
 // A regex for matching a whitespace-only line
 const WhitespaceRegex = /^(?<indent> *)$/im;
 
+// A regex for matching any line with a comment (or if the whole line is a comment)
+// TODO: This will match a 'string with a #', which is *not* a comment, but currently this will not affect any end scenarios
+// TODO: The closest I've gotten is /(['"])?.*(?<commentSep>#)(?:(?!\1).)*$/im
+const LineWithCommentRegex = /^.*(?<commentSep>#).*$/im;
+
 // Constants for marking non-key parts of a logical path
 const Value = '<value>';
 const Item = '<item>';
 const Sep = '<sep>';
+const Comment = '<comment>';
