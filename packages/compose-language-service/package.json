@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/compose-language-service",
     "author": "Microsoft Corporation",
-    "version": "0.0.3-alpha",
+    "version": "0.0.4-alpha",
     "publisher": "ms-azuretools",
     "description": "Language service for Docker Compose documents",
     "license": "See LICENSE in the project root for license information.",
@@ -24,8 +24,7 @@
         "test": "mocha --file lib/test/global.test.js lib/test/**/*.test.js",
         "unittest": "npm test -- --grep /unit/i",
         "pretest": "npm run build",
-        "prepack": "npm run build",
-        "postinstall": "cd ./src/test/clientExtension && npm install"
+        "prepack": "npm run build"
     },
     "devDependencies": {
         "@types/chai": "^4.2.14",

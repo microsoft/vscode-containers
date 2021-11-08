@@ -1,3 +1,7 @@
+## 0.0.4-alpha - 8 November 2021
+### Fixed
+* Removes test-scenario postinstall script as it was preventing installation.
+
 ## 0.0.3-alpha - 8 November 2021
 ### Fixed
 * A handful of minor bugs relating to position logic (especially affecting hover).
