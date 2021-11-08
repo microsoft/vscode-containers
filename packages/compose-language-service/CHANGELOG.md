@@ -1,3 +1,7 @@
+## 0.0.3-alpha - 8 November 2021
+### Fixed
+* A handful of minor bugs relating to position logic (especially affecting hover).
+
 ## 0.0.2-alpha - 29 October 2021
 ### Added
 * Significantly more completions have been added
