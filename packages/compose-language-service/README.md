@@ -1,4 +1,4 @@
-# Docker Compose Language Service (Preview)
+# Docker Compose Language Service
 
 [![Node CI Build and Test](https://github.com/microsoft/compose-language-service/actions/workflows/node.js.yml/badge.svg)](https://github.com/microsoft/compose-language-service/actions/workflows/node.js.yml)
 
