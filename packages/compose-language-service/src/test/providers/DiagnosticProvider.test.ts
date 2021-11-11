@@ -96,7 +96,7 @@ services:
             await awaitDiagnosticsAndCompare(testConnection, validTestObject, expected);
         });
 
-        xit('TODO: Should provide diagnostics for malformed compose documents');
+        xit('TODO: Should provide schema validation diagnostics for malformed compose documents');
     });
 
     describe('Error scenarios', () => {

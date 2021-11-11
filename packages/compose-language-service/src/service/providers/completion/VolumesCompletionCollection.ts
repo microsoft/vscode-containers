@@ -28,7 +28,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             // Matches `  - "C:\some\path:"` or `  - /some/path:`, with allowances for other amounts of whitespace/quoting
             matcher: /(\s*-\s*)(?<leadingQuote>"|')?(([a-z]:\\)?[^:"]+):\2\s*$/i,
             label: ':containerPath:mode',
-            insertText: '${2:containerPath}:${3|ro,rw|}$0',
+            insertText: '${1:containerPath}:${2|ro,rw|}$0',
             insertTextFormat: InsertTextFormat.Snippet,
         },
         {
@@ -36,6 +36,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             matcher: /(\s*-\s*)(?<leadingQuote>"|')?(([a-z]:\\)?[^:"]+):(([a-z]:\\)?[^:"]+):\2\s*$/i,
             label: ':ro',
             insertText: 'ro',
+            insertTextFormat: InsertTextFormat.PlainText,
             detail: 'Read-only',
         },
         {
@@ -43,6 +44,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             matcher: /(\s*-\s*)(?<leadingQuote>"|')?(([a-z]:\\)?[^:"]+):(([a-z]:\\)?[^:"]+):\2\s*$/i,
             label: ':rw',
             insertText: 'rw',
+            insertTextFormat: InsertTextFormat.PlainText,
             detail: 'Read-write',
         },
     ]

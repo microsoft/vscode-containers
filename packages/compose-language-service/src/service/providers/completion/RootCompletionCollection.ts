@@ -31,18 +31,22 @@ export const RootCompletionCollection = new CompletionCollection(
         {
             label: 'configs:',
             insertText: 'configs:\n',
+            insertTextFormat: InsertTextFormat.PlainText,
         },
         {
             label: 'networks:',
             insertText: 'networks:\n',
+            insertTextFormat: InsertTextFormat.PlainText,
         },
         {
             label: 'secrets:',
             insertText: 'secrets:\n',
+            insertTextFormat: InsertTextFormat.PlainText,
         },
         {
             label: 'services:',
             insertText: 'services:\n',
+            insertTextFormat: InsertTextFormat.PlainText,
         },
         {
             label: 'version:',
@@ -52,6 +56,7 @@ export const RootCompletionCollection = new CompletionCollection(
         {
             label: 'volumes:',
             insertText: 'volumes:\n',
+            insertTextFormat: InsertTextFormat.PlainText,
         },
     ]
 );
