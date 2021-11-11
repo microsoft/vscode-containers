@@ -1,0 +1,2 @@
+# Mark some files as generated to prevent them from showing in the repo's language stats
+NOTICE.html linguist-vendored=true
