@@ -19,6 +19,7 @@ export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingP
             indent: params.options.tabSize,
             indentSeq: true,
             simpleKeys: true, // todo?
+            nullStr: '',
         };
 
         const range = Range.create(
