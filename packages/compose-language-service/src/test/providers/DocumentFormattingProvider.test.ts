@@ -45,6 +45,44 @@ services:
             await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
             await requestDocumentFormattingAndCompare(testConnection, uri, 4, expected4Space);
         });
+
+        it('Should NOT insert null on empty maps', async () => {
+            const testObject = `version: '123'
+services:
+  foo:
+    image: bar
+    build: .
+    ports:
+      - 1234
+
+volumes:
+  myvolume: \n`;
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+
+            const expected2Space = testObject; // Output will be unchanged, null must not be inserted
+
+            await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
+        });
+
+        it('Should NOT wrap long string lines', async () => {
+            const testObject = `version: '123'
+services:
+  foo:
+    image: bar
+    build: .
+    ports:
+      - 1234
+    labels:
+      - "com.microsoft.testlongstringlinesnowrapping=thequickbrownfoxjumpsoverthelazydog"
+`;
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+
+            const expected2Space = testObject; // Output will be unchanged, wrapping must not occur
+
+            await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
+        });
     });
 
     describe('Error scenarios', () => {

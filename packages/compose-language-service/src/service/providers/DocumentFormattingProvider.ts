@@ -20,6 +20,7 @@ export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingP
             indentSeq: true,
             simpleKeys: true, // todo?
             nullStr: '',
+            lineWidth: 0,
         };
 
         const range = Range.create(
