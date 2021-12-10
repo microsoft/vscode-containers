@@ -14,7 +14,8 @@
                 "0",
                 "--file",
                 "${workspaceFolder}/lib/test/global.test.js",
-                "${workspaceFolder}/lib/test/**/*.test.js"
+                "--recursive",
+                "${workspaceFolder}/lib/test"
             ],
             "preLaunchTask": "${defaultBuildTask}",
             "resolveSourceMapLocations": [
@@ -38,7 +39,8 @@
                 "${workspaceFolder}/lib/test/global.test.js",
                 "--grep",
                 "/unit/i",
-                "${workspaceFolder}/lib/test/**/*.test.js"
+                "--recursive",
+                "${workspaceFolder}/lib/test"
             ],
             "preLaunchTask": "${defaultBuildTask}",
             "resolveSourceMapLocations": [

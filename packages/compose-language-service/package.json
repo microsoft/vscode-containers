@@ -21,7 +21,7 @@
     "scripts": {
         "build": "tsc",
         "lint": "eslint --max-warnings 0 src --ext ts",
-        "test": "mocha --file lib/test/global.test.js lib/test/**/*.test.js",
+        "test": "mocha --file lib/test/global.test.js --recursive lib/test",
         "unittest": "npm test -- --grep /unit/i",
         "pretest": "npm run build",
         "prepack": "npm run build"
