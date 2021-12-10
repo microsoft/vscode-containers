@@ -7,6 +7,7 @@ import { CancellationToken, CompletionItem, CompletionParams, WorkDoneProgressRe
 import { ExtendedCompletionParams, ExtendedParams, ExtendedPositionParams } from '../../ExtendedParams';
 import { getCurrentContext } from '../../utils/ActionContext';
 import { ProviderBase } from '../ProviderBase';
+import { BuildCompletionCollection } from './BuildCompletionCollection';
 import { CompletionCollection } from './CompletionCollection';
 import { PortsCompletionCollection } from './PortsCompletionCollection';
 import { RootCompletionCollection } from './RootCompletionCollection';
@@ -27,6 +28,7 @@ export class MultiCompletionProvider extends ProviderBase<CompletionParams & Ext
         this.completionCollections = [
             RootCompletionCollection,
             ServiceCompletionCollection,
+            BuildCompletionCollection,
             VolumesCompletionCollection,
             PortsCompletionCollection,
         ];
@@ -59,6 +61,9 @@ export class MultiCompletionProvider extends ProviderBase<CompletionParams & Ext
             // The set of collections that answer will be attached as a property
             ctx.telemetry.properties.respondingCollections = respondingCollections.sort().join(',');
         }
+
+        // It should be noted, many of the completions include tabs `\t` which aren't allowed in YAML, however,
+        // VSCode automatically translates these into the configured tab size in spaces. It does the same for line endings.
 
         return results.length > 0 ? results : undefined;
     }

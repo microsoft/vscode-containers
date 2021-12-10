@@ -40,7 +40,7 @@ export const PortsCompletionCollection = new CompletionCollection(
         {
             matcher: PortItemStartRegex,
             label: '(Long form port specification)',
-            insertText: 'target: ${1:80}\n  published: ${2:8080}\n  protocol: ${3|tcp,udp|}\n  mode: ${4|host,ingress|}$0',
+            insertText: 'target: ${1:80}\n  published: ${2:8080}\n  protocol: ${3|tcp,udp|}\n  mode: ${4|host,ingress|}$0', // These are intentionally always two spaces, not the auto-replaced tabs; this is a flow map and must align to the first item which is after `- `
             insertTextFormat: InsertTextFormat.Snippet,
             insertTextMode: InsertTextMode.adjustIndentation,
             documentation: 'target: <containerPort>\n  published: <hostPort>\n  protocol: <udp, tcp>\n  mode: <host, ingress>',

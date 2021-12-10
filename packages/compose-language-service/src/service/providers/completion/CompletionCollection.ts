@@ -12,6 +12,11 @@ interface ExtendedCompletionItem extends CompletionItem {
      */
     matcher?: RegExp;
 
+    /**
+     * Insert text is required in ExtendedCompletionItem
+     */
+    insertText: string;
+
     // TODO: in the long run, we should use `InsertReplaceEdit` to avoid client-side interpretation and make a more client-agnostic server
     // TODO: However, using `insertText` instead of `textEdit`, the behavior for 24x7 completions is closer in-line to what we want at least in VSCode
 }

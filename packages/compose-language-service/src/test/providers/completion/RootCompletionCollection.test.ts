@@ -7,7 +7,7 @@ import { CompletionRequest, InsertTextFormat, Position, ResponseError } from 'vs
 import { TestConnection } from '../../TestConnection';
 import { ExpectedCompletionItem, requestCompletionsAndCompare, UnexpectedCompletionItem } from './requestCompletionsAndCompare';
 
-// A subset of the completions that are provided by the RootComplectionCollection
+// A subset of the completions that are provided by the RootCompletionCollection
 const defaultExpected: ExpectedCompletionItem[] = [
     {
         label: 'services:',
@@ -26,7 +26,7 @@ const defaultExpected: ExpectedCompletionItem[] = [
     },
 ];
 
-// Completions that are not allowed from RootComplectionCollection
+// Completions that are not allowed from RootCompletionCollection
 const defaultUnexpected: UnexpectedCompletionItem[] = [
     {
         insertTextCanary: 'build',

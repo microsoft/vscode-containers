@@ -7,35 +7,30 @@ import { CompletionRequest, InsertTextFormat, InsertTextMode, Position, Response
 import { TestConnection } from '../../TestConnection';
 import { ExpectedCompletionItem, requestCompletionsAndCompare, UnexpectedCompletionItem } from './requestCompletionsAndCompare';
 
-// A subset of the completions that are provided by the ServiceCompletionCollection
+// A subset of the completions that are provided by the BuildCompletionCollection
 const defaultExpected: ExpectedCompletionItem[] = [
     {
-        // Build long form
-        label: 'build:',
-        insertTextCanary: 'context',
-        insertTextFormat: InsertTextFormat.Snippet,
-        insertTextMode: InsertTextMode.adjustIndentation,
-    },
-    {
-        // Build short form
-        label: 'build:',
-        insertTextCanary: 'path',
+        // Context
+        label: 'context:',
+        insertTextCanary: 'buildContext',
         insertTextFormat: InsertTextFormat.Snippet,
     },
     {
-        label: 'image:',
-        insertTextCanary: 'image',
+        // Dockerfile
+        label: 'dockerfile:',
+        insertTextCanary: 'dockerfile',
         insertTextFormat: InsertTextFormat.Snippet,
     },
     {
-        label: 'healthcheck:',
-        insertTextCanary: 'healthcheck',
+        // Args
+        label: 'args:',
+        insertTextCanary: 'value',
         insertTextFormat: InsertTextFormat.Snippet,
         insertTextMode: InsertTextMode.adjustIndentation,
     },
 ];
 
-// Completions that are not allowed from ServiceCompletionCollection
+// Completions that are not allowed from BuildCompletionCollection
 const defaultUnexpected: UnexpectedCompletionItem[] = [
     {
         insertTextCanary: 'services',
@@ -46,45 +41,34 @@ const defaultUnexpected: UnexpectedCompletionItem[] = [
     {
         insertTextCanary: 'containerPath',
     },
+    {
+        insertTextCanary: 'healthcheck',
+    },
+    {
+        insertTextCanary: 'build:',
+    },
 ];
 
-describe('ServiceCompletionCollection', () => {
+describe('BuildCompletionCollection', () => {
     let testConnection: TestConnection;
     before('Prepare a language server for testing', async () => {
         testConnection = new TestConnection();
     });
 
     describe('Common scenarios', () => {
-        it('Should provide completions when within a service', async () => {
+        it('Should provide completions when within the build tag', async () => {
             const testObject = `services:
   foo:
     image: redis
-    `;
+    build:
+      `;
 
             const uri = testConnection.sendTextAsYamlDocument(testObject);
 
             await requestCompletionsAndCompare(
                 testConnection,
                 uri,
-                Position.create(3, 4), // Indented on the line under `image`
-                defaultExpected,
-                defaultUnexpected
-            );
-        });
-
-        it('Should provide completions when within a service, even with extra whitespace', async () => {
-            const testObject = `services:
-  foo:
-    image: redis
-
-    `;
-
-            const uri = testConnection.sendTextAsYamlDocument(testObject);
-
-            await requestCompletionsAndCompare(
-                testConnection,
-                uri,
-                Position.create(4, 4), // Indented on the second line under `image`
+                Position.create(4, 6), // Indented on the line under `build`
                 defaultExpected,
                 defaultUnexpected
             );
@@ -119,18 +103,20 @@ describe('ServiceCompletionCollection', () => {
             );
         });
 
-        it('Should NOT provide completions if over-indented under services', async () => {
+        it('Should NOT provide completions if over-indented under build', async () => {
             const testObject = `services:
   foo:
     image: redis
-      `;
+    build:
+      context: .
+        `;
 
             const uri = testConnection.sendTextAsYamlDocument(testObject);
 
             await requestCompletionsAndCompare(
                 testConnection,
                 uri,
-                Position.create(3, 6), // Indented further on the line under `image`
+                Position.create(5, 8), // Indented further on the line under `context`
                 [],
                 defaultExpected
             );
