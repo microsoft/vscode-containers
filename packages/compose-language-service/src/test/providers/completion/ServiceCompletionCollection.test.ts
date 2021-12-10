@@ -135,6 +135,22 @@ describe('ServiceCompletionCollection', () => {
                 defaultExpected
             );
         });
+
+        it('Should NOT provide completions on an already-completed line', async () => {
+            const testObject = `services:
+  foo:
+    image:`;
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+
+            await requestCompletionsAndCompare(
+                testConnection,
+                uri,
+                Position.create(2, 10), // After `image:`
+                undefined,
+                undefined,
+            );
+        });
     });
 
     describe('Error scenarios', () => {

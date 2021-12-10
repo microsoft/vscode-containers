@@ -340,13 +340,13 @@ export class ComposeDocument {
 
 // A regex for matching a standard key/value line, i.e. `key: value`
 // Exported for use by KeyHoverProvider
-export const KeyValueRegex = /^(?<indent> *)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:)\s+))(?<value>.*)$/im;
+export const KeyValueRegex = /^(?<indent> *)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:) *))(?<value>.*)$/im;
 
 // A regex for matching an item/value line, i.e. `- value`
 const ItemValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) *)(?<value>.*)$/im;
 
 // A regex for matching an item/key/value line, i.e. `- key: value`. This will be the top line of a flow map.
-const ItemKeyValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) *)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:)\s+))(?<value>.*)$/im;
+const ItemKeyValueRegex = /^(?<indent> *)(?<itemInd>(?<itemSep>-) *)(?<key>(?<keyName>[.\w-]+)(?<keyInd>(?<keySep>:) *))(?<value>.*)$/im;
 
 // A regex for matching any value line
 const ValueRegex = /^(?<indent> *)(?<value>\S+)$/im;

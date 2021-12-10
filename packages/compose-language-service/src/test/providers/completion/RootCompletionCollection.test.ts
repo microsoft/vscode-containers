@@ -195,6 +195,20 @@ describe('RootCompletionCollection', () => {
                 undefined,
             );
         });
+
+        it('Should NOT provide completions on an already-completed line', async () => {
+            const testObject = `services:`;
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+
+            await requestCompletionsAndCompare(
+                testConnection,
+                uri,
+                Position.create(0, 9), // After `services:`
+                undefined,
+                undefined,
+            );
+        });
     });
 
     describe('Error scenarios', () => {

@@ -22,17 +22,21 @@ interface ExtendedCompletionItem extends CompletionItem {
 }
 
 export class CompletionCollection extends Array<ExtendedCompletionItem> {
-    public constructor(public readonly name: string, private readonly locationRequirements: CompletionLocationRequirements, ...items: ExtendedCompletionItem[]) {
+    public constructor(
+        public readonly name: string,
+        private readonly locationRequirements: CompletionLocationRequirements,
+        ...items: ExtendedCompletionItem[]
+    ) {
         super(...items);
     }
 
     public getActiveCompletionItems(params: ExtendedCompletionParams): CompletionItem[] | undefined {
         if (this.locationRequirements.logicalPaths !== undefined && !this.locationRequirements.logicalPaths.some(p => p.test(params.positionInfo.path ?? ''))) {
-            return undefined;
+            return undefined; // Reject this collection: the logical path requirement is not satisfied
         }
 
         if (this.locationRequirements.indentationDepth !== undefined && this.locationRequirements.indentationDepth !== params.positionInfo.indentDepth) {
-            return undefined;
+            return undefined; // Reject this collection: the indentation depth requirement is not satisfied
         }
 
         const line = params.document.lineAt(params.position);
