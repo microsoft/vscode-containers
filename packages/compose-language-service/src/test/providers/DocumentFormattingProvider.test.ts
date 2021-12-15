@@ -56,7 +56,7 @@ services:
       - 1234
 
 volumes:
-  myvolume: \n`;
+  myvolume:\n`;
 
             const uri = testConnection.sendTextAsYamlDocument(testObject);
 
