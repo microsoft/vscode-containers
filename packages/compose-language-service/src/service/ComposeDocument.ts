@@ -169,7 +169,7 @@ export class ComposeDocument {
     }
 
     private buildYamlDocument(): YamlDocument {
-        const composedTokens = new Composer().compose(this.fullCst.value, true);
+        const composedTokens = new Composer({ merge: true }).compose(this.fullCst.value, true);
         const [yamlDocument] = composedTokens;
 
         if (!isDocument(yamlDocument)) {

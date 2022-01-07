@@ -59,6 +59,7 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/src/test/clientExtension",
                 "--disable-extension=ms-azuretools.vscode-docker", // Keep the Docker extension from running so it doesn't interfere with testing
+                "--disable-extension=redhat.vscode-yaml", // Keep the YAML extension from running so it doesn't interfere with testing
             ],
             "preLaunchTask": "tsc-watch: client extension",
             "presentation": {
