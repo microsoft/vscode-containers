@@ -5,24 +5,16 @@
 
 import { ErrorCodes, Position, Range, ResponseError, TextDocumentIdentifier, TextDocumentsConfiguration } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { CST, Document as YamlDocument, Parser, Composer, isDocument } from 'yaml';
+import { Document as YamlDocument, isDocument, parseDocument } from 'yaml';
 import { CRLF, DocumentSettings, DocumentSettingsParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
 import { ExtendedPositionParams, PositionInfo } from './ExtendedParams';
 import { getCurrentContext } from './utils/ActionContext';
 import { Lazy } from './utils/Lazy';
 
-const EmptyDocumentCST: CST.Document = {
-    type: 'document',
-    offset: 0,
-    start: [],
-};
-
 // The stated behavior of character number in the `Position` class is to roll back to line length if it exceeds the line length. So, this will work for any line <1m characters. That should cover most of them.
 const MaximumLineLength = 1000 * 1000;
 
 export class ComposeDocument {
-    public readonly fullCst = new Lazy(() => this.buildFullCst());
-    public readonly documentCst = new Lazy(() => this.buildDocumentCst());
     public readonly yamlDocument = new Lazy(() => this.buildYamlDocument());
 
     private documentSettings: DocumentSettings | undefined;
@@ -45,8 +37,6 @@ export class ComposeDocument {
     private update(doc: TextDocument): ComposeDocument {
         this.#textDocument = doc;
         this.yamlDocument.clear();
-        this.documentCst.clear();
-        this.fullCst.clear();
 
         return this;
     }
@@ -157,20 +147,8 @@ export class ComposeDocument {
         update: (document, changes, version) => document.update(TextDocument.update(document.textDocument, changes, version)),
     };
 
-    private buildFullCst(): CST.Token[] {
-        return Array.from(new Parser().parse(this.textDocument.getText()));
-    }
-
-    private buildDocumentCst(): CST.Document {
-        // The CST can consist of more than just the document
-        // Get the first `type === 'document'` item out of the list; this is the actual document
-        // If there isn't one, return `EmptyDocumentCST`
-        return this.fullCst.value.find(t => t.type === 'document') as CST.Document || EmptyDocumentCST;
-    }
-
     private buildYamlDocument(): YamlDocument {
-        const composedTokens = new Composer({ merge: true }).compose(this.fullCst.value, true);
-        const [yamlDocument] = composedTokens;
+        const yamlDocument = parseDocument(this.textDocument.getText(), { merge: true, prettyErrors: true });
 
         if (!isDocument(yamlDocument)) {
             throw new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');

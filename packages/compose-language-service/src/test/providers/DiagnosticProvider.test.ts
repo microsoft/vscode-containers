@@ -68,7 +68,7 @@ services:
                 },
                 {
                     range: Range.create(8, 0, 8, 0),
-                    contentCanary: 'sequence to end with ]',
+                    contentCanary: 'and end with a ]',
                 },
             ];
 
