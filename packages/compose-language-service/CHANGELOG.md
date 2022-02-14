@@ -1,3 +1,8 @@
+## 0.1.0 - 14 February 2022
+### Fixed
+* Merge keys are now allowed. [#78](https://github.com/microsoft/compose-language-service/issues/78)
+* Better error messages. [#88](https://github.com/microsoft/compose-language-service/pull/88)
+
 ## 0.0.5-alpha - 15 December 2021
 ### Added
 * Completions under the `build` section within a service. [#48](https://github.com/microsoft/compose-language-service/issues/48)
