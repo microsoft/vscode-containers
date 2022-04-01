@@ -130,6 +130,12 @@ export const ServiceCompletionCollection = new CompletionCollection(
             insertTextMode: InsertTextMode.adjustIndentation,
         },
         {
+            label: 'profiles:',
+            insertText: 'profiles:\n\t- ${1:profileName}$0',
+            insertTextFormat: InsertTextFormat.Snippet,
+            insertTextMode: InsertTextMode.adjustIndentation,
+        },
+        {
             label: 'volumes:',
             insertText: 'volumes:\n\t-$0',
             insertTextFormat: InsertTextFormat.Snippet,
