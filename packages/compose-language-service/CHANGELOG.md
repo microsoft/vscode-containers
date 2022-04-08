@@ -1,3 +1,10 @@
+## 0.1.1 - 8 April 2022
+### Added
+* Completions for the `profiles` section within a service. [#94](https://github.com/microsoft/compose-language-service/pull/94)
+
+### Fixed
+* Formatting should no longer remove document end markers. [#93](https://github.com/microsoft/compose-language-service/issues/93)
+
 ## 0.1.0 - 14 February 2022
 ### Fixed
 * Merge keys are now allowed. [#78](https://github.com/microsoft/compose-language-service/issues/78)
