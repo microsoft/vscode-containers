@@ -152,7 +152,7 @@ describe('(Unit) TelemetryAggregator', () => {
             const expected: TelemetryEvent = initEvent('telemetryaggregatorfailure');
             expected.properties.result = 'Failed';
             expected.properties.error = 'TypeError';
-            expected.properties.errorMessage = 'Cannot read property \'duration\' of undefined';
+            expected.properties.errorMessage = 'Cannot read properties of undefined (reading \'duration\')';
 
             await awaitTelemetryAndCompare(testConnection, telemetryAggregator, [inputEvent], expected);
         });
