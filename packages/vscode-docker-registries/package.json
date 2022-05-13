@@ -1,0 +1,48 @@
+{
+    "name": "vscode-docker-registries",
+    "author": "Microsoft Corporation",
+    "version": "0.0.1-alpha",
+    "description": "Extensibility model for contributing registry providers to the Docker extension for Visual Studio Code",
+    "license": "See LICENSE in the project root for license information.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/vscode-docker-extensibility"
+    },
+    "bugs": {
+        "url": "https://github.com/microsoft/vscode-docker/issues"
+    },
+    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/README.md",
+    "keywords": [
+        "vscode",
+        "docker"
+    ],
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "lint": "eslint --max-warnings 0 **/*.ts",
+        "test": "mocha --file lib/test/global.test.js --recursive lib/test",
+        "unittest": "npm test -- --grep /unit/i",
+        "update-design": "npx embedme DESIGN.md",
+        "pretest": "npm run build",
+        "prepack": "npm run build"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.2.14",
+        "@types/chai-as-promised": "^7.1.3",
+        "@types/mocha": "^9.0.0",
+        "@types/node": "^12.19.16",
+        "@types/node-fetch": "^2.5.12",
+        "@types/vscode": "^1.53.0",
+        "@typescript-eslint/eslint-plugin": "^5.3.1",
+        "@typescript-eslint/parser": "^5.3.1",
+        "chai": "^4.3.0",
+        "chai-as-promised": "^7.1.1",
+        "eslint": "^8.2.0",
+        "mocha": "^9.1.3",
+        "typescript": "^4.4.2"
+    },
+    "dependencies": {
+        "node-fetch": "^2.6.7"
+    }
+}
