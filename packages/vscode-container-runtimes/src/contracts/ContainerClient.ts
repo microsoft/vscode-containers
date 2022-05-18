@@ -170,8 +170,8 @@ export type RunContainerVolumeMount = {
 };
 
 export type RunContainerMount =
-| RunContainerBindMount
-| RunContainerVolumeMount;
+    | RunContainerBindMount
+    | RunContainerVolumeMount;
 
 export type RunContainerCommandOptions = {
     image: string;
@@ -288,8 +288,8 @@ export type InspectContainersItemVolumeMount = {
 };
 
 export type InspectContainersItemMount =
-| InspectContainersItemBindMount
-| InspectContainersItemVolumeMount;
+    | InspectContainersItemBindMount
+    | InspectContainersItemVolumeMount;
 
 export type InspectContainersItemNetwork = {
     name: string;
@@ -307,6 +307,7 @@ export type InspectContainersItem = {
     environmentVariables: Record<string, string>;
     networks: Array<InspectContainersItemNetwork>;
     ipAddress?: string;
+    operatingSystem?: "linux" | "windows";
     ports: Array<PortBinding>;
     mounts: Array<InspectContainersItemMount>;
     labels: Record<string, string>;
