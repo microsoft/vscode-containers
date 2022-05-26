@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { CancellationToken } from 'vscode-jsonrpc';
+import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 
 export class CancellationError extends Error {
-    constructor(message: string, public readonly token?: CancellationToken) {
+    constructor(message: string, public readonly token?: CancellationTokenLike) {
         super(message);
         this.name = this.constructor.name;
     }

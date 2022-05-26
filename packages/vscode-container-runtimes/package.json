@@ -23,8 +23,7 @@
         "testreport": "mocha --reporter mocha-junit-reporter"
     },
     "dependencies": {
-        "dayjs": "^1.11.2",
-        "vscode-jsonrpc": "^8.0.0"
+        "dayjs": "^1.11.2"
     },
     "devDependencies": {
         "@types/chai": "^4.3.0",
@@ -39,7 +38,8 @@
         "mocha-junit-reporter": "^2.0.2",
         "ts-node": "^10.4.0",
         "tsconfig-paths": "^4.0.0",
-        "typescript": "^4.5.5"
+        "typescript": "^4.5.5",
+        "vscode-jsonrpc": "^8.0.1"
     },
     "mocha": {
         "extension": [

@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { CancellationToken } from 'vscode-jsonrpc';
-
 import { CommandResponse } from '../contracts/ContainerClient';
+import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 import { powershellQuote, spawnAsync } from '../utils/spawnAsync';
 
 export type ShellCommandRunnerOptions = {
@@ -13,7 +12,7 @@ export type ShellCommandRunnerOptions = {
     onCommand?: (command: string) => void;
     onStdOut?: (data: string | Buffer) => void;
     onStdErr?: (data: string | Buffer) => void;
-    cancellationToken?: CancellationToken;
+    cancellationToken?: CancellationTokenLike;
 };
 
 export const shellCommandRunnerAsync = async <T>(commandResponse: CommandResponse<T>, options: ShellCommandRunnerOptions): Promise<T> => {

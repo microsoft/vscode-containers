@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { spawn } from 'child_process';
-import { CancellationToken } from 'vscode-jsonrpc';
 import { ShellQuoting } from 'vscode';
 
+import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 import { CancellationError } from './CancellationError';
 import { ChildProcessError } from './ChildProcessError';
 import { CommandLineArgs } from './commandLineBuilder';
@@ -16,7 +16,7 @@ export type SpawnOptions = {
     onCommand?: (command: string) => void;
     onStdOut?: (data: string | Buffer) => void;
     onStdErr?: (data: string | Buffer) => void;
-    cancellationToken?: CancellationToken;
+    cancellationToken?: CancellationTokenLike;
 };
 
 const isQuoted = (value: string): boolean => {
@@ -62,7 +62,7 @@ export const bashQuote = (args: CommandLineArgs): Array<string> => {
 };
 
 export async function spawnAsync(command: string, args: Array<string>, options: SpawnOptions): Promise<string> {
-    const cancellationToken = options.cancellationToken || CancellationToken.None;
+    const cancellationToken = options.cancellationToken || CancellationTokenLike.None;
 
     if (cancellationToken.isCancellationRequested) {
         throw new CancellationError('Command cancelled', cancellationToken);
