@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vscode';
+import * as vscode from 'vscode';
 import { IContainersClient } from './ContainerClient';
 
 /**
@@ -17,5 +17,26 @@ export interface DockerExtensionExport {
      * @param client The client implementing the {@link IContainersClient} interface
      * @returns A {@link Disposable} that, when disposed, will undo the client registration
      */
-    registerContainerRuntimeClient(client: IContainersClient): Disposable;
+    registerContainerRuntimeClient(client: IContainersClient): vscode.Disposable;
+}
+
+/**
+ * Gets the Docker extension's exports. It is not necessary to call this method; the body can be copied instead,
+ * but calling it is easier for users of this library.
+ * @returns The {@link DockerExtensionExport} export for the Docker extension
+ * @throws An error if the Docker extension is not installed or not enabled
+ */
+export async function getDockerExtensionExport(): Promise<DockerExtensionExport> {
+    const dockerExtensionId = 'ms-azuretools.vscode-docker';
+    const dockerExtension = vscode.extensions.getExtension<DockerExtensionExport>(dockerExtensionId);
+
+    if (!dockerExtension) {
+        throw new Error(`The extension '${dockerExtensionId}' is not installed or not enabled.`);
+    }
+
+    if (!dockerExtension.isActive) {
+        await dockerExtension.activate();
+    }
+
+    return dockerExtension.exports;
 }

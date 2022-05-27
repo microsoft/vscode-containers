@@ -6,7 +6,11 @@
 import type * as vscode from 'vscode';
 import type * as jsonrpc from 'vscode-jsonrpc';
 
-// TODO: Should we redefine it or is this union OK?
+/**
+ * Defined to reflect the fact that the cancellation tokens could be from either `vscode`
+ * (in the case of VSCode extensions), or `vscode-jsonrpc` (in the case of ServiceHub
+ * workers in VS).
+ */
 export type CancellationTokenLike = vscode.CancellationToken | jsonrpc.CancellationToken;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
