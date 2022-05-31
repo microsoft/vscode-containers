@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { PodmanClient, getDockerExtensionExport } from '@microsoft/vscode-container-runtimes';
+import { PodmanClient, getDockerExtensionExport } from '@microsoft/container-runtimes';
 import { localize } from './localize';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {

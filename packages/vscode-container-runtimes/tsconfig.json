@@ -1,20 +1,9 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "lib",
+        "sourceMap": true,
         "rootDir": "src",
-        "strictNullChecks": true
-    },
-    "include": [
-        "src/**/*.ts"
-    ],
-    "ts-node": {
-        "compilerOptions": {
-            "baseUrl": "./",
-            "module": "commonjs",
-            "paths": {
-                "vscode": ["./vscode"]
-            }
-        }
+        "declaration": false,
+        "strict": true /* enable all strict type-checking options */
     }
 }

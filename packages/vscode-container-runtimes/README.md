@@ -1,2 +1,3 @@
-## vscode-container-runtimes
-This package adds support for multiple container runtimes, abstracting away the details of the runtime to provide a common interface for any container runtime. Not all runtimes support all features; in such cases a [`CommandNotSupported`](https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-container-runtimes/src/utils/CommandNotSupportedError.ts) error will be thrown.
+# vscode-container-runtimes README
+
+Placeholder text
