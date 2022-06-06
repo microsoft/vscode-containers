@@ -3,17 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandLineArgs } from "../utils/commandLineBuilder";
+import { CommandResponse } from "./CommandRunner";
 
-// A CommandResponse record provides instructions on how to invoke a command
-// and a parse callback that can be used to parse and normalize the standard
-// output from invoking the command. This is the standard type returned by all
-// commands defined by the IContainersClient interface.
-export type CommandResponse<T> = {
-    command: string;
-    args: CommandLineArgs;
-    parse: (output: string, strict: boolean) => Promise<T>;
-};
+export type ContainerOS = "linux" | "windows";
 
 export type Labels = {
     [key: string]: string;
@@ -30,6 +22,7 @@ export type ClientIdentity = {
     readonly id: string;
     readonly displayName: string;
     readonly description: string;
+    readonly commandName: string;
 };
 
 // Version Command Types
@@ -49,7 +42,61 @@ export type VersionCommand = {
     version(options?: VersionCommandOptions): Promise<CommandResponse<VersionItem>>;
 };
 
-//#region Image Commands
+// #region Login/Logout commands
+
+// Login Command Types
+
+/**
+ * Standardized options for login
+ */
+export type LoginCommandOptions = {
+    /**
+     * The username to log in with
+     */
+    username: string;
+
+    /**
+     * The password to log in with
+     */
+    password: string;
+
+    /**
+     * (Optional) The registry to log in to
+     */
+    registry?: string;
+};
+
+type LoginCommand = {
+    /**
+     * Log in to a Docker registry
+     * @param options Command options
+     */
+    login(options: LoginCommandOptions): Promise<CommandResponse<void>>;
+};
+
+// Logout Command Types
+
+/**
+ * Standardized options for logout
+ */
+export type LogoutCommandOptions = {
+    /**
+     * (Optional) The registry to log out from
+     */
+    registry?: string;
+};
+
+type LogoutCommand = {
+    /**
+     * Log out from a Docker registry
+     * @param options Command options
+     */
+    logout(options: LogoutCommandOptions): Promise<CommandResponse<void>>;
+};
+
+// #endregion
+
+// #region Image Commands
 
 // Build Image Command Types
 
@@ -162,6 +209,27 @@ type ListImagesCommand = {
     listImages(options: ListImagesCommandOptions): Promise<CommandResponse<Array<ListImagesItem>>>;
 };
 
+// Remove Images Command Types
+
+export type RemoveImagesCommandOptions = {
+    /**
+     * Images to remove
+     */
+    images: Array<string>;
+    /**
+     * Force remove images even if there are running containers
+     */
+    force?: boolean;
+};
+
+type RemoveImagesCommand = {
+    /**
+     * Generate a CommandResponse for removing image(s).
+     * @param options Command options
+     */
+    removeImages(options: RemoveImagesCommandOptions): Promise<CommandResponse<Array<string>>>;
+};
+
 // Prune Images Command Types
 
 /**
@@ -174,12 +242,27 @@ export type PruneImagesCommandOptions = {
     all?: boolean;
 };
 
+/**
+ * Results from pruning images
+ */
+export type PruneImagesItem = {
+    /**
+     * A list of the images deleted
+     */
+    imagesDeleted?: string[];
+
+    /**
+     * The amount of space (in bytes) reclaimed
+     */
+    spaceReclaimed?: number;
+};
+
 type PruneImagesCommand = {
     /**
      * Generate a CommandResponse for pruning images
      * @param options Command options
      */
-    pruneImages(options: PruneImagesCommandOptions): Promise<CommandResponse<void>>;
+    pruneImages(options: PruneImagesCommandOptions): Promise<CommandResponse<PruneImagesItem>>;
 };
 
 // Pull Image Command Types
@@ -208,6 +291,26 @@ type PullImageCommand = {
      * @param options Command options
      */
     pullImage(options: PullImageCommandOptions): Promise<CommandResponse<void>>;
+};
+
+// Push Image Command Types
+
+/**
+ * Standardized options for push image commands
+ */
+export type PushImageCommandOptions = {
+    /**
+     * The specific image to push (registry/name:tag format)
+     */
+    image: string;
+};
+
+type PushImageCommand = {
+    /**
+     * Generate a CommandResponse for pushing an image.
+     * @param options Command options
+     */
+    pushImage(options: PushImageCommandOptions): Promise<CommandResponse<void>>;
 };
 
 // Tag Image Command Types
@@ -294,7 +397,7 @@ export type InspectImagesItem = {
     /**
      * The image operating system
      */
-    operatingSystem?: "linux" | "windows";
+    operatingSystem?: ContainerOS;
     /**
      * The date the image was created
      */
@@ -324,6 +427,8 @@ type InspectImagesCommand = {
 };
 
 //#endregion
+
+//#region Container commands
 
 // Run Container Command Types
 
@@ -537,6 +642,40 @@ type StopContainersCommand = {
     stopContainers(options: StopContainersCommandOptions): Promise<CommandResponse<Array<string>>>;
 };
 
+// Start Containers Command Types
+
+export type StartContainersCommandOptions = {
+    /**
+     * Containers to start
+     */
+    container: Array<string>;
+};
+
+type StartContainersCommand = {
+    /**
+     * Generate a CommandResponse for starting container(s).
+     * @param options Command options
+     */
+    startContainers(options: StartContainersCommandOptions): Promise<CommandResponse<Array<string>>>;
+};
+
+// Restart Containers Command Types
+
+export type RestartContainersCommandOptions = {
+    /**
+     * Containers to restart
+     */
+    container: Array<string>;
+};
+
+type RestartContainersCommand = {
+    /**
+     * Generate a CommandResponse for restarting container(s).
+     * @param options Command options
+     */
+    restartContainers(options: RestartContainersCommandOptions): Promise<CommandResponse<Array<string>>>;
+};
+
 // Remove Containers Command Types
 
 export type RemoveContainersCommandOptions = {
@@ -556,6 +695,31 @@ type RemoveContainersCommand = {
      * @param options Command options
      */
     removeContainers(options: RemoveContainersCommandOptions): Promise<CommandResponse<Array<string>>>;
+};
+
+// Prune Containers Command Types
+
+export type PruneContainersCommandOptions = {
+    // Intentionally empty for now
+};
+
+/**
+ * Results from pruning containers
+ */
+export type PruneContainersItem = {
+    /**
+     * A list of the containers deleted
+     */
+    containersDeleted?: string[];
+
+    /**
+     * The amount of space (in bytes) reclaimed
+     */
+    spaceReclaimed?: number;
+};
+
+type PruneContainersCommand = {
+    pruneContainers(options: PruneContainersCommandOptions): Promise<CommandResponse<PruneContainersItem>>
 };
 
 // Logs For Container Command Types
@@ -700,7 +864,10 @@ export type InspectContainersItem = {
      * IP Address assigned to the container
      */
     ipAddress?: string;
-    operatingSystem?: "linux" | "windows";
+    /**
+     * The container operating system
+     */
+    operatingSystem?: ContainerOS;
     /**
      * Ports exposed for the container
      */
@@ -750,6 +917,27 @@ type InspectContainersCommand = {
      */
     inspectContainers(options: InspectContainersCommandOptions): Promise<CommandResponse<Array<InspectContainersItem>>>;
 };
+
+// Stats command types
+
+/**
+ * Options for container stats
+ */
+export type ContainersStatsCommandOptions = {
+    all?: boolean;
+};
+
+type ContainersStatsCommand = {
+    /**
+     * Show running container stats
+     * @param options Command options
+     */
+    statsContainers(options: ContainersStatsCommandOptions): Promise<CommandResponse<string>>;
+};
+
+// #endregion
+
+// #region Volume commands
 
 // Create Volume Command Types
 
@@ -802,7 +990,13 @@ export type ListVolumeItem = {
      * Labels assigned to the volume
      */
     labels: Labels;
+    /**
+     * The mount point for the volume
+     */
     mountpoint: string;
+    /**
+     * The scope for the volume
+     */
     scope: string;
 };
 
@@ -835,6 +1029,285 @@ type RemoveVolumesCommand = {
     removeVolumes(options: RemoveVolumesCommandOptions): Promise<CommandResponse<Array<string>>>;
 };
 
+// Prune Volumes Command Types
+
+/**
+ * Standardized options for prune volume commands
+ */
+export type PruneVolumesCommandOptions = {
+    // Intentionally empty for now
+};
+
+/**
+ * Results from pruning volumes
+ */
+export type PruneVolumesItem = {
+    /**
+     * A list of the volumes deleted
+     */
+    volumesDeleted?: string[];
+
+    /**
+     * The amount of space (in bytes) reclaimed
+     */
+    spaceReclaimed?: number;
+};
+
+type PruneVolumesCommand = {
+    /**
+     * Generate a CommandResponse for pruning volumes
+     * @param options Command options
+     */
+    pruneVolumes(options: PruneVolumesCommandOptions): Promise<CommandResponse<PruneVolumesItem>>;
+};
+
+// Inspect Volumes Command Types
+
+/**
+ * Options for inspecting volumes
+ */
+export type InspectVolumesCommandOptions = {
+    /**
+     * Volumes to inspect
+     */
+    volumes: Array<string>;
+};
+
+export type InspectVolumesItem = {
+    /**
+     * The name of the volume
+     */
+    name: string;
+    /**
+     * The driver for the volume
+     */
+    driver: string;
+    /**
+     * The mount point for the volume
+     */
+    mountpoint: string;
+    /**
+     * The scope for the volume
+     */
+    scope: string;
+    /**
+     * Labels assigned to the volume
+     */
+    labels: Record<string, string>;
+    /**
+     * Driver-specific options for the volume
+     */
+    options: Record<string, unknown>;
+    /**
+     * The date the volume was created
+     */
+    createdAt: Date;
+    /**
+     * The raw JSON from the inspect record
+     */
+    raw: string;
+};
+
+type InspectVolumesCommand = {
+    /**
+     * Generate a CommandResponse for inspecting volumes.
+     * @param options Command options
+     */
+    inspectVolumes(options: InspectVolumesCommandOptions): Promise<CommandResponse<Array<InspectVolumesItem>>>;
+};
+
+// #endregion
+
+// #region Network commands
+
+// List Networks Command Types
+
+export type ListNetworksCommandOptions = {
+    /**
+     * Only list networks that match the given labels
+     */
+    labels?: LabelFilters;
+    /**
+     * Only list networks with a given driver
+     */
+    driver?: string;
+};
+
+export type ListNetworkItem = {
+    /**
+     * The name of the network
+     */
+    name: string;
+    /**
+     * The ID of the network
+     */
+    id: string;
+    /**
+     * The network driver
+     */
+    driver: string;
+    /**
+     * Labels assigned to the network
+     */
+    labels: Labels;
+    /**
+     * The network scope
+     */
+    scope: string;
+    /**
+     * True if IPv6 network
+     */
+    ipv6: boolean;
+    /**
+     * The date the network was created
+     */
+    createdAt: Date;
+    /**
+     * True if internal network
+     */
+    internal: boolean;
+};
+
+type ListNetworksCommand = {
+    /**
+     * Generate a CommandResponse for listing networks
+     * @param options Command options
+     */
+    listNetworks(options: ListNetworksCommandOptions): Promise<CommandResponse<Array<ListNetworkItem>>>;
+};
+
+// Remove Networks Command Types
+
+export type RemoveNetworksCommandOptions = {
+    /**
+     * Networks to remove
+     */
+    networks: Array<string>;
+    /**
+     * Force removing networks even if they're attached to a container?
+     */
+    force?: boolean;
+};
+
+type RemoveNetworksCommand = {
+    /**
+     * Generate a CommandResponse for removing networks
+     * @param options Command options
+     */
+    removeNetworks(options: RemoveNetworksCommandOptions): Promise<CommandResponse<Array<string>>>;
+};
+
+// Prune Networks Command Types
+
+/**
+ * Standardized options for prune network commands
+ */
+export type PruneNetworksCommandOptions = {
+    // Intentionally empty for now
+};
+
+/**
+ * Results from pruning networks
+ */
+export type PruneNetworksItem = {
+    /**
+     * A list of the networks deleted
+     */
+    networksDeleted?: string[];
+};
+
+type PruneNetworksCommand = {
+    /**
+     * Generate a CommandResponse for pruning networks
+     * @param options Command options
+     */
+    pruneNetworks(options: PruneNetworksCommandOptions): Promise<CommandResponse<PruneNetworksItem>>;
+};
+
+// Inspect Networks Command Types
+
+/**
+ * Options for inspecting networks
+ */
+export type InspectNetworksCommandOptions = {
+    /**
+     * Networks to inspect
+     */
+    networks: Array<string>;
+};
+
+export type NetworkIpamConfig = {
+    driver: string;
+    config: {
+        subnet: string;
+        gateway: string;
+    }[];
+};
+
+export type InspectNetworksItem = {
+    /**
+     * The name of the network
+     */
+    name: string;
+    /**
+     * The ID of the network
+     */
+    id: string;
+    /**
+     * The network driver
+     */
+    driver: string;
+    /**
+     * Labels assigned to the network
+     */
+    labels: Labels;
+    /**
+     * The network scope
+     */
+    scope: string;
+    /**
+     * The IPAM config
+     */
+    ipam: NetworkIpamConfig;
+    /**
+     * True if IPv6 network
+     */
+    ipv6: boolean;
+    /**
+     * True if internal network
+     */
+    internal: boolean;
+    /**
+     * True if attachable
+     */
+    attachable: boolean;
+    /**
+     * True if ingress
+     */
+    ingress: boolean;
+    /**
+     * The date the network was created
+     */
+    createdAt: Date;
+    /**
+     * The raw JSON from the inspect record
+     */
+    raw: string;
+};
+
+type InspectNetworksCommand = {
+    /**
+     * Generate a CommandResponse for inspecting networks.
+     * @param options Command options
+     */
+    inspectNetworks(options: InspectNetworksCommandOptions): Promise<CommandResponse<Array<InspectNetworksItem>>>;
+};
+
+// #endregion
+
+// #region Context commands
+// #endregion
+
 /**
  * Standard interface for executing commands against container runtimes.
  * Individual runtimes implement this interface.
@@ -842,22 +1315,37 @@ type RemoveVolumesCommand = {
 export interface IContainersClient extends
     ClientIdentity,
     VersionCommand,
+    LoginCommand,
+    LogoutCommand,
     // Image Commands
     BuildImageCommand,
     ListImagesCommand,
+    RemoveImagesCommand,
     PruneImagesCommand,
     PullImageCommand,
     TagImageCommand,
     InspectImagesCommand,
+    PushImageCommand,
     // Container Commands
     RunContainerCommand,
     ExecContainerCommand,
     ListContainersCommand,
+    StartContainersCommand,
+    RestartContainersCommand,
     StopContainersCommand,
     RemoveContainersCommand,
+    PruneContainersCommand,
     LogsForContainerCommand,
     InspectContainersCommand,
+    ContainersStatsCommand,
     // Volume Commands
     CreateVolumeCommand,
     ListVolumesCommand,
-    RemoveVolumesCommand { }
+    RemoveVolumesCommand,
+    PruneVolumesCommand,
+    InspectVolumesCommand,
+    // Network Commands
+    ListNetworksCommand,
+    RemoveNetworksCommand,
+    PruneNetworksCommand,
+    InspectNetworksCommand { }

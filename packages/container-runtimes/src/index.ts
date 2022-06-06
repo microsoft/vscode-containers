@@ -7,6 +7,7 @@ export * from './clients/DockerClient/DockerClient';
 export * from './clients/PodmanClient/PodmanClient';
 export * from './commandRunners/shell';
 export * from './commandRunners/wsl';
+export * from './contracts/CommandRunner';
 export * from './contracts/ContainerClient';
 export * from './contracts/DockerExtensionExport';
 export * from './typings/CancellationTokenLike';

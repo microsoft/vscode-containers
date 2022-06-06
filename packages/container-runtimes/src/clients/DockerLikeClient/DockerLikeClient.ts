@@ -6,9 +6,9 @@
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 import * as utc from 'dayjs/plugin/utc';
+import { CommandResponse } from '../../contracts/CommandRunner';
 import {
     BuildImageCommandOptions,
-    CommandResponse,
     CreateVolumeCommandOptions,
     ExecContainerCommandOptions,
     IContainersClient,
@@ -28,6 +28,7 @@ import {
     LogsForContainerCommandOptions,
     PortBinding,
     PruneImagesCommandOptions,
+    PruneImagesItem,
     PullImageCommandOptions,
     RemoveContainersCommandOptions,
     RemoveVolumesCommandOptions,
@@ -66,6 +67,7 @@ import { withDockerPortsArg } from './withDockerPortsArg';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
+// @ts-expect-error TODO: It doesn't fully implement the interface right now
 export abstract class DockerLikeClient implements IContainersClient {
     abstract readonly id: string;
     abstract readonly displayName: string;
@@ -293,11 +295,12 @@ export abstract class DockerLikeClient implements IContainersClient {
         options: PruneImagesCommandOptions,
         output: string,
         strict: boolean,
-    ): Promise<void> {
-        return Promise.resolve();
+    ): Promise<PruneImagesItem> {
+        // TODO: support return of the optional prune information?
+        return Promise.resolve({});
     }
 
-    async pruneImages(options: PruneImagesCommandOptions): Promise<CommandResponse<void>> {
+    async pruneImages(options: PruneImagesCommandOptions): Promise<CommandResponse<PruneImagesItem>> {
         return {
             command: this.commandName,
             args: this.getPruneImagesCommandArgs(options),

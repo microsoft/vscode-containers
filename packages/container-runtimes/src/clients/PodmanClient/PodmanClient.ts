@@ -27,6 +27,7 @@ dayjs.extend(utc);
 
 const ROOTLESS_NETWORK_MODE = 'slirp4netns';
 
+// @ts-expect-error TODO: It doesn't fully implement the interface right now
 export class PodmanClient extends DockerLikeClient implements IContainersClient {
     readonly id = 'com.microsoft.visualstudio.containers.podman';
     readonly displayName = 'Podman';

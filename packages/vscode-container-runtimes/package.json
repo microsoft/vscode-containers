@@ -47,7 +47,7 @@
         "webpack-cli": "^4.9.2"
     },
     "dependencies": {
-        "@microsoft/container-runtimes": "file:../../microsoft-container-runtimes-0.0.1-alpha.tgz",
+        "@microsoft/container-runtimes": "^0.0.1-alpha",
         "vscode-nls": "^5.0.1"
     },
     "extensionDependencies": [

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandResponse } from '../contracts/ContainerClient';
+import { CommandResponseLike, CommandRunner, normalizeCommandResponseLike } from '../contracts/CommandRunner';
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 import { powershellQuote, spawnAsync } from '../utils/spawnAsync';
 
@@ -15,6 +15,7 @@ export type ShellCommandRunnerOptions = {
     cancellationToken?: CancellationTokenLike;
 };
 
-export const shellCommandRunnerAsync = async <T>(commandResponse: CommandResponse<T>, options: ShellCommandRunnerOptions): Promise<T> => {
+export const shellCommandRunnerAsync: CommandRunner<ShellCommandRunnerOptions> = async <T>(commandResponseLike: CommandResponseLike<T>, options: ShellCommandRunnerOptions): Promise<T> => {
+    const commandResponse = await normalizeCommandResponseLike(commandResponseLike);
     return await commandResponse.parse(await spawnAsync(commandResponse.command, powershellQuote(commandResponse.args), { ...options, shell: true }), options.strict || false);
 };
