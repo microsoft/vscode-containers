@@ -27,19 +27,50 @@ export type ClientIdentity = {
 
 // Version Command Types
 
-export type VersionCommandOptions = unknown;
+export type VersionCommandOptions = {
+    // Intentionally empty for now
+};
 
 export type VersionItem = {
     client: string;
     server?: string;
 };
 
-export type VersionCommand = {
+type VersionCommand = {
     /**
      * Generate a CommandResponse to retrieve runtime version information.
      * @param options Command options
      */
     version(options?: VersionCommandOptions): Promise<CommandResponse<VersionItem>>;
+};
+
+// Info CommandTypes
+
+export type InfoCommandOptions = {
+    // Intentionally empty for now
+};
+
+export type InfoItem = {
+    /**
+     * The operating system for the container runtime (e.g. Docker Desktop)
+     */
+    operatingSystem?: string;
+    /**
+     * The OS type for the container runtime
+     */
+    osType?: ContainerOS;
+    /**
+     * The raw JSON from the info record
+     */
+    raw: string;
+};
+
+type InfoCommand = {
+    /**
+     * Generate a CommandResponse to retrieve runtime information
+     * @param options Command options
+     */
+    info(options?: InfoCommandOptions): Promise<CommandResponse<InfoItem>>;
 };
 
 // #region Login/Logout commands
@@ -1120,6 +1151,27 @@ type InspectVolumesCommand = {
 
 // #region Network commands
 
+// Create Network Command Types
+
+export type CreateNetworkCommandOptions = {
+    /**
+     * The name for the network
+     */
+    name: string;
+    /**
+     * Optional driver to use for the network
+     */
+    driver?: string;
+};
+
+type CreateNetworkCommand = {
+    /**
+     * Generate a CommandResponse for creating a network
+     * @param options Command options
+     */
+    createNetwork(options: CreateNetworkCommandOptions): Promise<CommandResponse<void>>;
+};
+
 // List Networks Command Types
 
 export type ListNetworksCommandOptions = {
@@ -1315,6 +1367,7 @@ type InspectNetworksCommand = {
 export interface IContainersClient extends
     ClientIdentity,
     VersionCommand,
+    InfoCommand,
     LoginCommand,
     LogoutCommand,
     // Image Commands
@@ -1345,6 +1398,7 @@ export interface IContainersClient extends
     PruneVolumesCommand,
     InspectVolumesCommand,
     // Network Commands
+    CreateNetworkCommand,
     ListNetworksCommand,
     RemoveNetworksCommand,
     PruneNetworksCommand,
