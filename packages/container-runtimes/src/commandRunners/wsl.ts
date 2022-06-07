@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandResponseLike, CommandRunner, normalizeCommandResponseLike } from '../contracts/CommandRunner';
+import {
+    CommandResponseLike,
+    CommandRunner,
+    ICommandRunnerFactory,
+    normalizeCommandResponseLike,
+} from '../contracts/CommandRunner';
 import { bashQuote, spawnAsync } from '../utils/spawnAsync';
 import { ShellCommandRunnerOptions } from './shell';
 
@@ -12,9 +17,19 @@ export type WslShellCommandRunnerOptions = ShellCommandRunnerOptions & {
     distro?: string | null;
 };
 
-export const wslCommandRunnerAsync: CommandRunner<WslShellCommandRunnerOptions> = async <T>(commandResponseLike: CommandResponseLike<T>, options: WslShellCommandRunnerOptions): Promise<T> => {
-    const commandResponse = await normalizeCommandResponseLike(commandResponseLike);
-    const command = options.wslPath ?? 'wsl.exe';
-    const args = [...(options.distro ? ['-d', options.distro] : []), '--', commandResponse.command, ...bashQuote(commandResponse.args)];
-    return await commandResponse.parse(await spawnAsync(command, args, { ...options, shell: true }), options.strict || false);
-};
+export class WslShellCommandRunnerFactory implements ICommandRunnerFactory {
+    constructor(options: WslShellCommandRunnerOptions) {
+        this.options = options;
+    }
+
+    getCommandRunner(): CommandRunner {
+        return async <T>(commandResponseLike: CommandResponseLike<T>): Promise<T> => {
+            const commandResponse = await normalizeCommandResponseLike(commandResponseLike);
+            const command = this.options.wslPath ?? 'wsl.exe';
+            const args = [...(this.options.distro ? ['-d', this.options.distro] : []), '--', commandResponse.command, ...bashQuote(commandResponse.args)];
+            return await commandResponse.parse(await spawnAsync(command, args, { ...this.options, shell: true }), this.options.strict || false);
+        };
+    }
+
+    protected options: WslShellCommandRunnerOptions;
+}
