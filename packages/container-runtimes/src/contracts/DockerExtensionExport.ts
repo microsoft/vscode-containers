@@ -5,6 +5,7 @@
 
 import * as vscode from 'vscode';
 import { IContainersClient } from './ContainerClient';
+import { IContainerOrchestratorClient } from './ContainerOrchestratorClient';
 
 /**
  * This interface is implemented by the Docker extension. To access it, use the
@@ -18,6 +19,13 @@ export interface DockerExtensionExport {
      * @returns A {@link Disposable} that, when disposed, will undo the client registration
      */
     registerContainerRuntimeClient(client: IContainersClient): vscode.Disposable;
+
+    /**
+     * Registers a container orchestrator client with the Docker extension
+     * @param client The client implementing the {@link IContainerOrchestratorClient} interface
+     * @returns A {@link Disposable} that, when disposed, will undo the client registration
+     */
+    registerContainerOrchestratorClient(client: IContainerOrchestratorClient): vscode.Disposable;
 }
 
 /**
