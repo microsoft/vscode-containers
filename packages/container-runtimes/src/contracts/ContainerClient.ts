@@ -1555,6 +1555,11 @@ export type ReadFileCommandOptions = {
      * The absolute path of the file in the container to read
      */
     path: string;
+    /**
+     * (Optional) The path on the host to write the container file to. If not given, it is
+     * necessary to handle contents from stdout in the command runner.
+     */
+    outputFile?: string;
 };
 
 type ReadFileCommand = {
