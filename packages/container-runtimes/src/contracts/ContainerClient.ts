@@ -1514,6 +1514,84 @@ type InspectContextsCommand = {
 
 // #endregion
 
+// #region Container filesystem commands
+
+// List files command types
+
+export type ListFilesCommandOptions = {
+    /**
+     * The absolute path of a directory to list the files/folders within
+     */
+    path: string;
+    /**
+     * The container operating system. If not supplied, 'linux' will be assumed.
+     */
+    operatingSystem?: ContainerOS;
+};
+
+export type ListFilesItem = {
+    /**
+     * The path of the file/folder, relative to the parent folder
+     */
+    path: string;
+    /**
+     * Whether the item is a file or directory
+     */
+    type: 'file' | 'directory';
+};
+
+type ListFilesCommand = {
+    /**
+     * Lists the files/folders that are in a given path in a container
+     * @param options Command options
+     */
+    listFiles(options: ListContainersCommandOptions): Promise<CommandResponse<Array<ListFilesItem>>>;
+};
+
+// Read file command types
+
+export type ReadFileCommandOptions = {
+    /**
+     * The absolute path of the file in the container to read
+     */
+    path: string;
+};
+
+type ReadFileCommand = {
+    /**
+     * Read a file inside the container. Start a process with the {@link CommandResponse}
+     * and read from its stdout stream (or use {@link ShellCommandRunnerFactory} to accumulate
+     * the output into a string and return it from `parse`)
+     * @param options Command options
+     */
+    readFile(options: ReadFileCommandOptions): Promise<CommandResponse<string>>;
+};
+
+// Write file command types
+
+export type WriteFileCommandOptions = {
+    /**
+     * The absolute path of the file in the container to write
+     */
+    path: string;
+    /**
+     * (Optional) The file on the host to copy into the container. If not given, it is necessary
+     * to write the file contents to stdin in the command runner.
+     */
+    inputFile?: string;
+};
+
+type WriteFileCommand = {
+    /**
+     * Write a file inside the container. Start a process with the {@link CommandResponse}
+     * and write to its stdin stream.
+     * @param options Command options
+     */
+    writeFile(options: WriteFileCommandOptions): Promise<CommandResponse<void>>;
+};
+
+// #endregion
+
 /**
  * Standard interface for executing commands against container runtimes.
  * Individual runtimes implement this interface.
@@ -1562,4 +1640,8 @@ export interface IContainersClient extends
     ListContextsCommand,
     RemoveContextsCommand,
     UseContextCommand,
-    InspectContextsCommand { }
+    InspectContextsCommand,
+    // Filesystem commands
+    ListFilesCommand,
+    ReadFileCommand,
+    WriteFileCommand { }
