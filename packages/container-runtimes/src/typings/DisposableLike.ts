@@ -5,22 +5,22 @@
 
 import type * as vscode from 'vscode';
 import type * as jsonrpc from 'vscode-jsonrpc';
-import { EventLike } from './EventLike';
 
 /**
- * Defined to reflect the fact that the cancellation tokens could be from either `vscode`
+ * Defined to reflect the fact that the disposables could be from either `vscode`
  * (in the case of VSCode extensions), or `vscode-jsonrpc` (in the case of ServiceHub
  * workers in VS).
  */
-export type CancellationTokenLike = vscode.CancellationToken | jsonrpc.CancellationToken;
+export type DisposableLike = vscode.Disposable | jsonrpc.Disposable;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace CancellationTokenLike {
+export namespace DisposableLike {
     /**
-     * An instance of {@link CancellationTokenLike} that will never actually cancel, but meets the interface
+     * An instance of {@link DisposableLike} that does nothing when disposed, but meets the interface
      */
-    export const None: CancellationTokenLike = Object.freeze({
-        isCancellationRequested: false,
-        onCancellationRequested: EventLike.None,
+    export const None: DisposableLike = Object.freeze({
+        dispose: () => {
+            // Noop, not a real registration
+        }
     });
 }
