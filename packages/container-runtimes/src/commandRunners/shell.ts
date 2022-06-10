@@ -9,15 +9,10 @@ import {
     ICommandRunnerFactory,
     normalizeCommandResponseLike,
 } from '../contracts/CommandRunner';
-import { CancellationTokenLike } from '../typings/CancellationTokenLike';
-import { powershellQuote, spawnAsync } from '../utils/spawnAsync';
+import { ExtendedSpawnOptions, powershellQuote, spawnAsync } from '../utils/spawnAsync';
 
-export type ShellCommandRunnerOptions = {
+export type ShellCommandRunnerOptions = ExtendedSpawnOptions & {
     strict?: boolean;
-    onCommand?: (command: string) => void;
-    onStdOut?: (data: string | Buffer) => void;
-    onStdErr?: (data: string | Buffer) => void;
-    cancellationToken?: CancellationTokenLike;
 };
 
 export class ShellCommandRunnerFactory implements ICommandRunnerFactory {

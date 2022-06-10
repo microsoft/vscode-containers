@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { spawn } from 'child_process';
+import { spawn, SpawnOptions } from 'child_process';
 import { ShellQuoting } from 'vscode';
 
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
@@ -11,7 +11,7 @@ import { CancellationError } from './CancellationError';
 import { ChildProcessError } from './ChildProcessError';
 import { CommandLineArgs } from './commandLineBuilder';
 
-export type SpawnOptions = {
+export type ExtendedSpawnOptions = SpawnOptions & {
     shell?: boolean;
     onCommand?: (command: string) => void;
     onStdOut?: (data: string | Buffer) => void;
@@ -61,7 +61,7 @@ export const bashQuote = (args: CommandLineArgs): Array<string> => {
     });
 };
 
-export async function spawnAsync(command: string, args: Array<string>, options: SpawnOptions): Promise<string> {
+export async function spawnAsync(command: string, args: Array<string>, options: ExtendedSpawnOptions): Promise<string> {
     const cancellationToken = options.cancellationToken || CancellationTokenLike.None;
 
     if (cancellationToken.isCancellationRequested) {
