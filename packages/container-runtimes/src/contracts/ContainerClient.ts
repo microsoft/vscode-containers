@@ -1566,7 +1566,8 @@ type ReadFileCommand = {
     /**
      * Read a file inside the container. Start a process with the {@link CommandResponse}
      * and read from its stdout stream (or use {@link ShellCommandRunnerFactory} to accumulate
-     * the output into a string and return it from `parse`)
+     * the output into a string and return it from `parse`).
+     * NOTE: the output stream is in tarball format.
      * @param options Command options
      */
     readFile(options: ReadFileCommandOptions): Promise<CommandResponse<string>>;
@@ -1590,6 +1591,7 @@ type WriteFileCommand = {
     /**
      * Write a file inside the container. Start a process with the {@link CommandResponse}
      * and write to its stdin stream.
+     * NOTE: the input stream must be in tarball format.
      * @param options Command options
      */
     writeFile(options: WriteFileCommandOptions): Promise<CommandResponse<void>>;
