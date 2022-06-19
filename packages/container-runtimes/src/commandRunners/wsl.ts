@@ -18,11 +18,11 @@ export type WslShellCommandRunnerOptions = ShellCommandRunnerOptions & {
 };
 
 export class WslShellCommandRunnerFactory implements ICommandRunnerFactory {
-    constructor(options: WslShellCommandRunnerOptions) {
+    public constructor(options: WslShellCommandRunnerOptions) {
         this.options = options;
     }
 
-    getCommandRunner(): CommandRunner {
+    public getCommandRunner(): CommandRunner {
         return async <T>(commandResponseLike: CommandResponseLike<T>): Promise<T> => {
             const commandResponse = await normalizeCommandResponseLike(commandResponseLike);
             const command = this.options.wslPath ?? 'wsl.exe';

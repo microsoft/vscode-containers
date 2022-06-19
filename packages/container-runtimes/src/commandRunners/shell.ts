@@ -16,11 +16,11 @@ export type ShellCommandRunnerOptions = ExtendedSpawnOptions & {
 };
 
 export class ShellCommandRunnerFactory implements ICommandRunnerFactory {
-    constructor(options: ShellCommandRunnerOptions) {
+    public constructor(options: ShellCommandRunnerOptions) {
         this.options = options;
     }
 
-    getCommandRunner(): CommandRunner {
+    public getCommandRunner(): CommandRunner {
         return async <T>(commandResponseLike: CommandResponseLike<T>) => {
             const commandResponse = await normalizeCommandResponseLike(commandResponseLike);
             return await commandResponse.parse(await spawnAsync(commandResponse.command, powershellQuote(commandResponse.args), { ...this.options, shell: true }), this.options.strict || false);

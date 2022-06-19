@@ -25,11 +25,16 @@ export type CommandResponseLike<T> = CommandResponse<T> | Promise<CommandRespons
 export type CommandRunner = <T>(commandResponse: CommandResponseLike<T>) => Promise<T>;
 
 /**
+ * A {@link VoidCommandRunner} provides instructions on how to invoke a command
+ */
+export type VoidCommandRunner = (commandResponse: CommandResponseLike<unknown>) => Promise<void>;
+
+/**
  * A {@link CommandRunnerFactory} is used to build a CommandRunner instance
  * based for a specific configuration
  */
 export interface ICommandRunnerFactory {
-    getCommandRunner(): CommandRunner;
+    getCommandRunner(): CommandRunner | VoidCommandRunner;
 }
 
 export function normalizeCommandResponseLike<T>(commandResponseLike: CommandResponseLike<T>): Promise<CommandResponse<T>> {
