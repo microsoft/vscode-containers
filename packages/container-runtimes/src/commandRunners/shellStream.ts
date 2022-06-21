@@ -58,7 +58,7 @@ export class ShellStreamCommandRunnerFactory<TOptions extends ShellStreamCommand
                 throwIfCancellationRequested(this.options.cancellationToken);
 
                 if (accumulator && commandResponse.parse) {
-                    const output = await accumulator.output;
+                    const output = await accumulator.getString();
                     throwIfCancellationRequested(this.options.cancellationToken);
                     result = await commandResponse.parse(output, !!this.options.strict);
                 }
