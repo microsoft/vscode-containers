@@ -4,31 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { spawn, SpawnOptions } from 'child_process';
-import { Readable } from 'stream';
+import * as stream from 'stream';
 import { ShellQuoting } from 'vscode';
 
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 import { CancellationError } from './CancellationError';
 import { ChildProcessError } from './ChildProcessError';
 import { CommandLineArgs } from './commandLineBuilder';
-import { MemoryStream } from './MemoryStream';
 
-type CommonExtendedSpawnOptions = SpawnOptions & {
-    shell?: boolean;
+export type StreamSpawnOptions = SpawnOptions & {
     onCommand?: (command: string) => void;
     cancellationToken?: CancellationTokenLike;
-};
 
-export type ExtendedSpawnOptions = CommonExtendedSpawnOptions & {
-    stdInContent?: string;
-    onStdOut?: (data: string | Buffer) => void;
-    onStdErr?: (data: string | Buffer) => void;
-};
-
-export type StreamSpawnOptions = CommonExtendedSpawnOptions & {
-    stdInPipe?: NodeJS.ReadableStream;
-    stdOutPipe?: NodeJS.WritableStream;
-    stdErrPipe?: NodeJS.WritableStream;
+    stdInPipe?: stream.Readable;
+    stdOutPipe?: stream.Writable;
+    stdErrPipe?: stream.Writable;
 };
 
 const isQuoted = (value: string): boolean => {
@@ -72,61 +62,6 @@ export const bashQuote = (args: CommandLineArgs): Array<string> => {
         }
     });
 };
-
-export async function spawnAsync(command: string, args: Array<string>, options: ExtendedSpawnOptions): Promise<string> {
-    let stdInStream: NodeJS.ReadableStream | undefined;
-    const stdOutStream = new MemoryStream();
-    const stdErrStream = new MemoryStream();
-
-    if (options.stdInContent) {
-        stdInStream = Readable.from([options.stdInContent]);
-    }
-
-    if (options.onStdOut) {
-        stdOutStream.on('data', (chunk) => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            options.onStdOut!(chunk.toString());
-        });
-    }
-
-    if (options.onStdErr) {
-        stdErrStream.on('data', (chunk) => {
-            const data = chunk.toString();
-
-            // Silence some stderr noise, same as vscode does
-            // See https://github.com/microsoft/vscode/pull/104277
-            if (data.includes('screen size is bogus')) {
-                return;
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            options.onStdErr!(data);
-        });
-    }
-
-    try {
-        const newOptions: StreamSpawnOptions & ExtendedSpawnOptions = {
-            ...options,
-            stdInPipe: stdInStream,
-            stdOutPipe: stdOutStream,
-            stdErrPipe: stdErrStream,
-        };
-
-        delete newOptions.onStdOut;
-        delete newOptions.onStdErr;
-
-        await spawnStreamAsync(command, args, newOptions);
-        return stdOutStream.getString();
-    } catch (err) {
-        if (err instanceof ChildProcessError) {
-            // A new error will be thrown with the output from stderr instead of a generic message
-            throw new ChildProcessError(await stdErrStream.getString(), err.code, err.signal);
-        } else {
-            // Otherwise rethrow
-            throw err;
-        }
-    }
-}
 
 export async function spawnStreamAsync(command: string, args: Array<string>, options: StreamSpawnOptions): Promise<void> {
     const cancellationToken = options.cancellationToken || CancellationTokenLike.None;

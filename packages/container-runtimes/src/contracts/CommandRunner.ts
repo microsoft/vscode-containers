@@ -10,11 +10,14 @@ import { CommandLineArgs } from '../utils/commandLineBuilder';
  * and a parse callback that can be used to parse and normalize the standard
  * output from invoking the command. This is the standard type returned by all
  * commands defined by the IContainersClient interface.
+ *
+ * Parse will not be implemented for streaming operations, like container logs
+ * or files.
  */
 export type CommandResponse<T> = {
     command: string;
     args: CommandLineArgs;
-    parse: (output: string, strict: boolean) => Promise<T>;
+    parse?: (output: string, strict: boolean) => Promise<T>;
 };
 
 export type CommandResponseLike<T> = CommandResponse<T> | Promise<CommandResponse<T>> | (() => CommandResponse<T> | Promise<CommandResponse<T>>);
@@ -22,19 +25,14 @@ export type CommandResponseLike<T> = CommandResponse<T> | Promise<CommandRespons
 /**
  * A {@link CommandRunner} provides instructions on how to invoke a command
  */
-export type CommandRunner = <T>(commandResponse: CommandResponseLike<T>) => Promise<T>;
-
-/**
- * A {@link VoidCommandRunner} provides instructions on how to invoke a command
- */
-export type VoidCommandRunner = (commandResponse: CommandResponseLike<unknown>) => Promise<void>;
+export type CommandRunner = <T>(commandResponse: CommandResponseLike<T>) => Promise<T | void>;
 
 /**
  * A {@link CommandRunnerFactory} is used to build a CommandRunner instance
  * based for a specific configuration
  */
 export interface ICommandRunnerFactory {
-    getCommandRunner(): CommandRunner | VoidCommandRunner;
+    getCommandRunner(): CommandRunner;
 }
 
 export function normalizeCommandResponseLike<T>(commandResponseLike: CommandResponseLike<T>): Promise<CommandResponse<T>> {
