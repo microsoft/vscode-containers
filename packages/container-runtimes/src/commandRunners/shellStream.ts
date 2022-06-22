@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as os from 'os';
 import * as stream from 'stream';
 import * as streamPromise from 'stream/promises';
 import {
@@ -15,14 +16,26 @@ import {
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 import { AccumulatorStream } from '../utils/AccumulatorStream';
 import { CancellationError } from '../utils/CancellationError';
-import { powershellQuote, spawnStreamAsync, StreamSpawnOptions } from '../utils/spawnStreamAsync';
+import {
+    bashQuote,
+    powershellQuote,
+    ShellQuote,
+    spawnStreamAsync,
+    StreamSpawnOptions,
+} from '../utils/spawnStreamAsync';
 
 export type ShellStreamCommandRunnerOptions = StreamSpawnOptions & {
+    shellQuote?: ShellQuote;
     strict?: boolean;
 };
 
+/**
+ * A {@link CommandRunnerFactory} that executes commands on a given shell and
+ * manages access to the necessary stdio streams
+ */
 export class ShellStreamCommandRunnerFactory<TOptions extends ShellStreamCommandRunnerOptions> implements ICommandRunnerFactory {
     public constructor(protected readonly options: TOptions) {
+        this.options.shellQuote ??= os.platform() === 'win32' ? powershellQuote : bashQuote;
     }
 
     public getCommandRunner(): CommandRunner {
@@ -34,13 +47,14 @@ export class ShellStreamCommandRunnerFactory<TOptions extends ShellStreamCommand
 
             let result: T | undefined;
 
-            const splitterStream = new stream.PassThrough;
+            let splitterStream: stream.PassThrough | undefined;
             const pipelinePromises: Promise<void>[] = [];
 
             let accumulator: AccumulatorStream | undefined;
 
             try {
                 if (commandResponse.parse) {
+                    splitterStream ??= new stream.PassThrough();
                     accumulator = new AccumulatorStream();
                     pipelinePromises.push(
                         streamPromise.pipeline(splitterStream, accumulator)
@@ -48,6 +62,7 @@ export class ShellStreamCommandRunnerFactory<TOptions extends ShellStreamCommand
                 }
 
                 if (this.options.stdOutPipe) {
+                    splitterStream ??= new stream.PassThrough;
                     pipelinePromises.push(
                         streamPromise.pipeline(splitterStream, this.options.stdOutPipe)
                     );
@@ -77,7 +92,8 @@ export class ShellStreamCommandRunnerFactory<TOptions extends ShellStreamCommand
     protected getCommandAndArgs(commandResponse: CommandResponse<unknown>): { command: string, args: string[] } {
         return {
             command: commandResponse.command,
-            args: powershellQuote(commandResponse.args)
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            args: this.options.shellQuote!(commandResponse.args),
         };
     }
 }
