@@ -56,6 +56,8 @@ import { isDockerVolumeRecord } from './DockerVolumeRecord';
 import { goTemplateJsonFormat, GoTemplateJsonFormatOptions, goTemplateJsonProperty } from './goTemplateJsonFormat';
 import { parseDockerImageRepository } from "./parseDockerImageRepository";
 import { parseDockerRawPortString } from './parseDockerRawPortString';
+import { tryParseSize } from './tryParseSize';
+import { withDockerAddHostArg } from './withDockerAddHostArg';
 import { withDockerEnvArg } from './withDockerEnvArg';
 import { withDockerJsonFormatArg } from "./withDockerJsonFormatArg";
 import { withDockerLabelFilterArgs } from "./withDockerLabelFilterArgs";
@@ -146,6 +148,7 @@ export abstract class DockerLikeClient implements IContainersClient {
             withDockerLabelsArg(options.labels),
             withNamedArg('--iidfile', options.imageIdFile),
             withNamedArg('--build-arg', options.args),
+            withArg(options.customOptions),
             withArg(quoted(options.path)),
         )();
     }
@@ -242,13 +245,17 @@ export abstract class DockerLikeClient implements IContainersClient {
                     // Combine the image components into a standardized full name
                     const image = registry ? `${registry}/${imageName}:${rawImage.Tag}` : `${imageName}:${rawImage.Tag}`;
 
+                    const size = tryParseSize(rawImage.Size);
+
                     images.push({
                         id: rawImage.ID,
                         image,
                         registry,
                         name: imageName,
+                        labels: {}, // TODO
                         tag: rawImage.Tag,
                         createdAt,
+                        size,
                     });
                 } catch (err) {
                     if (strict) {
@@ -408,6 +415,7 @@ export abstract class DockerLikeClient implements IContainersClient {
                     Architecture: goTemplateJsonProperty`.Architecture`,
                     OperatingSystem: goTemplateJsonProperty`.Os`,
                     CreatedAt: goTemplateJsonProperty`.Created`,
+                    User: goTemplateJsonProperty`.Config.User`,
                     Raw: goTemplateJsonProperty`.`,
                 }, formatOverrides)),
             withArg(...options.images),
@@ -496,7 +504,7 @@ export abstract class DockerLikeClient implements IContainersClient {
                             : undefined;
 
                     // Determine if the image has been pushed to a remote repo
-                    // (no repo digests or only localhost/ repo digetss)
+                    // (no repo digests or only localhost/ repo digests)
                     const isLocalImage = !(inspect.RepoDigests || []).some((digest) => !digest.toLowerCase().startsWith('localhost/'));
 
                     // Return a normalized InspectImagesItem record
@@ -506,6 +514,7 @@ export abstract class DockerLikeClient implements IContainersClient {
                         tag: tagName,
                         registry: registry,
                         image: fullImage,
+                        repoDigests: inspect.RepoDigests,
                         isLocalImage,
                         environmentVariables,
                         ports,
@@ -517,6 +526,7 @@ export abstract class DockerLikeClient implements IContainersClient {
                         architecture,
                         operatingSystem: os,
                         createdAt: dayjs.utc(inspect.CreatedAt).toDate(),
+                        user: inspect.User,
                         raw: JSON.stringify(inspect.Raw),
                     };
 
@@ -566,15 +576,21 @@ export abstract class DockerLikeClient implements IContainersClient {
         return composeArgs(
             withArg('container', 'run'),
             withFlagArg('--detach', options.detached),
-            withFlagArg('--tty', options.detached),
+            withFlagArg('--interactive', options.interactive),
+            withFlagArg('--tty', options.detached || options.interactive),
             withFlagArg('--rm', options.removeOnExit),
             withNamedArg('--name', options.name),
             withDockerPortsArg(options.ports),
             withFlagArg('--publish-all', options.publishAllPorts),
+            withNamedArg('--network', options.network),
+            withNamedArg('--network-alias', options.networkAlias),
+            withDockerAddHostArg(options.addHost),
             withDockerMountsArg(options.mounts),
             withDockerLabelsArg(options.labels),
             withDockerEnvArg(options.environmentVariables),
+            withNamedArg('--env-file', options.environmentFiles),
             withNamedArg('--entrypoint', options.entrypoint),
+            withArg(options.customOptions),
             withArg(options.image),
             withArg(...(toArray(options.command || []))),
         )();
@@ -628,11 +644,11 @@ export abstract class DockerLikeClient implements IContainersClient {
         options: ExecContainerCommandOptions,
         output: string,
         strict: boolean,
-    ): Promise<void> {
-        return Promise.resolve();
+    ): Promise<string> {
+        return Promise.resolve(output);
     }
 
-    async execContainer(options: ExecContainerCommandOptions): Promise<CommandResponse<void>> {
+    async execContainer(options: ExecContainerCommandOptions): Promise<CommandResponse<string>> {
         return {
             command: this.commandName,
             args: this.getExecContainerCommandArgs(options),
@@ -663,7 +679,10 @@ export abstract class DockerLikeClient implements IContainersClient {
                     Names: goTemplateJsonProperty`.Names`,
                     Image: goTemplateJsonProperty`.Image`,
                     Ports: goTemplateJsonProperty`.Ports`,
-                    CreatedAt: goTemplateJsonProperty`.CreatedAt`
+                    Networks: goTemplateJsonProperty`.Networks`,
+                    CreatedAt: goTemplateJsonProperty`.CreatedAt`,
+                    State: goTemplateJsonProperty`.State`,
+                    Status: goTemplateJsonProperty`.Status`,
                 }, formatOverrides)),
         )();
     }
@@ -706,15 +725,22 @@ export abstract class DockerLikeClient implements IContainersClient {
                             }
                         }, []);
 
+                    const networks = rawContainer.Networks
+                        .split(',');
+
                     const name = rawContainer.Names.split(',')[0].trim();
                     const createdAt = dayjs.utc(rawContainer.CreatedAt, this.listDateFormat).toDate();
 
                     containers.push({
                         id: rawContainer.Id,
                         name,
+                        labels: {}, // TODO
                         image: rawContainer.Image,
                         ports,
+                        networks,
                         createdAt,
+                        state: rawContainer.State,
+                        status: rawContainer.Status,
                     });
                 } catch (err) {
                     if (strict) {
@@ -1146,12 +1172,20 @@ export abstract class DockerLikeClient implements IContainersClient {
                         return labels;
                     }, {} as Labels);
 
+                    const createdAt = rawVolume.CreatedAt
+                        ? dayjs.utc(rawVolume.CreatedAt)
+                        : undefined;
+
+                    const size = tryParseSize(rawVolume.Size);
+
                     volumes.push({
                         name: rawVolume.Name,
                         driver: rawVolume.Driver,
                         labels,
                         mountpoint: rawVolume.Mountpoint,
                         scope: rawVolume.Scope,
+                        createdAt: createdAt?.toDate(),
+                        size
                     });
                 } catch (err) {
                     if (strict) {

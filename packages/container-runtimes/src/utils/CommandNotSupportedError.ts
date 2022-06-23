@@ -9,3 +9,8 @@ export class CommandNotSupportedError extends Error {
         this.name = this.constructor.name;
     }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isCommandNotSupportedError(err: any): err is CommandNotSupportedError {
+    return err?.name === CommandNotSupportedError.name;
+}

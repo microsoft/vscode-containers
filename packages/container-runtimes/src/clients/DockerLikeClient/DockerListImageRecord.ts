@@ -8,6 +8,7 @@ export type DockerListImageRecord = {
     Repository: string;
     Tag: string;
     CreatedAt: string;
+    Size: string | number;
 };
 
 export function isDockerListImageRecord(maybeImage: unknown): maybeImage is DockerListImageRecord {
@@ -30,6 +31,10 @@ export function isDockerListImageRecord(maybeImage: unknown): maybeImage is Dock
     }
 
     if (typeof image.CreatedAt !== 'string') {
+        return false;
+    }
+
+    if (typeof image.Size !== 'string' && typeof image.Size !== 'number') {
         return false;
     }
 

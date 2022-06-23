@@ -17,6 +17,7 @@ export type DockerInspectImageRecord = {
     Architecture: string;
     OperatingSystem: string;
     CreatedAt: string;
+    User?: string;
     Raw: object;
 };
 

@@ -82,7 +82,8 @@ export class ShellStreamCommandRunnerFactory<TOptions extends ShellStreamCommand
 
                 await Promise.all(pipelinePromises);
 
-                return result;
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                return result!;
             } finally {
                 accumulator?.destroy();
             }

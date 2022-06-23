@@ -9,3 +9,8 @@ export class ChildProcessError extends Error {
         this.name = this.constructor.name;
     }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isChildProcessError(err: any): err is ChildProcessError {
+    return err?.name === ChildProcessError.name;
+}

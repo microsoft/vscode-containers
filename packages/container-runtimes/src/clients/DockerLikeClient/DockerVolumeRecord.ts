@@ -9,6 +9,8 @@ export type DockerVolumeRecord = {
     Labels: string;
     Mountpoint: string;
     Scope: string;
+    CreatedAt?: string;
+    Size?: string;
 };
 
 export function isDockerVolumeRecord(maybeVolume: unknown): maybeVolume is DockerVolumeRecord {

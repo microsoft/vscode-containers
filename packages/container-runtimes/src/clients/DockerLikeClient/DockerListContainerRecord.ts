@@ -8,7 +8,10 @@ export type DockerListContainerRecord = {
     Names: string;
     Image: string;
     Ports: string;
+    Networks: string;
     CreatedAt: string;
+    State: string;
+    Status: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,7 +36,19 @@ export function isDockerListContainerRecord(maybeContainer: any): maybeContainer
         return false;
     }
 
+    if (typeof maybeContainer.Networks !== 'string') {
+        return false;
+    }
+
     if (typeof maybeContainer.CreatedAt !== 'string') {
+        return false;
+    }
+
+    if (typeof maybeContainer.State !== 'string') {
+        return false;
+    }
+
+    if (typeof maybeContainer.Status !== 'string') {
         return false;
     }
 

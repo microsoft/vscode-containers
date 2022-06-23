@@ -82,15 +82,9 @@ type InfoCommand = {
  */
 export type LoginCommandOptions = {
     /**
-     * The username to log in with
+     * The username to log in with. Note, the password *must* be piped over stdin. The `--password-stdin` flag will be used.
      */
     username: string;
-
-    /**
-     * The password to log in with
-     */
-    password: string;
-
     /**
      * (Optional) The registry to log in to
      */
@@ -171,6 +165,10 @@ export type BuildImageCommandOptions = {
      * Optional file to write the ID of the built image to
      */
     imageIdFile?: string;
+    /**
+     * Additional custom options to pass
+     */
+    customOptions?: string;
 };
 
 type BuildImageCommand = {
@@ -215,6 +213,10 @@ export type ListImagesItem = {
      */
     name?: string;
     /**
+     * Labels on the image
+     */
+    labels: Labels;
+    /**
      * The tag of the image (unless this is an anonymous base image)
      */
     tag?: string;
@@ -230,6 +232,10 @@ export type ListImagesItem = {
      * The registry the image belongs to
      */
     registry?: string;
+    /**
+     * The size (in bytes) of the image
+     */
+    size?: number;
 };
 
 type ListImagesCommand = {
@@ -374,21 +380,25 @@ export type InspectImagesItem = {
      */
     id: string;
     /**
-     * The image name
+     * The image name, e.g. 'alpine'
      */
     name?: string;
     /**
-     * The image tag
+     * The image tag, e.g. 'latest'
      */
     tag?: string;
     /**
-     * The registry the image belongs to
+     * The registry the image belongs to, e.g. 'docker.io/library'
      */
     registry?: string;
     /**
-     * The full name of the image (registry/name:tag)
+     * The full name of the image (registry/name:tag), e.g. 'docker.io/library/alpine:latest'
      */
     image?: string;
+    /**
+     * Repo digest values
+     */
+    repoDigests: string[];
     /**
      * Is the image local only?
      */
@@ -433,6 +443,10 @@ export type InspectImagesItem = {
      * The date the image was created
      */
     createdAt: Date;
+    /**
+     * The default user in the container
+     */
+    user?: string;
     /**
      * The RAW inspect output
      */
@@ -487,6 +501,7 @@ export type RunContainerBindMount = {
     source: string;
     destination: string;
     readOnly: boolean;
+    // relable?: boolean; // TODO: not possible with mount syntax
 };
 
 export type RunContainerVolumeMount = {
@@ -499,6 +514,11 @@ export type RunContainerVolumeMount = {
 export type RunContainerMount =
     | RunContainerBindMount
     | RunContainerVolumeMount;
+
+export type RunContainerExtraHost = {
+    hostname: string;
+    ip: string;
+};
 
 export type RunContainerCommandOptions = {
     /**
@@ -513,6 +533,10 @@ export type RunContainerCommandOptions = {
      * Should the container be run detached?
      */
     detached?: boolean;
+    /**
+     * Should the container be run interactive?
+     */
+    interactive?: boolean;
     /**
      * Should the container be removed when it exits?
      */
@@ -530,6 +554,18 @@ export type RunContainerCommandOptions = {
      */
     publishAllPorts?: boolean;
     /**
+     * A network to connect to the container
+     */
+    network?: string;
+    /**
+     * A network-scoped alias for the container
+     */
+    networkAlias?: string;
+    /**
+     * Extra host-to-IP mappings
+     */
+    addHost?: Array<RunContainerExtraHost>;
+    /**
      * Mounts to attach to the container
      */
     mounts?: Array<RunContainerMount>;
@@ -537,6 +573,10 @@ export type RunContainerCommandOptions = {
      * Environment variables to set for the container
      */
     environmentVariables?: Record<string, string>;
+    /**
+     * Environment files for the container
+     */
+    environmentFiles?: string[];
     /**
      * Rule for pulling base images
      */
@@ -549,6 +589,10 @@ export type RunContainerCommandOptions = {
      * Optional command to use in starting the container
      */
     command?: Array<string> | string;
+    /**
+     * Additional custom options to pass
+     */
+    customOptions?: string;
 };
 
 type RunContainerCommand = {
@@ -593,7 +637,7 @@ type ExecContainerCommand = {
      * Generate a CommandResponse for executing a command in a running container.
      * @param options Command options
      */
-    execContainer(options: ExecContainerCommandOptions): Promise<CommandResponse<void>>;
+    execContainer(options: ExecContainerCommandOptions): Promise<CommandResponse<string>>;
 };
 
 // List Containers Command Types
@@ -631,7 +675,11 @@ export type ListContainersItem = {
      */
     name: string;
     /**
-     * The image used to run the container
+     * Labels on the container
+     */
+    labels: Labels;
+    /**
+     * The image name used to run the container (e.g. 'alpine')
      */
     image: string;
     /**
@@ -639,9 +687,21 @@ export type ListContainersItem = {
      */
     ports: Array<PortBinding>;
     /**
+     * The list of connected networks for the container
+     */
+    networks: string[];
+    /**
      * The date the container was created
      */
     createdAt: Date;
+    /**
+     * The container state (e.g. 'running', 'stopped', 'paused', etc.)
+     */
+    state: string;
+    /**
+     * The container status (e.g. 'Up 5 minutes', 'Exited (0) 1 minute ago', etc.)
+     */
+    status?: string;
 };
 
 type ListContainersCommand = {
@@ -1029,6 +1089,14 @@ export type ListVolumeItem = {
      * The scope for the volume
      */
     scope: string;
+    /**
+     * The date the volume was created at
+     */
+    createdAt?: Date;
+    /**
+     * The size (in bytes) of the volume
+     */
+    size?: number;
 };
 
 type ListVolumesCommand = {
@@ -1570,7 +1638,7 @@ type ReadFileCommand = {
      * NOTE: the output stream is in tarball format.
      * @param options Command options
      */
-    readFile(options: ReadFileCommandOptions): Promise<CommandResponse<string>>;
+    readFile(options: ReadFileCommandOptions): Promise<CommandResponse<void>>;
 };
 
 // Write file command types

@@ -74,6 +74,7 @@ export class PodmanClient extends DockerLikeClient implements IContainersClient 
                         image,
                         registry,
                         name: imageName,
+                        labels: {}, // TODO
                         tag,
                         createdAt,
                     });

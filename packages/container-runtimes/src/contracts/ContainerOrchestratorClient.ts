@@ -12,7 +12,15 @@ export type CommonOrchestratorCommandOptions = {
     /**
      * Orchestrator files, e.g. compose files
      */
-    files: string[];
+    files?: string[];
+    /**
+     * Environment variable file
+     */
+    environmentFile?: string;
+    /**
+     * Project name
+     */
+    projectName?: string;
 };
 
 // Up command types
@@ -33,6 +41,22 @@ export type UpCommandOptions = CommonOrchestratorCommandOptions & {
      * Whether to wait until services are running and healthy
      */
     wait?: boolean;
+    /**
+     * Specific services to start
+     */
+    services?: string[];
+    /**
+     * Specific service profiles to start
+     */
+    profiles?: string[];
+    /**
+     * Override specific service scaling
+     */
+    scale?: Record<string, number>;
+    /**
+     * Additional custom options to pass
+     */
+    customOptions?: string;
 };
 
 type UpCommand = {
@@ -49,6 +73,10 @@ export type DownCommandOptions = CommonOrchestratorCommandOptions & {
      * Whether to remove named volumes
      */
     removeVolumes?: boolean;
+    /**
+    * Whether to remove images
+    */
+    removeImages?: boolean;
     /**
      * A timeout in seconds
      */
