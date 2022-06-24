@@ -58,6 +58,7 @@ import { parseDockerImageRepository } from "./parseDockerImageRepository";
 import { parseDockerRawPortString } from './parseDockerRawPortString';
 import { tryParseSize } from './tryParseSize';
 import { withDockerAddHostArg } from './withDockerAddHostArg';
+import { withDockerBuildArg } from './withDockerBuildArg';
 import { withDockerEnvArg } from './withDockerEnvArg';
 import { withDockerJsonFormatArg } from "./withDockerJsonFormatArg";
 import { withDockerLabelFilterArgs } from "./withDockerLabelFilterArgs";
@@ -147,7 +148,7 @@ export abstract class DockerLikeClient implements IContainersClient {
                     : options.disableContentTrust),
             withDockerLabelsArg(options.labels),
             withNamedArg('--iidfile', options.imageIdFile),
-            withNamedArg('--build-arg', options.args),
+            withDockerBuildArg(options.args),
             withArg(options.customOptions),
             withArg(quoted(options.path)),
         )();

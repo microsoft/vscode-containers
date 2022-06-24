@@ -55,6 +55,9 @@ export class AccumulatorStream extends stream.Writable {
      * @returns The full stream content in a string
      */
     public async getString(encoding: BufferEncoding = 'utf-8'): Promise<string> {
-        return (await this.getBytes()).toString(encoding);
+        const rawString = (await this.getBytes()).toString(encoding);
+        // Remove non-printing control characters and trailing newlines
+        // eslint-disable-next-line no-control-regex
+        return rawString.replace(/[\x00-\x09\x0B-\x0C\x0E-\x1F]|\r?\n$/g, '');
     }
 }

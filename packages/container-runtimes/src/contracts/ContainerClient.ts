@@ -160,7 +160,7 @@ export type BuildImageCommandOptions = {
     /**
      * Optional arguments that can be used to override Dockerfile behavior
      */
-    args?: Array<string>;
+    args?: Record<string, string>;
     /**
      * Optional file to write the ID of the built image to
      */
