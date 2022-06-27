@@ -672,6 +672,9 @@ export abstract class DockerLikeClient implements IContainersClient {
             withNamedArg('--filter', options.running ? 'status=running' : undefined),
             withNamedArg('--filter', options.exited ? 'status=exited' : undefined),
             withNamedArg('--filter', options.names?.map((name) => `name=${name}`)),
+            withNamedArg('--filter', options.imageAncestors?.map((id) => `ancestor=${id}`)),
+            withNamedArg('--filter', options.volumes?.map((volume) => `volume=${volume}`)),
+            withNamedArg('--filter', options.networks?.map((network) => `network=${network}`)),
             withDockerNoTruncArg,
             withNamedArg(
                 '--format',
