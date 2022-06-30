@@ -12,7 +12,7 @@ export type CommonOrchestratorCommandOptions = {
     /**
      * Orchestrator files, e.g. compose files
      */
-    files?: string[];
+    files?: Array<string>;
     /**
      * Environment variable file
      */
@@ -44,11 +44,11 @@ export type UpCommandOptions = CommonOrchestratorCommandOptions & {
     /**
      * Specific services to start
      */
-    services?: string[];
+    services?: Array<string>;
     /**
      * Specific service profiles to start
      */
-    profiles?: string[];
+    profiles?: Array<string>;
     /**
      * Override specific service scaling
      */

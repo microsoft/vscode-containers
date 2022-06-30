@@ -104,6 +104,7 @@ export async function spawnStreamAsync(
         command,
         args,
         {
+            ...options,
             shell,
             // Ignore stdio streams if not needed to avoid backpressure issues
             stdio: [
