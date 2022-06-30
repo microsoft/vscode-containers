@@ -7,6 +7,17 @@ import { CommandResponse } from "./CommandRunner";
 
 export type ContainerOS = "linux" | "windows";
 
+export function isContainerOS(maybeContainerOS: unknown): maybeContainerOS is ContainerOS {
+    switch (maybeContainerOS) {
+        case 'linux':
+            return true;
+        case 'windows':
+            return true;
+        default:
+            return false;
+    }
+}
+
 export type Labels = {
     [key: string]: string;
 };

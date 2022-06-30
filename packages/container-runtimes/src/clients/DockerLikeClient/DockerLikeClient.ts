@@ -9,35 +9,69 @@ import * as utc from 'dayjs/plugin/utc';
 import { CommandResponse } from '../../contracts/CommandRunner';
 import {
     BuildImageCommandOptions,
+    ContainersStatsCommandOptions,
+    CreateContextCommandOptions,
+    CreateNetworkCommandOptions,
     CreateVolumeCommandOptions,
     ExecContainerCommandOptions,
     IContainersClient,
+    InfoCommandOptions,
+    InfoItem,
     InspectContainersCommandOptions,
     InspectContainersItem,
     InspectContainersItemMount,
     InspectContainersItemNetwork,
+    InspectContextsCommandOptions,
+    InspectContextsItem,
     InspectImagesCommandOptions,
     InspectImagesItem,
-    Labels,
+    InspectNetworksCommandOptions,
+    InspectNetworksItem,
+    InspectVolumesCommandOptions,
+    InspectVolumesItem,
     ListContainersCommandOptions,
     ListContainersItem,
+    ListContextItem,
+    ListContextsCommandOptions,
+    ListFilesItem,
     ListImagesCommandOptions,
     ListImagesItem,
+    ListNetworkItem,
+    ListNetworksCommandOptions,
     ListVolumeItem,
     ListVolumesCommandOptions,
+    LoginCommandOptions,
+    LogoutCommandOptions,
     LogsForContainerCommandOptions,
+    NetworkIpamConfig,
     PortBinding,
+    PruneContainersCommandOptions,
+    PruneContainersItem,
     PruneImagesCommandOptions,
     PruneImagesItem,
+    PruneNetworksCommandOptions,
+    PruneNetworksItem,
+    PruneVolumesCommandOptions,
+    PruneVolumesItem,
     PullImageCommandOptions,
+    PushImageCommandOptions,
+    ReadFileCommandOptions,
     RemoveContainersCommandOptions,
+    RemoveContextsCommandOptions,
+    RemoveImagesCommandOptions,
+    RemoveNetworksCommandOptions,
     RemoveVolumesCommandOptions,
+    RestartContainersCommandOptions,
     RunContainerCommandOptions,
+    StartContainersCommandOptions,
     StopContainersCommandOptions,
     TagImageCommandOptions,
+    UseContextCommandOptions,
     VersionCommandOptions,
-    VersionItem
+    VersionItem,
+    WriteFileCommandOptions
 } from "../../contracts/ContainerClient";
+import { asIds } from '../../utils/asIds';
 import {
     CommandLineArgs,
     composeArgs,
@@ -46,15 +80,21 @@ import {
     withFlagArg,
     withNamedArg,
 } from "../../utils/commandLineBuilder";
+import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
 import { toArray } from '../../utils/toArray';
+import { DockerInfoRecord, isDockerInfoRecord } from './DockerInfoRecord';
 import { DockerInspectContainerRecord, isDockerInspectContainerRecord } from './DockerInspectContainerRecord';
 import { DockerInspectImageRecord, isDockerInspectImageRecord } from './DockerInspectImageRecord';
+import { DockerInspectNetworkRecord, isDockerInspectNetworkRecord } from './DockerInspectNetworkRecord';
+import { DockerInspectVolumeRecord, isDockerInspectVolumeRecord } from './DockerInspectVolumeRecord';
 import { DockerListContainerRecord, isDockerListContainerRecord } from './DockerListContainerRecord';
 import { isDockerListImageRecord } from "./DockerListImageRecord";
+import { DockerNetworkRecord, isDockerNetworkRecord } from './DockerNetworkRecord';
 import { isDockerVersionRecord } from "./DockerVersionRecord";
 import { isDockerVolumeRecord } from './DockerVolumeRecord';
 import { goTemplateJsonFormat, GoTemplateJsonFormatOptions, goTemplateJsonProperty } from './goTemplateJsonFormat';
 import { parseDockerImageRepository } from "./parseDockerImageRepository";
+import { parseDockerLikeLabels } from './parseDockerLikeLabels';
 import { parseDockerRawPortString } from './parseDockerRawPortString';
 import { tryParseSize } from './tryParseSize';
 import { withDockerAddHostArg } from './withDockerAddHostArg';
@@ -70,7 +110,6 @@ import { withDockerPortsArg } from './withDockerPortsArg';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
-// @ts-expect-error TODO: It doesn't fully implement the interface right now
 export abstract class DockerLikeClient implements IContainersClient {
     abstract readonly id: string;
     abstract readonly displayName: string;
@@ -78,7 +117,47 @@ export abstract class DockerLikeClient implements IContainersClient {
     abstract readonly commandName: string;
     listDateFormat: string = 'YYYY-MM-DD HH:mm:ss ZZ';
 
-    //#region Version Command
+    //#region Information Commands
+
+    protected getInfoCommandArgs(
+        options?: InfoCommandOptions,
+        formatOverrides?: Partial<GoTemplateJsonFormatOptions<DockerInfoRecord>>,
+    ): CommandLineArgs {
+        return composeArgs(
+            withArg('info'),
+            withNamedArg(
+                '--format',
+                // By specifying an explicit Go template format output, we're able to use the same normalization logic
+                // for both Docker and Podman clients
+                goTemplateJsonFormat<DockerInfoRecord>({
+                    OperatingSystem: goTemplateJsonProperty`.OperatingSystem`,
+                    OSType: goTemplateJsonProperty`.OSType`,
+                    Raw: goTemplateJsonProperty`.`,
+                }, formatOverrides)),
+        )();
+    }
+
+    protected async parseInfoCommandOutput(output: string, strict: boolean): Promise<InfoItem> {
+        const info = JSON.parse(output);
+
+        if (!isDockerInfoRecord(info)) {
+            throw new Error('Invalid info JSON');
+        }
+
+        return {
+            operatingSystem: info.OperatingSystem,
+            osType: info.OSType,
+            raw: info.Raw,
+        };
+    }
+
+    async info(options?: InfoCommandOptions): Promise<CommandResponse<InfoItem>> {
+        return {
+            command: this.commandName,
+            args: this.getVersionCommandArgs(options),
+            parse: this.parseInfoCommandOutput,
+        };
+    }
 
     /**
      * Get the command line arguments for a Docker-like client version command
@@ -125,6 +204,40 @@ export abstract class DockerLikeClient implements IContainersClient {
 
     //#endregion
 
+    //#region Auth Commands
+
+    protected getLoginCommandArgs(options: LoginCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('login'),
+            withNamedArg('--username', options.username),
+            withArg('--password-stdin'),
+            withArg(options.registry),
+        )();
+    }
+
+    async login(options: LoginCommandOptions): Promise<CommandResponse<void>> {
+        return {
+            command: this.commandName,
+            args: this.getLoginCommandArgs(options),
+        };
+    }
+
+    protected getLogoutCommandArgs(options: LogoutCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('logout'),
+            withArg(options.registry),
+        )();
+    }
+
+    async logout(options: LogoutCommandOptions): Promise<CommandResponse<void>> {
+        return {
+            command: this.commandName,
+            args: this.getLogoutCommandArgs(options),
+        };
+    }
+
+    //#endregion
+
     //#region Image Commands
 
     //#region BuildImage Command
@@ -155,21 +268,6 @@ export abstract class DockerLikeClient implements IContainersClient {
     }
 
     /**
-     * Parse the build image command standard out
-     * @param options Build image command options
-     * @param output Standard output from the build image command
-     * @param strict Should the output be strictly parsed?
-     * @returns An empty promise
-     */
-    protected parseBuildImageCommandOutput(
-        options: BuildImageCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<void> {
-        return Promise.resolve();
-    }
-
-    /**
      * Implements the build image command for a Docker-like runtime
      * @param options Standard build image command options
      * @returns A CommandResponse object that can be used to invoke and parse the build image command for the current runtime
@@ -178,7 +276,6 @@ export abstract class DockerLikeClient implements IContainersClient {
         return {
             command: this.commandName,
             args: this.getBuildImageCommandArgs(options),
-            parse: (output, strict) => this.parseBuildImageCommandOutput(options, output, strict),
         };
     }
 
@@ -223,7 +320,7 @@ export abstract class DockerLikeClient implements IContainersClient {
         try {
             // Docker returns JSON per-line output, so we need to split each line
             // and parse as independent JSON objects
-            output.split("\n").forEach((imageJson) => {
+            output.split('\n').forEach((imageJson) => {
                 try {
                     // Ignore empty lines when parsing
                     if (!imageJson) {
@@ -284,6 +381,52 @@ export abstract class DockerLikeClient implements IContainersClient {
             command: this.commandName,
             args: this.getListImagesCommandArgs(options),
             parse: (output, strict) => this.parseListImagesCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#region RemoveImages Command
+
+    protected getRemoveImagesCommandArgs(options: RemoveImagesCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('image', 'remove'),
+            withFlagArg('--force', options.force),
+            withArg(...options.images),
+        )();
+    }
+
+    protected async parseRemoveImagesCommandOutput(
+        options: RemoveImagesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<string>> {
+        return asIds(output);
+    }
+
+    async removeImages(options: RemoveImagesCommandOptions): Promise<CommandResponse<string[]>> {
+        return {
+            command: this.commandName,
+            args: this.getRemoveImagesCommandArgs(options),
+            parse: (output, strict) => this.parseRemoveImagesCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#region PushImage Command
+
+    protected getPushImageCommandArgs(options: PushImageCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('image', 'push'),
+            withArg(options.image),
+        )();
+    }
+
+    async pushImage(options: PushImageCommandOptions): Promise<CommandResponse<void>> {
+        return {
+            command: this.commandName,
+            args: this.getPushImageCommandArgs(options),
         };
     }
 
@@ -366,19 +509,10 @@ export abstract class DockerLikeClient implements IContainersClient {
         )();
     }
 
-    protected parseTagImageCommandOutput(
-        options: TagImageCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<void> {
-        return Promise.resolve();
-    }
-
     async tagImage(options: TagImageCommandOptions): Promise<CommandResponse<void>> {
         return {
             command: this.commandName,
             args: this.getTagImageCommandArgs(options),
-            parse: (output, strict) => this.parseTagImageCommandOutput(options, output, strict),
         };
     }
 
@@ -771,6 +905,60 @@ export abstract class DockerLikeClient implements IContainersClient {
 
     //#endregion
 
+    //#region StartContainers Command
+
+    protected getStartContainersCommandArgs(options: StartContainersCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('container', 'start'),
+            withArg(...toArray(options.container)),
+        )();
+    }
+
+    protected async parseStartContainersCommandOutput(
+        options: StartContainersCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<string>> {
+        return asIds(output);
+    }
+
+    async startContainers(options: StartContainersCommandOptions): Promise<CommandResponse<Array<string>>> {
+        return {
+            command: this.commandName,
+            args: this.getStartContainersCommandArgs(options),
+            parse: (output, strict) => this.parseStartContainersCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#region RestartContainers Command
+
+    protected getRestartContainersCommandArgs(options: RestartContainersCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('container', 'restart'),
+            withArg(...toArray(options.container)),
+        )();
+    }
+
+    protected async parseRestartContainersCommandOutput(
+        options: RestartContainersCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<string>> {
+        return asIds(output);
+    }
+
+    async restartContainers(options: RestartContainersCommandOptions): Promise<CommandResponse<Array<string>>> {
+        return {
+            command: this.commandName,
+            args: this.getRestartContainersCommandArgs(options),
+            parse: (output, strict) => this.parseRestartContainersCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
     //#region StopContainers Command
 
     /**
@@ -798,7 +986,7 @@ export abstract class DockerLikeClient implements IContainersClient {
         output: string,
         strict: boolean,
     ): Promise<Array<string>> {
-        return output.split('\n').filter((id) => id);
+        return asIds(output);
     }
 
     async stopContainers(options: StopContainersCommandOptions): Promise<CommandResponse<Array<string>>> {
@@ -826,7 +1014,7 @@ export abstract class DockerLikeClient implements IContainersClient {
         output: string,
         strict: boolean,
     ): Promise<Array<string>> {
-        return output.split('\n').filter((id) => id);
+        return asIds(output);
     }
 
     async removeContainers(options: RemoveContainersCommandOptions): Promise<CommandResponse<Array<string>>> {
@@ -835,6 +1023,57 @@ export abstract class DockerLikeClient implements IContainersClient {
             args: this.getRemoveContainersCommandArgs(options),
             parse: (output, strict) => this.parseRemoveContainersCommandOutput(options, output, strict),
         };
+    }
+
+    //#endregion
+
+    //#region PruneContainers Command
+
+    protected getPruneContainersCommandArgs(options: PruneContainersCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('container', 'prune'),
+            withArg('--force'),
+        )();
+    }
+
+    // TODO: Parse output for prune info
+    protected async parsePruneContainersCommandOutput(
+        options: PruneContainersCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<PruneContainersItem> {
+        return {};
+    }
+
+    async pruneContainers(options: PruneContainersCommandOptions): Promise<CommandResponse<PruneContainersItem>> {
+        return {
+            command: this.commandName,
+            args: this.getPruneContainersCommandArgs(options),
+            parse: (output, strict) => this.parsePruneContainersCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#region StatsContainers Command
+
+    protected getStatsContainersCommandArgs(options: ContainersStatsCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('container', 'stats'),
+            withFlagArg('--all', options.all),
+        )();
+    }
+
+    protected async parseStatsContainersCommandArgs(
+        options: ContainersStatsCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<string> {
+        return output;
+    }
+
+    async statsContainers(options: ContainersStatsCommandOptions): Promise<CommandResponse<string>> {
+        throw new CommandNotSupportedError('statsContainers is not supported for this runtime');
     }
 
     //#endregion
@@ -1170,11 +1409,7 @@ export abstract class DockerLikeClient implements IContainersClient {
                     }
 
                     // Parse the labels assigned tot he volumes and normalize to key value pairs
-                    const labels = rawVolume.Labels.split(',').reduce((labels, labelPair) => {
-                        const index = labelPair.indexOf('=');
-                        labels[labelPair.substring(0, index)] = labelPair.substring(index + 1);
-                        return labels;
-                    }, {} as Labels);
+                    const labels = parseDockerLikeLabels(rawVolume.Labels);
 
                     const createdAt = rawVolume.CreatedAt
                         ? dayjs.utc(rawVolume.CreatedAt)
@@ -1244,7 +1479,7 @@ export abstract class DockerLikeClient implements IContainersClient {
         output: string,
         strict: boolean,
     ): Promise<string[]> {
-        return output.split('\n').filter(id => id);
+        return asIds(output);
     }
 
     /**
@@ -1259,6 +1494,469 @@ export abstract class DockerLikeClient implements IContainersClient {
             args: this.getRemoveVolumesCommandArgs(options),
             parse: (output, strict) => this.parseRemoveVolumesCommandOutput(options, output, strict),
         };
+    }
+
+    //#endregion
+
+    //#region PruneVolumes Command
+
+    protected getPruneVolumesCommandArgs(options: PruneVolumesCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('volume', 'prune'),
+            withArg('--force'),
+        )();
+    }
+
+    protected async parsePruneVolumesCommandOutput(
+        options: PruneVolumesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<PruneVolumesItem> {
+        // TODO: Parse output for prune info
+        return {};
+    }
+
+    async pruneVolumes(options: PruneVolumesCommandOptions): Promise<CommandResponse<PruneVolumesItem>> {
+        return {
+            command: this.commandName,
+            args: this.getPruneVolumesCommandArgs(options),
+            parse: (output, strict) => this.parsePruneVolumesCommandOutput(options, output, strict),
+
+        };
+    }
+
+    //#endregion
+
+    //#region InspectVolumes Command
+
+    protected getInspectVolumesCommandArgsCore(
+        options: InspectVolumesCommandOptions,
+        formatOverrides?: Partial<GoTemplateJsonFormatOptions<DockerInspectVolumeRecord>>,
+    ): CommandLineArgs {
+        return composeArgs(
+            withArg('volume', 'inspect'),
+            withNamedArg(
+                '--format',
+                goTemplateJsonFormat<DockerInspectVolumeRecord>({
+                    Name: goTemplateJsonProperty`.Name`,
+                    Driver: goTemplateJsonProperty`.Driver`,
+                    Mountpoint: goTemplateJsonProperty`.Mountpoint`,
+                    Scope: goTemplateJsonProperty`.Scope`,
+                    Labels: goTemplateJsonProperty`.Labels`,
+                    Options: goTemplateJsonProperty`.Options`,
+                    CreatedAt: goTemplateJsonProperty`.CreatedAt`,
+                    Raw: goTemplateJsonProperty`.`,
+                }, formatOverrides),
+            ),
+            withArg(...options.volumes),
+        )();
+    }
+
+    protected getInspectVolumesCommandArgs(options: InspectVolumesCommandOptions): CommandLineArgs {
+        return this.getInspectVolumesCommandArgsCore(options);
+    }
+
+    protected async parseInspectVolumesCommandOutput(
+        options: InspectVolumesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<InspectVolumesItem>> {
+        try {
+            return output.split('\n').reduce<Array<InspectVolumesItem>>((volumes, inspectString) => {
+                if (!inspectString) {
+                    return volumes;
+                }
+
+                try {
+                    const inspect = JSON.parse(inspectString);
+
+                    if (!isDockerInspectVolumeRecord(inspect)) {
+                        throw new Error('Invalid container inspect json');
+                    }
+
+                    const createdAt = dayjs.utc(inspect.CreatedAt);
+
+                    // Return the normalized InspectVolumesItem record
+                    const volume: InspectVolumesItem = {
+                        name: inspect.Name,
+                        driver: inspect.Driver,
+                        mountpoint: inspect.Mountpoint,
+                        scope: inspect.Scope,
+                        labels: inspect.Labels,
+                        options: inspect.Options,
+                        createdAt: createdAt.toDate(),
+                        raw: JSON.stringify(inspect.Raw),
+                    };
+
+                    return [...volumes, volume];
+                } catch (err) {
+                    if (strict) {
+                        throw err;
+                    }
+                }
+
+                return volumes;
+            }, new Array<InspectVolumesItem>());
+        } catch (err) {
+            if (strict) {
+                throw err;
+            }
+        }
+
+        return new Array<InspectVolumesItem>();
+    }
+
+    async inspectVolumes(options: InspectVolumesCommandOptions): Promise<CommandResponse<Array<InspectVolumesItem>>> {
+        return {
+            command: this.commandName,
+            args: this.getInspectVolumesCommandArgs(options),
+            parse: (output, strict) => this.parseInspectVolumesCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#endregion
+
+    //#region Network Commands
+
+    //#region CreateNetwork Command
+
+    protected getCreateNetworkCommandArgs(options: CreateNetworkCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'create'),
+            withNamedArg('--driver', options.driver),
+            withArg(options.name),
+        )();
+    }
+
+    async createNetwork(options: CreateNetworkCommandOptions): Promise<CommandResponse<void>> {
+        return {
+            command: this.commandName,
+            args: this.getCreateNetworkCommandArgs(options),
+        };
+    }
+
+    //#endregion
+
+    //#region ListNetworks Command
+
+    // TODO: Populate filter arguments
+    protected getListNetworksCommandArgsCore(
+        options: ListNetworksCommandOptions,
+        formatOverrides?: Partial<GoTemplateJsonFormatOptions<DockerNetworkRecord>>,
+    ): CommandLineArgs {
+        return composeArgs(
+            withNamedArg('network', 'ls'),
+            withNamedArg(
+                '--format',
+                goTemplateJsonFormat<DockerNetworkRecord>({
+                    Id: goTemplateJsonProperty`.ID`,
+                    Name: goTemplateJsonProperty`.Name`,
+                    Driver: goTemplateJsonProperty`.Driver`,
+                    Scope: goTemplateJsonProperty`.Scope`,
+                    Labels: goTemplateJsonProperty`.Labels`,
+                    IPv6: goTemplateJsonProperty`.IPv6`,
+                    Internal: goTemplateJsonProperty`.Internal`,
+                    CreatedAt: goTemplateJsonProperty`.CreatedAt`,
+                }, formatOverrides),
+            ),
+        )();
+    }
+
+    protected getListNetworksCommandArgs(options: ListNetworksCommandOptions): CommandLineArgs {
+        return this.getListNetworksCommandArgsCore(options);
+    }
+
+    protected async parseListNetworksCommandOutput(
+        options: ListNetworksCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<ListNetworkItem>> {
+        const networks = new Array<ListNetworkItem>();
+        try {
+            output.split("\n").forEach((networkJson) => {
+                try {
+                    if (!networkJson) {
+                        return;
+                    }
+
+                    const rawNetwork = JSON.parse(networkJson);
+
+                    if (!isDockerNetworkRecord(rawNetwork)) {
+                        throw new Error('Invalid volume JSON');
+                    }
+
+                    // Parse the labels assigned to the volumes and normalize to key value pairs
+
+                    const labels = parseDockerLikeLabels(rawNetwork.Labels);
+
+                    const createdAt = dayjs.utc(rawNetwork.CreatedAt).toDate();
+
+                    networks.push({
+                        id: rawNetwork.Id,
+                        name: rawNetwork.Name,
+                        driver: rawNetwork.Driver,
+                        labels,
+                        scope: rawNetwork.Scope,
+                        ipv6: rawNetwork.IPv6.toLowerCase() === 'true',
+                        internal: rawNetwork.Internal.toLowerCase() === 'true',
+                        createdAt,
+                    });
+                } catch (err) {
+                    if (strict) {
+                        throw err;
+                    }
+                }
+            });
+        } catch (err) {
+            if (strict) {
+                throw err;
+            }
+        }
+
+        return networks;
+    }
+
+    async listNetworks(options: ListNetworksCommandOptions): Promise<CommandResponse<Array<ListNetworkItem>>> {
+        return {
+            command: this.commandName,
+            args: this.getListNetworksCommandArgs(options),
+            parse: (output, strict) => this.parseListNetworksCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#region RemoveNetworks Command
+
+    protected getRemoveNetworksCommandArgs(options: RemoveNetworksCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'remove'),
+            withFlagArg('--force', options.force),
+            withArg(...options.networks),
+        )();
+    }
+
+    protected async parseRemoveNetworksCommandOutput(
+        options: RemoveNetworksCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<string>> {
+        return output.split('\n').map((id) => id);
+    }
+
+    async removeNetworks(options: RemoveNetworksCommandOptions): Promise<CommandResponse<Array<string>>> {
+        return {
+            command: this.commandName,
+            args: this.getRemoveNetworksCommandArgs(options),
+            parse: (output, strict) => this.parseRemoveNetworksCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#region PruneNetworks Command
+
+    protected getPruneNetworksCommandArgs(options: PruneNetworksCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'prune'),
+            withArg('--force'),
+        )();
+    }
+
+    // TODO: Parse response to populate PruneNetworksItem
+    protected async parsePruneNetworksCommandOutput(
+        options: PruneNetworksCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<PruneNetworksItem> {
+        return {};
+    }
+
+    async pruneNetworks(options: PruneNetworksCommandOptions): Promise<CommandResponse<PruneNetworksItem>> {
+        return {
+            command: this.commandName,
+            args: this.getPruneNetworksCommandArgs(options),
+            parse: (output, strict) => this.parsePruneNetworksCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#region InspectNetworks Command
+
+    protected getInspectNetworksCommandArgsCore(
+        options: InspectNetworksCommandOptions,
+        formatOverrides?: Partial<GoTemplateJsonFormatOptions<DockerInspectNetworkRecord>>,
+    ): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'inspect'),
+            withNamedArg(
+                '--format',
+                goTemplateJsonFormat<DockerInspectNetworkRecord>({
+                    Id: goTemplateJsonProperty`.ID`,
+                    Name: goTemplateJsonProperty`.Name`,
+                    Driver: goTemplateJsonProperty`.Driver`,
+                    Scope: goTemplateJsonProperty`.Scope`,
+                    Labels: goTemplateJsonProperty`.Labels`,
+                    Ipam: goTemplateJsonProperty`.Ipam`,
+                    EnableIPv6: goTemplateJsonProperty`.EnableIPv6`,
+                    Internal: goTemplateJsonProperty`.Internal`,
+                    Attachable: goTemplateJsonProperty`.Attachable`,
+                    Ingress: goTemplateJsonProperty`.Ingress`,
+                    CreatedAt: goTemplateJsonProperty`.CreatedAt`,
+                    Raw: goTemplateJsonProperty`.`,
+                }, formatOverrides),
+            ),
+            withArg(...options.networks),
+        )();
+    }
+
+    protected getInspectNetworksCommandArgs(options: InspectNetworksCommandOptions): CommandLineArgs {
+        return this.getInspectNetworksCommandArgsCore(options);
+    }
+
+    protected async parseInspectNetworksCommandOutput(
+        options: InspectNetworksCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<InspectNetworksItem>> {
+        try {
+            return output.split('\n').reduce<Array<InspectNetworksItem>>((networks, inspectString) => {
+                if (!inspectString) {
+                    return networks;
+                }
+
+                try {
+                    const inspect = JSON.parse(inspectString);
+
+                    if (!isDockerInspectNetworkRecord(inspect)) {
+                        throw new Error('Invalid network inspect json');
+                    }
+
+                    const ipam: NetworkIpamConfig = {
+                        driver: inspect.Ipam.Driver,
+                        config: inspect.Ipam.Config.map(({ Subnet, Gateway }) => ({
+                            subnet: Subnet,
+                            gateway: Gateway,
+                        })),
+                    };
+
+                    const createdAt = dayjs.utc(inspect.CreatedAt);
+
+                    // Return the normalized InspectNetworksItem record
+                    const network: InspectNetworksItem = {
+                        id: inspect.Id,
+                        name: inspect.Name,
+                        driver: inspect.Driver,
+                        scope: inspect.Scope,
+                        labels: inspect.Labels,
+                        ipam,
+                        ipv6: inspect.EnableIPv6,
+                        internal: inspect.Internal,
+                        attachable: inspect.Attachable,
+                        ingress: inspect.Ingress,
+                        createdAt: createdAt.toDate(),
+                        raw: JSON.stringify(inspect.Raw),
+                    };
+
+                    return [...networks, network];
+                } catch (err) {
+                    if (strict) {
+                        throw err;
+                    }
+                }
+
+                return networks;
+            }, new Array<InspectNetworksItem>());
+        } catch (err) {
+            if (strict) {
+                throw err;
+            }
+        }
+
+        return new Array<InspectNetworksItem>();
+    }
+
+    async inspectNetworks(options: InspectNetworksCommandOptions): Promise<CommandResponse<InspectNetworksItem[]>> {
+        return {
+            command: this.commandName,
+            args: this.getInspectNetworksCommandArgs(options),
+            parse: (output, strict) => this.parseInspectNetworksCommandOutput(options, output, strict),
+        };
+    }
+
+    //#endregion
+
+    //#endregion
+
+    //#region Context Commands
+
+    //#region CreateContext Command
+
+    async createContext(options: CreateContextCommandOptions): Promise<CommandResponse<void>> {
+        throw new CommandNotSupportedError('createContext is not supported for this runtime');
+    }
+
+    //#endregion
+
+    //#region ListContexts Command
+
+    async listContexts(options: ListContextsCommandOptions): Promise<CommandResponse<ListContextItem[]>> {
+        throw new CommandNotSupportedError('listContexts is not supported for this runtime');
+    }
+
+    //#endregion
+
+    //#region RemoveContexts Command
+
+    async removeContexts(options: RemoveContextsCommandOptions): Promise<CommandResponse<string[]>> {
+        throw new CommandNotSupportedError('removeContexts is not supported for this runtime');
+    }
+
+    //#endregion
+
+    //#region UseContext Command
+
+    async useContext(options: UseContextCommandOptions): Promise<CommandResponse<void>> {
+        throw new CommandNotSupportedError('useContext is not supported for this runtime');
+    }
+
+    //#endregion
+
+    //#region InspectContexts Command
+
+    async inspectContexts(options: InspectContextsCommandOptions): Promise<CommandResponse<InspectContextsItem[]>> {
+        throw new CommandNotSupportedError('inspectContexts is not supported for this runtime');
+    }
+
+    //#endregion
+
+    //#endregion
+
+    //#region File Commands
+
+    //#region ListFiles Command
+
+    async listFiles(options: ListContainersCommandOptions): Promise<CommandResponse<ListFilesItem[]>> {
+        throw new CommandNotSupportedError('listFiles is not supported for this runtime');
+    }
+
+    //#endregion
+
+    //#region ReadFile Command
+
+    async readFile(options: ReadFileCommandOptions): Promise<CommandResponse<void>> {
+        throw new CommandNotSupportedError('readFile is not supported for this runtime');
+    }
+
+    //#endregion
+
+    //#region WriteFile Command
+
+    async writeFile(options: WriteFileCommandOptions): Promise<CommandResponse<void>> {
+        throw new CommandNotSupportedError('writeFile is not supported for this runtime');
     }
 
     //#endregion

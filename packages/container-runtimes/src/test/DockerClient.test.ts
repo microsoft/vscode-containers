@@ -25,7 +25,6 @@ describe('DockerClient', () => {
 
             expect(commandResult).to.have.a.property('command', 'docker');
             expect(commandResult).to.have.a.property('args').that.deep.equals([escaped('image'), escaped('build'), quoted(path)]);
-            expect(commandResult).to.have.property('parse').that.is.a('function');
         });
         it('handles pull=true', async () => {
             const commandResult = await client.buildImage({

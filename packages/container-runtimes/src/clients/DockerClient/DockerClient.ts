@@ -6,7 +6,6 @@
 import { IContainersClient } from "../../contracts/ContainerClient";
 import { DockerLikeClient } from "../DockerLikeClient/DockerLikeClient";
 
-// @ts-expect-error TODO: It doesn't fully implement the interface right now
 export class DockerClient extends DockerLikeClient implements IContainersClient {
     readonly id = 'com.microsoft.visualstudio.containers.docker';
     readonly displayName = 'Docker';
