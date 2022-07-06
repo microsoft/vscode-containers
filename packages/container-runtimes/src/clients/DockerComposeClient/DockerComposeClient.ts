@@ -24,6 +24,7 @@ import {
     withFlagArg,
     withNamedArg
 } from '../../utils/commandLineBuilder';
+import { ConfigurableClient } from '../ConfigurableClient';
 
 function withCommonOrchestratorArgs(options: CommonOrchestratorCommandOptions): CommandLineCurryFn {
     return composeArgs(
@@ -33,16 +34,59 @@ function withCommonOrchestratorArgs(options: CommonOrchestratorCommandOptions): 
     );
 }
 
-export class DockerComposeClient implements IContainerOrchestratorClient {
-    public readonly id: string = 'com.microsoft.visualstudio.orchestrators.dockercompose';
-    public readonly displayName: string = 'Docker Compose';
-    public readonly description: string = 'Runs orchestrator commands using the Docker Compose CLI';
-    public readonly commandName: string = 'docker compose';
+function withComposeArg(composeV2: boolean): CommandLineCurryFn {
+    // If using Compose V2, then add the `compose` argument at the beginning
+    // That way, the command is `docker compose` instead of `docker-compose`
+    return withArg(composeV2 ? 'compose' : undefined);
+}
+
+export class DockerComposeClient extends ConfigurableClient implements IContainerOrchestratorClient {
+    /**
+     * The ID of the Docker Compose client
+     */
+    public static ClientId = 'com.microsoft.visualstudio.orchestrators.dockercompose';
+
+    /**
+     * Constructs a new {@link DockerComposeClient}
+     * @param commandName (Optional, default `docker`) The command that will be run
+     * as the base command. If quoting is necessary, it is the responsibility of the
+     * caller to add.
+     * @param displayName (Optional, default 'Podman') The human-friendly display
+     * name of the client
+     * @param description (Optional, with default) The human-friendly description of
+     * the client
+     * @param composeV2 (Optional, default `true`) If true, `compose` will be added as the
+     * first argument to all commands. The base command should be `docker`.
+     */
+    public constructor(
+        commandName?: string,
+        displayName: string = 'Docker Compose',
+        description: string = 'Runs orchestrator commands using the Docker Compose CLI',
+        composeV2: boolean = true
+    ) {
+        super(
+            DockerComposeClient.ClientId,
+            commandName || composeV2 ? 'docker' : 'docker-compose',
+            displayName,
+            description
+        );
+        this.#composeV2 = composeV2;
+    }
+
+    #composeV2: boolean;
+    public get composeV2(): boolean {
+        return this.#composeV2;
+    }
+
+    public set composeV2(value: boolean) {
+        this.#composeV2 = value;
+    }
 
     //#region Up command
 
     protected getUpCommandArgs(options: UpCommandOptions): CommandLineArgs {
         return composeArgs(
+            withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withNamedArg('--profile', options.profiles),
             withArg('up'),
@@ -74,6 +118,7 @@ export class DockerComposeClient implements IContainerOrchestratorClient {
 
     protected getDownCommandArgs(options: DownCommandOptions): CommandLineArgs {
         return composeArgs(
+            withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('down'),
             withNamedArg('--images', options.removeImages),
@@ -101,6 +146,7 @@ export class DockerComposeClient implements IContainerOrchestratorClient {
 
     protected getStartCommandArgs(options: StartCommandOptions): CommandLineArgs {
         return composeArgs(
+            withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('start'),
         )();
@@ -124,6 +170,7 @@ export class DockerComposeClient implements IContainerOrchestratorClient {
 
     protected getStopCommandArgs(options: StopCommandOptions): CommandLineArgs {
         return composeArgs(
+            withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('stop'),
             withNamedArg('--timeout', options.timeoutSeconds?.toString(10)),
@@ -148,6 +195,7 @@ export class DockerComposeClient implements IContainerOrchestratorClient {
 
     protected getRestartCommandArgs(options: RestartCommandOptions): CommandLineArgs {
         return composeArgs(
+            withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('restart'),
             withNamedArg('--timeout', options.timeoutSeconds?.toString(10)),
@@ -172,6 +220,7 @@ export class DockerComposeClient implements IContainerOrchestratorClient {
 
     protected getLogsCommandArgs(options: LogsCommandOptions): CommandLineArgs {
         return composeArgs(
+            withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('logs'),
             withFlagArg('--follow', options.follow),
@@ -197,6 +246,7 @@ export class DockerComposeClient implements IContainerOrchestratorClient {
 
     protected getConfigCommandArgs(options: ConfigCommandOptions): CommandLineArgs {
         return composeArgs(
+            withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('config'),
             withArg(`--${options.configType}`),

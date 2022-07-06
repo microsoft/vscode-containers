@@ -82,6 +82,7 @@ import {
 } from "../../utils/commandLineBuilder";
 import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
 import { toArray } from '../../utils/toArray';
+import { ConfigurableClient } from '../ConfigurableClient';
 import { DockerInfoRecord, isDockerInfoRecord } from './DockerInfoRecord';
 import { DockerInspectContainerRecord, isDockerInspectContainerRecord } from './DockerInspectContainerRecord';
 import { DockerInspectImageRecord, isDockerInspectImageRecord } from './DockerInspectImageRecord';
@@ -110,11 +111,7 @@ import { withDockerPortsArg } from './withDockerPortsArg';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
-export abstract class DockerLikeClient implements IContainersClient {
-    abstract readonly id: string;
-    abstract readonly displayName: string;
-    abstract readonly description: string;
-    abstract readonly commandName: string;
+export abstract class DockerLikeClient extends ConfigurableClient implements IContainersClient {
     listDateFormat: string = 'YYYY-MM-DD HH:mm:ss ZZ';
 
     //#region Information Commands
