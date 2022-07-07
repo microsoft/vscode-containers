@@ -1460,39 +1460,6 @@ type InspectNetworksCommand = {
  */
 export type ContextType = 'aci' | 'containerd' | 'ecs' | string;
 
-// Create Context Command Types
-
-export type CreateContextCommandOptions = {
-    /**
-     * The name for the context
-     */
-    name: string;
-    /**
-     * The description for the context
-     */
-    description?: string;
-    /**
-     * The type for the context (e.g. 'aci' or 'ecs')
-     */
-    type?: ContextType;
-    /**
-     * The endpoint for the container daemon
-     */
-    containerEndpoint: string;
-    /**
-     * The endpoint for the container orchestrator daemon
-     */
-    orchestratorEndpoint?: string;
-};
-
-type CreateContextCommand = {
-    /**
-     * Generate a CommandResponse for creating a context
-     * @param options Command options
-     */
-    createContext(options: CreateContextCommandOptions): Promise<CommandResponse<void>>;
-};
-
 // List Contexts Command Types
 
 export type ListContextsCommandOptions = {
@@ -1520,10 +1487,6 @@ export type ListContextItem = {
      * The endpoint used for the container daemon
      */
     containerEndpoint?: string;
-    /**
-     * The endpoint used for the container orchestrator daemon
-     */
-    orchestratorEndpoint?: string;
 };
 
 type ListContextsCommand = {
@@ -1739,7 +1702,6 @@ export interface IContainersClient extends
     PruneNetworksCommand,
     InspectNetworksCommand,
     // Context commands
-    CreateContextCommand,
     ListContextsCommand,
     RemoveContextsCommand,
     UseContextCommand,

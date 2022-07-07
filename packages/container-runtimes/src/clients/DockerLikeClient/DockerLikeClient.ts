@@ -10,7 +10,6 @@ import { CommandResponse } from '../../contracts/CommandRunner';
 import {
     BuildImageCommandOptions,
     ContainersStatsCommandOptions,
-    CreateContextCommandOptions,
     CreateNetworkCommandOptions,
     CreateVolumeCommandOptions,
     ExecContainerCommandOptions,
@@ -1568,7 +1567,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                     const inspect = JSON.parse(inspectString);
 
                     if (!isDockerInspectVolumeRecord(inspect)) {
-                        throw new Error('Invalid container inspect json');
+                        throw new Error('Invalid volume inspect json');
                     }
 
                     const createdAt = dayjs.utc(inspect.CreatedAt);
@@ -1889,14 +1888,6 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
     //#endregion
 
     //#region Context Commands
-
-    //#region CreateContext Command
-
-    async createContext(options: CreateContextCommandOptions): Promise<CommandResponse<void>> {
-        throw new CommandNotSupportedError('createContext is not supported for this runtime');
-    }
-
-    //#endregion
 
     //#region ListContexts Command
 
