@@ -9,4 +9,8 @@
         "source.fixAll": true
     },
     "typescript.preferences.importModuleSpecifier": "relative",
+    "git.branchProtection": [
+        "main",
+        "rel/*"
+    ],
 }
