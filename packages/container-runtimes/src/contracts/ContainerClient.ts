@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { ShellQuotedString } from 'vscode';
 import { CommandResponse } from "./CommandRunner";
 
 export type ContainerOS = "linux" | "windows";
@@ -645,7 +646,7 @@ export type ExecContainerCommandOptions = {
     /**
      * The command to run in the container
      */
-    command: Array<string> | string;
+    command: Array<string | ShellQuotedString> | string | ShellQuotedString;
 };
 
 type ExecContainerCommand = {
@@ -1577,9 +1578,15 @@ type InspectContextsCommand = {
 
 // List files command types
 
+export type FileItemType = 'file' | 'directory';
+
 export type ListFilesCommandOptions = {
     /**
-     * The absolute path of a directory to list the files/folders within
+    * The container to execute a command in
+    */
+    container: string;
+    /**
+     * The absolute path of a directory in the container to list the contents of
      */
     path: string;
     /**
@@ -1590,26 +1597,34 @@ export type ListFilesCommandOptions = {
 
 export type ListFilesItem = {
     /**
-     * The path of the file/folder, relative to the parent folder
+     * The name of the file/directory
+     */
+    name: string;
+    /**
+     * The absolute path of the file/directory within the container
      */
     path: string;
     /**
      * Whether the item is a file or directory
      */
-    type: 'file' | 'directory';
+    type: FileItemType;
 };
 
 type ListFilesCommand = {
     /**
-     * Lists the files/folders that are in a given path in a container
+     * Lists the contents of a given path in a container
      * @param options Command options
      */
-    listFiles(options: ListContainersCommandOptions): Promise<CommandResponse<Array<ListFilesItem>>>;
+    listFiles(options: ListFilesCommandOptions): Promise<CommandResponse<Array<ListFilesItem>>>;
 };
 
 // Read file command types
 
 export type ReadFileCommandOptions = {
+    /**
+    * The container to execute a command in
+    */
+    container: string;
     /**
      * The absolute path of the file in the container to read
      */
@@ -1635,6 +1650,10 @@ type ReadFileCommand = {
 // Write file command types
 
 export type WriteFileCommandOptions = {
+    /**
+    * The container to execute a command in
+    */
+    container: string;
     /**
      * The absolute path of the file in the container to write
      */

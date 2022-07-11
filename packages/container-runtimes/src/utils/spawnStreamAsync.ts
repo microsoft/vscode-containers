@@ -5,7 +5,6 @@
 
 import { spawn, SpawnOptions } from 'child_process';
 import * as os from 'os';
-import * as stream from 'stream';
 import { ShellQuoting } from 'vscode';
 
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
@@ -23,9 +22,9 @@ export type StreamSpawnOptions = SpawnOptions & {
     onCommand?: (command: string) => void;
     cancellationToken?: CancellationTokenLike;
 
-    stdInPipe?: stream.Readable;
-    stdOutPipe?: stream.Writable;
-    stdErrPipe?: stream.Writable;
+    stdInPipe?: NodeJS.ReadableStream;
+    stdOutPipe?: NodeJS.WritableStream;
+    stdErrPipe?: NodeJS.WritableStream;
 };
 
 const isQuoted = (value: string): boolean => {

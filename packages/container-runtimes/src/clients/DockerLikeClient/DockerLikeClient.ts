@@ -6,6 +6,7 @@
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 import * as utc from 'dayjs/plugin/utc';
+import { ShellQuotedString, ShellQuoting } from 'vscode';
 import { CommandResponse } from '../../contracts/CommandRunner';
 import {
     BuildImageCommandOptions,
@@ -32,6 +33,7 @@ import {
     ListContainersItem,
     ListContextItem,
     ListContextsCommandOptions,
+    ListFilesCommandOptions,
     ListFilesItem,
     ListImagesCommandOptions,
     ListImagesItem,
@@ -96,7 +98,9 @@ import { goTemplateJsonFormat, GoTemplateJsonFormatOptions, goTemplateJsonProper
 import { parseDockerImageRepository } from "./parseDockerImageRepository";
 import { parseDockerLikeLabels } from './parseDockerLikeLabels';
 import { parseDockerRawPortString } from './parseDockerRawPortString';
+import { parseListFilesCommandLinuxOutput, parseListFilesCommandWindowsOutput } from './parseListFilesCommandOutput';
 import { tryParseSize } from './tryParseSize';
+import { withContainerPathArg } from './withContainerPathArg';
 import { withDockerAddHostArg } from './withDockerAddHostArg';
 import { withDockerBuildArg } from './withDockerBuildArg';
 import { withDockerEnvArg } from './withDockerEnvArg';
@@ -1927,24 +1931,87 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
 
     //#region ListFiles Command
 
-    async listFiles(options: ListContainersCommandOptions): Promise<CommandResponse<ListFilesItem[]>> {
-        throw new CommandNotSupportedError('listFiles is not supported for this runtime');
+    protected getListFilesCommandArgs(options: ListFilesCommandOptions): CommandLineArgs {
+        let command: (string | ShellQuotedString)[];
+        if (options.operatingSystem === 'windows') {
+            command = [
+                'cmd',
+                '/C',
+                { value: `dir /A-S /-C /T w "${options.path}"`, quoting: ShellQuoting.Strong }
+            ];
+        } else {
+            command = [
+                '/bin/sh',
+                '-c',
+                { value: `ls -lA "${options.path}"`, quoting: ShellQuoting.Strong }
+            ];
+        }
+
+        return this.getExecContainerCommandArgs(
+            {
+                container: options.container,
+                interactive: true,
+                command,
+            }
+        );
+    }
+
+    protected async parseListFilesCommandOutput(
+        options: ListFilesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<ListFilesItem[]> {
+        if (options.operatingSystem === 'windows') {
+            return parseListFilesCommandWindowsOutput(options, output);
+        } else {
+            return parseListFilesCommandLinuxOutput(options, output);
+        }
+    }
+
+    async listFiles(options: ListFilesCommandOptions): Promise<CommandResponse<ListFilesItem[]>> {
+        return {
+            command: this.commandName,
+            args: this.getListFilesCommandArgs(options),
+            parse: (output, strict) => this.parseListFilesCommandOutput(options, output, strict),
+        };
     }
 
     //#endregion
 
     //#region ReadFile Command
 
+    protected getReadFileCommandArgs(options: ReadFileCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('cp'),
+            withContainerPathArg(options),
+            withArg(options.outputFile || '-'),
+        )();
+    }
+
     async readFile(options: ReadFileCommandOptions): Promise<CommandResponse<void>> {
-        throw new CommandNotSupportedError('readFile is not supported for this runtime');
+        return {
+            command: this.commandName,
+            args: this.getReadFileCommandArgs(options),
+        };
     }
 
     //#endregion
 
     //#region WriteFile Command
 
+    protected getWriteFileCommandArgs(options: WriteFileCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('cp'),
+            withArg(options.inputFile || '-'),
+            withContainerPathArg(options),
+        )();
+    }
+
     async writeFile(options: WriteFileCommandOptions): Promise<CommandResponse<void>> {
-        throw new CommandNotSupportedError('writeFile is not supported for this runtime');
+        return {
+            command: this.commandName,
+            args: this.getWriteFileCommandArgs(options),
+        };
     }
 
     //#endregion
