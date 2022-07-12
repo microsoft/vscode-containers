@@ -6,6 +6,7 @@
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 import * as utc from 'dayjs/plugin/utc';
+import * as path from 'path';
 import { ShellQuotedString, ShellQuoting } from 'vscode';
 import { CommandResponse } from '../../contracts/CommandRunner';
 import {
@@ -1937,7 +1938,9 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
             command = [
                 'cmd',
                 '/C',
-                { value: `dir /A-S /-C /T w "${options.path}"`, quoting: ShellQuoting.Strong }
+                // Path is intentionally *not* quoted--no good quoting options work, but
+                // `cd` doesn't seem to care, so cd to the path and then do dir
+                { value: `cd ${options.path} & dir /A-S /-C`, quoting: ShellQuoting.Strong }
             ];
         } else {
             command = [
@@ -1981,11 +1984,31 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
     //#region ReadFile Command
 
     protected getReadFileCommandArgs(options: ReadFileCommandOptions): CommandLineArgs {
-        return composeArgs(
-            withArg('cp'),
-            withContainerPathArg(options),
-            withArg(options.outputFile || '-'),
-        )();
+        if (options.operatingSystem === 'windows') {
+            // Split up the path so we can CD to the directory--to avoid the space / quoting issue
+            // Note, this still doesn't work if the filename itself contains a space
+            const folder = path.win32.dirname(options.path);
+            const file = path.win32.basename(options.path);
+            const command = [
+                'cmd',
+                '/C',
+                { value: `cd ${folder} & type ${file}`, quoting: ShellQuoting.Strong }
+            ];
+
+            return this.getExecContainerCommandArgs(
+                {
+                    container: options.container,
+                    interactive: true,
+                    command,
+                }
+            );
+        } else {
+            return composeArgs(
+                withArg('cp'),
+                withContainerPathArg(options),
+                withArg(options.outputFile || '-'),
+            )();
+        }
     }
 
     async readFile(options: ReadFileCommandOptions): Promise<CommandResponse<void>> {
@@ -2008,6 +2031,10 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
     }
 
     async writeFile(options: WriteFileCommandOptions): Promise<CommandResponse<void>> {
+        if (options.operatingSystem === 'windows') {
+            throw new CommandNotSupportedError('Writing files is not supported on Windows containers.');
+        }
+
         return {
             command: this.commandName,
             args: this.getWriteFileCommandArgs(options),

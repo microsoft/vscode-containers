@@ -54,6 +54,10 @@ export const powershellQuote: ShellQuote = (args: CommandLineArgs): Array<string
             case ShellQuoting.Strong:
                 return `'${quotedArg.value}'`;
         }
+    }).map((quotedArg) => {
+        // Additionally, for PowerShell only, escape double quotes that are not
+        // the first or last character in the arg
+        return quotedArg.replace(/(?<!^)"(?!$)/g, (match) => `\\${match}`);
     });
 };
 

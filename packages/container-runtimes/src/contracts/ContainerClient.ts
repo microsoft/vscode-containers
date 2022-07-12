@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { ShellQuotedString } from 'vscode';
+import type { FileType, ShellQuotedString } from 'vscode';
 import { CommandResponse } from "./CommandRunner";
 
 export type ContainerOS = "linux" | "windows";
@@ -1578,8 +1578,6 @@ type InspectContextsCommand = {
 
 // List files command types
 
-export type FileItemType = 'file' | 'directory';
-
 export type ListFilesCommandOptions = {
     /**
     * The container to execute a command in
@@ -1605,9 +1603,21 @@ export type ListFilesItem = {
      */
     path: string;
     /**
-     * Whether the item is a file or directory
+     * The creation time of the file/directory, in milliseconds since Unix epoch
      */
-    type: FileItemType;
+    ctime: number;
+    /**
+     * The modification time of the file/directory, in milliseconds since Unix epoch
+     */
+    mtime: number;
+    /**
+     * The size of the file (0 if a directory), in bytes
+     */
+    size: number;
+    /**
+     * The type of the file item (file/directory)
+     */
+    type: FileType;
 };
 
 type ListFilesCommand = {
@@ -1634,6 +1644,10 @@ export type ReadFileCommandOptions = {
      * necessary to handle contents from stdout in the command runner.
      */
     outputFile?: string;
+    /**
+     * The container operating system. If not supplied, 'linux' will be assumed.
+     */
+    operatingSystem?: ContainerOS;
 };
 
 type ReadFileCommand = {
@@ -1641,7 +1655,7 @@ type ReadFileCommand = {
      * Read a file inside the container. Start a process with the {@link CommandResponse}
      * and read from its stdout stream (or use {@link ShellCommandRunnerFactory} to accumulate
      * the output into a string and return it from `parse`).
-     * NOTE: the output stream is in tarball format.
+     * NOTE: the output stream is in tarball format with Linux containers, and cleartext with Windows containers.
      * @param options Command options
      */
     readFile(options: ReadFileCommandOptions): Promise<CommandResponse<void>>;
@@ -1663,6 +1677,10 @@ export type WriteFileCommandOptions = {
      * to write the file contents to stdin in the command runner.
      */
     inputFile?: string;
+    /**
+     * The container operating system. If not supplied, 'linux' will be assumed.
+     */
+    operatingSystem?: ContainerOS;
 };
 
 type WriteFileCommand = {
@@ -1670,6 +1688,7 @@ type WriteFileCommand = {
      * Write a file inside the container. Start a process with the {@link CommandResponse}
      * and write to its stdin stream.
      * NOTE: the input stream must be in tarball format.
+     * NOTE: this command is not supported on Windows containers.
      * @param options Command options
      */
     writeFile(options: WriteFileCommandOptions): Promise<CommandResponse<void>>;
