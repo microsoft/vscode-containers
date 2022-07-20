@@ -17,10 +17,10 @@ export type CommandLineCurryFn = (cmdLineArgs?: CommandLineArgs) => CommandLineA
  */
 export function composeArgs(...cmdLineArgFns: Array<CommandLineCurryFn>): CommandLineCurryFn {
     return (cmdLineArgs: CommandLineArgs = []) => {
-        return cmdLineArgFns.reduce(
+        return cmdLineArgFns.reduce<CommandLineArgs>(
             (commandLineArgs: CommandLineArgs, cmdLineArgsFn) => cmdLineArgsFn(commandLineArgs),
             cmdLineArgs || [],
-        );
+        ) as unknown as CommandLineArgs; // A bug in the Inlay Hints feature is fixed by this redundant `as unknown as CommandLineArgs` casting
     };
 }
 

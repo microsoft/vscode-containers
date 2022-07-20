@@ -21,5 +21,5 @@ export function conditional(strings: TemplateStringsArray, ...expr: Array<string
             return accumulator;
         },
         '',
-    ) + strings.slice(-1);
+    ) as string + strings.slice(-1); // A bug in the Inlay Hints feature is fixed by this redundant `as string` casting
 }
