@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ErrorCodes, Position, Range, ResponseError, TextDocumentIdentifier, TextDocumentsConfiguration } from 'vscode-languageserver';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Document as YamlDocument, isDocument, parseDocument } from 'yaml';
+import { DocumentUri, TextDocument } from 'vscode-languageserver-textdocument';
+import { Document as YamlDocument, isDocument, Node as YamlNode, parseDocument } from 'yaml';
 import { CRLF, DocumentSettings, DocumentSettingsParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
 import { ExtendedPositionParams, PositionInfo } from './ExtendedParams';
 import { getCurrentContext } from './utils/ActionContext';
@@ -28,6 +28,10 @@ export class ComposeDocument {
         return {
             uri: this.textDocument.uri,
         };
+    }
+
+    public get uri(): DocumentUri {
+        return this.textDocument.uri;
     }
 
     private constructor(doc: TextDocument) {
@@ -147,7 +151,7 @@ export class ComposeDocument {
         update: (document, changes, version) => document.update(TextDocument.update(document.textDocument, changes, version)),
     };
 
-    private buildYamlDocument(): YamlDocument {
+    private buildYamlDocument(): YamlDocument<YamlNode> {
         const yamlDocument = parseDocument(this.textDocument.getText(), { merge: true, prettyErrors: true });
 
         if (!isDocument(yamlDocument)) {

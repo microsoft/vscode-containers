@@ -690,7 +690,7 @@ describe('ComposeDocument', () => {
                     tabSize: 3,
                 };
 
-                testConnection.client.sendNotification(DocumentSettingsNotification.type, params);
+                void testConnection.client.sendNotification(DocumentSettingsNotification.type, params);
 
                 // Wait for the service to process the notification
                 await new Promise<void>((resolve) => {

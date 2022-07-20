@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { DocumentSettingsClientFeature } from './DocumentSettingsClientFeature';
 
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
     const serverModule = context.asAbsolutePath('../../../lib/server.js');
 
     const serverOptions: ServerOptions = {
@@ -44,7 +44,8 @@ export function activate(context: vscode.ExtensionContext): void {
         clientOutputChannel.appendLine(JSON.stringify(e));
     }));
 
-    context.subscriptions.push(client.start());
+    context.subscriptions.push(client);
+    await client.start();
 }
 
 export function deactivate(): void {

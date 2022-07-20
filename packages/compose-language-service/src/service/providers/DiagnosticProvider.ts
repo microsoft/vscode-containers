@@ -43,7 +43,7 @@ export class DiagnosticProvider extends ProviderBase<TextDocumentChangeEvent<Com
                 );
             }
 
-            ctx.connection.sendDiagnostics({
+            void ctx.connection.sendDiagnostics({
                 uri: params.document.textDocument.uri,
                 diagnostics: diagnostics,
             });

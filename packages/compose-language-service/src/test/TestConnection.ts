@@ -56,7 +56,7 @@ export class TestConnection implements Disposable {
             textDocument: TextDocumentItem.create(uri, 'dockercompose', 1, text),
         };
 
-        this.client.sendNotification(DidOpenTextDocumentNotification.type, openParams);
+        void this.client.sendNotification(DidOpenTextDocumentNotification.type, openParams);
         return uri;
     }
 

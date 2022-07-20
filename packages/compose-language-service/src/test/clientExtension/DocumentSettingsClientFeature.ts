@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import type { ClientCapabilities, StaticFeature } from 'vscode-languageclient';
+import type { ClientCapabilities, DocumentSelector, FeatureState, InitializeParams, ServerCapabilities, StaticFeature } from 'vscode-languageclient';
 import type { LanguageClient } from 'vscode-languageclient/node';
 import type { DocumentSettings, DocumentSettingsNotificationParams, DocumentSettingsParams } from '../../../lib/client/DocumentSettings'; // Dev-time-only imports, with `require` below for the real imports, to avoid desync issues or needing to actually install the langserver package
 
@@ -12,6 +12,12 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
     private disposables: vscode.Disposable[] = [];
 
     public constructor(private readonly client: LanguageClient) { }
+
+    public getState(): FeatureState {
+        return {
+            kind: 'static'
+        };
+    }
 
     public fillClientCapabilities(capabilities: ClientCapabilities): void {
         const documentSettings = {
@@ -28,7 +34,7 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
     public initialize(): void {
         this.disposables.push(
             this.client.onRequest(
-                require('../../../../lib/client/DocumentSettings').DocumentSettingsRequest.type,
+                require('../../../../lib/client/DocumentSettings').DocumentSettingsRequest.method,
                 (params: DocumentSettingsParams): DocumentSettings | undefined => {
                     const textEditor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === params.textDocument.uri);
 
@@ -53,7 +59,7 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
                         tabSize: Number(e.options.tabSize),
                     };
 
-                    this.client.sendNotification(require('../../../../lib/client/DocumentSettings').DocumentSettingsNotification.type, params);
+                    this.client.sendNotification(require('../../../../lib/client/DocumentSettings').DocumentSettingsNotification.method, params);
                 }
             )
         );
