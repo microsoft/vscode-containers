@@ -6,33 +6,34 @@
 /**
  * Tries to parse a size (in many forms) into a value in bytes
  * @param value The value to try to parse into a size
+ * @returns An integer value in bytes, if the input can be parsed, otherwise undefined
  */
-export function tryParseSize(value: string | number | undefined): number | undefined {
+export function tryParseSize(value: string | number | undefined | null): number | undefined {
     if (value === undefined || value === null) {
         return undefined;
     } else if (typeof value === 'number') {
-        return value;
+        return Math.round(value);
     } else {
         if (value.toLowerCase() === 'n/a') {
             return undefined;
         } else {
-            // Parses values like "1234", "1234b", "1234kb", "1234 MB", etc. into size (the numerical part)
+            // Parses values like "1234", "1234b", "1234kb", "1234 MB", "12.34 GB" etc. into size (the numerical part)
             // and sizeUnit (the kb/mb/gb, if present)
-            const result = /(?<size>\d+)\s*(?<sizeUnit>[kmg]?b)?/i.exec(value);
+            const result = /(?<size>\d+(\.\d+)?)\s*(?<sizeUnit>[kmg]?b)?/i.exec(value);
 
             if (result?.groups?.size) {
-                const size: number = Number.parseInt(result.groups.size);
+                const size: number = Number.parseFloat(result.groups.size);
                 const unit: string | undefined = result.groups.sizeUnit;
 
-                switch (unit) {
+                switch (unit?.toLowerCase()) {
                     case 'kb':
-                        return size * 1024;
+                        return Math.round(size * 1024);
                     case 'mb':
-                        return size * 1024 * 1024;
+                        return Math.round(size * 1024 * 1024);
                     case 'gb':
-                        return size * 1024 * 1024 * 1024;
+                        return Math.round(size * 1024 * 1024 * 1024);
                     default:
-                        return size;
+                        return Math.round(size);
                 }
             } else {
                 return undefined;
