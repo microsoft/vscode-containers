@@ -351,7 +351,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         image,
                         registry,
                         name: imageName,
-                        labels: {}, // TODO
+                        labels: {}, // TODO: image labels are conspicuously absent from Docker image listing output
                         tag: rawImage.Tag,
                         createdAt,
                         size,
@@ -448,7 +448,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
         output: string,
         strict: boolean,
     ): Promise<PruneImagesItem> {
-        // TODO: support return of the optional prune information?
+        // TODO: Parse output for prune info
         return Promise.resolve({});
     }
 
@@ -819,6 +819,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                     Image: goTemplateJsonProperty`.Image`,
                     Ports: goTemplateJsonProperty`.Ports`,
                     Networks: goTemplateJsonProperty`.Networks`,
+                    Labels: goTemplateJsonProperty`.Labels`,
                     CreatedAt: goTemplateJsonProperty`.CreatedAt`,
                     State: goTemplateJsonProperty`.State`,
                     Status: goTemplateJsonProperty`.Status`,
@@ -849,6 +850,8 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         throw new Error('Invalid container JSON');
                     }
 
+                    const labels = parseDockerLikeLabels(rawContainer.Labels);
+
                     const ports = rawContainer.Ports
                         .split(',')
                         .map((port) => port.trim())
@@ -873,7 +876,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                     containers.push({
                         id: rawContainer.Id,
                         name,
-                        labels: {}, // TODO
+                        labels,
                         image: rawContainer.Image,
                         ports,
                         networks,
@@ -1037,12 +1040,12 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
         )();
     }
 
-    // TODO: Parse output for prune info
     protected async parsePruneContainersCommandOutput(
         options: PruneContainersCommandOptions,
         output: string,
         strict: boolean,
     ): Promise<PruneContainersItem> {
+        // TODO: Parse output for prune info
         return {};
     }
 
@@ -1411,7 +1414,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         throw new Error('Invalid volume JSON');
                     }
 
-                    // Parse the labels assigned tot he volumes and normalize to key value pairs
+                    // Parse the labels assigned to the volumes and normalize to key value pairs
                     const labels = parseDockerLikeLabels(rawVolume.Labels);
 
                     const createdAt = rawVolume.CreatedAt
@@ -1690,8 +1693,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         throw new Error('Invalid volume JSON');
                     }
 
-                    // Parse the labels assigned to the volumes and normalize to key value pairs
-
+                    // Parse the labels assigned to the networks and normalize to key value pairs
                     const labels = parseDockerLikeLabels(rawNetwork.Labels);
 
                     const createdAt = dayjs.utc(rawNetwork.CreatedAt).toDate();
@@ -1768,12 +1770,12 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
         )();
     }
 
-    // TODO: Parse response to populate PruneNetworksItem
     protected async parsePruneNetworksCommandOutput(
         options: PruneNetworksCommandOptions,
         output: string,
         strict: boolean,
     ): Promise<PruneNetworksItem> {
+        // TODO: Parse output for prune info
         return {};
     }
 

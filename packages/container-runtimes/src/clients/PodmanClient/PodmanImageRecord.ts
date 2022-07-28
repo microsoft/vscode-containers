@@ -6,6 +6,7 @@
 export type PodmanImageRecord = {
     Id: string;
     Names?: Array<string>;
+    Labels?: Record<string, string>;
     Created: number;
 };
 

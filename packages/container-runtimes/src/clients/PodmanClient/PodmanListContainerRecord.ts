@@ -3,20 +3,29 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type DockerListContainerRecord = {
+export type PodmanListContainerRecord = {
     Id: string;
-    Names: string;
+    Names: Array<string>;
     Image: string;
-    Ports: string;
-    Networks: string;
-    Labels: string;
-    CreatedAt: string;
+    Ports?: Array<PodmanPortBinding>;
+    Networks?: string[];
+    Labels?: Record<string, string>;
+    Created: number;
     State: string;
     Status: string;
 };
 
+type PodmanPortBinding = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    host_ip?: string;
+    container_port: number;
+    host_port?: number;
+    protocol: 'udp' | 'tcp';
+    /* eslint-enable @typescript-eslint/naming-convention */
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isDockerListContainerRecord(maybeContainer: any): maybeContainer is DockerListContainerRecord {
+export function isPodmanListContainerRecord(maybeContainer: any): maybeContainer is PodmanListContainerRecord {
     if (!maybeContainer || typeof maybeContainer !== 'object') {
         return false;
     }
@@ -25,7 +34,7 @@ export function isDockerListContainerRecord(maybeContainer: any): maybeContainer
         return false;
     }
 
-    if (typeof maybeContainer.Names !== 'string') {
+    if (!!maybeContainer.Names && !Array.isArray(maybeContainer.Names)) {
         return false;
     }
 
@@ -33,19 +42,7 @@ export function isDockerListContainerRecord(maybeContainer: any): maybeContainer
         return false;
     }
 
-    if (typeof maybeContainer.Ports !== 'string') {
-        return false;
-    }
-
-    if (typeof maybeContainer.Networks !== 'string') {
-        return false;
-    }
-
-    if (typeof maybeContainer.Labels !== 'string') {
-        return false;
-    }
-
-    if (typeof maybeContainer.CreatedAt !== 'string') {
+    if (typeof maybeContainer.Created !== 'number') {
         return false;
     }
 
