@@ -7,34 +7,30 @@ import { PortBinding } from "../../contracts/ContainerClient";
 
 /**
  * Attempt to parse a Docker-like raw port binding string
- * @param portString the raw port string to parse
+ * @param portString the raw port string to parse, e.g. "1234/tcp" or "0.0.0.0:1234->1234/udp"
  * @returns Parsed raw port string as a PortBinding record or undefined if invalid
  */
 export function parseDockerRawPortString(portString: string): PortBinding | undefined {
-    const [hostInfo, rawContainerPort, protocol] = portString.split(/->|\//);
+    const portRegex = /((?<hostIp>[\da-f.:[\]]+)(:(?<hostPort>\d+)))?(\s*->\s*)?((?<containerPort>\d+)\/(?<protocol>tcp|udp))/i;
+    const result = portRegex.exec(portString);
 
-    if (protocol !== 'tcp' && protocol !== 'udp') {
-        return;
+    if (!result || !result.groups) {
+        return undefined;
     }
 
-    const containerPort = parseInt(rawContainerPort);
-    if (containerPort <= 0) {
-        return;
-    }
+    const hostIp = result.groups['hostIp'] || undefined;
+    const hostPort = result.groups['hostPort'] ? Number.parseInt(result.groups['hostPort']) : undefined;
+    const containerPort = result.groups['containerPort'] ? Number.parseInt(result.groups['containerPort']) : undefined;
+    const protocol = result.groups['protocol'] || undefined;
 
-    const hostPortIndex = hostInfo.lastIndexOf(':');
-    const hostIp = hostInfo.slice(0, hostPortIndex);
-    const rawHostPort = hostInfo.slice(hostPortIndex + 1);
-
-    const hostPort = parseInt(rawHostPort);
-    if (hostPort <= 0) {
-        return;
+    if (containerPort === undefined || (protocol !== 'tcp' && protocol !== 'udp')) {
+        return undefined;
     }
 
     return {
-        hostIp: hostIp,
-        containerPort: containerPort,
-        hostPort: hostPort,
+        hostIp,
+        hostPort,
+        containerPort,
         protocol,
     };
 }
