@@ -1236,9 +1236,11 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                     });
 
                     // Parse the exposed ports for the container and normalize to a PortBinding record
-                    const ports = Object.entries(inspect.Ports || {}).map<PortBinding>(([rawPort]) => {
+                    const ports = Object.entries(inspect.Ports || {}).map<PortBinding>(([rawPort, hostBinding]) => {
                         const [port, protocol] = rawPort.split('/');
                         return {
+                            hostIp: hostBinding?.[0]?.HostIp,
+                            hostPort: hostBinding?.[0]?.HostPort,
                             containerPort: parseInt(port),
                             protocol: protocol.toLowerCase() === 'tcp'
                                 ? 'tcp'
