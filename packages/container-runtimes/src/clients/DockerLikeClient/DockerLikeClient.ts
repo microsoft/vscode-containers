@@ -155,7 +155,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
     async info(options?: InfoCommandOptions): Promise<CommandResponse<InfoItem>> {
         return {
             command: this.commandName,
-            args: this.getVersionCommandArgs(options),
+            args: this.getInfoCommandArgs(options),
             parse: this.parseInfoCommandOutput,
         };
     }

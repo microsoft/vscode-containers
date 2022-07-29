@@ -1669,11 +1669,11 @@ export type WriteFileCommandOptions = {
     */
     container: string;
     /**
-     * The absolute path of the file in the container to write
+     * The absolute path of the **directory** in the container to write files into
      */
     path: string;
     /**
-     * (Optional) The file on the host to copy into the container. If not given, it is necessary
+     * (Optional) The file or directory on the host to copy into the container. If not given, it is necessary
      * to write the file contents to stdin in the command runner.
      */
     inputFile?: string;
