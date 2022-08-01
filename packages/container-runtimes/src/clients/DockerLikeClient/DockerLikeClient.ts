@@ -351,7 +351,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         image,
                         registry,
                         name: imageName,
-                        labels: {}, // TODO: image labels are conspicuously absent from Docker image listing output
+                        // labels: {}, // TODO: image labels are conspicuously absent from Docker image listing output
                         tag: rawImage.Tag,
                         createdAt,
                         size,
@@ -1647,13 +1647,13 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
 
     //#region ListNetworks Command
 
-    // TODO: Populate filter arguments
     protected getListNetworksCommandArgsCore(
         options: ListNetworksCommandOptions,
         formatOverrides?: Partial<GoTemplateJsonFormatOptions<DockerNetworkRecord>>,
     ): CommandLineArgs {
         return composeArgs(
             withNamedArg('network', 'ls'),
+            withDockerLabelFilterArgs(options.labels),
             withNamedArg(
                 '--format',
                 goTemplateJsonFormat<DockerNetworkRecord>({

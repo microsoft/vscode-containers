@@ -11,8 +11,6 @@ export type DockerInfoRecord = {
     Raw: string;
 };
 
-
-// TODO: Actually test properties
 export function isDockerInfoRecord(maybeInfo: unknown): maybeInfo is DockerInfoRecord {
     const info = maybeInfo as DockerInfoRecord;
 

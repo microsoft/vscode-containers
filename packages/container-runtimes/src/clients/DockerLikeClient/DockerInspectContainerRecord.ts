@@ -34,7 +34,6 @@ export type DockerInspectNetwork = {
     MacAddress: string;
 };
 
-// TODO: Add support for networks
 export type DockerInspectContainerRecord = {
     Id: string;
     Name: string;

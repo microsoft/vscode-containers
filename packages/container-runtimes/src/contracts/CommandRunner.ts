@@ -28,7 +28,7 @@ export type CommandResponseLike<T> = CommandResponse<T> | Promise<CommandRespons
 export type CommandRunner = <T>(commandResponse: CommandResponseLike<T>) => Promise<T>;
 
 /**
- * A {@link CommandRunnerFactory} is used to build a CommandRunner instance
+ * A {@link ICommandRunnerFactory} is used to build a CommandRunner instance
  * based for a specific configuration
  */
 export interface ICommandRunnerFactory {

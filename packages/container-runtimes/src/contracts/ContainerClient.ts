@@ -232,7 +232,8 @@ export type ListImagesItem = {
     /**
      * Labels on the image
      */
-    labels: Labels;
+    // TODO: images are not present in Docker image listing, so disabling this for now
+    // labels: Labels;
     /**
      * The tag of the image (unless this is an anonymous base image)
      */
@@ -518,7 +519,6 @@ export type RunContainerBindMount = {
     source: string;
     destination: string;
     readOnly: boolean;
-    // relable?: boolean; // TODO: not possible with mount syntax
 };
 
 export type RunContainerVolumeMount = {
