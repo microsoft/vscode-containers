@@ -52,7 +52,7 @@ export function isDockerInspectImageRecord(maybeImage: unknown): maybeImage is D
         return false;
     }
 
-    if (!Array.isArray(image.Command)) {
+    if (image.Command !== null && !Array.isArray(image.Command)) {
         return false;
     }
 
