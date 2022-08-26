@@ -129,7 +129,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
             withNamedArg(
                 '--format',
                 // By specifying an explicit Go template format output, we're able to use the same normalization logic
-                // for both Docker and Podman clients
+                // for various Docker clients
                 goTemplateJsonFormat<DockerInfoRecord>({
                     OperatingSystem: goTemplateJsonProperty`.OperatingSystem`,
                     OSType: goTemplateJsonProperty`.OSType`,
@@ -536,7 +536,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
             withNamedArg(
                 '--format',
                 // By specifying an explicit Go template format output, we're able to use the same normalization logic
-                // for both Docker and Podman clients
+                // for various Docker clients
                 goTemplateJsonFormat<DockerInspectImageRecord>({
                     Id: goTemplateJsonProperty`.ID`,
                     RepoTags: goTemplateJsonProperty`.RepoTags`,

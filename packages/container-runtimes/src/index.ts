@@ -5,13 +5,11 @@
 
 export * from './clients/DockerClient/DockerClient';
 export * from './clients/DockerComposeClient/DockerComposeClient';
-export * from './clients/PodmanClient/PodmanClient';
 export * from './commandRunners/shellStream';
 export * from './commandRunners/wslStream';
 export * from './contracts/CommandRunner';
 export * from './contracts/ContainerClient';
 export * from './contracts/ContainerOrchestratorClient';
-export * from './contracts/DockerExtensionExport';
 export * from './typings/CancellationTokenLike';
 export * from './typings/DisposableLike';
 export * from './typings/EventLike';

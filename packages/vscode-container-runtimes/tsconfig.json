@@ -1,9 +1,0 @@
-{
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "sourceMap": true,
-        "rootDir": "src",
-        "declaration": false,
-        "strict": true /* enable all strict type-checking options */
-    }
-}
