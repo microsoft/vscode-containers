@@ -51,7 +51,7 @@ export class DockerComposeClient extends ConfigurableClient implements IContaine
      * @param commandName (Optional, default `docker`) The command that will be run
      * as the base command. If quoting is necessary, it is the responsibility of the
      * caller to add.
-     * @param displayName (Optional, default 'Podman') The human-friendly display
+     * @param displayName (Optional, default 'Docker Compose') The human-friendly display
      * name of the client
      * @param description (Optional, with default) The human-friendly description of
      * the client
