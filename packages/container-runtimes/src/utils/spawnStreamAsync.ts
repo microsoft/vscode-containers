@@ -18,7 +18,7 @@ import { CommandLineArgs } from './commandLineBuilder';
  * Quoth the cmd.exe 'nevermore'.
  */
 export abstract class Shell implements IShell {
-    public static getShellOrDefault(shell: Shell | null | undefined): Shell {
+    public static getShellOrDefault(shell?: Shell | null | undefined): Shell {
         if (shell) {
             return shell;
         }
