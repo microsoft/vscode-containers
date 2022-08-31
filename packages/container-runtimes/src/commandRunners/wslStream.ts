@@ -7,6 +7,7 @@ import {
     CommandResponse,
     ICommandRunnerFactory,
 } from '../contracts/CommandRunner';
+import { Shell } from '../utils/spawnStreamAsync';
 import {
     ShellStreamCommandRunnerFactory,
     ShellStreamCommandRunnerOptions,
@@ -33,7 +34,7 @@ export class WslShellCommandRunnerFactory extends ShellStreamCommandRunnerFactor
             '--',
             commandResponse.command,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            ...this.options.shellQuote!(commandResponse.args),
+            ...Shell.getShellOrDefault(this.options.shellProvider).quote(commandResponse.args),
         ];
 
         return { command, args };

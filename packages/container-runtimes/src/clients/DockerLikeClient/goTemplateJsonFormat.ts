@@ -3,6 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ShellQuotedString, ShellQuoting } from "vscode";
+import { Shell } from "../../utils/spawnStreamAsync";
+
 export type GoTemplateJsonFormatOptions<T> = Record<Extract<keyof T, string>, string>;
 
 /**
@@ -21,14 +24,19 @@ export function goTemplateJsonProperty(strings: TemplateStringsArray, ...expr: A
  * @param overrideMapping Optional overrides that can replace the mapping for a particular JSON object property
  * @returns A normalized JSON object matching the type constraint from template parameter T
  */
-export function goTemplateJsonFormat<T>(formatMapping: GoTemplateJsonFormatOptions<T>, overrideMapping: Partial<GoTemplateJsonFormatOptions<T>> = {}): string {
+export function goTemplateJsonFormat<T>(
+    shell: Shell | null | undefined,
+    formatMapping: GoTemplateJsonFormatOptions<T>,
+    overrideMapping: Partial<GoTemplateJsonFormatOptions<T>> = {},
+): ShellQuotedString {
     const mappings = {
         ...formatMapping,
         ...overrideMapping || {},
     };
 
-    const keyMappings = Object.entries(mappings).map(([key, value]) => {
-        return `"${key}":${value}`;
-    });
-    return `{${keyMappings.join(',')}}`;
+    const keyMappings = Object.entries(mappings)
+        .map(([key, value]) => {
+            return `"${key}":${value}`;
+        });
+    return Shell.getShellOrDefault(shell).goTemplateQuotedString(`{${keyMappings.join(',')}}`, ShellQuoting.Strong);
 }

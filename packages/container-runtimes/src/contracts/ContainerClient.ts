@@ -5,6 +5,7 @@
 
 import type { FileType, ShellQuotedString } from 'vscode';
 import { CommandResponse } from "./CommandRunner";
+import { IShell } from './Shell';
 
 export type ContainerOS = "linux" | "windows";
 
@@ -37,9 +38,13 @@ export type ClientIdentity = {
     readonly commandName: string;
 };
 
+export type CommonCommandOptions = {
+    shellProvider?: IShell;
+};
+
 // Version Command Types
 
-export type VersionCommandOptions = {
+export type VersionCommandOptions = CommonCommandOptions & {
     // Intentionally empty for now
 };
 
@@ -53,12 +58,12 @@ type VersionCommand = {
      * Generate a CommandResponse to retrieve runtime version information.
      * @param options Command options
      */
-    version(options?: VersionCommandOptions): Promise<CommandResponse<VersionItem>>;
+    version(options: VersionCommandOptions): Promise<CommandResponse<VersionItem>>;
 };
 
 // Info CommandTypes
 
-export type InfoCommandOptions = {
+export type InfoCommandOptions = CommonCommandOptions & {
     // Intentionally empty for now
 };
 
@@ -82,7 +87,7 @@ type InfoCommand = {
      * Generate a CommandResponse to retrieve runtime information
      * @param options Command options
      */
-    info(options?: InfoCommandOptions): Promise<CommandResponse<InfoItem>>;
+    info(options: InfoCommandOptions): Promise<CommandResponse<InfoItem>>;
 };
 
 // #region Login/Logout commands
@@ -92,7 +97,7 @@ type InfoCommand = {
 /**
  * Standardized options for login
  */
-export type LoginCommandOptions = {
+export type LoginCommandOptions = CommonCommandOptions & {
     /**
      * The username to log in with.
      */
@@ -121,7 +126,7 @@ type LoginCommand = {
 /**
  * Standardized options for logout
  */
-export type LogoutCommandOptions = {
+export type LogoutCommandOptions = CommonCommandOptions & {
     /**
      * (Optional) The registry to log out from
      */
@@ -145,7 +150,7 @@ type LogoutCommand = {
 /**
  * Standard options for all supported runtimes when building an image
  */
-export type BuildImageCommandOptions = {
+export type BuildImageCommandOptions = CommonCommandOptions & {
     /**
      * The path to use for the build image context
      */
@@ -201,7 +206,7 @@ type BuildImageCommand = {
 /**
  * Standardized options for list images commands
  */
-export type ListImagesCommandOptions = {
+export type ListImagesCommandOptions = CommonCommandOptions & {
     /**
      * List all images?
      */
@@ -266,7 +271,7 @@ type ListImagesCommand = {
 
 // Remove Images Command Types
 
-export type RemoveImagesCommandOptions = {
+export type RemoveImagesCommandOptions = CommonCommandOptions & {
     /**
      * Images to remove
      */
@@ -290,7 +295,7 @@ type RemoveImagesCommand = {
 /**
  * Standardized options for prune image commands
  */
-export type PruneImagesCommandOptions = {
+export type PruneImagesCommandOptions = CommonCommandOptions & {
     /**
      * Prune all images?
      */
@@ -325,7 +330,7 @@ type PruneImagesCommand = {
 /**
  * Standardized options for pull image commands
  */
-export type PullImageCommandOptions = {
+export type PullImageCommandOptions = CommonCommandOptions & {
     /**
      * The specific image to pull (registry/name:tag format)
      */
@@ -353,7 +358,7 @@ type PullImageCommand = {
 /**
  * Standardized options for push image commands
  */
-export type PushImageCommandOptions = {
+export type PushImageCommandOptions = CommonCommandOptions & {
     /**
      * The specific image to push (registry/name:tag format)
      */
@@ -370,7 +375,7 @@ type PushImageCommand = {
 
 // Tag Image Command Types
 
-export type TagImageCommandOptions = {
+export type TagImageCommandOptions = CommonCommandOptions & {
     /**
      * The base image to add an additional tag to
      */
@@ -474,7 +479,7 @@ export type InspectImagesItem = {
 /**
  * Options for inspecting images
  */
-export type InspectImagesCommandOptions = {
+export type InspectImagesCommandOptions = CommonCommandOptions & {
     /**
      * The images to inspect
      */
@@ -537,7 +542,7 @@ export type RunContainerExtraHost = {
     ip: string;
 };
 
-export type RunContainerCommandOptions = {
+export type RunContainerCommandOptions = CommonCommandOptions & {
     /**
      * The image to run
      */
@@ -622,7 +627,7 @@ type RunContainerCommand = {
 
 // Exec Container Command Types
 
-export type ExecContainerCommandOptions = {
+export type ExecContainerCommandOptions = CommonCommandOptions & {
     /**
      * The container to execute a command in
      */
@@ -659,7 +664,7 @@ type ExecContainerCommand = {
 
 // List Containers Command Types
 
-export type ListContainersCommandOptions = {
+export type ListContainersCommandOptions = CommonCommandOptions & {
     /**
      * Should all containers be listed?
      */
@@ -743,7 +748,7 @@ type ListContainersCommand = {
 
 // Stop Containers Command Types
 
-export type StopContainersCommandOptions = {
+export type StopContainersCommandOptions = CommonCommandOptions & {
     /**
      * Containers to stop
      */
@@ -764,7 +769,7 @@ type StopContainersCommand = {
 
 // Start Containers Command Types
 
-export type StartContainersCommandOptions = {
+export type StartContainersCommandOptions = CommonCommandOptions & {
     /**
      * Containers to start
      */
@@ -781,7 +786,7 @@ type StartContainersCommand = {
 
 // Restart Containers Command Types
 
-export type RestartContainersCommandOptions = {
+export type RestartContainersCommandOptions = CommonCommandOptions & {
     /**
      * Containers to restart
      */
@@ -798,7 +803,7 @@ type RestartContainersCommand = {
 
 // Remove Containers Command Types
 
-export type RemoveContainersCommandOptions = {
+export type RemoveContainersCommandOptions = CommonCommandOptions & {
     /**
      * Containers to remove
      */
@@ -819,7 +824,7 @@ type RemoveContainersCommand = {
 
 // Prune Containers Command Types
 
-export type PruneContainersCommandOptions = {
+export type PruneContainersCommandOptions = CommonCommandOptions & {
     // Intentionally empty for now
 };
 
@@ -844,7 +849,7 @@ type PruneContainersCommand = {
 
 // Logs For Container Command Types
 
-export type LogsForContainerCommandOptions = {
+export type LogsForContainerCommandOptions = CommonCommandOptions & {
     /**
      * Container to return logs from
      */
@@ -885,7 +890,7 @@ type LogsForContainerCommand = {
 /**
  * Options for inspecting containers
  */
-export type InspectContainersCommandOptions = {
+export type InspectContainersCommandOptions = CommonCommandOptions & {
     /**
      * Containers to inspect
      */
@@ -1043,7 +1048,7 @@ type InspectContainersCommand = {
 /**
  * Options for container stats
  */
-export type ContainersStatsCommandOptions = {
+export type ContainersStatsCommandOptions = CommonCommandOptions & {
     all?: boolean;
 };
 
@@ -1061,7 +1066,7 @@ type ContainersStatsCommand = {
 
 // Create Volume Command Types
 
-export type CreateVolumeCommandOptions = {
+export type CreateVolumeCommandOptions = CommonCommandOptions & {
     /**
      * The name for the volume
      */
@@ -1082,7 +1087,7 @@ type CreateVolumeCommand = {
 
 // List Volumes Command Types
 
-export type ListVolumesCommandOptions = {
+export type ListVolumesCommandOptions = CommonCommandOptions & {
     /**
      * Only list volumes that match the given labels
      */
@@ -1138,7 +1143,7 @@ type ListVolumesCommand = {
 
 // Remove Volumes Command Types
 
-export type RemoveVolumesCommandOptions = {
+export type RemoveVolumesCommandOptions = CommonCommandOptions & {
     /**
      * Volumes to remove
      */
@@ -1162,7 +1167,7 @@ type RemoveVolumesCommand = {
 /**
  * Standardized options for prune volume commands
  */
-export type PruneVolumesCommandOptions = {
+export type PruneVolumesCommandOptions = CommonCommandOptions & {
     // Intentionally empty for now
 };
 
@@ -1194,7 +1199,7 @@ type PruneVolumesCommand = {
 /**
  * Options for inspecting volumes
  */
-export type InspectVolumesCommandOptions = {
+export type InspectVolumesCommandOptions = CommonCommandOptions & {
     /**
      * Volumes to inspect
      */
@@ -1250,7 +1255,7 @@ type InspectVolumesCommand = {
 
 // Create Network Command Types
 
-export type CreateNetworkCommandOptions = {
+export type CreateNetworkCommandOptions = CommonCommandOptions & {
     /**
      * The name for the network
      */
@@ -1271,7 +1276,7 @@ type CreateNetworkCommand = {
 
 // List Networks Command Types
 
-export type ListNetworksCommandOptions = {
+export type ListNetworksCommandOptions = CommonCommandOptions & {
     /**
      * Only list networks that match the given labels
      */
@@ -1327,7 +1332,7 @@ type ListNetworksCommand = {
 
 // Remove Networks Command Types
 
-export type RemoveNetworksCommandOptions = {
+export type RemoveNetworksCommandOptions = CommonCommandOptions & {
     /**
      * Networks to remove
      */
@@ -1351,7 +1356,7 @@ type RemoveNetworksCommand = {
 /**
  * Standardized options for prune network commands
  */
-export type PruneNetworksCommandOptions = {
+export type PruneNetworksCommandOptions = CommonCommandOptions & {
     // Intentionally empty for now
 };
 
@@ -1378,7 +1383,7 @@ type PruneNetworksCommand = {
 /**
  * Options for inspecting networks
  */
-export type InspectNetworksCommandOptions = {
+export type InspectNetworksCommandOptions = CommonCommandOptions & {
     /**
      * Networks to inspect
      */
@@ -1463,7 +1468,7 @@ export type ContextType = 'aci' | 'containerd' | 'ecs' | string;
 
 // List Contexts Command Types
 
-export type ListContextsCommandOptions = {
+export type ListContextsCommandOptions = CommonCommandOptions & {
     // Intentionally empty for now
 };
 
@@ -1500,7 +1505,7 @@ type ListContextsCommand = {
 
 // Remove Contexts Command Types
 
-export type RemoveContextsCommandOptions = {
+export type RemoveContextsCommandOptions = CommonCommandOptions & {
     /**
      * Contexts to remove
      */
@@ -1517,7 +1522,7 @@ type RemoveContextsCommand = {
 
 // Use Context Command Types
 
-export type UseContextCommandOptions = {
+export type UseContextCommandOptions = CommonCommandOptions & {
     /**
      * Context to use
      */
@@ -1537,7 +1542,7 @@ type UseContextCommand = {
 /**
  * Options for inspecting contexts
  */
-export type InspectContextsCommandOptions = {
+export type InspectContextsCommandOptions = CommonCommandOptions & {
     /**
      * Contexts to inspect
      */
@@ -1578,7 +1583,7 @@ type InspectContextsCommand = {
 
 // List files command types
 
-export type ListFilesCommandOptions = {
+export type ListFilesCommandOptions = CommonCommandOptions & {
     /**
     * The container to execute a command in
     */
@@ -1630,7 +1635,7 @@ type ListFilesCommand = {
 
 // Read file command types
 
-export type ReadFileCommandOptions = {
+export type ReadFileCommandOptions = CommonCommandOptions & {
     /**
     * The container to execute a command in
     */
@@ -1663,7 +1668,7 @@ type ReadFileCommand = {
 
 // Write file command types
 
-export type WriteFileCommandOptions = {
+export type WriteFileCommandOptions = CommonCommandOptions & {
     /**
     * The container to execute a command in
     */

@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CommandResponse } from "./CommandRunner";
-import { ClientIdentity } from "./ContainerClient";
+import { ClientIdentity, CommonCommandOptions } from "./ContainerClient";
 
 // #region Container orchestrator commands
 // Common command options
-export type CommonOrchestratorCommandOptions = {
+export type CommonOrchestratorCommandOptions = CommonCommandOptions & {
     /**
      * Orchestrator files, e.g. compose files
      */

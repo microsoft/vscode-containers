@@ -6,11 +6,12 @@
 import { expect } from 'chai';
 import * as crypto from 'crypto';
 import { describe, it } from 'mocha';
+import { ShellQuoting } from 'vscode';
 
 import {
     DockerClient,
 } from '../clients/DockerClient/DockerClient';
-import { escaped, quoted } from '../utils/commandLineBuilder';
+import { escaped } from '../utils/commandLineBuilder';
 
 describe('DockerClient', () => {
     const client = new DockerClient();
@@ -24,7 +25,12 @@ describe('DockerClient', () => {
             });
 
             expect(commandResult).to.have.a.property('command', 'docker');
-            expect(commandResult).to.have.a.property('args').that.deep.equals([escaped('image'), escaped('build'), quoted(path)]);
+            expect(commandResult).to.have.a.property('args').that.deep.equals(
+                [
+                    escaped('image'),
+                    escaped('build'),
+                    { value: path, quoting: ShellQuoting.Strong },
+                ]);
         });
         it('handles pull=true', async () => {
             const commandResult = await client.buildImage({
@@ -54,8 +60,9 @@ describe('DockerClient', () => {
                 escaped('image'),
                 escaped('build'),
                 escaped('--file'),
-                quoted(file),
-                quoted('.')]);
+                { value: file, quoting: ShellQuoting.Strong },
+                { value: '.', quoting: ShellQuoting.Strong },
+            ]);
         });
     });
 });

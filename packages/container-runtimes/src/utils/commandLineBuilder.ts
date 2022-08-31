@@ -43,6 +43,24 @@ export function withArg(...args: Array<string | ShellQuotedString | null | undef
 }
 
 /**
+ * Functional method for adding additional quoted arguments to an existing
+ * list of arguments.
+ * @param args Raw arguments to add to the CommandLineArguments records
+ * @returns A function that takes an optional array of CommandLineArguments and appends the provided arguments
+ */
+export function withQuotedArg(...args: Array<string | ShellQuotedString | null | undefined>): CommandLineCurryFn {
+    return (cmdLineArgs: CommandLineArgs = []) => {
+        return args.map(quoted).reduce<CommandLineArgs>((allArgs, arg) => {
+            if (arg) {
+                return [...allArgs, arg];
+            }
+
+            return allArgs;
+        }, cmdLineArgs);
+    };
+}
+
+/**
  * Functional method for adding a flag argument (--name=value) to an existing list
  * of arguments.
  * @param name The name of the flag argument
@@ -61,7 +79,7 @@ export function withFlagArg(name: string, value: boolean | undefined): CommandLi
 
 type WithNamedArgOptions = {
     assignValue?: boolean;
-    quote?: boolean;
+    shouldQuote?: boolean;
 };
 /**
  * Functional method for assigning an array style argument (multiple instances
@@ -72,17 +90,19 @@ type WithNamedArgOptions = {
  */
 export function withNamedArg(
     name: string,
-    args: Array<string | undefined> | string | null | undefined,
-    { assignValue = false, quote = true }: WithNamedArgOptions = {},
+    args: Array<ShellQuotedString | string | undefined> | ShellQuotedString | string | null | undefined,
+    { assignValue = false, shouldQuote = true }: WithNamedArgOptions = {},
 ): CommandLineCurryFn {
     return (cmdLineArgs: CommandLineArgs = []) => {
-        return toArray(args).map((arg) => quote ? quoted(arg) : escaped(arg)).reduce((allArgs, arg) => {
+        return toArray(args)
+        .reduce((allArgs, arg) => {
             if (arg) {
+                const normalizedArg = shouldQuote ? quoted(arg) : escaped(arg);
                 if (assignValue) {
-                    return withArg(`${name}=${arg}`)(allArgs);
+                    return withArg(`${name}=${normalizedArg}`)(allArgs);
                 }
 
-                return withArg(name, arg)(allArgs);
+                return withArg(name, normalizedArg)(allArgs);
             }
 
             return allArgs;
@@ -99,14 +119,11 @@ export function quoted(value: string | ShellQuotedString | null | undefined): Sh
     if (value) {
         if (typeof value === 'string') {
             return {
-                value,
+                value: value,
                 quoting: ShellQuoting.Strong,
             };
         } else {
-            return {
-                ...value,
-                quoting: ShellQuoting.Strong,
-            };
+            return value;
         }
     }
 
@@ -118,7 +135,7 @@ export function quoted(value: string | ShellQuotedString | null | undefined): Sh
  * @param value The value to potentially wrap as an escaped ShellQuotedString
  * @returns a new ShellQuotedString with quoting set to Escape or undefined if the value is empty
  */
-export function escaped(value: string | ShellQuotedString | null | undefined): ShellQuotedString | undefined {
+export function escaped(value: ShellQuotedString | string | null | undefined): ShellQuotedString | undefined {
     if (value) {
         if (typeof value === 'string') {
             return {
@@ -138,7 +155,7 @@ export function escaped(value: string | ShellQuotedString | null | undefined): S
  * @param value The value to potentially wrap a a weak ShellQuotedString
  * @returns A new ShellQuotedString with quoting set to Weak or undefined if the value is empty
  */
-export function innerQuoted(value: string | ShellQuotedString | null | undefined): ShellQuotedString | undefined {
+export function innerQuoted(value: ShellQuotedString | string | null | undefined): ShellQuotedString | undefined {
     if (value) {
         if (typeof value === 'string') {
             return {
