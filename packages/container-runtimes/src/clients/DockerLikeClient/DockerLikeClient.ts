@@ -116,7 +116,17 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
 export abstract class DockerLikeClient extends ConfigurableClient implements IContainersClient {
-    listDateFormat: string = 'YYYY-MM-DD HH:mm:ss ZZ';
+    /**
+     * The default registry for Docker-like clients is docker.io AKA Docker Hub
+     */
+    public readonly defaultRegistry: string = 'docker.io';
+
+    /**
+     * The default tag for Docker-like clients is 'latest'
+     */
+    public readonly defaultTag: string = 'latest';
+
+    private listDateFormat: string = 'YYYY-MM-DD HH:mm:ss ZZ';
 
     //#region Information Commands
 
