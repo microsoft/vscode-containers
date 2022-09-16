@@ -16,6 +16,7 @@ import {
     CreateVolumeCommandOptions,
     ExecContainerCommandOptions,
     IContainersClient,
+    ImageNameInfo,
     InfoCommandOptions,
     InfoItem,
     InspectContainersCommandOptions,
@@ -96,7 +97,7 @@ import { DockerNetworkRecord, isDockerNetworkRecord } from './DockerNetworkRecor
 import { isDockerVersionRecord } from "./DockerVersionRecord";
 import { isDockerVolumeRecord } from './DockerVolumeRecord';
 import { goTemplateJsonFormat, GoTemplateJsonFormatOptions, goTemplateJsonProperty } from './goTemplateJsonFormat';
-import { parseDockerImageRepository } from "./parseDockerImageRepository";
+import { parseDockerLikeImageName } from './parseDockerLikeImageName';
 import { parseDockerLikeLabels } from './parseDockerLikeLabels';
 import { parseDockerRawPortString } from './parseDockerRawPortString';
 import { parseListFilesCommandLinuxOutput, parseListFilesCommandWindowsOutput } from './parseListFilesCommandOutput';
@@ -350,23 +351,13 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         throw new Error('Invalid image JSON');
                     }
 
-                    // Parse the docker image to normalize registry, image name,
-                    // and image tag information
-                    const [registry, imageName] = parseDockerImageRepository(rawImage.Repository);
                     const createdAt = dayjs.utc(rawImage.CreatedAt).toDate();
-
-                    // Combine the image components into a standardized full name
-                    const image = registry ? `${registry}/${imageName}:${rawImage.Tag}` : `${imageName}:${rawImage.Tag}`;
-
                     const size = tryParseSize(rawImage.Size);
 
                     images.push({
                         id: rawImage.ID,
-                        image,
-                        registry,
-                        name: imageName,
+                        image: parseDockerLikeImageName(rawImage.Repository),
                         // labels: {}, // TODO: image labels are conspicuously absent from Docker image listing output
-                        tag: rawImage.Tag,
                         createdAt,
                         size,
                     });
@@ -407,7 +398,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
         return composeArgs(
             withArg('image', 'remove'),
             withFlagArg('--force', options.force),
-            withArg(...options.images),
+            withArg(...options.imageRefs),
         )();
     }
 
@@ -434,7 +425,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
     protected getPushImageCommandArgs(options: PushImageCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('image', 'push'),
-            withArg(options.image),
+            withArg(options.imageRef),
         )();
     }
 
@@ -493,7 +484,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                 typeof options.disableContentTrust === 'boolean'
                     ? options.disableContentTrust.toString()
                     : undefined),
-            withArg(options.image),
+            withArg(options.imageRef),
         )();
     }
 
@@ -520,7 +511,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
     protected getTagImageCommandArgs(options: TagImageCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('image', 'tag'),
-            withArg(options.fromImage, options.toImage),
+            withArg(options.fromImageRef, options.toImageRef),
         )();
     }
 
@@ -572,7 +563,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                     formatOverrides,
                 ),
             ),
-            withArg(...options.images),
+            withArg(...options.imageRefs),
         )();
     }
 
@@ -603,16 +594,8 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                     }
 
                     // This is effectively doing firstOrDefault on the RepoTags for the image. If there are any values
-                    // in RepoTags, the first one will be parsed and returned as the tag name for the image. Otherwise
-                    // if there are no entries in RepoTags, undefined will be returned for the registry, imageName, and
-                    // tagName components and the image can be treated as an intermediate/anonymous image layer.
-                    const [registry, imageName, tagName] = inspect.RepoTags
-                        .slice(0, 1)
-                        .reduce<[string | undefined, string | undefined, string | undefined]>((unused, repoTag) => {
-                            return parseDockerImageRepository(repoTag);
-                        }, [undefined, undefined, undefined]);
-
-                    const fullImage = imageName ? registry ? `${registry}/${imageName}:${tagName}` : `${imageName}:${tagName}` : undefined;
+                    // in RepoTags, the first one will be parsed and returned as the tag name for the image.
+                    const imageNameInfo: ImageNameInfo = parseDockerLikeImageName(inspect.RepoTags?.[0]);
 
                     // Parse any environment variables defined for the image
                     const environmentVariables = (inspect.EnvVars || []).reduce<Record<string, string>>((evs, ev) => {
@@ -664,10 +647,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                     // Return a normalized InspectImagesItem record
                     const image: InspectImagesItem = {
                         id: inspect.Id,
-                        name: imageName,
-                        tag: tagName,
-                        registry: registry,
-                        image: fullImage,
+                        image: imageNameInfo,
                         repoDigests: inspect.RepoDigests,
                         isLocalImage,
                         environmentVariables,
@@ -745,7 +725,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
             withNamedArg('--env-file', options.environmentFiles),
             withNamedArg('--entrypoint', options.entrypoint),
             withArg(options.customOptions),
-            withArg(options.image),
+            withArg(options.imageRef),
             withArg(...(toArray(options.command || []))),
         )();
     }
@@ -899,7 +879,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         id: rawContainer.Id,
                         name,
                         labels,
-                        image: rawContainer.Image,
+                        image: parseDockerLikeImageName(rawContainer.Image),
                         ports,
                         networks,
                         createdAt,
@@ -1316,7 +1296,7 @@ export abstract class DockerLikeClient extends ConfigurableClient implements ICo
                         id: inspect.Id,
                         name: inspect.Name,
                         imageId: inspect.ImageId,
-                        imageName: inspect.ImageName,
+                        image: parseDockerLikeImageName(inspect.ImageName),
                         status: inspect.Status,
                         environmentVariables,
                         networks,
