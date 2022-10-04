@@ -4,8 +4,6 @@ jobs:
       vmImage: windows-latest
     steps:
       - template: job-steps.yml
-    variables:
-      Codeql.Enabled: true
 
   - job: Linux
     pool:
