@@ -12,7 +12,6 @@ jobs:
       - template: job-steps.yml
     variables:
       Codeql.Enabled: true
-      Codeql.Language: tsandjs
 
 trigger:
   branches:
