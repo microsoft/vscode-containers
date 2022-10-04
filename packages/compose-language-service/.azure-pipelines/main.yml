@@ -4,12 +4,16 @@ jobs:
       vmImage: windows-latest
     steps:
       - template: job-steps.yml
+    variables:
+      Codeql.Enabled: true
 
   - job: Linux
     pool:
       vmImage: ubuntu-latest
     steps:
       - template: job-steps.yml
+    variables:
+      Codeql.Enabled: true
 
 trigger:
   branches:
