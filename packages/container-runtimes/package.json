@@ -21,7 +21,8 @@
         "prepack": "npm run build",
         "test": "mocha",
         "testwatch": "mocha --watch",
-        "testreport": "mocha --reporter mocha-junit-reporter"
+        "testreport": "mocha --reporter mocha-junit-reporter",
+        "copytoextension": "npx --yes copyfiles -u 1 ./src/**/*.* ../../../vscode-docker/src/runtimes/docker"
     },
     "dependencies": {
         "dayjs": "^1.11.2"

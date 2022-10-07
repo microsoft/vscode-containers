@@ -116,7 +116,7 @@ import { withDockerPortsArg } from './withDockerPortsArg';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
-export abstract class DockerLikeClient extends ConfigurableClient implements IContainersClient {
+export abstract class DockerClientBase extends ConfigurableClient implements IContainersClient {
     /**
      * The default registry for Docker-like clients is docker.io AKA Docker Hub
      */

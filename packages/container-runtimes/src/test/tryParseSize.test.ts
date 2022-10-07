@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { tryParseSize } from '../clients/DockerLikeClient/tryParseSize';
+import { tryParseSize } from '../clients/DockerClientBase/tryParseSize';
 
 const KB = 1024;
 const MB = KB * 1024;

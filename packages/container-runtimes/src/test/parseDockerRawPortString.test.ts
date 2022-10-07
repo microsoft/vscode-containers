@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { parseDockerRawPortString } from '../clients/DockerLikeClient/parseDockerRawPortString';
+import { parseDockerRawPortString } from '../clients/DockerClientBase/parseDockerRawPortString';
 
 describe('parseDockerRawPortString', () => {
     it('Should parse short-form ports', () => {

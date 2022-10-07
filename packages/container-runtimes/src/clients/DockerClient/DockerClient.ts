@@ -7,13 +7,13 @@ import { CommandResponse } from "../../contracts/CommandRunner";
 import { IContainersClient, InspectContextsCommandOptions, InspectContextsItem, ListContextItem, ListContextsCommandOptions, RemoveContextsCommandOptions, UseContextCommandOptions } from "../../contracts/ContainerClient";
 import { asIds } from "../../utils/asIds";
 import { CommandLineArgs, composeArgs, withArg } from "../../utils/commandLineBuilder";
-import { DockerLikeClient } from "../DockerLikeClient/DockerLikeClient";
-import { withDockerJsonFormatArg } from "../DockerLikeClient/withDockerJsonFormatArg";
+import { DockerClientBase } from "../DockerClientBase/DockerClientBase";
+import { withDockerJsonFormatArg } from "../DockerClientBase/withDockerJsonFormatArg";
 import { isDockerContextRecord } from "./DockerContextRecord";
 import { normalizeDockerContextType } from "./DockerContextType";
 import { isDockerInspectContextRecord } from "./DockerInspectContextRecord";
 
-export class DockerClient extends DockerLikeClient implements IContainersClient {
+export class DockerClient extends DockerClientBase implements IContainersClient {
     /**
      * The ID of the Docker client
      */
