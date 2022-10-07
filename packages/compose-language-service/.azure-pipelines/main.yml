@@ -11,7 +11,7 @@ jobs:
     steps:
       - template: job-steps.yml
     variables:
-      Codeql.Enabled: true
+      Codeql.Enabled: $[in(variables['Build.Reason'], 'Schedule')] # Enable CodeQL only on scheduled builds because it is slow
 
 trigger:
   branches:
