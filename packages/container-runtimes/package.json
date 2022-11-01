@@ -25,7 +25,8 @@
         "copytoextension": "npx --yes copyfiles -u 1 ./src/**/*.* ../../../vscode-docker/src/runtimes/docker"
     },
     "dependencies": {
-        "dayjs": "^1.11.2"
+        "dayjs": "^1.11.2",
+        "tree-kill": "^1.2.2"
     },
     "devDependencies": {
         "@types/chai": "^4.3.0",
