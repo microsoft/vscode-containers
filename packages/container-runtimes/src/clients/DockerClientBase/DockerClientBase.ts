@@ -1353,7 +1353,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         options: ListNetworksCommandOptions,
     ): CommandLineArgs {
         return composeArgs(
-            withNamedArg('network', 'ls'),
+            withArg('network', 'ls'),
             withDockerLabelFilterArgs(options.labels),
             withDockerNoTruncArg,
             withDockerJsonFormatArg,
