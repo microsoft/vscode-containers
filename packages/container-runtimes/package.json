@@ -1,7 +1,6 @@
 {
     "name": "@microsoft/container-runtimes",
     "author": "Microsoft Corporation",
-    "private": "false",
     "version": "0.1.0",
     "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
     "license": "See LICENSE in the project root for license information.",
