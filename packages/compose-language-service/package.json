@@ -18,6 +18,9 @@
         "docker"
     ],
     "main": "lib/server.js",
+    "bin": {
+        "docker-compose-langserver": "./bin/docker-compose-langserver"
+    },
     "scripts": {
         "build": "tsc",
         "lint": "eslint --max-warnings 0 src --ext ts",
