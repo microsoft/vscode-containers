@@ -1,3 +1,7 @@
+## 0.1.3 - 13 February 2023
+### Added
+* Added an executable to launch the language server. [#114](https://github.com/microsoft/compose-language-service/issues/114)
+
 ## 0.1.2 - 20 July 2022
 ### Changed
 * Switched to Node 16 and updates some dependencies. [#98](https://github.com/microsoft/compose-language-service/pull/98), [#102](https://github.com/microsoft/compose-language-service/pull/102)
