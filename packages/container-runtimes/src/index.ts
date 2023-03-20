@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export * from './clients/DockerClientBase/DockerClientBase';
 export * from './clients/DockerClient/DockerClient';
 export * from './clients/DockerComposeClient/DockerComposeClient';
 export * from './commandRunners/shellStream';
@@ -11,7 +10,6 @@ export * from './commandRunners/wslStream';
 export * from './contracts/CommandRunner';
 export * from './contracts/ContainerClient';
 export * from './contracts/ContainerOrchestratorClient';
-export * from './contracts/DockerExtensionExport';
 export * from './typings/CancellationTokenLike';
 export * from './typings/DisposableLike';
 export * from './typings/EventLike';
