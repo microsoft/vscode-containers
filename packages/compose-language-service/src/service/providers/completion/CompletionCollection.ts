@@ -17,6 +17,11 @@ interface ExtendedCompletionItem extends CompletionItem {
      */
     insertText: string;
 
+    /**
+     * Whether a completion is an advanced compose completion
+     */
+    isAdvancedComposeCompletion: boolean;
+
     // TODO: in the long run, we should use `InsertReplaceEdit` to avoid client-side interpretation and make a more client-agnostic server
     // TODO: However, using `insertText` instead of `textEdit`, the behavior for 24x7 completions is closer in-line to what we want at least in VSCode
 }
@@ -40,7 +45,9 @@ export class CompletionCollection extends Array<ExtendedCompletionItem> {
         }
 
         const line = params.document.lineAt(params.position);
-        return this.filter(eci => !eci.matcher || eci.matcher.test(line));
+        return this
+            .filter(eci => (params.basicCompletions && !eci.isAdvancedComposeCompletion) || (params.advancedCompletions && eci.isAdvancedComposeCompletion))
+            .filter(eci => !eci.matcher || eci.matcher.test(line));
     }
 }
 

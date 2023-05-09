@@ -22,7 +22,7 @@ import { VolumesCompletionCollection } from './VolumesCompletionCollection';
 export class MultiCompletionProvider extends ProviderBase<CompletionParams & ExtendedParams, CompletionItem[] | undefined, never, never> {
     private readonly completionCollections: CompletionCollection[];
 
-    public constructor() {
+    public constructor(private readonly basicCompletions: boolean, private readonly advancedCompletions: boolean) {
         super();
 
         this.completionCollections = [
@@ -40,6 +40,8 @@ export class MultiCompletionProvider extends ProviderBase<CompletionParams & Ext
         const extendedParams: ExtendedCompletionParams = {
             ...params,
             positionInfo: await params.document.getPositionInfo(params),
+            basicCompletions: this.basicCompletions,
+            advancedCompletions: this.advancedCompletions,
         };
 
         const results: CompletionItem[] = [];

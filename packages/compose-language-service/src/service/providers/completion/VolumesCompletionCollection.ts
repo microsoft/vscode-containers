@@ -16,6 +16,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             label: 'hostPath:containerPath:mode',
             insertText: '${1:hostPath}:${2:containerPath}:${3|ro,rw|}$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: true,
         },
         {
             // Matches `  - ""` or `  -`, with allowances for other amounts of whitespace/quoting
@@ -23,6 +24,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             label: 'volumeName:containerPath:mode',
             insertText: '${1:volumeName}:${2:containerPath}:${3|ro,rw|}$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: true,
         },
         {
             // Matches `  - "C:\some\path:"` or `  - /some/path:`, with allowances for other amounts of whitespace/quoting
@@ -30,6 +32,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             label: ':containerPath:mode',
             insertText: '${1:containerPath}:${2|ro,rw|}$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: true,
         },
         {
             // Matches `  - "C:\some\path:/another/path:"` or `  - /some/path:/another/path:`, with allowances for other amounts of whitespace/quoting
@@ -37,6 +40,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             label: ':ro',
             insertText: 'ro',
             insertTextFormat: InsertTextFormat.PlainText,
+            isAdvancedComposeCompletion: true,
             detail: 'Read-only',
         },
         {
@@ -45,6 +49,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             label: ':rw',
             insertText: 'rw',
             insertTextFormat: InsertTextFormat.PlainText,
+            isAdvancedComposeCompletion: true,
             detail: 'Read-write',
         },
     ]

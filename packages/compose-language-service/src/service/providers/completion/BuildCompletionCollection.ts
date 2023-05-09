@@ -35,32 +35,38 @@ export const BuildCompletionCollection = new CompletionCollection(
             insertText: 'args:\n\t- ${1:name}=${2:value}$0',
             insertTextFormat: InsertTextFormat.Snippet,
             insertTextMode: InsertTextMode.adjustIndentation,
+            isAdvancedComposeCompletion: true,
         },
         {
             label: 'context:',
             insertText: 'context: ${1:buildContext}$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'dockerfile:',
             insertText: 'dockerfile: ${1:dockerfile}$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'labels:',
             insertText: 'labels:\n\t- ${1:com.host.description}=${2:label}$0',
             insertTextFormat: InsertTextFormat.Snippet,
             insertTextMode: InsertTextMode.adjustIndentation,
+            isAdvancedComposeCompletion: true,
         },
         {
             label: 'network:',
             insertText: 'network: ${1:networkName}$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'target:',
             insertText: 'target: ${1:targetStage}$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: false,
         },
     ]
 );

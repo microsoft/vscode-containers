@@ -41,7 +41,7 @@ export class ComposeLanguageService implements Disposable {
         this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, new DiagnosticProvider(clientParams.initializationOptions?.diagnosticDelay));
 
         // Hook up all the LSP listeners, which do not create Disposables for some reason
-        this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider());
+        this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider(true, true));
         this.createLspHandler(this.connection.onHover, new KeyHoverProvider());
         this.createLspHandler(this.connection.onDocumentLinks, new ImageLinkProvider());
         this.createLspHandler(this.connection.onDocumentFormatting, new DocumentFormattingProvider());

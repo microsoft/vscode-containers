@@ -32,31 +32,37 @@ export const RootCompletionCollection = new CompletionCollection(
             label: 'configs:',
             insertText: 'configs:\n',
             insertTextFormat: InsertTextFormat.PlainText,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'networks:',
             insertText: 'networks:\n',
             insertTextFormat: InsertTextFormat.PlainText,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'secrets:',
             insertText: 'secrets:\n',
             insertTextFormat: InsertTextFormat.PlainText,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'services:',
             insertText: 'services:\n',
             insertTextFormat: InsertTextFormat.PlainText,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'version:',
             insertText: 'version: \'${1:version}\'$0',
             insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: false,
         },
         {
             label: 'volumes:',
             insertText: 'volumes:\n',
             insertTextFormat: InsertTextFormat.PlainText,
+            isAdvancedComposeCompletion: false,
         },
     ]
 );

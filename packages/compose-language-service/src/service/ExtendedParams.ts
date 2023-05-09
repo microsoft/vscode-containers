@@ -24,4 +24,6 @@ export interface PositionInfo {
 
 export interface ExtendedCompletionParams extends CompletionParams, ExtendedPositionParams {
     positionInfo: PositionInfo;
+    basicCompletions: boolean;
+    advancedCompletions: boolean;
 }
