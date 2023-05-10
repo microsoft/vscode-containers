@@ -1,3 +1,10 @@
+## 0.2.0 - 10 May 2023
+### Breaking Changes
+* The `ComposeLanguageClientCapabilities` type has been moved from `lib/client/DocumentSettings` to `lib/client/ClientCapabilities`
+
+### Added
+* The client can now specify whether an alternative YAML language service is present (e.g., from the YAML extension), selectively disabling features of this language service. [#122](https://github.com/microsoft/compose-language-service/issues/122)
+
 ## 0.1.3 - 13 February 2023
 ### Added
 * Added an executable to launch the language server. [#114](https://github.com/microsoft/compose-language-service/issues/114)
