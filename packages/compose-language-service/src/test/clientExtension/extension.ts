@@ -6,6 +6,7 @@
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { DocumentSettingsClientFeature } from './DocumentSettingsClientFeature';
+import { AlternateYamlLanguageServiceClientFeature } from './AlternateYamlLanguageServiceClientFeature';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     const serverModule = context.asAbsolutePath('../../../lib/server.js');
@@ -39,6 +40,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     const client = new LanguageClient('compose-language-server', serverOptions, clientOptions, true);
     client.registerFeature(new DocumentSettingsClientFeature(client));
+    client.registerFeature(new AlternateYamlLanguageServiceClientFeature());
 
     context.subscriptions.push(client.onTelemetry((e) => {
         clientOutputChannel.appendLine(JSON.stringify(e));

@@ -15,11 +15,20 @@ import { ProviderBase } from './ProviderBase';
 const DiagnosticDelay = 1000;
 
 export class DiagnosticProvider extends ProviderBase<TextDocumentChangeEvent<ComposeDocument> & ExtendedParams, void, never, never> {
-    public constructor(private readonly diagnosticDelay: number = DiagnosticDelay) {
+    public constructor(
+        private readonly diagnosticDelay: number = DiagnosticDelay,
+        private readonly syntaxValidation: boolean,
+        private readonly schemaValidation: boolean
+    ) {
         super();
     }
 
     public on(params: TextDocumentChangeEvent<ComposeDocument> & ExtendedParams): void {
+        if (!this.syntaxValidation) {
+            // Do nothing if syntax validation is disabled. At present schema validation is not supported, https://github.com/microsoft/compose-language-service/issues/84
+            return;
+        }
+
         const ctx = getCurrentContext();
 
         ctx.telemetry.suppressAll = true; // Diagnostics is async and telemetry won't really work

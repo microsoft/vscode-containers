@@ -5,7 +5,8 @@
 
 import { expect } from 'chai';
 import { InitializeParams, Position, TextDocuments } from 'vscode-languageserver';
-import { ComposeLanguageClientCapabilities, DocumentSettings, DocumentSettingsNotification, DocumentSettingsNotificationParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
+import type { ComposeLanguageClientCapabilities } from '../client/ClientCapabilities';
+import { DocumentSettings, DocumentSettingsNotification, DocumentSettingsNotificationParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
 import { ComposeDocument } from '../service/ComposeDocument';
 import { ExtendedPositionParams, PositionInfo } from '../service/ExtendedParams';
 import { runWithContext } from '../service/utils/ActionContext';

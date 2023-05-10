@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import type { ClientCapabilities, DocumentSelector, FeatureState, InitializeParams, ServerCapabilities, StaticFeature } from 'vscode-languageclient';
+import type { ClientCapabilities, FeatureState, StaticFeature } from 'vscode-languageclient';
 import type { LanguageClient } from 'vscode-languageclient/node';
-import type { DocumentSettings, DocumentSettingsNotificationParams, DocumentSettingsParams } from '../../../lib/client/DocumentSettings'; // Dev-time-only imports, with `require` below for the real imports, to avoid desync issues or needing to actually install the langserver package
+import type { DocumentSettings, DocumentSettingsClientCapabilities, DocumentSettingsNotificationParams, DocumentSettingsParams } from '../../../lib/client/DocumentSettings'; // Dev-time-only imports, with `require` below for the real imports, to avoid desync issues or needing to actually install the langserver package
 
 export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disposable {
     private disposables: vscode.Disposable[] = [];
@@ -20,14 +20,14 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
     }
 
     public fillClientCapabilities(capabilities: ClientCapabilities): void {
-        const documentSettings = {
+        const docSettingsClientCapabilities: DocumentSettingsClientCapabilities = {
             notify: true,
             request: true,
         };
 
         capabilities.experimental = {
             ...capabilities.experimental,
-            documentSettings,
+            documentSettings: docSettingsClientCapabilities,
         };
     }
 
