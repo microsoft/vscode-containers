@@ -32,6 +32,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=528096&clcid=0x409) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
+If using this language service outside of VS Code (e.g. in Vim), it is not necessary for the language client to forward the telemetry events sent by the language service to the client.
+
 ## Trademarks
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
