@@ -1,32 +1,26 @@
-jobs:
-  - job: Windows
-    pool:
-      vmImage: windows-latest
-    steps:
-      - template: job-steps.yml
-
-  - job: Linux
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: job-steps.yml
-    variables:
-      Codeql.Enabled: $[in(variables['Build.Reason'], 'Schedule')] # Enable CodeQL only on scheduled builds because it is slow
-
+# Trigger the build whenever `main` or `rel/*` is updated
 trigger:
-  branches:
-    include:
-      - '*'
+  - main
+  - rel/*
 
-pr:
-  branches:
-    include:
-      - main
-
+# Scheduled nightly build
 schedules:
   - cron: "0 0 * * *"
-    displayName: Daily midnight build
+    displayName: Nightly scheduled build
+    always: false # Don't rebuild if there haven't been changes
     branches:
       include:
         - main
-    always: false
+
+# Grab the base templates from https://github.com/microsoft/vscode-azuretools/tree/main/azure-pipelines
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: microsoft/vscode-azuretools
+      ref: main
+      endpoint: GitHub
+
+# Use those templates
+extends:
+  template: azure-pipelines/jobs.yml@templates

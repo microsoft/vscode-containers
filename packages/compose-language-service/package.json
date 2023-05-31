@@ -26,8 +26,7 @@
         "lint": "eslint --max-warnings 0 src --ext ts",
         "test": "mocha --file lib/test/global.test.js --recursive lib/test",
         "unittest": "npm test -- --grep /unit/i",
-        "pretest": "npm run build",
-        "prepack": "npm run build"
+        "package": "npm pack"
     },
     "devDependencies": {
         "@types/chai": "^4.3.0",
