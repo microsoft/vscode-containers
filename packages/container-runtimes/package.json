@@ -17,7 +17,7 @@
         "build": "tsc",
         "clean": "tsc --build --clean",
         "lint": "eslint --max-warnings 0 . --ext ts",
-        "prepack": "npm run build",
+        "package": "npm pack",
         "test": "mocha",
         "testwatch": "mocha --watch",
         "testreport": "mocha --reporter mocha-junit-reporter",
