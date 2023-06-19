@@ -52,7 +52,7 @@ export type DockerInspectContainerConfig = {
 
 export type DockerInspectContainerHostConfig = {
     PublishAllPorts?: boolean | null;
-    Isolation?: string | null;
+    Isolation?: string;
 };
 
 export type DockerInspectContainerNetworkSettings = {

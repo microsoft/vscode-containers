@@ -8,7 +8,7 @@ import { withNamedArg } from "../../utils/commandLineBuilder";
 import { getNativeArchitecture } from "../../utils/getNativeArchitecture";
 import { normalizeContainerOS } from "../../utils/normalizeContainerOS";
 
-export function formatDockerPlatform(platform: ContainerPlatform): string | undefined {
+export function formatDockerPlatform(platform?: ContainerPlatform): string | undefined {
     if (!platform?.os && !platform?.architecture) {
         return undefined;
     }
@@ -31,6 +31,6 @@ export function formatDockerPlatform(platform: ContainerPlatform): string | unde
  * @param platform
  * @returns
  */
-export function withDockerPlatformArg(platform: ContainerPlatform) {
+export function withDockerPlatformArg(platform?: ContainerPlatform) {
     return withNamedArg('--platform', formatDockerPlatform(platform));
 }
