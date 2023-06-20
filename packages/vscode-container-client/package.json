@@ -1,5 +1,5 @@
 {
-    "name": "@microsoft/container-runtimes",
+    "name": "@microsoft/vscode-container-client",
     "author": "Microsoft Corporation",
     "version": "0.1.0",
     "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
@@ -11,7 +11,7 @@
     "bugs": {
         "url": "https://github.com/microsoft/vscode-docker-extensibility/issues"
     },
-    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/container-runtimes/README.md",
+    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-container-client/README.md",
     "main": "lib/index.js",
     "scripts": {
         "build": "tsc",
@@ -20,8 +20,7 @@
         "package": "npm pack",
         "test": "mocha",
         "testwatch": "mocha --watch",
-        "testreport": "mocha --reporter mocha-junit-reporter",
-        "copytoextension": "npx --yes copyfiles -u 1 ./src/**/*.* ../../../vscode-docker/src/runtimes/docker"
+        "testreport": "mocha --reporter mocha-junit-reporter"
     },
     "dependencies": {
         "dayjs": "^1.11.2",

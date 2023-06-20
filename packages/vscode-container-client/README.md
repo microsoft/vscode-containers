@@ -1,4 +1,4 @@
-# container-runtimes
+# vscode-container-client
 
 ## Overview
 This package adds support for various Docker container runtimes, abstracting away the details of the runtime and the way it is called, to provide a common interface for any Docker runtime (e.g. Docker in WSL, Docker Engine, Docker Desktop, etc.).
