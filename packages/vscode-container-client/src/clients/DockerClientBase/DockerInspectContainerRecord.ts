@@ -5,9 +5,9 @@
 
 import { InspectContainersItem, InspectContainersItemMount, InspectContainersItemNetwork, PortBinding } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
+import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { toArray } from '../../utils/toArray';
 import { parseDockerLikeEnvironmentVariables } from './parseDockerLikeEnvironmentVariables';
-import { parseDockerLikeImageName } from './parseDockerLikeImageName';
 
 export type DockerInspectContainerPortHost = {
     HostIp?: string;

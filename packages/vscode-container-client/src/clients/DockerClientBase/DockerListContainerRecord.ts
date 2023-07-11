@@ -5,7 +5,7 @@
 
 import { ListContainersItem, PortBinding } from "../../contracts/ContainerClient";
 import { dayjs } from '../../utils/dayjs';
-import { parseDockerLikeImageName } from "./parseDockerLikeImageName";
+import { parseDockerLikeImageName } from "../../utils/parseDockerLikeImageName";
 import { parseDockerLikeLabels } from "./parseDockerLikeLabels";
 import { parseDockerRawPortString } from "./parseDockerRawPortString";
 

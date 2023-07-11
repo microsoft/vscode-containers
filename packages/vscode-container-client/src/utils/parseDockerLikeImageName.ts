@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ImageNameInfo } from '../../contracts/ContainerClient';
+import type { ImageNameInfo } from '../contracts/ContainerClient';
 
 /**
  * A regex for parsing image names. Because this is only used to parse CLI output, we can assume

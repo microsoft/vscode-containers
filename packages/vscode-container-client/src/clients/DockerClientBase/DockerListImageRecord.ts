@@ -5,7 +5,7 @@
 
 import { ListImagesItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
-import { parseDockerLikeImageName } from './parseDockerLikeImageName';
+import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { tryParseSize } from './tryParseSize';
 
 export type DockerListImageRecord = {
