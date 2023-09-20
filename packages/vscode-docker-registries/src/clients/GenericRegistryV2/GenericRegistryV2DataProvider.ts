@@ -133,6 +133,5 @@ export class GenericRegistryV2DataProvider extends RegistryV2DataProvider {
         // remove credentials from auth provider
         await this.authenticationProviders.get(registryUriString)?.removeSession();
         this.authenticationProviders.delete(registryUriString);
-        // TODO: check if the map of auth providers is empty, if so, remove the root from the tree
     }
 }
