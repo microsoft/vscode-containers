@@ -14,6 +14,12 @@ export interface CommonRegistryItem extends RegistryItem, ContextValueRegistryIt
     readonly baseUrl?: vscode.Uri;
 }
 
+export function isCommonRegistryItem(maybeCommonRegistryItem: unknown): maybeCommonRegistryItem is CommonRegistryItem {
+    return !!maybeCommonRegistryItem && typeof maybeCommonRegistryItem === 'object' &&
+        (maybeCommonRegistryItem as CommonRegistryItem).type !== undefined &&
+        (maybeCommonRegistryItem as CommonRegistryItem).label !== undefined;
+}
+
 export interface CommonRegistryRoot extends CommonRegistryItem {
     readonly parent: undefined;
     readonly type: 'commonroot';
