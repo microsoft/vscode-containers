@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import { Request, RequestInit, Response, ResponseInit, default as fetch } from 'node-fetch';
-import { UnauthorizedError } from './errors';
+import { HttpErrorResponse, UnauthorizedError } from './errors';
 
 export function getNextLinkFromHeaders(headers: HeadersLike, baseUrl: vscode.Uri): vscode.Uri | undefined {
     const linkHeader: string | undefined = headers['link'];
@@ -51,7 +51,7 @@ export async function httpRequest<T>(url: string, request: RequestLike, throwOnF
     if (throwOnFailure && response.status === 401) {
         throw new UnauthorizedError(vscode.l10n.t('Request to \'{0}\' failed with response 401: Unauthorized', url));
     } else if (throwOnFailure && !succeeded) {
-        throw new Error(vscode.l10n.t('Request to \'{0}\' failed with response {1}: {2}', url, response.status, response.statusText));
+        throw new HttpErrorResponse(url, response.status, response.statusText);
     }
 
     return {

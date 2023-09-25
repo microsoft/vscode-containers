@@ -85,6 +85,7 @@ export class GenericRegistryV2DataProvider extends RegistryV2DataProvider {
             registryPromptPlaceholder: vscode.l10n.t('http://localhost:5000'),
             usernamePrompt: vscode.l10n.t('Registry Username'),
             secretPrompt: vscode.l10n.t('Registry Password or Personal Access Token'),
+            connectedRegistries: this.authenticationProviders ? [...this.authenticationProviders.keys()] : [],
         };
 
         const wizard = new RegistryWizard(
