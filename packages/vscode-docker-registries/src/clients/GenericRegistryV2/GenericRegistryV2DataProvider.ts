@@ -135,4 +135,9 @@ export class GenericRegistryV2DataProvider extends RegistryV2DataProvider {
         await this.authenticationProviders.get(registryUriString)?.removeSession();
         this.authenticationProviders.delete(registryUriString);
     }
+
+    public hasTrackedRegistries(): boolean {
+        const trackedRegistryStrings = this.extensionContext.globalState.get<string[]>(TrackedRegistriesKey, []);
+        return trackedRegistryStrings.length > 0;
+    }
 }
