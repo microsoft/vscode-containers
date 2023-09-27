@@ -9,7 +9,7 @@ import { isContextValueRegistryItem } from '../../contracts/RegistryItem';
 import { getNextLinkFromHeaders, httpRequest } from '../../utils/httpRequest';
 import { RegistryWizard } from '../../wizard/RegistryWizard';
 import { RegistryWizardContext } from '../../wizard/RegistryWizardContext';
-import { RegistryWizardSecretPromptStep, RegistryWizardUsernamePromptStep } from '../../wizard/RegistryWizardPromptStep';
+import { RegistryWizardRequiredUsernamePromptStep, RegistryWizardSecretPromptStep } from '../../wizard/RegistryWizardPromptStep';
 import { CommonRegistryDataProvider } from '../Common/CommonRegistryDataProvider';
 import { CommonRegistryRoot, CommonRegistry, CommonRepository, CommonTag, CommonRegistryItem, isRegistry, isRepository } from '../Common/models';
 
@@ -53,7 +53,7 @@ export class DockerHubRegistryDataProvider extends CommonRegistryDataProvider {
         const wizard = new RegistryWizard(
             wizardContext,
             [
-                new RegistryWizardUsernamePromptStep(),
+                new RegistryWizardRequiredUsernamePromptStep(),
                 new RegistryWizardSecretPromptStep(),
             ]
         );

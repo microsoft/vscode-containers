@@ -11,7 +11,7 @@ import { AuthenticationProvider } from '../../contracts/AuthenticationProvider';
 import { httpRequest } from '../../utils/httpRequest';
 import { RegistryWizardContext } from '../../wizard/RegistryWizardContext';
 import { RegistryWizard } from '../../wizard/RegistryWizard';
-import { RegistryWizardSecretPromptStep, RegistryWizardUsernamePromptStep } from '../../wizard/RegistryWizardPromptStep';
+import { RegistryWizardRequiredUsernamePromptStep, RegistryWizardSecretPromptStep } from '../../wizard/RegistryWizardPromptStep';
 import { BasicCredentials } from '../../contracts/BasicCredentials';
 import { CommonRegistryItem, isRegistry } from '../Common/models';
 import { isContextValueRegistryItem } from '../../contracts/RegistryItem';
@@ -46,7 +46,7 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
         const wizard = new RegistryWizard(
             wizardContext,
             [
-                new RegistryWizardUsernamePromptStep(),
+                new RegistryWizardRequiredUsernamePromptStep(),
                 new RegistryWizardSecretPromptStep(),
             ]
         );
