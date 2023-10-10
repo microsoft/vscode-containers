@@ -116,6 +116,7 @@ import { withDockerMountsArg } from './withDockerMountsArg';
 import { withDockerNoTruncArg } from "./withDockerNoTruncArg";
 import { withDockerPlatformArg } from './withDockerPlatformArg';
 import { withDockerPortsArg } from './withDockerPortsArg';
+import { parsePruneLikeOutput } from './parsePruneLikeOutput';
 
 const LinuxStatArguments = '%f %h %g %u %s %X %Y %Z %n';
 const WindowsStatArguments = '/A-S /-C /TW';
@@ -518,8 +519,16 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         output: string,
         strict: boolean,
     ): Promise<PruneImagesItem> {
-        // TODO: Parse output for prune info
-        return Promise.resolve({});
+        const deletedImageLineRegex = /^deleted:\s*sha256:\s*(\w+)$/igm;
+
+        const deletedImages = parsePruneLikeOutput(output, {
+            resourceRegex: deletedImageLineRegex,
+        });
+
+        return Promise.resolve({
+            imageRefsDeleted: deletedImages.resources,
+            spaceReclaimed: deletedImages.spaceReclaimed,
+        });
     }
 
     async pruneImages(options: PruneImagesCommandOptions): Promise<PromiseCommandResponse<PruneImagesItem>> {
@@ -947,8 +956,14 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         output: string,
         strict: boolean,
     ): Promise<PruneContainersItem> {
-        // TODO: Parse output for prune info
-        return {};
+        const deletedContainerItems = parsePruneLikeOutput(output, {
+            resourceRegex: undefined, // the line is the container ID itself
+        });
+
+        return Promise.resolve({
+            containersDeleted: deletedContainerItems.resources,
+            spaceReclaimed: deletedContainerItems.spaceReclaimed,
+        });
     }
 
     async pruneContainers(options: PruneContainersCommandOptions): Promise<PromiseCommandResponse<PruneContainersItem>> {
@@ -1250,8 +1265,15 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         output: string,
         strict: boolean,
     ): Promise<PruneVolumesItem> {
-        // TODO: Parse output for prune info
-        return {};
+        const deletedVolumesLineRegex = /^deleted:\s*(\w+)$/igm;
+        const deletedVolumes = parsePruneLikeOutput(output, {
+            resourceRegex: deletedVolumesLineRegex,
+        });
+
+        return Promise.resolve({
+            volumesDeleted: deletedVolumes.resources,
+            spaceReclaimed: deletedVolumes.spaceReclaimed,
+        });
     }
 
     async pruneVolumes(options: PruneVolumesCommandOptions): Promise<PromiseCommandResponse<PruneVolumesItem>> {
@@ -1259,7 +1281,6 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
             command: this.commandName,
             args: this.getPruneVolumesCommandArgs(options),
             parse: (output, strict) => this.parsePruneVolumesCommandOutput(options, output, strict),
-
         };
     }
 
@@ -1446,8 +1467,16 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         output: string,
         strict: boolean,
     ): Promise<PruneNetworksItem> {
-        // TODO: Parse output for prune info
-        return {};
+        let networks: string[] = [];
+        const deletedNetworkStartString = "Deleted Networks:";
+
+        if (output.includes(deletedNetworkStartString)) {
+            networks = asIds(output.replace(deletedNetworkStartString, ""));
+        }
+
+        return {
+            networksDeleted: networks,
+        };
     }
 
     async pruneNetworks(options: PruneNetworksCommandOptions): Promise<PromiseCommandResponse<PruneNetworksItem>> {
