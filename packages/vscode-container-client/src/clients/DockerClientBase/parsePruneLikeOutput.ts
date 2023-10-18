@@ -6,8 +6,8 @@
 import { tryParseSize } from "./tryParseSize";
 
 // default regex to parse the space reclaimed
-const PruneSpaceReclaimedRegex = /Total reclaimed space:\s+([\w\s]+)/igm;
-const ResourceRegex = /^\w+$/igm;
+const PruneSpaceReclaimedRegex = /^Total reclaimed space:\s+([\w\s.]+)$/igm;
+const ResourceRegex = /^(\w+)$/igm;
 
 export type PruneParseOptions = {
     // if resource regex is not provided, we'll assume the resource is the line itself
@@ -22,13 +22,18 @@ export type PruneResult = {
 export function parsePruneLikeOutput(output: string, options: PruneParseOptions): PruneResult {
     const resourceRegex = options?.resourceRegex || ResourceRegex;
 
-    let deletedResources: string[] = [];
+    const deletedResources: string[] = [];
     let spaceReclaimed: number = 0;
 
     // match resources
-    deletedResources = output.match(resourceRegex) || [];
+    resourceRegex.lastIndex = 0;
+    let result: RegExpExecArray | null;
+    while ((result = resourceRegex.exec(output)) && result.length >= 2) {
+        deletedResources.push(result[1]);
+    }
 
     // match space reclaimed
+    PruneSpaceReclaimedRegex.lastIndex = 0;
     const spaceMatched = PruneSpaceReclaimedRegex.exec(output)?.[0];
     spaceReclaimed = tryParseSize(spaceMatched) || 0;
 
@@ -37,4 +42,3 @@ export function parsePruneLikeOutput(output: string, options: PruneParseOptions)
         resources: deletedResources,
     };
 }
-
