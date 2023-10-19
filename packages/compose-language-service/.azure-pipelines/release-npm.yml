@@ -1,0 +1,25 @@
+trigger: none # Disable the branch trigger
+pr: none # Disable PR trigger
+
+# Choose a package to publish at the time of job creation
+parameters:
+  - name: PackageToPublish
+    displayName: Package to Publish
+    type: string
+    default: microsoft-compose-language-service
+
+# Grab the base templates from https://github.com/microsoft/vscode-azuretools/tree/main/azure-pipelines
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: microsoft/vscode-azuretools
+      ref: main
+      endpoint: GitHub
+
+# Use those base templates
+extends:
+  template: azure-pipelines/release-npm.yml@templates
+  parameters:
+    PackageToPublish: ${{ parameters.PackageToPublish }}
+    PipelineDefinition: 38
