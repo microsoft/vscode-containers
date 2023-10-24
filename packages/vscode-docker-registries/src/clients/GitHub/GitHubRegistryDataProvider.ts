@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import { BasicOAuthProvider } from '../../auth/BasicOAuthProvider';
-import { RegistryV2DataProvider, V2Registry, V2RegistryItem, V2RegistryRoot, V2Repository } from '../RegistryV2/RegistryV2DataProvider';
+import { RegistryV2DataProvider, V2Registry, V2RegistryItem, V2RegistryRoot, V2Repository, V2Tag } from '../RegistryV2/RegistryV2DataProvider';
 import { registryV2Request } from '../RegistryV2/registryV2Request';
 import { AuthenticationProvider } from '../../contracts/AuthenticationProvider';
 import { httpRequest } from '../../utils/httpRequest';
@@ -131,8 +131,9 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
         return this.authenticationProvider;
     }
 
-    protected override async getTagCreatedDate(repository: V2Repository, tag: string): Promise<Date | undefined> {
-        const tagRequestUrl = repository.baseUrl.with({ path: `v2/${repository.label}/manifests/${tag}` });
+    protected override async getTagCreatedDate(item: V2Tag): Promise<Date | undefined> {
+        const repository = item.parent as V2Repository;
+        const tagRequestUrl = repository.baseUrl.with({ path: `v2/${repository.label}/manifests/${item.label}` });
 
         const tagDetailResponse = await registryV2Request<Blob>({
             authenticationProvider: this.getAuthenticationProvider(repository),

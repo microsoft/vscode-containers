@@ -8,7 +8,7 @@ import { CommonRegistryDataProvider } from '../Common/CommonRegistryDataProvider
 import { CommonRegistry, CommonRegistryItem, CommonRegistryRoot, CommonRepository, CommonTag } from '../Common/models';
 import { AuthenticationProvider } from '../../contracts/AuthenticationProvider';
 import { LoginInformation } from '../../contracts/BasicCredentials';
-import { registryV2Request } from './registryV2Request';
+import { RegistryV2Response, registryV2Request } from './registryV2Request';
 import { getNextLinkFromHeaders } from '../../utils/httpRequest';
 
 export type V2RegistryItem = CommonRegistryItem;
@@ -83,7 +83,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
 
         // Asynchronously begin getting the created date details for each tag
         results.forEach(tag => {
-            this.getTagCreatedDate(repository, tag.label).then((createdAt) => {
+            this.getTagCreatedDate(tag).then((createdAt) => {
                 tag.createdAt = createdAt;
                 this.onDidChangeTreeDataEmitter.fire(tag);
             }, () => { /* Best effort */ });
@@ -114,18 +114,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
     }
 
     public async getImageDigest(item: CommonTag): Promise<string> {
-        const registry = item.parent.parent as unknown as V2Registry;
-        const requestUrl = registry.baseUrl.with({ path: `v2/${item.parent.label}/manifests/${item.label}` });
-
-        const response = await registryV2Request({
-            authenticationProvider: this.getAuthenticationProvider(registry),
-            method: 'GET',
-            requestUri: requestUrl,
-            scopes: [`repository:${item.parent.label}:pull`],
-            headers: {
-                'accept': 'application/vnd.docker.distribution.manifest.v2+json'
-            }
-        });
+        const response = await this.getManifestV2(item);
 
         const digest = response.headers['docker-content-digest'];
         if (!digest) {
@@ -135,25 +124,60 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
         return digest;
     }
 
-    protected async getTagCreatedDate(repository: V2Repository, tag: string): Promise<Date | undefined> {
-        const requestUrl = repository.baseUrl.with({ path: `v2/${repository.label}/manifests/${tag}` });
+    public async getManifestV1(item: V2Tag): Promise<Manifest> {
+        const repository = item.parent as V2Repository;
+        const requestUrl = repository.baseUrl.with({ path: `v2/${repository.label}/manifests/${item.label}` });
 
-        const tagDetailResponse = await registryV2Request<Manifest>({
+        const response = await registryV2Request<Manifest>({
             authenticationProvider: this.getAuthenticationProvider(repository),
             method: 'GET',
             requestUri: requestUrl,
             scopes: [`repository:${repository.label}:pull`]
         });
 
-        const history = <ManifestHistoryV1Compatibility>JSON.parse(tagDetailResponse.body?.history?.[0]?.v1Compatibility || '{}');
-        return history?.created ? new Date(history.created) : undefined;
+        if (!response.body) {
+            throw new Error(vscode.l10n.t('Could not find manifest for tag {0}', item.label));
+        }
+
+        // Parse the embedded JSON strings in the history
+        try {
+            response.body.history?.forEach(history => {
+                history.v1Compatibility = JSON.parse(history.v1Compatibility as unknown as string || '{}');
+            });
+        } catch {
+            // Best effort
+        }
+
+        return response.body;
+    }
+
+    protected async getManifestV2(item: V2Tag): Promise<RegistryV2Response<unknown>> {
+        const repository = item.parent as V2Repository;
+        const requestUrl = repository.baseUrl.with({ path: `v2/${item.parent.label}/manifests/${item.label}` });
+
+        return await registryV2Request({
+            authenticationProvider: this.getAuthenticationProvider(repository),
+            method: 'GET',
+            requestUri: requestUrl,
+            scopes: [`repository:${item.parent.label}:pull`],
+            headers: {
+                'accept': 'application/vnd.docker.distribution.manifest.v2+json'
+            }
+        });
+    }
+
+    protected async getTagCreatedDate(item: V2Tag): Promise<Date | undefined> {
+        const manifestv1 = await this.getManifestV1(item);
+
+        const history = manifestv1.history?.[0];
+        return history?.v1Compatibility?.created ? new Date(history.v1Compatibility.created) : undefined;
     }
 
     protected abstract getAuthenticationProvider(item: V2RegistryItem): AuthenticationProvider<never>;
 }
 
 interface ManifestHistory {
-    v1Compatibility: string; // stringified ManifestHistoryV1Compatibility
+    v1Compatibility: ManifestHistoryV1Compatibility; // In the response this is an embedded JSON string but we will double-parse it to make it human-readable
 }
 
 interface ManifestHistoryV1Compatibility {
