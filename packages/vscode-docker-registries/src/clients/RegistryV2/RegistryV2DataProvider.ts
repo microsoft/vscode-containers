@@ -37,6 +37,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
                 authenticationProvider: this.getAuthenticationProvider(registry),
                 method: 'GET',
                 requestUri: nextLink,
+                query: Object.fromEntries(new URLSearchParams(nextLink.query)),
                 scopes: ['registry:catalog:*'],
             });
 
