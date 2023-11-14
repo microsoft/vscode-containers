@@ -117,7 +117,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
     public async getImageDigest(item: CommonTag): Promise<string> {
         const response = await this.getManifestV2(item);
 
-        const digest = response.headers['docker-content-digest'];
+        const digest = response.headers.get('docker-content-digest');
         if (!digest) {
             throw new Error('Could not find digest');
         }

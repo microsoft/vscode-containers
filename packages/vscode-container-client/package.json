@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-container-client",
     "author": "Microsoft Corporation",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
     "license": "See LICENSE in the project root for license information.",
     "repository": {
@@ -29,7 +29,7 @@
     "devDependencies": {
         "@types/chai": "^4.3.0",
         "@types/mocha": "^9.1.0",
-        "@types/node": "16.x",
+        "@types/node": "18.x",
         "@types/vscode": "1.63.1",
         "@typescript-eslint/eslint-plugin": "^5.10.2",
         "@typescript-eslint/parser": "^5.10.2",
