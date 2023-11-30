@@ -14,9 +14,13 @@ import { getErrorTreeItem } from './ErrorTreeItem';
 
 dayjs.extend(relativeTime);
 
-export abstract class CommonRegistryDataProvider implements RegistryDataProvider<CommonRegistryItem> {
+export abstract class CommonRegistryDataProvider implements RegistryDataProvider<CommonRegistryItem>, vscode.Disposable {
     protected readonly onDidChangeTreeDataEmitter = new vscode.EventEmitter<CommonRegistryItem | undefined>();
     public readonly onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+
+    public dispose(): void {
+        this.onDidChangeTreeDataEmitter.dispose();
+    }
 
     public async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
         try {

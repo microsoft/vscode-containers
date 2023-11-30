@@ -17,6 +17,7 @@ import * as vscode from 'vscode';
 
 export const DockerHubRequestUrl = vscode.Uri.parse('https://hub.docker.com/');
 export const DockerHubRegistryUrl = vscode.Uri.parse('https://docker.io/');
+export const DockerHubSignInUrl = 'https://index.docker.io/v1/';
 export const DockerHubContextValue = 'dockerhub';
 
 export function isDockerHubRegistry(item: unknown): item is CommonRegistry {

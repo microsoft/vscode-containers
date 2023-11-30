@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-docker-registries",
     "author": "Microsoft Corporation",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "description": "Extensibility model for contributing registry providers to the Docker extension for Visual Studio Code",
     "license": "See LICENSE in the project root for license information.",
     "repository": {
@@ -23,7 +23,6 @@
         "lint": "eslint --max-warnings 0 . --ext ts",
         "test": "mocha --file lib/test/global.test.js --recursive lib/test",
         "unittest": "npm test -- --grep /unit/i",
-        "update-design": "npx embedme DESIGN.md",
         "package": "npm pack"
     },
     "devDependencies": {

@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { AuthenticationProvider } from '../contracts/AuthenticationProvider';
 import { LoginInformation } from '../contracts/BasicCredentials';
-import { DockerHubRegistryUrl, DockerHubRequestUrl } from '../clients/DockerHub/DockerHubRegistryDataProvider';
+import { DockerHubRequestUrl, DockerHubSignInUrl } from '../clients/DockerHub/DockerHubRegistryDataProvider';
 import { httpRequest } from '../utils/httpRequest';
 import { BasicAuthProvider } from './BasicAuthProvider';
 
@@ -54,7 +54,7 @@ export class DockerHubAuthProvider extends BasicAuthProvider implements Authenti
         const credentials = await this.getBasicCredentials();
 
         return {
-            server: DockerHubRegistryUrl.toString(),
+            server: DockerHubSignInUrl,
             username: credentials.username,
             secret: credentials.secret,
         };
