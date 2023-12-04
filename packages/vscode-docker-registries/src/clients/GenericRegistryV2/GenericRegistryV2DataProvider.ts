@@ -123,7 +123,7 @@ export class GenericRegistryV2DataProvider extends RegistryV2DataProvider {
 
     public async removeTrackedRegistry(registry: V2Registry): Promise<void> {
         // remove registry url from list of tracked registries
-        const registryUriString = registry.baseUrl.toString();
+        const registryUriString = registry.baseUrl.toString().toLowerCase();
         const trackedRegistryStrings = this.extensionContext.globalState.get<string[]>(TrackedRegistriesKey, []);
         const index = trackedRegistryStrings.findIndex(r => r === registryUriString);
         if (index !== -1) {
