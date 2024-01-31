@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Mocha All",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
@@ -28,7 +28,7 @@
             }
         },
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Mocha Unit Tests",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
@@ -73,7 +73,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "pwa-node",
+            "type": "node",
             "timeout": 20000,
             "presentation": {
                 "group": "Live testing",
