@@ -5,6 +5,9 @@ stages:
         pool:
           type: windows
           name: OneBranchPipelines
+        variables:
+          ob_outputDirectory: $(Build.ArtifactStagingDirectory)\output
+          WindowsContainerImage: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
         steps:
           - task: NodeTool@0
             displayName: Using Node.js
