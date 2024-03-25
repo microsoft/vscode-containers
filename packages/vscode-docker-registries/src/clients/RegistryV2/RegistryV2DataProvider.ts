@@ -162,7 +162,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
             requestUri: requestUrl,
             scopes: [`repository:${item.parent.label}:pull`],
             headers: {
-                'accept': 'application/vnd.docker.distribution.manifest.v2+json'
+                'accept': 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.index.v1+json'
             }
         });
     }
