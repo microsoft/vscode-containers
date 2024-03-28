@@ -7,6 +7,10 @@ parameters:
     displayName: Package to Publish
     type: string
     default: microsoft-compose-language-service
+  - name: BranchToPublish
+    displayName: Branch to Publish
+    type: string
+    default: "refs/heads/main"
 
 # Grab the base templates from https://github.com/microsoft/vscode-azuretools/tree/main/azure-pipelines
 resources:
@@ -15,11 +19,14 @@ resources:
       type: github
       name: microsoft/vscode-azuretools
       ref: main
-      endpoint: GitHub
+      endpoint: GitHub-AzureTools
 
 # Use those base templates
 extends:
-  template: azure-pipelines/release-npm.yml@templates
+  template: azure-pipelines/1es-release-npm.yml@templates
   parameters:
     PackageToPublish: ${{ parameters.PackageToPublish }}
-    PipelineDefinition: 38
+    BranchToPublish: ${{ parameters.BranchToPublish }}
+    PipelineDefinition: 20290
+    OwnerAlias: "devinb"
+    ApproverAlias: "bwater"
