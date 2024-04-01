@@ -13,7 +13,7 @@ export type DockerIpamConfig = {
 
 export type DockerIpam = {
     Driver: string;
-    Config: Array<DockerIpamConfig>;
+    Config?: Array<DockerIpamConfig>;
 };
 
 export type DockerInspectNetworkRecord = {
@@ -83,10 +83,10 @@ export function isDockerInspectNetworkRecord(maybeNetwork: unknown): maybeNetwor
 export function normalizeDockerInspectNetworkRecord(network: DockerInspectNetworkRecord): InspectNetworksItem {
     const ipam: NetworkIpamConfig = {
         driver: network.IPAM.Driver,
-        config: network.IPAM.Config.map(({ Subnet, Gateway }) => ({
+        config: network.IPAM.Config?.map(({ Subnet, Gateway }) => ({
             subnet: Subnet,
             gateway: Gateway,
-        })),
+        })) ?? [],
     };
 
     const createdAt = dayjs.utc(network.Created).toDate();
