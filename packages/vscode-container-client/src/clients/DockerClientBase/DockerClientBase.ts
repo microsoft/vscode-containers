@@ -1600,15 +1600,15 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
             ];
         } else {
             const dirPath = options.path.endsWith('/') ? options.path : options.path + '/';
-            // Calling stat <path>/* on an empty directory returns an error code, while stat <path>/.* for hidden files
-            // should still succeed due to the implicit . and .. relative folders. Therefore we are calling stat twice
-            // and uppressing any errors from the first call with || true. If there are any legitimate issues invoking
-            // stat in a given contaienr, the second call will still fail and should surface the actual error, allowing
-            // us to suppress a false error without suppressing legitimate issues.
+            // Calling stat <path>/* on an empty directory returns an error code, while stat <path>/.* may not match
+            // implicit . and .. relative folders depending on system configuration. Therefore we call stat for both wildcard
+            // patterns and suppress errors with || true. Additionally, we explicitly call stat for the implicit . path and if
+            // there are any legitimate issues invoking stat in a given container, this call should still fail and surface the
+            // actual error, allowing us to suppress a false error without suppressing legitimate issues.
             command = [
                 '/bin/sh',
                 '-c',
-                { value: `stat -c '${LinuxStatArguments}' "${dirPath}"* || true && stat -c '${LinuxStatArguments}' "${dirPath}".*`, quoting: ShellQuoting.Strong },
+                { value: `stat -c '${LinuxStatArguments}' "${dirPath}"* || true && stat -c '${LinuxStatArguments}' "${dirPath}".* || true && stat -c '${LinuxStatArguments}' "${dirPath}".`, quoting: ShellQuoting.Strong },
             ];
         }
 
