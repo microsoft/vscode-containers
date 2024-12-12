@@ -153,6 +153,12 @@ export const ServiceCompletionCollection = new CompletionCollection(
             isAdvancedComposeCompletion: true,
         },
         {
+            label: 'pull_policy:',
+            insertText: 'pull_policy: ${1:pullPolicyName}$0',
+            insertTextFormat: InsertTextFormat.Snippet,
+            isAdvancedComposeCompletion: false,
+        },
+        {
             label: 'volumes:',
             insertText: 'volumes:\n\t-$0',
             insertTextFormat: InsertTextFormat.Snippet,
