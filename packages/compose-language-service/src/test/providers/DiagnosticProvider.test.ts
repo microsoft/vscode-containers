@@ -107,6 +107,46 @@ services:
         });
     });
 
+    describe('Custom Tags', async () => {
+        it('Should provide nothing for valid compose documents with known custom tags', async () => {
+            const validComposeWithTags = `version: '123'
+
+services:
+  foo:
+    image: !reset bar
+    ports: !override
+      - 1234
+    environment: !override
+      foo: bar
+`;
+
+            const expected = undefined;
+            await awaitDiagnosticsAndCompare(testConnection, validComposeWithTags, expected);
+        });
+
+        it('Should provide something for valid compose documents with unknown custom tags', async () => {
+            const validComposeWithUnknownTags = `version: '123'
+
+services:
+  foo:
+    image: bar
+    ports:
+      - 1234
+    environment: !unknowntag
+      foo: bar
+`;
+
+            const expected: ExpectedDiagnostic[] = [
+                {
+                    range: Range.create(7, 17, 7, 28),
+                    contentCanary: 'Unresolved tag',
+                }
+            ];
+
+            await awaitDiagnosticsAndCompare(testConnection, validComposeWithUnknownTags, expected);
+        });
+    });
+
     after('Cleanup', () => {
         testConnection.dispose();
         noDiagnosticsTestConnection.dispose();

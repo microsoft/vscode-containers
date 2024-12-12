@@ -5,7 +5,7 @@
 
 import { ErrorCodes, Position, Range, ResponseError, TextDocumentIdentifier, TextDocumentsConfiguration } from 'vscode-languageserver';
 import { DocumentUri, TextDocument } from 'vscode-languageserver-textdocument';
-import { Document as YamlDocument, isDocument, Node as YamlNode, parseDocument } from 'yaml';
+import { Document as YamlDocument, isDocument, Node as YamlNode, parseDocument, ScalarTag, Tags } from 'yaml';
 import { CRLF, DocumentSettings, DocumentSettingsParams, DocumentSettingsRequest, LF } from '../client/DocumentSettings';
 import { ExtendedPositionParams, PositionInfo } from './ExtendedParams';
 import { getCurrentContext } from './utils/ActionContext';
@@ -152,7 +152,7 @@ export class ComposeDocument {
     };
 
     private buildYamlDocument(): YamlDocument<YamlNode> {
-        const yamlDocument = parseDocument(this.textDocument.getText(), { merge: true, prettyErrors: true });
+        const yamlDocument = parseDocument(this.textDocument.getText(), { merge: true, prettyErrors: true, customTags: ComposeCustomTags });
 
         if (!isDocument(yamlDocument)) {
             throw new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');
@@ -346,3 +346,13 @@ const Value = '<value>';
 const Item = '<item>';
 const Sep = '<sep>';
 const Comment = '<comment>';
+
+// Custom YAML tags that Compose supports
+const ComposeCustomTags: Tags = [
+    { tag: '!reset', collection: 'seq', resolve: v => v },
+    { tag: '!reset', collection: 'map', resolve: v => v },
+    { tag: '!reset', resolve: v => v} satisfies ScalarTag,
+    { tag: '!override', collection: 'seq', resolve: v => v },
+    { tag: '!override', collection: 'map', resolve: v => v },
+    { tag: '!override', resolve: v => v} satisfies ScalarTag,
+];
