@@ -30,6 +30,7 @@ import { DocumentFormattingProvider } from './providers/DocumentFormattingProvid
 import { ImageLinkProvider } from './providers/ImageLinkProvider';
 import { KeyHoverProvider } from './providers/KeyHoverProvider';
 import { ProviderBase } from './providers/ProviderBase';
+import { ServiceStartupCodeLensProvider } from './providers/ServiceStartupCodeLensProvider';
 import { ActionContext, runWithContext } from './utils/ActionContext';
 import { TelemetryAggregator } from './utils/telemetry/TelemetryAggregator';
 
@@ -46,6 +47,11 @@ const DefaultCapabilities: ServerCapabilities = {
     // Both basic and advanced completions
     completionProvider: {
         triggerCharacters: ['-', ':', ' ', '"'],
+        resolveProvider: false,
+    },
+
+    // Code lenses for starting services
+    codeLensProvider: {
         resolveProvider: false,
     },
 
@@ -75,6 +81,7 @@ const DefaultAlternateYamlLanguageServiceClientCapabilities: AlternateYamlLangua
 
     basicCompletions: false,
     advancedCompletions: false,
+    serviceStartupCodeLens: false,
     hover: false,
     imageLinks: false,
     formatting: false,
@@ -111,6 +118,12 @@ export class ComposeLanguageService implements Disposable {
             this._capabilities.completionProvider = undefined;
         } else {
             this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider(!altYamlCapabilities.basicCompletions, !altYamlCapabilities.advancedCompletions));
+        }
+
+        if (altYamlCapabilities.serviceStartupCodeLens) {
+            this._capabilities.codeLensProvider = undefined;
+        } else {
+            this.createLspHandler(this.connection.onCodeLens, new ServiceStartupCodeLensProvider());
         }
 
         if (altYamlCapabilities.hover) {

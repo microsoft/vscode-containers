@@ -26,6 +26,7 @@ export class AlternateYamlLanguageServiceClientFeature implements StaticFeature,
                 schemaValidation: true,
                 basicCompletions: true,
                 advancedCompletions: false, // YAML extension does not have advanced completions for compose docs
+                serviceStartupCodeLens: false, // YAML extension does not have service startup for compose docs
                 hover: false, // YAML extension provides hover, but the compose spec lacks descriptions -- https://github.com/compose-spec/compose-spec/issues/138
                 imageLinks: false, // YAML extension does not have image hyperlinks for compose docs
                 formatting: true,
