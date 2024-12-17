@@ -1,3 +1,13 @@
+## 0.3.0 - 17 December 2024
+### Breaking Changes
+* New properties have been added to `AlternateYamlLanguageServiceClientCapabilities`
+
+### Added
+* CodeLenses are now created for starting individual services or all services right from the compose document. [#157](https://github.com/microsoft/compose-language-service/issues/157)
+
+### Fixed
+* The `!reset` and `!override` YAML tags will no longer yield warnings. [#145](https://github.com/microsoft/compose-language-service/issues/145)
+
 ## 0.2.0 - 10 May 2023
 ### Breaking Changes
 * The `ComposeLanguageClientCapabilities` type has been moved from `lib/client/DocumentSettings` to `lib/client/ClientCapabilities`
