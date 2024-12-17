@@ -1,3 +1,11 @@
+## 0.1.13 - 17 December 2024
+### Fixed
+* Fixed 404 when exploring and pulling GHCR images. [#238](https://github.com/microsoft/vscode-docker-extensibility/issues/238)
+
+## 0.1.12 - 1 August 2024
+### Fixed
+* Fixed inspect image manifest 404. [#225](https://github.com/microsoft/vscode-docker-extensibility/pull/225)
+
 ## 0.1.11 - 10 January 2023
 ### Fixed
 * Fixed an issue that prevented loading more than 10 repositories/tags from Docker Hub
