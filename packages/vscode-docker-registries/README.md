@@ -1,4 +1,4 @@
-# Docker for Visual Studio Code: Extensibility Model [![Build Status](https://dev.azure.com/ms-azuretools/AzCode/_apis/build/status/vscode-docker-extensibility?branchName=main)](https://dev.azure.com/ms-azuretools/AzCode/_build/latest?definitionId=33&branchName=main)
+# Docker for Visual Studio Code: Extensibility Model
 
 ## Overview
 This package provides the necessary interfaces to implement a registry provider for the [Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) for Visual Studio Code. Additionally, it also contains an implementation of a registry provider for the common [Docker Registry HTTP API V2](https://docs.docker.com/registry/spec/api/). Most implementations will be a fairly slim inheriting implementation of this.
