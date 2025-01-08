@@ -98,11 +98,7 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
             const catalogResponse = await registryV2Request<{ repositories: string[] }>({
                 authenticationProvider: this.authenticationProvider,
                 method: 'GET',
-                requestUri: requestUrl,
-                query: {
-                    n: '100',
-                    last: nextSearchString
-                },
+                requestUri: requestUrl.with({ query: new URLSearchParams({ n: '100', last: nextSearchString }).toString() }),
                 scopes: ['registry:catalog:*'],
                 throwOnFailure: true,
             });

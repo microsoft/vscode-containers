@@ -1,3 +1,8 @@
+## 0.2.0 - 7 January 2025
+### Fixed
+* Fixes an issue that would cause infinite looping on registries that used paging in tags listing. [#243](https://github.com/microsoft/vscode-docker-extensibility/issues/243)
+* The above required a breaking alteration to the `RegistryV2RequestOptions` interface.
+
 ## 0.1.13 - 17 December 2024
 ### Fixed
 * Fixed 404 when exploring and pulling GHCR images. [#238](https://github.com/microsoft/vscode-docker-extensibility/issues/238)
