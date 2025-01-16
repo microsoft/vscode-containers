@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../../constants';
 import { ext } from '../../extensionVariables';
@@ -11,7 +12,7 @@ import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunn
 import { Item, createFileItem, quickPickDockerComposeFileItem } from '../../utils/quickPickFile';
 import { quickPickWorkspaceFolder } from '../../utils/quickPickWorkspaceFolder';
 import { selectComposeCommand } from '../selectCommandTemplate';
-import { getComposeProfileList, getComposeProfilesOrServices, getComposeServiceList } from './getComposeSubsetList';
+import { getComposeProfileList, getComposeProfilesOrServices, getComposeServiceList, getDefaultCommandComposeProfilesOrServices } from './getComposeSubsetList';
 
 async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSubset')[], message: string, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
     if (!vscode.workspace.isTrusted) {
@@ -54,7 +55,7 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
         }
 
         for (const item of selectedItems) {
-            const terminalCommand = await selectComposeCommand(
+            let terminalCommand = await selectComposeCommand(
                 context,
                 folder,
                 command,
@@ -63,8 +64,14 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
                 build
             );
 
-            // Add the service list if needed
-            terminalCommand.command = await addServicesOrProfilesIfNeeded(context, folder, terminalCommand.command, preselectedServices, preselectedProfiles);
+            if (!terminalCommand.args?.length) {
+                // Add the service list if needed
+                terminalCommand.command = await addServicesOrProfilesIfNeeded(context, folder, terminalCommand.command, preselectedServices, preselectedProfiles);
+            } else if (command === 'upSubset') {
+                // If there are arguments, it means we're using a default command (based on the logic in selectCommandTemplate.ts)
+                // So, we only want to add profile/service list for the upSubset command
+                terminalCommand = await addDefaultCommandServicesOrProfilesIfNeeded(context, folder, terminalCommand, preselectedServices, preselectedProfiles);
+            }
 
             const client = await ext.orchestratorManager.getClient();
             const taskCRF = new TaskCommandRunnerFactory({
@@ -97,6 +104,38 @@ export async function composeRestart(context: IActionContext, dockerComposeFileU
 
 const serviceListPlaceholder = /\${serviceList}/i;
 const profileListPlaceholder = /\${profileList}/i;
+
+async function addDefaultCommandServicesOrProfilesIfNeeded(context: IActionContext, workspaceFolder: vscode.WorkspaceFolder, command: VoidCommandResponse, preselectedServices: string[], preselectedProfiles: string[]): Promise<VoidCommandResponse> {
+    const commandWithoutPlaceholders = {
+        ...command,
+        args: command.args.filter(arg => typeof arg === 'string' ? !serviceListPlaceholder.test(arg) && !profileListPlaceholder.test(arg) : !serviceListPlaceholder.test(arg.value) && !profileListPlaceholder.test(arg.value)),
+    };
+
+    const { services, profiles } = await getDefaultCommandComposeProfilesOrServices(context, workspaceFolder, commandWithoutPlaceholders, preselectedServices, preselectedProfiles);
+
+    // Replace the placeholder args with the actual service and profile arguments
+    return {
+        ...command,
+        args: command.args.flatMap(arg => {
+            if (typeof arg === 'string') {
+                if (serviceListPlaceholder.test(arg)) {
+                    return services;
+                } else if (profileListPlaceholder.test(arg)) {
+                    return profiles;
+                }
+            } else {
+                if (serviceListPlaceholder.test(arg.value)) {
+                    return services;
+                } else if (profileListPlaceholder.test(arg.value)) {
+                    return profiles;
+                }
+            }
+
+            return [arg];
+        }),
+    };
+}
+
 async function addServicesOrProfilesIfNeeded(context: IActionContext, workspaceFolder: vscode.WorkspaceFolder, command: string, preselectedServices: string[], preselectedProfiles: string[]): Promise<string> {
     const commandWithoutPlaceholders = command.replace(serviceListPlaceholder, '').replace(profileListPlaceholder, '');
 
