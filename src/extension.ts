@@ -28,7 +28,7 @@ import { AlternateYamlLanguageServiceClientFeature } from './utils/AlternateYaml
 import { AzExtLogOutputChannelWrapper } from './utils/AzExtLogOutputChannelWrapper';
 import { logDockerEnvironment, logSystemInfo } from './utils/diagnostics';
 import { DocumentSettingsClientFeature } from './utils/DocumentSettingsClientFeature';
-import { migrateOldEnvironmentSettingsIfNeeded } from './utils/migrateOldEnvironmentSettingsIfNeeded';
+import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
 
 export type KeyInfo = { [keyName: string]: string };
@@ -130,9 +130,9 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
         registerListeners();
     });
 
-    // If this call results in changes to the values, the settings listeners set up below will automatically re-update
+    // Migrate settings
     // Don't wait
-    void migrateOldEnvironmentSettingsIfNeeded();
+    void migrateDockerToContainersSettingsIfNeeded(ctx);
 
     // Call command to activate registry provider extensions
     // Don't wait
