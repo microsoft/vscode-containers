@@ -39,7 +39,7 @@ async function migrateGlobalDockerToContainersSettingsIfNeeded(context: vscode.E
     // For each and every setting, migrate it if it exists--global to global
     for (const oldSetting of Object.keys(settingsMap)) {
         const newSetting = settingsMap[oldSetting];
-        await migrateSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Global);
+        await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Global);
     }
 
     return true;
@@ -62,12 +62,12 @@ async function migrateWorkspaceDockerToContainersSettingsIfNeeded(context: vscod
     // For each and every setting, migrate it if it exists--workspace to workspace, workspace folder to workspace folder, etc.
     for (const oldSetting of Object.keys(settingsMap)) {
         const newSetting = settingsMap[oldSetting];
-        await migrateSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Workspace);
-        await migrateSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.WorkspaceFolder);
+        await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Workspace);
+        await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.WorkspaceFolder);
     }
 }
 
-async function migrateSetting(oldConfig: vscode.WorkspaceConfiguration, oldSetting: string, newConfig: vscode.WorkspaceConfiguration, newSetting: string, target: vscode.ConfigurationTarget): Promise<void> {
+async function migrateSingleSetting(oldConfig: vscode.WorkspaceConfiguration, oldSetting: string, newConfig: vscode.WorkspaceConfiguration, newSetting: string, target: vscode.ConfigurationTarget): Promise<void> {
     let oldValue: unknown;
 
     const inspected = oldConfig.inspect(oldSetting);
