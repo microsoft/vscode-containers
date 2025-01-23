@@ -17,7 +17,6 @@ import { ImagesTreeItem } from "./images/ImagesTreeItem";
 import { NetworksTreeItem } from "./networks/NetworksTreeItem";
 import { AzureRegistryDataProvider } from "./registries/Azure/AzureRegistryDataProvider";
 import { UnifiedRegistryTreeDataProvider } from "./registries/UnifiedRegistryTreeDataProvider";
-import { migrateRegistriesData } from "./registries/migrateRegistriesData";
 import { VolumesTreeItem } from "./volumes/VolumesTreeItem";
 
 export function registerTrees(): void {
@@ -47,7 +46,6 @@ export function registerTrees(): void {
     ext.registriesTreeView = vscode.window.createTreeView('vscode-containers.views.registries', { treeDataProvider: urtdp, showCollapseAll: true });
     ext.registriesTree = urtdp;
     registerRegistryDataProviders(urtdp);
-    void migrateRegistriesData(ext.context);
 
     ext.volumesRoot = new VolumesTreeItem(undefined);
     const volumesLoadMore = 'vscode-containers.volumes.loadMore';
