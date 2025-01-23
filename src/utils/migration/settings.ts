@@ -3,35 +3,42 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DialogResponses } from '@microsoft/vscode-azext-utils';
+import { callWithTelemetryAndErrorHandling, IActionContext } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { settingsMap } from './settingsMap';
 
 export async function migrateDockerToContainersSettingsIfNeeded(context: vscode.ExtensionContext): Promise<void> {
-    try {
-        const promptResult = await migrateGlobalDockerToContainersSettingsIfNeeded(context);
-        await migrateWorkspaceDockerToContainersSettingsIfNeeded(context, promptResult);
-    } finally {
-        // Mark that we've migrated (or consent was not given) so we don't do it again
-        await context.globalState.update('containers.settings.migrated', true);
-        await context.workspaceState.update('containers.settings.migrated', true);
-    }
+    await callWithTelemetryAndErrorHandling('vscode-containers.migrateSettings', async (actionContext: IActionContext) => {
+        actionContext.telemetry.properties.isActivationEvent = 'true';
+        actionContext.errorHandling.suppressDisplay = true;
+
+        let numSettingsMigrated = 0;
+        try {
+            numSettingsMigrated += await migrateGlobalDockerToContainersSettingsIfNeeded(context);
+            numSettingsMigrated += await migrateWorkspaceDockerToContainersSettingsIfNeeded(context);
+
+            if (numSettingsMigrated > 0) {
+                // Don't wait, just a toast
+                void vscode.window.showInformationMessage('Some of your setting IDs have been changed automatically. Please commit those that are under source control.');
+            }
+        } finally {
+            // Mark that we've migrated (or consent was not given) so we don't do it again
+            await context.globalState.update('containers.settings.migrated', true);
+            await context.workspaceState.update('containers.settings.migrated', true);
+
+            actionContext.telemetry.measurements.numSettingsMigrated = numSettingsMigrated;
+        }
+    });
 }
 
-async function migrateGlobalDockerToContainersSettingsIfNeeded(context: vscode.ExtensionContext): Promise<boolean | undefined> {
+async function migrateGlobalDockerToContainersSettingsIfNeeded(context: vscode.ExtensionContext): Promise<number> {
     // If migration has been performed globally, don't do it again globally
     const globalMigrated = context.globalState.get<boolean>('containers.settings.migrated', false);
     if (globalMigrated) {
-        return undefined;
+        return 0;
     }
 
-    // Prompt the user to ensure it's OK to migrate settings
-    const promptResult = await vscode.window.showInformationMessage(vscode.l10n.t('The "Docker" extension has been renamed to "Container Tools". Would you like to migrate your user and workspace settings?'), DialogResponses.yes, DialogResponses.no);
-    if (promptResult === DialogResponses.no) {
-        return false;
-    } else if (promptResult !== DialogResponses.yes) {
-        return undefined;
-    }
+    let numSettingsMigrated = 0;
 
     const oldConfig = vscode.workspace.getConfiguration('docker');
     const newConfig = vscode.workspace.getConfiguration('containers');
@@ -39,22 +46,20 @@ async function migrateGlobalDockerToContainersSettingsIfNeeded(context: vscode.E
     // For each and every setting, migrate it if it exists--global to global
     for (const oldSetting of Object.keys(settingsMap)) {
         const newSetting = settingsMap[oldSetting];
-        await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Global);
+        numSettingsMigrated += await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Global);
     }
 
-    return true;
+    return numSettingsMigrated;
 }
 
-async function migrateWorkspaceDockerToContainersSettingsIfNeeded(context: vscode.ExtensionContext, previouslyPromptedResult: boolean | undefined): Promise<void> {
+async function migrateWorkspaceDockerToContainersSettingsIfNeeded(context: vscode.ExtensionContext): Promise<number> {
     // If migration has been performed for this workspace, don't do it again
     const workspaceMigrated = context.workspaceState.get<boolean>('containers.settings.migrated', false);
     if (workspaceMigrated) {
-        return;
+        return 0;
     }
 
-    if (previouslyPromptedResult === false) {
-        return;
-    }
+    let numSettingsMigrated = 0;
 
     const oldConfig = vscode.workspace.getConfiguration('docker');
     const newConfig = vscode.workspace.getConfiguration('containers');
@@ -62,12 +67,14 @@ async function migrateWorkspaceDockerToContainersSettingsIfNeeded(context: vscod
     // For each and every setting, migrate it if it exists--workspace to workspace, workspace folder to workspace folder, etc.
     for (const oldSetting of Object.keys(settingsMap)) {
         const newSetting = settingsMap[oldSetting];
-        await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Workspace);
-        await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.WorkspaceFolder);
+        numSettingsMigrated += await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Workspace);
+        numSettingsMigrated += await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.WorkspaceFolder);
     }
+
+    return numSettingsMigrated;
 }
 
-async function migrateSingleSetting(oldConfig: vscode.WorkspaceConfiguration, oldSetting: string, newConfig: vscode.WorkspaceConfiguration, newSetting: string, target: vscode.ConfigurationTarget): Promise<void> {
+async function migrateSingleSetting(oldConfig: vscode.WorkspaceConfiguration, oldSetting: string, newConfig: vscode.WorkspaceConfiguration, newSetting: string, target: vscode.ConfigurationTarget): Promise<number> {
     let oldValue: unknown;
 
     const inspected = oldConfig.inspect(oldSetting);
@@ -85,5 +92,8 @@ async function migrateSingleSetting(oldConfig: vscode.WorkspaceConfiguration, ol
 
     if (oldValue !== undefined) {
         await newConfig.update(newSetting, oldValue, target);
+        return 1;
     }
+
+    return 0;
 }

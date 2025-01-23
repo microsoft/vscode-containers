@@ -7,7 +7,7 @@
 
 // A map of the old settings to their new names. Most are just directly renamed, but some are
 // more complex, so we need to do this manually.
-export const settingsMap = {
+export const settingsMap: Record<string, string> = {
     "docker.promptForRegistryWhenPushingImages": "containers.promptForRegistryWhenPushingImages",
     "docker.commands.build": "containers.commands.build",
     "docker.commands.run": "containers.commands.run",
