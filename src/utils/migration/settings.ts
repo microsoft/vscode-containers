@@ -43,13 +43,10 @@ async function migrateGlobalDockerToContainersSettingsIfNeeded(context: vscode.E
 
     let numSettingsMigrated = 0;
 
-    const oldConfig = vscode.workspace.getConfiguration('docker');
-    const newConfig = vscode.workspace.getConfiguration('containers');
-
     // For each and every setting, migrate it if it exists--global to global
     for (const oldSetting of Object.keys(settingsMap)) {
         const newSetting = settingsMap[oldSetting];
-        numSettingsMigrated += await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Global);
+        numSettingsMigrated += await migrateSingleSetting(oldSetting, newSetting, vscode.ConfigurationTarget.Global);
     }
 
     return numSettingsMigrated;
@@ -64,23 +61,22 @@ async function migrateWorkspaceDockerToContainersSettingsIfNeeded(context: vscod
 
     let numSettingsMigrated = 0;
 
-    const oldConfig = vscode.workspace.getConfiguration('docker');
-    const newConfig = vscode.workspace.getConfiguration('containers');
-
     // For each and every setting, migrate it if it exists--workspace to workspace, workspace folder to workspace folder, etc.
     for (const oldSetting of Object.keys(settingsMap)) {
         const newSetting = settingsMap[oldSetting];
-        numSettingsMigrated += await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.Workspace);
-        numSettingsMigrated += await migrateSingleSetting(oldConfig, oldSetting, newConfig, newSetting, vscode.ConfigurationTarget.WorkspaceFolder);
+        numSettingsMigrated += await migrateSingleSetting(oldSetting, newSetting, vscode.ConfigurationTarget.Workspace);
+        numSettingsMigrated += await migrateSingleSetting(oldSetting, newSetting, vscode.ConfigurationTarget.WorkspaceFolder);
     }
 
     return numSettingsMigrated;
 }
 
-async function migrateSingleSetting(oldConfig: vscode.WorkspaceConfiguration, oldSetting: string, newConfig: vscode.WorkspaceConfiguration, newSetting: string, target: vscode.ConfigurationTarget): Promise<number> {
+async function migrateSingleSetting(oldSetting: string, newSetting: string, target: vscode.ConfigurationTarget): Promise<number> {
+    const config = vscode.workspace.getConfiguration();
+
     let oldValue: unknown;
 
-    const inspected = oldConfig.inspect(oldSetting);
+    const inspected = config.inspect(oldSetting);
     switch (target) {
         case vscode.ConfigurationTarget.Global:
             oldValue = inspected?.globalValue;
@@ -94,7 +90,7 @@ async function migrateSingleSetting(oldConfig: vscode.WorkspaceConfiguration, ol
     }
 
     if (oldValue !== undefined) {
-        await newConfig.update(newSetting, oldValue, target);
+        await config.update(newSetting, oldValue, target);
         return 1;
     }
 
