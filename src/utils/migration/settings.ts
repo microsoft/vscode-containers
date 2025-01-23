@@ -17,16 +17,19 @@ export async function migrateDockerToContainersSettingsIfNeeded(context: vscode.
             numSettingsMigrated += await migrateGlobalDockerToContainersSettingsIfNeeded(context);
             numSettingsMigrated += await migrateWorkspaceDockerToContainersSettingsIfNeeded(context);
 
+            actionContext.telemetry.measurements.numSettingsMigrated = numSettingsMigrated;
+
             if (numSettingsMigrated > 0) {
                 // Don't wait, just a toast
                 void vscode.window.showInformationMessage('Some of your setting IDs have been changed automatically. Please commit those that are under source control.');
+            } else {
+                // If no settings were migrated, don't bother with a telemetry event
+                actionContext.telemetry.suppressIfSuccessful = true;
             }
         } finally {
-            // Mark that we've migrated (or consent was not given) so we don't do it again
+            // Mark that we've migrated so we don't do it again
             await context.globalState.update('containers.settings.migrated', true);
             await context.workspaceState.update('containers.settings.migrated', true);
-
-            actionContext.telemetry.measurements.numSettingsMigrated = numSettingsMigrated;
         }
     });
 }
