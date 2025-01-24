@@ -13,7 +13,7 @@ export class RegistryLoginStep extends AzureWizardExecuteStep<PushImageWizardCon
     public priority: number = 200;
 
     public async execute(wizardContext: PushImageWizardContext): Promise<void> {
-        await vscode.commands.executeCommand('vscode-containers.registries.logInToDockerCli', wizardContext.connectedRegistry);
+        await vscode.commands.executeCommand('vscode-containers.registries.logInToContainerCli', wizardContext.connectedRegistry);
     }
 
     public shouldExecute(wizardContext: PushImageWizardContext): boolean {
