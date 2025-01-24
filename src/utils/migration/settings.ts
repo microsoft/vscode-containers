@@ -75,21 +75,27 @@ async function migrateSingleSetting(oldSetting: string, newSetting: string, targ
     const config = vscode.workspace.getConfiguration();
 
     let oldValue: unknown;
+    let newValue: unknown;
 
-    const inspected = config.inspect(oldSetting);
+    const oldInspected = config.inspect(oldSetting);
+    const newInspected = config.inspect(newSetting);
     switch (target) {
         case vscode.ConfigurationTarget.Global:
-            oldValue = inspected?.globalValue;
+            oldValue = oldInspected?.globalValue;
+            newValue = newInspected?.globalValue;
             break;
         case vscode.ConfigurationTarget.Workspace:
-            oldValue = inspected?.workspaceValue;
+            oldValue = oldInspected?.workspaceValue;
+            newValue = newInspected?.workspaceValue;
             break;
         case vscode.ConfigurationTarget.WorkspaceFolder:
-            oldValue = inspected?.workspaceFolderValue;
+            oldValue = oldInspected?.workspaceFolderValue;
+            newValue = newInspected?.workspaceFolderValue;
             break;
     }
 
-    if (oldValue !== undefined) {
+    // If there is an old value, but *not* a new value, we'll migrate the setting
+    if (oldValue !== undefined && newValue === undefined) {
         await config.update(newSetting, oldValue, target);
         return 1;
     }

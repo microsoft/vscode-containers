@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 // A map of the old settings to their new names. Most are just directly renamed, but some are
-// more complex, so we need to do this manually.
+// not direct renames, so we need to do this manually.
 export const settingsMap: Record<string, string> = {
     "docker.promptForRegistryWhenPushingImages": "containers.promptForRegistryWhenPushingImages",
     "docker.commands.build": "containers.commands.build",
