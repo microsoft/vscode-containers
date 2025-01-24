@@ -6,6 +6,7 @@
 import { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import * as path from 'path';
+import * as semver from 'semver';
 import * as vscode from 'vscode';
 import { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelector, LanguageClient, LanguageClientOptions, Middleware, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import * as tas from 'vscode-tas-client';
@@ -65,6 +66,15 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
         activateContext.errorHandling.rethrow = true;
         activateContext.telemetry.properties.isActivationEvent = 'true';
         activateContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+
+        // Bail out of activation if old versions of the Docker extension are present
+        const dockerExtension = vscode.extensions.getExtension('ms-azuretools.vscode-docker');
+        if (dockerExtension && (dockerExtension.packageJSON as { version: string }).version) {
+            const dockerExtensionVersion = semver.coerce(dockerExtension.packageJSON.version);
+            if (dockerExtensionVersion && semver.lt(dockerExtensionVersion, '2')) {
+                throw new Error(vscode.l10n.t('An unsupported version of the Docker extension is installed. Please update the Docker extension to version 2.0.0 or later. The Container Tools extension will not activate.'));
+            }
+        }
 
         // All of these internally handle telemetry opt-in
         ext.activityMeasurementService = new ActivityMeasurementService(ctx.globalState);
