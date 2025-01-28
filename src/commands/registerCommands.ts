@@ -210,6 +210,11 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.help.openWalkthrough', () => commands.executeCommand('workbench.action.openWalkthrough', 'ms-azuretools.vscode-containers#containersStart'));
     registerCommand('vscode-containers.help.reportIssue', reportIssue);
 
+    registerCommand('vscode-containers.activateContainerRuntimeProviders', (context: IActionContext) => {
+        // Do nothing, but container runtime provider extensions can use this command as an activation event
+        context.telemetry.suppressAll = true;
+        context.errorHandling.suppressDisplay = true;
+    });
     registerCommand('vscode-containers.activateRegistryProviders', (context: IActionContext) => {
         // Do nothing, but registry provider extensions can use this command as an activation event
         context.telemetry.suppressAll = true;

@@ -31,12 +31,12 @@ export class NetworkTreeItem extends ToolTipTreeItem {
         return getTreeId(this._item);
     }
 
-    public get networkId(): string {
+    public get networkId(): string | undefined {
         return this._item.id;
     }
 
     public get createdTime(): number {
-        return this._item.createdAt.valueOf();
+        return this._item.createdAt?.valueOf() || 0;
     }
 
     public get networkName(): string {
@@ -57,7 +57,7 @@ export class NetworkTreeItem extends ToolTipTreeItem {
 
     public async deleteTreeItemImpl(context: IActionContext): Promise<void> {
         await ext.runWithDefaults(client =>
-            client.removeNetworks({ networks: [this.networkId] })
+            client.removeNetworks({ networks: [this.networkId || this.networkName] })
         );
     }
 

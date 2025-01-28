@@ -18,7 +18,7 @@ export async function inspectNetwork(context: IActionContext, node?: NetworkTree
     }
 
     const inspectResult = await ext.runWithDefaults(client =>
-        client.inspectNetworks({ networks: [node.networkId] })
+        client.inspectNetworks({ networks: [node.networkId || node.networkName] })
     );
     await openReadOnlyJson(node, JSON.parse(inspectResult[0].raw));
 }

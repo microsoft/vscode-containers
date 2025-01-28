@@ -144,6 +144,10 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
     // Don't wait
     void migrateDockerToContainersSettingsIfNeeded(ctx);
 
+    // Call command to activate container runtime provider extensions
+    // Don't wait
+    void vscode.commands.executeCommand('vscode-containers.activateContainerRuntimeProviders');
+
     // Call command to activate registry provider extensions
     // Don't wait
     void vscode.commands.executeCommand('vscode-containers.activateRegistryProviders');

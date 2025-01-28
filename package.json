@@ -140,6 +140,10 @@
                     "when": "never"
                 },
                 {
+                    "command": "vscode-containers.activateContainerRuntimeProviders",
+                    "when": "never"
+                },
+                {
                     "command": "vscode-containers.activateRegistryProviders",
                     "when": "never"
                 }
@@ -2282,6 +2286,34 @@
                     "type": "boolean",
                     "default": true,
                     "description": "%vscode-containers.config.containers.enableComposeLanguageService%"
+                },
+                "containers.containerClient": {
+                    "type": "string",
+                    "description": "%vscode-containers.config.containers.containerClient%",
+                    "scope": "machine-overridable",
+                    "enum": [
+                        "",
+                        "com.microsoft.visualstudio.containers.docker",
+                        "com.microsoft.visualstudio.containers.podman"
+                    ],
+                    "enumDescriptions": [
+                        "Default",
+                        "Docker",
+                        "Podman"
+                    ]
+                },
+                "containers.orchestratorClient": {
+                    "type": "string",
+                    "description": "%vscode-containers.config.containers.orchestratorClient%",
+                    "scope": "machine-overridable",
+                    "enum": [
+                        "",
+                        "com.microsoft.visualstudio.orchestrators.dockercompose"
+                    ],
+                    "enumDescriptions": [
+                        "Default",
+                        "Docker Compose"
+                    ]
                 }
             }
         },
@@ -2767,6 +2799,11 @@
                 "icon": "$(question)"
             },
             {
+                "command": "vscode-containers.activateContainerRuntimeProviders",
+                "title": "%vscode-containers.commands.activateContainerRuntimeProviders%",
+                "category": "%vscode-containers.commands.category.containersGeneric%"
+            },
+            {
                 "command": "vscode-containers.activateRegistryProviders",
                 "title": "%vscode-containers.commands.activateRegistryProviders%",
                 "category": "%vscode-containers.commands.category.containersGeneric%"
@@ -2961,6 +2998,7 @@
                 "containers.commands.attach",
                 "containers.commands.logs",
                 "containers.commands.composeUp",
+                "containers.commands.composeUpSubset",
                 "containers.commands.composeDown",
                 "containers.environment",
                 "containers.scaffolding.templatePath",

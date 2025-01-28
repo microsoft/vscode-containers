@@ -40,6 +40,6 @@ export const extensionVersion = new Lazy<string | undefined>(() => {
 
 export type DockerOrchestration = 'single' | 'docker-compose';
 
-export const builtInNetworks: string[] = ['bridge', 'host', 'none'];
+export const builtInNetworks: string[] = ['bridge', 'host', 'none', 'podman'];
 
 export const ociClientId = 'tools/microsoft/vscode/docker';

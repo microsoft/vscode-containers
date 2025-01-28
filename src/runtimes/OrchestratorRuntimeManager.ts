@@ -14,15 +14,20 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
         super('orchestratorClient');
     }
 
-    public async getClient(): Promise<IContainerOrchestratorClient> {
-        // TODO: runtimes: alt: temporarily just return the Docker Compose client, always
-        const composeClient = this.runtimeClients.find(isDockerComposeClient);
+    public override async getClient(): Promise<IContainerOrchestratorClient> {
+        const orchestratorClient = await super.getClient();
 
-        if (isAutoConfigurableDockerComposeClient(composeClient)) {
-            await composeClient.slowConfigure();
+        if (isAutoConfigurableDockerComposeClient(orchestratorClient)) {
+            // If it's the default Docker Compose client, it requires some time-consuming
+            // configuration, so we'll do that now
+            await orchestratorClient.slowConfigure();
         }
 
-        return composeClient;
+        return orchestratorClient;
+    }
+
+    protected override getDefaultClient(): IContainerOrchestratorClient {
+        return this.runtimeClients.find(isDockerComposeClient);
     }
 }
 

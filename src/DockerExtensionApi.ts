@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IContainerOrchestratorClient, IContainersClient } from '@microsoft/vscode-container-client';
 import { DockerExtensionApi as DockerExtensionRegistryApi, RegistryDataProvider, RegistryItem } from '@microsoft/vscode-docker-registries';
 import * as vscode from 'vscode';
 import { ext } from './extensionVariables';
@@ -18,6 +19,14 @@ export class DockerExtensionApi implements MementoExplorerExport, DockerExtensio
                 workspaceState: ctx.workspaceState,
             };
         }
+    }
+
+    public registerContainerRuntimeClient(client: IContainersClient): vscode.Disposable {
+        return ext.runtimeManager.registerRuntimeClient(client);
+    }
+
+    public registerContainerOrchestratorClient(client: IContainerOrchestratorClient): vscode.Disposable {
+        return ext.orchestratorManager.registerRuntimeClient(client);
     }
 
     public registerRegistryDataProvider<T extends RegistryItem>(id: string, registryDataProvider: RegistryDataProvider<T>): vscode.Disposable {
