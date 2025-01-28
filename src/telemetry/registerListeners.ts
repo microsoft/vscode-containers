@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
 import { IActionContext, registerEvent } from '@microsoft/vscode-azext-utils';
+import * as vscode from 'vscode';
 import { ext } from '../extensionVariables';
 
 type docHandler = (context: IActionContext, doc: vscode.TextDocument) => void;
@@ -32,7 +32,7 @@ export function registerListeners(): void {
 function handleDocEvent(languageId: string, additionalHandler?: docHandler): docHandler {
     return (context: IActionContext, doc: vscode.TextDocument) => {
         // If it is not the document of type we expect, skip
-        if (doc.languageId !== languageId) {
+        if (doc.languageId !== languageId || doc.uri.scheme !== 'file') {
             context.telemetry.suppressAll = true;
             return;
         }
