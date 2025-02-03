@@ -2296,7 +2296,7 @@
                         "com.microsoft.visualstudio.containers.docker",
                         "com.microsoft.visualstudio.containers.podman"
                     ],
-                    "enumDescriptions": [
+                    "enumItemLabels": [
                         "Default",
                         "Docker",
                         "Podman"
@@ -2310,7 +2310,7 @@
                         "",
                         "com.microsoft.visualstudio.orchestrators.dockercompose"
                     ],
-                    "enumDescriptions": [
+                    "enumItemLabels": [
                         "Default",
                         "Docker Compose"
                     ]
