@@ -18,6 +18,7 @@ import { DockerfileCompletionItemProvider } from './dockerfileCompletionItemProv
 import { ext } from './extensionVariables';
 import { AutoConfigurableDockerClient } from './runtimes/clients/AutoConfigurableDockerClient';
 import { AutoConfigurableDockerComposeClient } from './runtimes/clients/AutoConfigurableDockerComposeClient';
+import { AutoConfigurablePodmanClient } from './runtimes/clients/AutoConfigurablePodmanClient';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
 import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
@@ -196,11 +197,13 @@ function setEnvironmentVariableContributions(): void {
 function registerDockerClients(): void {
     // Create the clients
     const dockerClient = new AutoConfigurableDockerClient();
+    const podmanClient = new AutoConfigurablePodmanClient();
     const composeClient = new AutoConfigurableDockerComposeClient();
 
     // Register the clients
     ext.context.subscriptions.push(
         ext.runtimeManager.registerRuntimeClient(dockerClient),
+        ext.runtimeManager.registerRuntimeClient(podmanClient),
         ext.orchestratorManager.registerRuntimeClient(composeClient)
     );
 
@@ -211,6 +214,7 @@ function registerDockerClients(): void {
 
         if (e.affectsConfiguration(`${configPrefix}.containerCommand`)) {
             dockerClient.reconfigure();
+            podmanClient.reconfigure();
         }
 
         if (e.affectsConfiguration(`${configPrefix}.composeCommand`)) {
