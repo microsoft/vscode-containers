@@ -284,9 +284,9 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
     private async getDockerErrorTreeItems(context: IActionContext, error: unknown, dockerInstalled: boolean): Promise<AzExtTreeItem[]> {
         const parsedError = parseError(error);
         if (isCommandNotSupportedError(error)) {
-            return [new GenericTreeItem(this, { label: l10n.t('This view is not supported in the current context.'), contextValue: 'contextNotSupported' })];
+            return [new GenericTreeItem(this, { label: l10n.t('This view is not supported in the current context.'), contextValue: 'ctxNotSupported' })];
         } else if (parsedError.isUserCancelledError) {
-            return [new GenericTreeItem(this, { label: l10n.t('Changing context...'), contextValue: 'changingContexts' })];
+            return [new GenericTreeItem(this, { label: l10n.t('Changing context...'), contextValue: 'changingCtxs' })];
         }
 
         const result: AzExtTreeItem[] = dockerInstalled
