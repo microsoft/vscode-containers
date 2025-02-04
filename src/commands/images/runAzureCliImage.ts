@@ -40,7 +40,7 @@ export async function runAzureCliImage(context: IActionContext): Promise<void> {
             });
         }
 
-        const client = await ext.runtimeManager.getClient();
+        const client = await ext.runtimeManager.getClient(context);
         const taskCRF = new TaskCommandRunnerFactory(
             {
                 taskName: 'Azure CLI',
