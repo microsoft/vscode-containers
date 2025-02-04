@@ -3003,7 +3003,9 @@
                 "containers.environment",
                 "containers.scaffolding.templatePath",
                 "containers.containerCommand",
-                "containers.composeCommand"
+                "containers.composeCommand",
+                "containers.containerClient",
+                "containers.orchestratorClient"
             ]
         }
     },
