@@ -9,7 +9,7 @@ import { ext } from '../extensionVariables';
 
 type docHandler = (context: IActionContext, doc: vscode.TextDocument) => void;
 
-export function registerListeners(): void {
+export function registerFileListeners(): void {
     if (vscode.env.isTelemetryEnabled) {
         registerEvent('dockerfilesave', vscode.workspace.onDidSaveTextDocument, handleDocEvent('dockerfile', (context, doc) => {
             context.telemetry.properties.lineCount = doc.lineCount.toString();

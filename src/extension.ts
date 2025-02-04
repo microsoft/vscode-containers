@@ -24,7 +24,8 @@ import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider'
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
 import { registerTaskProviders } from './tasks/TaskHelper';
 import { ActivityMeasurementService } from './telemetry/ActivityMeasurementService';
-import { registerListeners } from './telemetry/registerListeners';
+import { registerFileListeners } from './telemetry/registerFileListeners';
+import { registerRuntimeTelemetryHandler } from './telemetry/registerRuntimeTelemetryHandler';
 import { registerTrees } from './tree/registerTrees';
 import { AlternateYamlLanguageServiceClientFeature } from './utils/AlternateYamlLanguageServiceClientFeature';
 import { AzExtLogOutputChannelWrapper } from './utils/AzExtLogOutputChannelWrapper';
@@ -138,7 +139,8 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
         activateDockerfileLanguageClient(ctx);
         activateComposeLanguageClient(ctx);
 
-        registerListeners();
+        registerFileListeners();
+        registerRuntimeTelemetryHandler(ctx);
     });
 
     // Migrate settings
