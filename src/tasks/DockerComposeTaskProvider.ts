@@ -35,7 +35,7 @@ export class DockerComposeTaskProvider extends DockerTaskProvider {
 
         await this.validateResolvedDefinition(context, definition.dockerCompose);
 
-        const client = await ext.orchestratorManager.getClient();
+        const client = await ext.orchestratorManager.getClient(context.actionContext);
 
         const options = definition.dockerCompose;
         let command: VoidCommandResponse;

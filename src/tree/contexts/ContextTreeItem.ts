@@ -72,21 +72,21 @@ export class ContextTreeItem extends ToolTipTreeItem {
         return undefined;
     }
 
-    public async deleteTreeItemImpl(): Promise<void> {
-        return ext.runtimeManager.contextManager.removeContext(this.name);
+    public async deleteTreeItemImpl(actionContext: IActionContext): Promise<void> {
+        return ext.runtimeManager.contextManager.removeContext(actionContext, this.name);
     }
 
-    public async inspect(): Promise<InspectContextsItem> {
-        return ext.runtimeManager.contextManager.inspectContext(this.name);
+    public async inspect(actionContext: IActionContext): Promise<InspectContextsItem> {
+        return ext.runtimeManager.contextManager.inspectContext(actionContext, this.name);
     }
 
-    public async use(): Promise<void> {
-        return ext.runtimeManager.contextManager.useContext(this.name);
+    public async use(actionContext: IActionContext): Promise<void> {
+        return ext.runtimeManager.contextManager.useContext(actionContext, this.name);
     }
 
     public async resolveTooltipInternal(actionContext: IActionContext): Promise<MarkdownString> {
         actionContext.telemetry.properties.tooltipType = 'context';
-        const contextInspection = await this.inspect();
+        const contextInspection = await this.inspect(actionContext);
         const handlebarsContext = {
             ...contextInspection,
             containerEndpoint: this._item.containerEndpoint

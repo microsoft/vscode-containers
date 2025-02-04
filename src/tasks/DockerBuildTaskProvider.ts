@@ -49,7 +49,7 @@ export class DockerBuildTaskProvider extends DockerTaskProvider {
 
         await this.validateResolvedDefinition(context, definition.dockerBuild);
 
-        const client = await ext.runtimeManager.getClient();
+        const client = await ext.runtimeManager.getClient(context.actionContext);
 
         const options = definition.dockerBuild;
         const command = await client.buildImage({

@@ -14,7 +14,7 @@ export async function inspectVolume(context: IActionContext, node?: VolumeTreeIt
         node = await ext.volumesTree.showTreeItemPicker<VolumeTreeItem>(VolumeTreeItem.contextValue, { ...context, noItemFoundErrorMessage: l10n.t('No volumes are available to inspect') });
     }
 
-    const inspectResult = await ext.runWithDefaults(client =>
+    const inspectResult = await ext.runWithDefaults(context, client =>
         client.inspectVolumes({ volumes: [node.volumeName] })
     );
     await openReadOnlyJson(node, JSON.parse(inspectResult[0].raw));

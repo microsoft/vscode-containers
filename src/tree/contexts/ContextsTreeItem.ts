@@ -43,7 +43,7 @@ export class ContextsTreeItem extends LocalRootTreeItemBase<ListContextItem, Con
     }
 
     public async getItems(actionContext: IActionContext): Promise<ListContextItem[]> {
-        return ext.runtimeManager.contextManager.getContexts();
+        return ext.runtimeManager.contextManager.getContexts(actionContext);
     }
 
     public getPropertyValue(item: ListContextItem, property: ContextProperty): string {

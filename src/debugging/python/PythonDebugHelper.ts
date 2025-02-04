@@ -78,7 +78,7 @@ export class PythonDebugHelper implements DebugHelper {
                 },
                 true);
 
-        const args = [...(debugConfiguration.python.args || pythonRunTaskOptions.args || []), await ext.runtimeManager.getCommand(), containerName];
+        const args = [...(debugConfiguration.python.args || pythonRunTaskOptions.args || []), await ext.runtimeManager.getCommand(context.actionContext), containerName];
         const launcherPath = path.join(ext.context.asAbsolutePath('resources'), 'python', 'launcher.py');
 
         return {
@@ -144,7 +144,7 @@ export class PythonDebugHelper implements DebugHelper {
         }
 
         // For Docker Desktop on WSL or Linux, we also use 'localhost'
-        const dockerInfo = await ext.runWithDefaults(client =>
+        const dockerInfo = await ext.runWithDefaults(context.actionContext, client =>
             client.info({})
         );
 
@@ -154,7 +154,7 @@ export class PythonDebugHelper implements DebugHelper {
 
         // For other Docker setups on WSL or Linux, 'host.docker.internal' doesn't work, so we ask debugpy to listen
         // on the bridge network's ip address (predefined network).
-        const networkInspection = (await ext.runWithDefaults(client =>
+        const networkInspection = (await ext.runWithDefaults(context.actionContext, client =>
             client.inspectNetworks({ networks: ['bridge'] })
         ))?.[0];
 

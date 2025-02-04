@@ -73,7 +73,7 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
                 terminalCommand = await addDefaultCommandServicesOrProfilesIfNeeded(context, folder, terminalCommand, preselectedServices, preselectedProfiles);
             }
 
-            const client = await ext.orchestratorManager.getClient();
+            const client = await ext.orchestratorManager.getClient(context);
             const taskCRF = new TaskCommandRunnerFactory({
                 taskName: client.displayName,
                 workspaceFolder: folder,

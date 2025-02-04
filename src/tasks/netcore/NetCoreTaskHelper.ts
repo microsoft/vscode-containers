@@ -8,7 +8,7 @@ import { normalizeContainerOS } from '@microsoft/vscode-container-client';
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { WorkspaceFolder, l10n } from 'vscode';
+import { l10n } from 'vscode';
 import { getContainerSecretsFolders, getHostSecretsFolders } from '../../debugging/netcore/AspNetSslHelper';
 import { NetCoreDebugOptions } from '../../debugging/netcore/NetCoreDebugHelper';
 import { vsDbgInstallBasePath } from '../../debugging/netcore/VsDbgHelper';
@@ -157,7 +157,7 @@ export class NetCoreTaskHelper implements TaskHelper {
         runOptions.env.DOTNET_USE_POLLING_FILE_WATCHER = runOptions.env.DOTNET_USE_POLLING_FILE_WATCHER || '1';
         runOptions.env.ASPNETCORE_ENVIRONMENT = runOptions.env.ASPNETCORE_ENVIRONMENT || 'Development';
 
-        runOptions.volumes = await this.inferVolumes(context.folder, runOptions, helperOptions, ssl, userSecrets); // Volumes specifically are unioned with the user input (their input does not override except where the container path is the same)
+        runOptions.volumes = await this.inferVolumes(context, runOptions, helperOptions, ssl, userSecrets); // Volumes specifically are unioned with the user input (their input does not override except where the container path is the same)
 
         return runOptions;
     }
@@ -200,7 +200,7 @@ export class NetCoreTaskHelper implements TaskHelper {
         return UserSecretsRegex.test(noComments);
     }
 
-    private async inferVolumes(folder: WorkspaceFolder, runOptions: DockerRunOptions, helperOptions: NetCoreTaskOptions, ssl: boolean, userSecrets: boolean): Promise<DockerContainerVolume[]> {
+    private async inferVolumes(context: DockerRunTaskContext, runOptions: DockerRunOptions, helperOptions: NetCoreTaskOptions, ssl: boolean, userSecrets: boolean): Promise<DockerContainerVolume[]> {
         const volumes: DockerContainerVolume[] = [];
 
         if (runOptions.volumes) {
@@ -217,7 +217,7 @@ export class NetCoreTaskHelper implements TaskHelper {
             };
 
             const srcVolume: DockerContainerVolume = {
-                localPath: folder.uri.fsPath,
+                localPath: context.folder.uri.fsPath,
                 containerPath: runOptions.os === 'Windows' ? 'C:\\src' : '/src',
                 permissions: 'rw'
             };
@@ -264,7 +264,7 @@ export class NetCoreTaskHelper implements TaskHelper {
             // Try to get a container username from the image (best effort only)
             let userName: string | undefined;
             try {
-                const imageInspection = (await ext.runWithDefaults(client =>
+                const imageInspection = (await ext.runWithDefaults(context.actionContext, client =>
                     client.inspectImages({ imageRefs: [runOptions.image] })
                 ))?.[0];
                 userName = imageInspection?.user;

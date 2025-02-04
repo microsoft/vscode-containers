@@ -8,7 +8,7 @@ import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 
 export async function stats(context: IActionContext): Promise<void> {
-    const client = await ext.runtimeManager.getClient();
+    const client = await ext.runtimeManager.getClient(context);
     const taskCRF = new TaskCommandRunnerFactory(
         {
             taskName: 'stats'

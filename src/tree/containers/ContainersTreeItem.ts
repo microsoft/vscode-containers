@@ -55,7 +55,7 @@ export class ContainersTreeItem extends LocalRootTreeItemBase<DockerContainerInf
     }
 
     public async getItems(context: IActionContext): Promise<DockerContainerInfo[]> {
-        const rawResults = await ext.runWithDefaults(client =>
+        const rawResults = await ext.runWithDefaults(context, client =>
             client.listContainers({ all: true })
         );
 

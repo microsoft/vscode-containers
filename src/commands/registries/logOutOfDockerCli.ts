@@ -20,7 +20,7 @@ export async function logOutOfDockerCli(context: IActionContext, node?: UnifiedR
         throw new Error(l10n.t('Unable to get server URL'));
     }
 
-    const client = await ext.runtimeManager.getClient();
+    const client = await ext.runtimeManager.getClient(context);
     const taskCRF = new TaskCommandRunnerFactory(
         {
             taskName: 'Container Tools'

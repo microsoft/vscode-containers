@@ -16,16 +16,16 @@ export async function pruneSystem(context: IActionContext): Promise<void> {
     await vscode.window.withProgress(
         { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Pruning system...') },
         async () => {
-            const containersResult = await ext.runWithDefaults(client =>
+            const containersResult = await ext.runWithDefaults(context, client =>
                 client.pruneContainers({})
             );
-            const imagesResult = await ext.runWithDefaults(client =>
+            const imagesResult = await ext.runWithDefaults(context, client =>
                 client.pruneImages({})
             );
-            const networksResult = await ext.runWithDefaults(client =>
+            const networksResult = await ext.runWithDefaults(context, client =>
                 client.pruneNetworks({})
             );
-            const volumesResult = await ext.runWithDefaults(client =>
+            const volumesResult = await ext.runWithDefaults(context, client =>
                 client.pruneVolumes({})
             );
 

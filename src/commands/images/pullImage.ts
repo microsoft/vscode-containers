@@ -21,7 +21,7 @@ export async function pullImage(context: IActionContext, node?: ImageTreeItem, n
 
     let noneTagWarningShown = false;
 
-    const client = await ext.runtimeManager.getClient();
+    const client = await ext.runtimeManager.getClient(context);
     const taskCRF = new TaskCommandRunnerFactory(
         {
             taskName: l10n.t('Pull images')

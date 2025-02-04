@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IActionContext } from "@microsoft/vscode-azext-utils";
 import { RunContainerBindMount, RunContainerCommandOptions, Shell, composeArgs, withArg, withNamedArg } from "@microsoft/vscode-container-client";
 import * as os from 'os';
 import { vsDbgInstallBasePath } from "../../debugging/netcore/VsDbgHelper";
@@ -50,8 +51,8 @@ export async function getNetSdkBuildCommand(isProjectWebApp: boolean, imageName:
     return quotedArgs.join(' ');
 }
 
-export async function getNetSdkRunCommand(isProjectWebApp: boolean, imageName: string): Promise<string> {
-    const client = await ext.runtimeManager.getClient();
+export async function getNetSdkRunCommand(actionContext: IActionContext, isProjectWebApp: boolean, imageName: string): Promise<string> {
+    const client = await ext.runtimeManager.getClient(actionContext);
 
     const options: RunContainerCommandOptions = {
         detached: true,

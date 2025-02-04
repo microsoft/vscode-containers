@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { ClientIdentity } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
@@ -38,7 +39,7 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
         return Array.from(this._runtimeClients.values());
     }
 
-    public async getClient(): Promise<TClient> {
+    public async getClient(actionContext: IActionContext): Promise<TClient> {
         const config = vscode.workspace.getConfiguration(configPrefix);
         const runtimeClientId = config.get<string | undefined>(this.clientSettingName);
 
@@ -54,11 +55,13 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
             throw new Error(vscode.l10n.t('No container / orchestrator client with ID \'{0}\' is registered.', runtimeClientId));
         }
 
+        actionContext.telemetry.properties.runtimeClientId = runtimeClient.id;
+
         return runtimeClient;
     }
 
-    public async getCommand(): Promise<string> {
-        return (await this.getClient()).commandName;
+    public async getCommand(actionContext: IActionContext): Promise<string> {
+        return (await this.getClient(actionContext)).commandName;
     }
 
     protected abstract getDefaultClient(): TClient;

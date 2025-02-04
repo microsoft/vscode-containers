@@ -19,7 +19,7 @@ export async function restartContainer(context: IActionContext, node?: Container
     );
 
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Restarting Container(s)...') }, async () => {
-        await ext.runWithDefaults(client =>
+        await ext.runWithDefaults(context, client =>
             client.restartContainers({ container: nodes.map(n => n.containerId) })
         );
     });

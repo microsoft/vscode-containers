@@ -291,11 +291,11 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
 
         const result: AzExtTreeItem[] = dockerInstalled
             ? [
-                new GenericTreeItem(this, { label: l10n.t('Failed to connect. Is {0} running?', (await ext.runtimeManager.getClient()).displayName), contextValue: 'connectionError', iconPath: new ThemeIcon('warning', new ThemeColor('problemsWarningIcon.foreground')) }),
+                new GenericTreeItem(this, { label: l10n.t('Failed to connect. Is {0} running?', (await ext.runtimeManager.getClient(context)).displayName), contextValue: 'connectionError', iconPath: new ThemeIcon('warning', new ThemeColor('problemsWarningIcon.foreground')) }),
                 new GenericTreeItem(this, { label: l10n.t('  Error: {0}', parsedError.message), contextValue: 'connectionError' }),
                 new OpenUrlTreeItem(this, l10n.t('Additional Troubleshooting...'), 'https://aka.ms/AA37qt2')
             ]
-            : [new GenericTreeItem(this, { label: l10n.t('Failed to connect. Is {0} installed?', (await ext.runtimeManager.getClient()).displayName), contextValue: 'connectionError', iconPath: new ThemeIcon('warning', new ThemeColor('problemsWarningIcon.foreground')) })];
+            : [new GenericTreeItem(this, { label: l10n.t('Failed to connect. Is {0} installed?', (await ext.runtimeManager.getClient(context)).displayName), contextValue: 'connectionError', iconPath: new ThemeIcon('warning', new ThemeColor('problemsWarningIcon.foreground')) })];
 
         const remoteInfo: IVSCodeRemoteInfo = getVSCodeRemoteInfo(context);
         if (remoteInfo.extensionKind === DockerExtensionKind.workspace && remoteInfo.remoteKind === RemoteKind.devContainer) {

@@ -19,7 +19,7 @@ export async function stopContainer(context: IActionContext, node?: ContainerTre
     );
 
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Stopping Container(s)...') }, async () => {
-        await ext.runWithDefaults(client =>
+        await ext.runWithDefaults(context, client =>
             client.stopContainers({ container: nodes.map(n => n.containerId) })
         );
     });

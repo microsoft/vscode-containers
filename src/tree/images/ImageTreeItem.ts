@@ -75,8 +75,8 @@ export class ImageTreeItem extends ToolTipTreeItem {
             ref = this._item.id;
         }
 
-        await ext.runWithDefaults(client =>
-            client.removeImages({ imageRefs: [ref], force: true  })
+        await ext.runWithDefaults(context, client =>
+            client.removeImages({ imageRefs: [ref], force: true })
         );
     }
 
@@ -84,10 +84,10 @@ export class ImageTreeItem extends ToolTipTreeItem {
         actionContext.telemetry.properties.tooltipType = 'image';
 
         // Allows some parallelization of the two commands
-        const imagePromise = ext.runWithDefaults(client =>
+        const imagePromise = ext.runWithDefaults(actionContext, client =>
             client.inspectImages({ imageRefs: [this.imageId] })
         );
-        const containersPromise = ext.runWithDefaults(client =>
+        const containersPromise = ext.runWithDefaults(actionContext, client =>
             client.listContainers({ imageAncestors: [this.imageId] })
         );
 

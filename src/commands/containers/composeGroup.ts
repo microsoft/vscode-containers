@@ -66,7 +66,7 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
         ...additionalOptions,
     } as TOptions;
 
-    const client = await ext.orchestratorManager.getClient();
+    const client = await ext.orchestratorManager.getClient(context);
     const taskCRF = new TaskCommandRunnerFactory({
         taskName: client.displayName,
         cwd: workingDirectory,

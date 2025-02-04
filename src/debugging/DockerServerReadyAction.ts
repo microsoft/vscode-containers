@@ -81,7 +81,7 @@ class ServerReadyDetector implements DockerServerReadyDetector {
                 }
 
                 const containerPort = Number.parseInt(captureString, 10);
-                const hostPort = await this.getHostPortForContainerPort(args.containerName, containerPort);
+                const hostPort = await this.getHostPortForContainerPort(context, args.containerName, containerPort);
 
                 captureString = util.format(format, hostPort);
             } else {
@@ -94,7 +94,7 @@ class ServerReadyDetector implements DockerServerReadyDetector {
                 }
 
                 const containerProtocol = this.getContainerProtocol(captureString);
-                const hostPort = await this.getHostPortForContainerPort(args.containerName, containerPort);
+                const hostPort = await this.getHostPortForContainerPort(context, args.containerName, containerPort);
 
                 const s = format.split('%s');
 
@@ -132,8 +132,8 @@ class ServerReadyDetector implements DockerServerReadyDetector {
         return undefined;
     }
 
-    private async getHostPortForContainerPort(containerName: string, containerPort: number): Promise<number> {
-        const containerInspectInfo = (await ext.runWithDefaults(client =>
+    private async getHostPortForContainerPort(context: IActionContext, containerName: string, containerPort: number): Promise<number> {
+        const containerInspectInfo = (await ext.runWithDefaults(context, client =>
             client.inspectContainers({ containers: [containerName] })
         ))?.[0];
         const hostPort = containerInspectInfo?.ports.find(p => p.containerPort === containerPort)?.hostPort;

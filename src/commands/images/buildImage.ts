@@ -95,7 +95,7 @@ export async function buildImage(context: IActionContext, dockerFileUri: vscode.
             });
         }
 
-        const client = await ext.runtimeManager.getClient();
+        const client = await ext.runtimeManager.getClient(context);
         const taskCRF = new TaskCommandRunnerFactory({
             taskName: client.displayName,
             workspaceFolder: rootFolder,

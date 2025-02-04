@@ -123,7 +123,7 @@ export class NetCoreDebugHelper implements DebugHelper {
                 removeContainerAfterDebug: debugConfiguration.removeContainerAfterDebug
             },
             pipeTransport: {
-                pipeProgram: await ext.runtimeManager.getCommand(),
+                pipeProgram: await ext.runtimeManager.getCommand(context.actionContext),
                 /* eslint-disable no-template-curly-in-string */
                 pipeArgs: ['exec', '-i', containerName, '${debuggerCommand}'],
                 pipeCwd: '${workspaceFolder}',
@@ -154,7 +154,7 @@ export class NetCoreDebugHelper implements DebugHelper {
             debuggerPath = containerOS === 'windows'
                 ? path.win32.join(debuggerDirectory, 'win7-x64', 'latest', 'vsdbg.exe')
                 : path.posix.join(debuggerDirectory, 'vsdbg');
-            const isDebuggerInstalled: boolean = await this.isDebuggerInstalled(containerName, debuggerPath, containerOS);
+            const isDebuggerInstalled: boolean = await this.isDebuggerInstalled(context.actionContext, containerName, debuggerPath, containerOS);
             if (!isDebuggerInstalled) {
                 await this.copyDebuggerToContainer(context.actionContext, containerName, debuggerDirectory, containerOS);
             }
@@ -169,7 +169,7 @@ export class NetCoreDebugHelper implements DebugHelper {
             // and processName will be undefined.
             processName: debugConfiguration.processId ? undefined : debugConfiguration.processName || 'dotnet',
             pipeTransport: {
-                pipeProgram: await ext.runtimeManager.getCommand(),
+                pipeProgram: await ext.runtimeManager.getCommand(context.actionContext),
                 pipeArgs: ['exec', '-i', containerName],
                 // eslint-disable-next-line no-template-curly-in-string
                 pipeCwd: '${workspaceFolder}',
@@ -276,7 +276,7 @@ export class NetCoreDebugHelper implements DebugHelper {
 
     private async copyDebuggerToContainer(context: IActionContext, containerName: string, containerDebuggerDirectory: string, containerOS: ContainerOS): Promise<void> {
         if (containerOS === 'windows') {
-            const inspectInfo = (await ext.runWithDefaults(client =>
+            const inspectInfo = (await ext.runWithDefaults(context, client =>
                 client.inspectContainers({ containers: [containerName] })
             ))?.[0];
 
@@ -303,7 +303,7 @@ export class NetCoreDebugHelper implements DebugHelper {
             location: ProgressLocation.Notification,
             title: l10n.t('Copying the .NET debugger to the container ({0} --> {1})...', vsDbgInstallBasePath, containerDebuggerDirectory),
         }, async () => {
-            await ext.runWithDefaults(client =>
+            await ext.runWithDefaults(context, client =>
                 client.writeFile({
                     container: containerName,
                     inputFile: vsDbgInstallBasePath,
@@ -313,7 +313,7 @@ export class NetCoreDebugHelper implements DebugHelper {
         });
     }
 
-    private async isDebuggerInstalled(containerName: string, debuggerPath: string, containerOS: ContainerOS): Promise<boolean> {
+    private async isDebuggerInstalled(context: IActionContext, containerName: string, debuggerPath: string, containerOS: ContainerOS): Promise<boolean> {
         let containerCommand: string;
         let containerCommandArgs: CommandLineArgs;
         if (containerOS === 'windows') {
@@ -331,7 +331,7 @@ export class NetCoreDebugHelper implements DebugHelper {
         }
 
         try {
-            await ext.runWithDefaults(client =>
+            await ext.runWithDefaults(context, client =>
                 // Since we're not interested in the output, just the exit code, we can pretend this is a `VoidCommandResponse`
                 client.execContainer({
                     container: containerName,

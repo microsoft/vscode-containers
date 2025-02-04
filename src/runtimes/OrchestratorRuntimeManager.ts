@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { DockerComposeClient, IContainerOrchestratorClient } from '@microsoft/vscode-container-client';
 import { RuntimeManager } from './RuntimeManager';
 import { isAutoConfigurableDockerComposeClient } from './clients/AutoConfigurableDockerComposeClient';
@@ -14,8 +15,8 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
         super('orchestratorClient');
     }
 
-    public override async getClient(): Promise<IContainerOrchestratorClient> {
-        const orchestratorClient = await super.getClient();
+    public override async getClient(actionContext: IActionContext): Promise<IContainerOrchestratorClient> {
+        const orchestratorClient = await super.getClient(actionContext);
 
         if (isAutoConfigurableDockerComposeClient(orchestratorClient)) {
             // If it's the default Docker Compose client, it requires some time-consuming

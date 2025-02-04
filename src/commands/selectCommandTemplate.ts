@@ -35,7 +35,7 @@ export async function selectBuildCommand(context: IActionContext, folder: vscode
         'build',
         [folder.name, dockerfile],
         folder,
-        { 'dockerfile': dockerfile, 'context': buildContext, 'containerCommand': await ext.runtimeManager.getCommand() }
+        { 'dockerfile': dockerfile, 'context': buildContext, 'containerCommand': await ext.runtimeManager.getCommand(context) }
     );
 }
 
@@ -53,7 +53,7 @@ export async function selectRunCommand(context: IActionContext, fullTag: string,
         interactive ? 'runInteractive' : 'run',
         [fullTag, imageId],
         undefined,
-        { 'tag': tagOrImageId, 'exposedPorts': portsString, 'containerCommand': await ext.runtimeManager.getCommand() }
+        { 'tag': tagOrImageId, 'exposedPorts': portsString, 'containerCommand': await ext.runtimeManager.getCommand(context) }
     );
 }
 
@@ -63,7 +63,7 @@ export async function selectAttachCommand(context: IActionContext, containerName
         'attach',
         [containerName, imageName],
         undefined,
-        { 'containerId': containerId, 'shellCommand': shellCommand, 'containerCommand': await ext.runtimeManager.getCommand() }
+        { 'containerId': containerId, 'shellCommand': shellCommand, 'containerCommand': await ext.runtimeManager.getCommand(context) }
     );
 }
 
@@ -73,7 +73,7 @@ export async function selectLogsCommand(context: IActionContext, containerName: 
         'logs',
         [containerName, imageName],
         undefined,
-        { 'containerId': containerId, 'containerCommand': await ext.runtimeManager.getCommand() }
+        { 'containerId': containerId, 'containerCommand': await ext.runtimeManager.getCommand(context) }
     );
 }
 
@@ -97,7 +97,7 @@ export async function selectComposeCommand(context: IActionContext, folder: vsco
     // or `docker` + first argument `compose` (compose v2)
     // Command customization wants the answer to that as one string
     let fullComposeCommand: string;
-    const orchestratorClient = await ext.orchestratorManager.getClient();
+    const orchestratorClient = await ext.orchestratorManager.getClient(context);
     if (isDockerComposeClient(orchestratorClient) && orchestratorClient.composeV2) {
         fullComposeCommand = `${orchestratorClient.commandName} compose`;
     } else {

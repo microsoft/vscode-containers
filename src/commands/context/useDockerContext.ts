@@ -19,7 +19,7 @@ export async function useDockerContext(actionContext: IActionContext, node?: Con
     }
 
     // Await the `docker context use` command
-    await node.use();
+    await node.use(actionContext);
 
     if (invokedFromCommandPalette) {
         void vscode.window.showInformationMessage(vscode.l10n.t('Using Docker context \'{0}\'', node.name));

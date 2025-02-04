@@ -52,7 +52,7 @@ export class DockerRunTaskProvider extends DockerTaskProvider {
 
         await this.validateResolvedDefinition(context, definition.dockerRun);
 
-        const client = await ext.runtimeManager.getClient();
+        const client = await ext.runtimeManager.getClient(context.actionContext);
 
         const options = definition.dockerRun;
         const command = await client.runContainer({

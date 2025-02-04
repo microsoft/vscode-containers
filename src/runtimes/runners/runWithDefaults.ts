@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { AccumulatorStream, ClientIdentity, GeneratorCommandResponse, IContainersClient, isChildProcessError, Like, normalizeCommandResponseLike, NoShell, PromiseCommandResponse, ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as stream from 'stream';
 import * as vscode from 'vscode';
@@ -17,18 +18,20 @@ type StreamingClientCallback<TClient, T> = (client: TClient) => Like<GeneratorCo
 // 'env', 'shell', 'shellProvider', 'stdErrPipe', and 'strict' are set by this function and thus should not be included as arguments to the additional options
 type DefaultEnvStreamCommandRunnerOptions = Omit<ShellStreamCommandRunnerOptions, 'env' | 'shell' | 'shellProvider' | 'stdErrPipe' | 'strict'>;
 
-export async function runWithDefaults<T>(callback: ClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T>;
-export async function runWithDefaults(callback: VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<void>;
-export async function runWithDefaults<T>(callback: ClientCallback<IContainersClient, T> | VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T | void> {
+export async function runWithDefaults<T>(actionContext: IActionContext, callback: ClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T>;
+export async function runWithDefaults(actionContext: IActionContext, callback: VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<void>;
+export async function runWithDefaults<T>(actionContext: IActionContext, callback: ClientCallback<IContainersClient, T> | VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T | void> {
     return await runWithDefaultsInternal(
+        actionContext,
         callback,
         ext.runtimeManager,
         additionalOptions
     );
 }
 
-export function streamWithDefaults<T>(callback: StreamingClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): AsyncGenerator<T> {
+export function streamWithDefaults<T>(actionContext: IActionContext, callback: StreamingClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): AsyncGenerator<T> {
     return streamWithDefaultsInternal(
+        actionContext,
         callback,
         ext.runtimeManager,
         additionalOptions
@@ -36,6 +39,7 @@ export function streamWithDefaults<T>(callback: StreamingClientCallback<IContain
 }
 
 async function runWithDefaultsInternal<TClient extends ClientIdentity, T>(
+    actionContext: IActionContext,
     callback: ClientCallback<TClient, T> | VoidClientCallback<TClient>,
     runtimeManager: RuntimeManager<TClient>,
     additionalOptions?: DefaultEnvStreamCommandRunnerOptions
@@ -44,7 +48,7 @@ async function runWithDefaultsInternal<TClient extends ClientIdentity, T>(
     const factory = new DefaultEnvStreamCommandRunnerFactory(additionalOptions);
 
     // Get the active client
-    const client: TClient = await runtimeManager.getClient();
+    const client: TClient = await runtimeManager.getClient(actionContext);
 
     try {
         // Flatten the callback
@@ -69,6 +73,7 @@ async function runWithDefaultsInternal<TClient extends ClientIdentity, T>(
 }
 
 async function* streamWithDefaultsInternal<TClient extends ClientIdentity, T>(
+    actionContext: IActionContext,
     callback: StreamingClientCallback<TClient, T>,
     runtimeManager: RuntimeManager<TClient>,
     additionalOptions?: DefaultEnvStreamCommandRunnerOptions
@@ -77,7 +82,7 @@ async function* streamWithDefaultsInternal<TClient extends ClientIdentity, T>(
     const factory = new DefaultEnvStreamCommandRunnerFactory(additionalOptions);
 
     // Get the active client
-    const client: TClient = await runtimeManager.getClient();
+    const client: TClient = await runtimeManager.getClient(actionContext);
 
     try {
         const runner = factory.getStreamingCommandRunner();

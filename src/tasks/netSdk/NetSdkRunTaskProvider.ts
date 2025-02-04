@@ -41,7 +41,7 @@ export class NetSdkRunTaskProvider extends DockerTaskProvider {
         );
 
         // use docker run to run the image
-        const runCommand = await getNetSdkRunCommand(isProjectWebApp, task.definition.dockerRun.image);
+        const runCommand = await getNetSdkRunCommand(context.actionContext, isProjectWebApp, task.definition.dockerRun.image);
         await context.terminal.execAsyncInTerminal(
             runCommand,
             {

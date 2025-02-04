@@ -32,7 +32,7 @@ async function pullImages(context: IActionContext, node: UnifiedRegistryItem<unk
     const registryNode = node as UnifiedRegistryItem<CommonRegistry>;
     await logInToDockerCli(context, registryNode);
 
-    const client = await ext.runtimeManager.getClient();
+    const client = await ext.runtimeManager.getClient(context);
     const taskCRF = new TaskCommandRunnerFactory({
         taskName: client.displayName,
     });

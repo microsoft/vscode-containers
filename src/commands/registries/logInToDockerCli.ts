@@ -32,6 +32,7 @@ export async function logInToDockerCli(context: IActionContext, node?: UnifiedRe
         await vscode.window.withProgress(progressOptions, async () => {
             try {
                 await ext.runWithDefaults(
+                    context,
                     client => client.login({
                         username: username,
                         passwordStdIn: true,

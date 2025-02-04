@@ -16,7 +16,7 @@ export async function pruneImages(context: IActionContext): Promise<void> {
     await vscode.window.withProgress(
         { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Pruning images...') },
         async () => {
-            const result = await ext.runWithDefaults(client =>
+            const result = await ext.runWithDefaults(context, client =>
                 client.pruneImages({})
             );
 

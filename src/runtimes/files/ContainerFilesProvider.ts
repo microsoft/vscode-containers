@@ -113,6 +113,7 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
                     path.posix.dirname(dockerUri.path);
 
                 const fileStats = await ext.runWithDefaults(
+                    actionContext,
                     client => client.statPath({
                         container: containerId,
                         path: containerOS === 'windows' ? dockerUri.windowsPath : dockerUri.path,
@@ -128,6 +129,7 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
                 const uid = fileStats?.uid;
 
                 await ext.runWithDefaults(
+                    actionContext,
                     client => client.writeFile({
                         container: containerId,
                         path: destDirectory,

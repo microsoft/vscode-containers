@@ -20,7 +20,7 @@ export function registerDockerContextStatusBarEvent(ctx: vscode.ExtensionContext
 
         if (e.affectsConfiguration(`${configPrefix}.contexts.showInStatusBar`)) {
             // Don't wait
-            void scheduleUpdateStatusBar();
+            void scheduleUpdateStatusBar(actionContext);
         }
     });
 
@@ -33,7 +33,7 @@ export function registerDockerContextStatusBarEvent(ctx: vscode.ExtensionContext
     void scheduleUpdateStatusBar();
 }
 
-async function showStatusBarItemIfNeeded() {
+async function showStatusBarItemIfNeeded(actionContext: IActionContext) {
 
     const config = vscode.workspace.getConfiguration(configPrefix);
     let currentDockerContext: ListContextItem | undefined;
@@ -41,7 +41,7 @@ async function showStatusBarItemIfNeeded() {
     ext.dockerContextStatusBarItem?.dispose();
 
     if (!config.get(dockerContextStatusBarSetting, false) ||
-        !(currentDockerContext = await ext.runtimeManager.contextManager.getCurrentContext())) { // Intentional assignment and boolean check
+        !(currentDockerContext = await ext.runtimeManager.contextManager.getCurrentContext(actionContext))) { // Intentional assignment and boolean check
         return;
     }
 
@@ -56,9 +56,9 @@ async function showStatusBarItemIfNeeded() {
 }
 
 let updatePromise: Promise<void> | undefined;
-function scheduleUpdateStatusBar(): Promise<void> {
+function scheduleUpdateStatusBar(actionContext: IActionContext): Promise<void> {
     if (!updatePromise) {
-        updatePromise = showStatusBarItemIfNeeded().finally(() => updatePromise = undefined);
+        updatePromise = showStatusBarItemIfNeeded(actionContext).finally(() => updatePromise = undefined);
     }
     return updatePromise;
 }
