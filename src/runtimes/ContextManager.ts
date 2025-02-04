@@ -11,11 +11,11 @@ import { ext } from '../extensionVariables';
 // An interface is needed so unit tests can mock this
 export interface IContextManager {
     onContextChanged: vscode.Event<ListContextItem | undefined>;
-    getContexts(actionContext: IActionContext): Promise<ListContextItem[]>;
-    getCurrentContext(actionContext: IActionContext): Promise<ListContextItem | undefined>;
-    useContext(actionContext: IActionContext, name: string): Promise<void>;
-    removeContext(actionContext: IActionContext, name: string): Promise<void>;
-    inspectContext(actionContext: IActionContext, name: string): Promise<InspectContextsItem | undefined>;
+    getContexts(actionContext: IActionContext | undefined): Promise<ListContextItem[]>;
+    getCurrentContext(actionContext?: IActionContext | undefined): Promise<ListContextItem | undefined>;
+    useContext(actionContext: IActionContext | undefined, name: string): Promise<void>;
+    removeContext(actionContext: IActionContext | undefined, name: string): Promise<void>;
+    inspectContext(actionContext: IActionContext | undefined, name: string): Promise<InspectContextsItem | undefined>;
 }
 
 /**
@@ -54,24 +54,24 @@ export class ContextManager implements IContextManager, vscode.Disposable {
         return allContexts;
     }
 
-    public async getCurrentContext(actionContext: IActionContext): Promise<ListContextItem | undefined> {
+    public async getCurrentContext(actionContext: IActionContext | undefined): Promise<ListContextItem | undefined> {
         return this.tryGetCurrentContext(await this.getContexts(actionContext));
     }
 
-    public async useContext(actionContext: IActionContext, name: string): Promise<void> {
+    public async useContext(actionContext: IActionContext | undefined, name: string): Promise<void> {
         await ext.runWithDefaults(actionContext, client =>
             client.useContext({ context: name })
         );
         await this.getCurrentContext(actionContext); // Reestablish the current context, to cause the change emitter to fire indirectly if the context has actually changed
     }
 
-    public async removeContext(actionContext: IActionContext, name: string): Promise<void> {
+    public async removeContext(actionContext: IActionContext | undefined, name: string): Promise<void> {
         await ext.runWithDefaults(actionContext, client =>
             client.removeContexts({ contexts: [name] })
         );
     }
 
-    public async inspectContext(actionContext: IActionContext, name: string): Promise<InspectContextsItem | undefined> {
+    public async inspectContext(actionContext: IActionContext | undefined, name: string): Promise<InspectContextsItem | undefined> {
         const result = await ext.runWithDefaults(actionContext, client =>
             client.inspectContexts({ contexts: [name] })
         );

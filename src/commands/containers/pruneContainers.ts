@@ -16,7 +16,7 @@ export async function pruneContainers(context: IActionContext): Promise<void> {
     await vscode.window.withProgress(
         { location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Pruning containers...') },
         async () => {
-            const result = await ext.runWithDefaults(client =>
+            const result = await ext.runWithDefaults(context, client =>
                 client.pruneContainers({})
             );
 

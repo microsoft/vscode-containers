@@ -211,6 +211,7 @@ class DockerLogsTracker extends vscode.Disposable {
     private async listen(): Promise<void> {
         try {
             const generator = ext.streamWithDefaults(
+                undefined,
                 client => client.logsForContainer({ container: this.containerName, follow: true }),
                 {
                     cancellationToken: this.cts.token,

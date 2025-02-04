@@ -18,9 +18,9 @@ type StreamingClientCallback<TClient, T> = (client: TClient) => Like<GeneratorCo
 // 'env', 'shell', 'shellProvider', 'stdErrPipe', and 'strict' are set by this function and thus should not be included as arguments to the additional options
 type DefaultEnvStreamCommandRunnerOptions = Omit<ShellStreamCommandRunnerOptions, 'env' | 'shell' | 'shellProvider' | 'stdErrPipe' | 'strict'>;
 
-export async function runWithDefaults<T>(actionContext: IActionContext, callback: ClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T>;
-export async function runWithDefaults(actionContext: IActionContext, callback: VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<void>;
-export async function runWithDefaults<T>(actionContext: IActionContext, callback: ClientCallback<IContainersClient, T> | VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T | void> {
+export async function runWithDefaults<T>(actionContext: IActionContext | undefined, callback: ClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T>;
+export async function runWithDefaults(actionContext: IActionContext | undefined, callback: VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<void>;
+export async function runWithDefaults<T>(actionContext: IActionContext | undefined, callback: ClientCallback<IContainersClient, T> | VoidClientCallback<IContainersClient>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): Promise<T | void> {
     return await runWithDefaultsInternal(
         actionContext,
         callback,
@@ -29,7 +29,7 @@ export async function runWithDefaults<T>(actionContext: IActionContext, callback
     );
 }
 
-export function streamWithDefaults<T>(actionContext: IActionContext, callback: StreamingClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): AsyncGenerator<T> {
+export function streamWithDefaults<T>(actionContext: IActionContext | undefined, callback: StreamingClientCallback<IContainersClient, T>, additionalOptions?: DefaultEnvStreamCommandRunnerOptions): AsyncGenerator<T> {
     return streamWithDefaultsInternal(
         actionContext,
         callback,
@@ -39,7 +39,7 @@ export function streamWithDefaults<T>(actionContext: IActionContext, callback: S
 }
 
 async function runWithDefaultsInternal<TClient extends ClientIdentity, T>(
-    actionContext: IActionContext,
+    actionContext: IActionContext | undefined,
     callback: ClientCallback<TClient, T> | VoidClientCallback<TClient>,
     runtimeManager: RuntimeManager<TClient>,
     additionalOptions?: DefaultEnvStreamCommandRunnerOptions
@@ -73,7 +73,7 @@ async function runWithDefaultsInternal<TClient extends ClientIdentity, T>(
 }
 
 async function* streamWithDefaultsInternal<TClient extends ClientIdentity, T>(
-    actionContext: IActionContext,
+    actionContext: IActionContext | undefined,
     callback: StreamingClientCallback<TClient, T>,
     runtimeManager: RuntimeManager<TClient>,
     additionalOptions?: DefaultEnvStreamCommandRunnerOptions

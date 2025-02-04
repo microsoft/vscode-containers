@@ -39,7 +39,7 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
         return Array.from(this._runtimeClients.values());
     }
 
-    public async getClient(actionContext: IActionContext): Promise<TClient> {
+    public async getClient(actionContext: IActionContext | undefined): Promise<TClient> {
         const config = vscode.workspace.getConfiguration(configPrefix);
         const runtimeClientId = config.get<string | undefined>(this.clientSettingName);
 
@@ -55,7 +55,9 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
             throw new Error(vscode.l10n.t('No container / orchestrator client with ID \'{0}\' is registered.', runtimeClientId));
         }
 
-        actionContext.telemetry.properties.runtimeClientId = runtimeClient.id;
+        if (actionContext) {
+            actionContext.telemetry.properties.runtimeClient = runtimeClient.id;
+        }
 
         return runtimeClient;
     }

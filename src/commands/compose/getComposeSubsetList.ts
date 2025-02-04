@@ -17,7 +17,7 @@ type SubsetType = 'services' | 'profiles';
 
 // We special case the default compose commands into a full VoidCommandResponse object with command and args populated (to help with shell escaping). This method will be called in those cases to get the service or profile lists for a given command.
 export async function getDefaultCommandComposeProfilesOrServices(context: IActionContext, workspaceFolder: vscode.WorkspaceFolder, composeCommand: VoidCommandResponse, preselectedServices?: string[], preselectedProfiles?: string[]): Promise<{ services: CommandLineArgs, profiles: CommandLineArgs }> {
-    const profiles = await getDefaultCommandServiceSubsets(workspaceFolder, composeCommand, 'profiles');
+    const profiles = await getDefaultCommandServiceSubsets(context, workspaceFolder, composeCommand, 'profiles');
 
     if (preselectedServices?.length && preselectedProfiles?.length) {
         throw new Error(vscode.l10n.t('Cannot specify both services and profiles to start. Please choose one or the other.'));
@@ -89,7 +89,7 @@ export async function getComposeProfilesOrServices(context: IActionContext, work
 
 // Default command version of the compose profile list method; returns CommandLineArgs instead of a string
 async function getDefaultCommandComposeProfileList(context: IActionContext, workspaceFolder: vscode.WorkspaceFolder, composeCommand: VoidCommandResponse, prefetchedProfiles?: string[], preselectedProfiles?: string[]): Promise<CommandLineArgs> {
-    const profiles = prefetchedProfiles ?? await getDefaultCommandServiceSubsets(workspaceFolder, composeCommand, 'profiles');
+    const profiles = prefetchedProfiles ?? await getDefaultCommandServiceSubsets(context, workspaceFolder, composeCommand, 'profiles');
 
     if (!profiles?.length) {
         // No profiles or isn't supported, nothing to do
@@ -109,7 +109,7 @@ async function getDefaultCommandComposeProfileList(context: IActionContext, work
 
 // Default command version of the compose service list method; returns CommandLineArgs instead of a string
 async function getDefaultCommandComposeServiceList(context: IActionContext, workspaceFolder: vscode.WorkspaceFolder, composeCommand: VoidCommandResponse, preselectedServices?: string[]): Promise<CommandLineArgs> {
-    const services = await getDefaultCommandServiceSubsets(workspaceFolder, composeCommand, 'services');
+    const services = await getDefaultCommandServiceSubsets(context, workspaceFolder, composeCommand, 'services');
 
     if (!services?.length) {
         context.errorHandling.suppressReportIssue = true;
@@ -191,7 +191,7 @@ async function pickSubsets(context: IActionContext, type: SubsetType, allChoices
     return chosenSubsets.map(c => c.data);
 }
 
-async function getDefaultCommandServiceSubsets(workspaceFolder: vscode.WorkspaceFolder, composeCommand: VoidCommandResponse, type: SubsetType): Promise<string[] | undefined> {
+async function getDefaultCommandServiceSubsets(context: IActionContext, workspaceFolder: vscode.WorkspaceFolder, composeCommand: VoidCommandResponse, type: SubsetType): Promise<string[] | undefined> {
     // TODO: if there are any profiles, then only services with no profiles show up when you query `config --services`. This makes for a lousy UX.
     // Bug for that is https://github.com/docker/compose-cli/issues/1964
 
@@ -221,7 +221,7 @@ async function getDefaultCommandServiceSubsets(workspaceFolder: vscode.Workspace
     configCommand.args.push('config', `--${type}`);
 
     try {
-        return await runWithDefaults(() => configCommand, { cwd: workspaceFolder.uri?.fsPath });
+        return await runWithDefaults(context, () => configCommand, { cwd: workspaceFolder.uri?.fsPath });
     } catch (err) {
         // Profiles is not yet widely supported, so those errors will be eaten--otherwise, rethrow
         if (type === 'profiles') {
