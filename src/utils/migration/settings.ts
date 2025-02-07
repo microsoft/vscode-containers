@@ -21,7 +21,7 @@ export async function migrateDockerToContainersSettingsIfNeeded(context: vscode.
 
             if (numSettingsMigrated > 0) {
                 // Don't wait, just a toast
-                void vscode.window.showInformationMessage('Some of your setting IDs have been changed automatically. Please commit those that are under source control.');
+                void vscode.window.showInformationMessage(vscode.l10n.t('Some of your setting IDs have been changed automatically. Please commit those that are under source control.'));
             } else {
                 // If no settings were migrated, don't bother with a telemetry event
                 actionContext.telemetry.suppressIfSuccessful = true;
