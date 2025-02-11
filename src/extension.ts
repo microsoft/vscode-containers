@@ -73,7 +73,7 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
         const dockerExtension = vscode.extensions.getExtension('ms-azuretools.vscode-docker');
         if (dockerExtension && (dockerExtension.packageJSON as { version: string }).version) {
             const dockerExtensionVersion = semver.coerce(dockerExtension.packageJSON.version);
-            if (dockerExtensionVersion && semver.lt(dockerExtensionVersion, '2')) {
+            if (dockerExtensionVersion && semver.lt(dockerExtensionVersion, '2.0.0')) {
                 throw new Error(vscode.l10n.t('An unsupported version of the Docker extension is installed. Please update the Docker extension to version 2.0.0 or later. The Container Tools extension will not activate.'));
             }
         }
