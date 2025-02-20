@@ -21,6 +21,10 @@ export type CommonOrchestratorCommandOptions = CommonCommandOptions & {
      * Project name
      */
     projectName?: string;
+    /**
+     * Specific service profiles to start/stop/etc.
+     */
+    profiles?: Array<string>;
 };
 
 // Up command types
@@ -45,10 +49,6 @@ export type UpCommandOptions = CommonOrchestratorCommandOptions & {
      * Specific services to start
      */
     services?: Array<string>;
-    /**
-     * Specific service profiles to start
-     */
-    profiles?: Array<string>;
     /**
      * Override specific service scaling
      */
@@ -82,6 +82,10 @@ export type DownCommandOptions = CommonOrchestratorCommandOptions & {
      */
     timeoutSeconds?: number;
     /**
+     * Specific services to stop
+     */
+    services?: Array<string>;
+    /**
      * Additional custom options to pass
      */
     customOptions?: string;
@@ -96,8 +100,12 @@ type DownCommand = {
 };
 
 // Start command types
-// No special options
-export type StartCommandOptions = CommonOrchestratorCommandOptions;
+export type StartCommandOptions = CommonOrchestratorCommandOptions & {
+    /**
+     * Specific services to start
+     */
+    services?: Array<string>;
+};
 
 type StartCommand = {
     /**
@@ -113,6 +121,10 @@ export type StopCommandOptions = CommonOrchestratorCommandOptions & {
      * A timeout in seconds
      */
     timeoutSeconds?: number;
+    /**
+     * Specific services to stop
+     */
+    services?: Array<string>;
 };
 
 type StopCommand = {
@@ -129,6 +141,10 @@ export type RestartCommandOptions = CommonOrchestratorCommandOptions & {
      * A timeout in seconds
      */
     timeoutSeconds?: number;
+    /**
+     * Specific services to restart
+     */
+    services?: Array<string>;
 };
 
 type RestartCommand = {
@@ -149,6 +165,10 @@ export type LogsCommandOptions = CommonOrchestratorCommandOptions & {
      * Maximum number of lines to show from the end of the logs
      */
     tail?: number;
+    /**
+     * Specific services to get logs for
+     */
+    services?: Array<string>;
 };
 
 type LogsCommand = {
@@ -160,7 +180,8 @@ type LogsCommand = {
 };
 
 // Config command types
-export type ConfigCommandOptions = CommonOrchestratorCommandOptions & {
+// The `--profile` argument works, but has rather confusing results when used with the config command. Best to not support it.
+export type ConfigCommandOptions = Omit<CommonOrchestratorCommandOptions, 'profiles'> & {
     configType: 'services' | 'images' | 'profiles' | 'volumes';
 };
 

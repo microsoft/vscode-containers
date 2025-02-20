@@ -33,6 +33,7 @@ function withCommonOrchestratorArgs(options: CommonOrchestratorCommandOptions): 
         withNamedArg('--file', options.files),
         withNamedArg('--env-file', options.environmentFile),
         withNamedArg('--project-name', options.projectName),
+        withNamedArg('--profile', options.profiles),
     );
 }
 
@@ -90,7 +91,6 @@ export class DockerComposeClient extends ConfigurableClient implements IContaine
         return composeArgs(
             withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
-            withNamedArg('--profile', options.profiles),
             withArg('up'),
             withFlagArg('--detach', options.detached),
             withFlagArg('--build', options.build),
@@ -127,6 +127,7 @@ export class DockerComposeClient extends ConfigurableClient implements IContaine
             withFlagArg('--volumes', options.removeVolumes),
             withNamedArg('--timeout', options.timeoutSeconds?.toString(10)),
             withVerbatimArg(options.customOptions),
+            withArg(...(options.services || [])),
         )();
     }
 
@@ -151,6 +152,7 @@ export class DockerComposeClient extends ConfigurableClient implements IContaine
             withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('start'),
+            withArg(...(options.services || [])),
         )();
     }
 
@@ -176,6 +178,7 @@ export class DockerComposeClient extends ConfigurableClient implements IContaine
             withCommonOrchestratorArgs(options),
             withArg('stop'),
             withNamedArg('--timeout', options.timeoutSeconds?.toString(10)),
+            withArg(...(options.services || [])),
         )();
     }
 
@@ -201,6 +204,7 @@ export class DockerComposeClient extends ConfigurableClient implements IContaine
             withCommonOrchestratorArgs(options),
             withArg('restart'),
             withNamedArg('--timeout', options.timeoutSeconds?.toString(10)),
+            withArg(...(options.services || [])),
         )();
     }
 
@@ -227,6 +231,7 @@ export class DockerComposeClient extends ConfigurableClient implements IContaine
             withArg('logs'),
             withFlagArg('--follow', options.follow),
             withNamedArg('--tail', options.tail?.toString(10)),
+            withArg(...(options.services || [])),
         )();
     }
 
