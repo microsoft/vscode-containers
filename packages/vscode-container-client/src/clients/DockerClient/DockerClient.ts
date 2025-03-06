@@ -48,7 +48,7 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
     private getListContextsCommandArgs(options: ListContextsCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('context', 'ls'),
-            withDockerJsonFormatArg,
+            withDockerJsonFormatArg(this.defaultFormatForJson),
         )();
     }
 
@@ -156,7 +156,7 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
     private getInspectContextsCommandArgs(options: InspectContextsCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('context', 'inspect'),
-            withDockerJsonFormatArg,
+            withDockerJsonFormatArg(this.defaultFormatForJson),
             withArg(...options.contexts),
         )();
     }

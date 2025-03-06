@@ -1,3 +1,10 @@
+## 0.2.0 - 10 February 2025
+### Added
+* Added a client for Podman. [#221](https://github.com/microsoft/vscode-docker-extensibility/issues/221)
+
+### Changed
+* Some properties on certain objects have become optional, due to Podman not containing them. For example, network ID on network listing is not present on Podman v3.
+
 ## 0.1.2 - 1 August 2024
 ### Fixed
 * Listing files fails due to new Bash behavior. [#231](https://github.com/microsoft/vscode-docker-extensibility/issues/231)

@@ -5,6 +5,7 @@
 
 export * from './clients/DockerClient/DockerClient';
 export * from './clients/DockerComposeClient/DockerComposeClient';
+export * from './clients/PodmanClient/PodmanClient';
 export * from './commandRunners/shellStream';
 export * from './commandRunners/wslStream';
 export * from './contracts/CommandRunner';
