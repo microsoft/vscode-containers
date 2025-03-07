@@ -3,14 +3,17 @@ pr: none # Disable PR trigger
 
 # Choose a package to publish at the time of job creation
 parameters:
-  - name: PackageToPublish
+  - name: packageToPublish
     displayName: Package to Publish
     type: string
     default: microsoft-compose-language-service
-  - name: BranchToPublish
-    displayName: Branch to Publish
+  - name: publishVersion
+    displayName: Publish Version
     type: string
-    default: "refs/heads/main"
+  - name: dryRun
+    displayName: Dry Run
+    type: boolean
+    default: false
 
 # Grab the base templates from https://github.com/microsoft/vscode-azuretools/tree/main/azure-pipelines
 resources:
@@ -20,13 +23,16 @@ resources:
       name: microsoft/vscode-azuretools
       ref: main
       endpoint: GitHub-AzureTools
+  pipelines:
+    - pipeline: build # This must be "build"
+      source: \Azure Tools\VSCode\Packages\compose-language-service # name of the pipeline that produces the artifacts
 
 # Use those base templates
 extends:
   template: azure-pipelines/1es-release-npm.yml@templates
   parameters:
-    PackageToPublish: ${{ parameters.PackageToPublish }}
-    BranchToPublish: ${{ parameters.BranchToPublish }}
-    PipelineDefinition: 20290
+    packageToPublish: ${{ parameters.packageToPublish }}
+    publishVersion: ${{ parameters.publishVersion }}
+    dryRun: ${{ parameters.dryRun }}
     OwnerAlias: "devinb"
     ApproverAlias: "bwater"
