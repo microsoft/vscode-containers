@@ -1418,7 +1418,7 @@
                                     },
                                     "profiles": {
                                         "type": "array",
-                                        "description": "%vscode-docker.tasks.docker-compose.dockerCompose.down.profiles%",
+                                        "description": "%vscode-containers.tasks.docker-compose.dockerCompose.down.profiles%",
                                         "items": {
                                             "type": "string"
                                         }
