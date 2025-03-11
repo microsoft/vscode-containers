@@ -1195,7 +1195,7 @@ type ContainersStatsCommand = {
      * Show running container stats
      * @param options Command options
      */
-    statsContainers(options: ContainersStatsCommandOptions): Promise<PromiseCommandResponse<string>>;
+    statsContainers(options: ContainersStatsCommandOptions): Promise<VoidCommandResponse>;
 };
 
 // #endregion

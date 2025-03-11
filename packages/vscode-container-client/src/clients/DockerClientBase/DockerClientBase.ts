@@ -990,16 +990,11 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         )();
     }
 
-    protected async parseStatsContainersCommandArgs(
-        options: ContainersStatsCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<string> {
-        return output;
-    }
-
-    async statsContainers(options: ContainersStatsCommandOptions): Promise<PromiseCommandResponse<string>> {
-        throw new CommandNotSupportedError('statsContainers is not supported for this runtime');
+    async statsContainers(options: ContainersStatsCommandOptions): Promise<VoidCommandResponse> {
+        return {
+            command: this.commandName,
+            args: this.getStatsContainersCommandArgs(options),
+        };
     }
 
     //#endregion
