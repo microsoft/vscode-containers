@@ -36,32 +36,33 @@ export default defineConfig([{
     },
 
     rules: {
-        "@typescript-eslint/naming-convention": ["warn", {
+        "@typescript-eslint/naming-convention": ["warn", { // Naming is enforced with some exceptions below
+            // Names should be either camelCase or PascalCase, both are extensively used throughout this project
             selector: "default",
             format: ["camelCase", "PascalCase"],
-        }, {
+        }, { // const variables can also have UPPER_CASE
                 selector: "variable",
                 modifiers: ["const"],
                 format: ["camelCase", "PascalCase", "UPPER_CASE"],
-            }, {
+            }, { // private class properties can also have leading _underscores
                 selector: "classProperty",
                 modifiers: ["private"],
                 format: ["camelCase", "PascalCase"],
                 leadingUnderscore: "allow",
             }],
 
-        "@typescript-eslint/no-floating-promises": "warn",
-        "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/no-floating-promises": "warn", // Floating promises are bad, should do `void thePromise()`
+        "@typescript-eslint/no-inferrable-types": "off", // This gets upset about e.g. `const foo: string = 'bar'` because it's obvious that it's a string; it doesn't matter enough to enforce
 
         "@typescript-eslint/no-unused-vars": ["warn", {
+            // As a function parameter, unused parameters are allowed
             args: "none",
         }],
 
-        "@/semi": "warn",
-        curly: "warn",
-        eqeqeq: "warn",
-        "no-extra-boolean-cast": "off",
-        "no-throw-literal": "warn",
-        semi: "off",
+        curly: "warn", // May have been a mistake to include a `{curly}` inside a template string, you might mean `${curly}`
+        eqeqeq: "warn", // Should use `===`, not `==`, nearly 100% of the time
+        "no-extra-boolean-cast": "off", // We !!flatten a lot of things into booleans this way
+        "no-throw-literal": "warn", // Elevate this from suggestion to warning
+        semi: "warn",
     },
 }]);
