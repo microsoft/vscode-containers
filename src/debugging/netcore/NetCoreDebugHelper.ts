@@ -124,10 +124,8 @@ export class NetCoreDebugHelper implements DebugHelper {
             },
             pipeTransport: {
                 pipeProgram: await ext.runtimeManager.getCommand(),
-                /* eslint-disable no-template-curly-in-string */
                 pipeArgs: ['exec', '-i', containerName, '${debuggerCommand}'],
                 pipeCwd: '${workspaceFolder}',
-                /* eslint-enable no-template-curly-in-string */
                 debuggerPath: platformOS === 'Windows' ?
                     'C:\\remote_debugger\\win7-x64\\latest\\vsdbg' :
                     '/remote_debugger/vsdbg',
@@ -171,13 +169,12 @@ export class NetCoreDebugHelper implements DebugHelper {
             pipeTransport: {
                 pipeProgram: await ext.runtimeManager.getCommand(),
                 pipeArgs: ['exec', '-i', containerName],
-                // eslint-disable-next-line no-template-curly-in-string
                 pipeCwd: '${workspaceFolder}',
                 debuggerPath: debuggerPath,
                 quoteArgs: false,
             },
             sourceFileMap: debugConfiguration.sourceFileMap || {
-                // eslint-disable-next-line no-template-curly-in-string, @typescript-eslint/naming-convention
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 '/src': '${workspaceFolder}'
             }
         };

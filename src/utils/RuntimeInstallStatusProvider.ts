@@ -32,7 +32,7 @@ class RuntimeInstallStatusProvider {
                 client.checkInstall({})
             );
             return true; // As long as the -v command did't throw exception, assume it is installed.
-        } catch (error) {
+        } catch {
             return false; // runtime not installed
         }
     }

@@ -11,7 +11,6 @@ export async function delay(ms: number, token?: vscode.CancellationToken): Promi
         let cancellationListener: vscode.Disposable;
 
         const timeout = setTimeout(() => {
-            /* eslint-disable-next-line no-unused-expressions */
             cancellationListener?.dispose();
             resolve();
         }, ms);

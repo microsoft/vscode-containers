@@ -53,8 +53,7 @@ export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceW
             //       the user never noticing them in the first place, which means the wizard would never complete, and the
             //       user left with the impression that the action never completes.
 
-            /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-            vscode.window
+            void vscode.window
                 .showInformationMessage(vscode.l10n.t('To set up a CI/CD webhook, open the page "{0}" and enter the URI to the created web app in your Docker Hub account', dockerhubUri), dockerhubPrompt)
                 .then(response => {
                     if (response) {

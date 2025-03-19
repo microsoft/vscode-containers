@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import assert = require('assert');
 import { ImageNameInfo } from '@microsoft/vscode-container-client';
+import * as assert from 'assert';
 import { NormalizedImageNameInfo } from '../../../tree/images/NormalizedImageNameInfo';
 
 // The expected values for each of these test cases are in the methods below

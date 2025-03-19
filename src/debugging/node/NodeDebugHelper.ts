@@ -93,7 +93,6 @@ export class NodeDebugHelper implements DebugHelper {
         };
 
         if (resolvedConfiguration.localRoot === undefined) {
-            /* eslint-disable-next-line no-template-curly-in-string */
             resolvedConfiguration.localRoot = '${workspaceFolder}';
         }
 

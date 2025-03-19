@@ -64,11 +64,9 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
 
     const openSite: string = l10n.t('Open Site');
     // don't wait
-    /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-    window.showInformationMessage(createdNewWebApp, ...[openSite]).then((selection) => {
+    void window.showInformationMessage(createdNewWebApp, ...[openSite]).then((selection) => {
         if (selection === openSite) {
-            /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-            env.openExternal(Uri.parse(siteUri));
+            void env.openExternal(Uri.parse(siteUri));
         }
     });
 }

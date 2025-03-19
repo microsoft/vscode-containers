@@ -35,8 +35,6 @@ export function resolveVariables<T>(target: T, folder?: WorkspaceFolder, additio
 }
 
 function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, additionalVariables?: { [key: string]: string }): string {
-    /* eslint-disable no-template-curly-in-string */
-
     // Replace workspace folder variables
     if (folder) {
         switch (variable) {
@@ -92,8 +90,6 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
     }
 
     return variable; // Return as-is, we don't know what to do with it
-
-    /* eslint-enable no-template-curly-in-string */
 }
 
 function getActiveFilePath(): string | undefined {
@@ -109,7 +105,6 @@ function getActiveFilePath(): string | undefined {
  * @param folder The workspace folder
  */
 export function unresolveWorkspaceFolder(filePath: string, folder: WorkspaceFolder): string {
-    /* eslint-disable-next-line no-template-curly-in-string */
     let replacedPath = filePath.replace(folder.uri.fsPath, '${workspaceFolder}');
 
     // By convention, VSCode uses forward slash for files in tasks/launch

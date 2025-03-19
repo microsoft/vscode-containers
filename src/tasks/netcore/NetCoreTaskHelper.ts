@@ -58,7 +58,6 @@ export class NetCoreTaskHelper implements TaskHelper {
                     tag: getDefaultImageName(context.folder.name, 'dev'),
                     target: 'base',
                     dockerfile: unresolveWorkspaceFolder(context.dockerfile, context.folder),
-                    /* eslint-disable-next-line no-template-curly-in-string */
                     context: '${workspaceFolder}',
                     pull: true
                 },
@@ -73,7 +72,6 @@ export class NetCoreTaskHelper implements TaskHelper {
                 dockerBuild: {
                     tag: getDefaultImageName(context.folder.name, 'latest'), // The 'latest' here is redundant but added to differentiate from above's 'dev'
                     dockerfile: unresolveWorkspaceFolder(context.dockerfile, context.folder),
-                    /* eslint-disable-next-line no-template-curly-in-string */
                     context: '${workspaceFolder}',
                     platform: {
                         os: normalizeContainerOS(options?.platformOS),
@@ -127,10 +125,8 @@ export class NetCoreTaskHelper implements TaskHelper {
     public async getDockerBuildOptions(context: DockerBuildTaskContext, buildDefinition: NetCoreBuildTaskDefinition): Promise<DockerBuildOptions> {
         const buildOptions = buildDefinition.dockerBuild;
 
-        /* eslint-disable no-template-curly-in-string */
         buildOptions.context = buildOptions.context || '${workspaceFolder}';
         buildOptions.dockerfile = buildOptions.dockerfile || path.join('${workspaceFolder}', 'Dockerfile');
-        /* eslint-enable no-template-curly-in-string */
         buildOptions.tag = buildOptions.tag || getDefaultImageName(context.folder.name);
 
         return buildOptions;

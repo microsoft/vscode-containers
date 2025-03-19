@@ -36,7 +36,6 @@ export class PythonTaskHelper implements TaskHelper {
                 dockerBuild: {
                     tag: getDefaultImageName(context.folder.name),
                     dockerfile: unresolveWorkspaceFolder(context.dockerfile, context.folder),
-                    // eslint-disable-next-line no-template-curly-in-string
                     context: '${workspaceFolder}',
                     pull: true
                 },
@@ -92,10 +91,8 @@ export class PythonTaskHelper implements TaskHelper {
     public async getDockerBuildOptions(context: DockerBuildTaskContext, buildDefinition: DockerBuildTaskDefinition): Promise<DockerBuildOptions> {
         const buildOptions = buildDefinition.dockerBuild;
 
-        /* eslint-disable no-template-curly-in-string */
         buildOptions.context = buildOptions.context || '${workspaceFolder}';
         buildOptions.dockerfile = buildOptions.dockerfile || '${workspaceFolder}/Dockerfile';
-        /* eslint-enable no-template-curly-in-string */
 
         buildOptions.tag = buildOptions.tag || getDefaultImageName(context.folder.name);
 

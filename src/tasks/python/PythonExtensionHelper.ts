@@ -15,7 +15,7 @@ interface PythonExtensionAPI {
     }
 }
 
-/* eslint-disable @typescript-eslint/no-namespace, no-inner-declarations */
+/* eslint-disable @typescript-eslint/no-namespace */
 export namespace PythonExtensionHelper {
     export interface DebugLaunchOptions {
         host?: string;
@@ -65,4 +65,4 @@ export namespace PythonExtensionHelper {
         return pyExt;
     }
 }
-/* eslint-enable @typescript-eslint/no-namespace, no-inner-declarations */
+/* eslint-enable @typescript-eslint/no-namespace */

@@ -25,6 +25,6 @@ tsconfig.json
 typings/**
 webpack.config*
 .eslintignore
-.eslintrc.json
+eslint.config.mjs
 .nvmrc
 component-detection-pip-report.json

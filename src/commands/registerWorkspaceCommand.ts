@@ -97,7 +97,7 @@ function updateExtensionKind(newKind: string): void {
     }
 
     value[extensionId] = newKind;
+
     // TODO: Should this be awaited?
-    /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-    config.update(settingKey, value, target);
+    void config.update(settingKey, value, target);
 }

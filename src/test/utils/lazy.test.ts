@@ -16,8 +16,8 @@ suite('(unit) Lazy tests', () => {
                 return true;
             });
 
-            lazy.value;
-            lazy.value;
+            void lazy.value;
+            void lazy.value;
 
             assert.equal(factoryCallCount, 1, 'Incorrect number of value factory calls.');
         });
@@ -29,14 +29,14 @@ suite('(unit) Lazy tests', () => {
                 return true;
             }, 5);
 
-            lazy.value;
-            lazy.value;
+            void lazy.value;
+            void lazy.value;
 
             assert.equal(factoryCallCount, 1, 'Incorrect number of value factory calls.');
 
             await delay(10);
-            lazy.value;
-            lazy.value;
+            void lazy.value;
+            void lazy.value;
 
             assert.equal(factoryCallCount, 2, 'Incorrect number of value factory calls.');
         });
@@ -48,16 +48,16 @@ suite('(unit) Lazy tests', () => {
                 return true;
             }, 5);
 
-            lazy.value;
-            lazy.value;
+            void lazy.value;
+            void lazy.value;
 
             assert.equal(factoryCallCount, 1, 'Incorrect number of value factory calls.');
 
             lazy.cacheForever();
 
             await delay(10);
-            lazy.value;
-            lazy.value;
+            void lazy.value;
+            void lazy.value;
 
             assert.equal(factoryCallCount, 1, 'After clearing the lifetime. The factory is called');
         });

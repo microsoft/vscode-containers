@@ -118,7 +118,6 @@ export async function browseContainer(context: IActionContext, node?: ContainerT
         // Sort ports in ascending order...
         items.sort((a, b) => a.data.containerPort - b.data.containerPort);
 
-        /* eslint-disable-next-line @typescript-eslint/promise-function-async */
         const item = await context.ui.showQuickPick(items, { stepName: 'port', placeHolder: vscode.l10n.t('Select the container port to browse to.') });
 
         // NOTE: If the user cancels the prompt, then a UserCancelledError exception would be thrown.
@@ -131,6 +130,5 @@ export async function browseContainer(context: IActionContext, node?: ContainerT
     const protocol = commonSslPorts.some(commonPort => commonPort === selectedPort.containerPort) ? 'https' : 'http';
     const url = `${protocol}://${selectedPort.host}:${selectedPort.hostPort}`;
 
-    /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-    vscode.env.openExternal(vscode.Uri.parse(url));
+    void vscode.env.openExternal(vscode.Uri.parse(url));
 }

@@ -269,14 +269,12 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
 
         if (wizardContext.info) {
             // TODO: Should this be awaited?
-            /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-            this.config.update(wizardContext.info.setting, wizardContext.newValue, ConfigurationTarget.Global);
+            void this.config.update(wizardContext.info.setting, wizardContext.newValue, ConfigurationTarget.Global);
         } else {
             // reset settings
             for (const info of infoList) {
                 // TODO: Should this be awaited?
-                /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-                this.config.update(info.setting, undefined, ConfigurationTarget.Global);
+                void this.config.update(info.setting, undefined, ConfigurationTarget.Global);
             }
         }
     }

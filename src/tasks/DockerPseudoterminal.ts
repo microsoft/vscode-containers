@@ -22,10 +22,8 @@ export class DockerPseudoterminal implements Pseudoterminal {
     private readonly writeEmitter: EventEmitter<string> = new EventEmitter<string>();
     private readonly cts: CancellationTokenSource = new CancellationTokenSource();
 
-    /* eslint-disable no-invalid-this */
     public readonly onDidWrite: Event<string> = this.writeEmitter.event;
     public readonly onDidClose: Event<number> = this.closeEmitter.event;
-    /* eslint-enable no-invalid-this */
 
     public constructor(private readonly taskProvider: DockerTaskProvider, private readonly task: DockerBuildTask | DockerRunTask, private readonly resolvedDefinition: DockerBuildTaskDefinition | DockerRunTaskDefinition) { }
 

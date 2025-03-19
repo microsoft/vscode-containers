@@ -118,12 +118,10 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
                 parent: subscriptionItem,
                 type: 'commonregistry',
                 baseUrl: vscode.Uri.parse(`https://${registry.loginServer}`),
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 label: registry.name!,
                 iconPath: vscode.Uri.joinPath(this.extensionContext.extensionUri, 'resources', 'azureRegistry.svg'),
                 subscription: subscriptionItem.subscription,
                 additionalContextValues: ['azureContainerRegistry'],
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 id: registry.id!,
                 registryProperties: registry
             };
@@ -196,7 +194,6 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
             this.authenticationProviders.set(registryString, provider);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return this.authenticationProviders.get(registryString)!;
     }
 

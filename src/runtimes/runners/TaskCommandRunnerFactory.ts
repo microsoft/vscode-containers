@@ -25,7 +25,6 @@ export class TaskCommandRunnerFactory implements ICommandRunnerFactory {
         return async <T>(commandResponseLike: Like<PromiseCommandResponse<T> | VoidCommandResponse>) => {
             const commandResponse = await normalizeCommandResponseLike(commandResponseLike);
             await executeAsTask(this.options, commandResponse.command, commandResponse.args);
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return undefined!;
         };
     }

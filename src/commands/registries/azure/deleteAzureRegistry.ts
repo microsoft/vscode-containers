@@ -34,6 +34,5 @@ export async function deleteAzureRegistry(context: IActionContext, node?: Unifie
 
     const message = l10n.t('Successfully deleted registry "{0}".', registryName);
     // don't wait
-    /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-    window.showInformationMessage(message);
+    void window.showInformationMessage(message);
 }

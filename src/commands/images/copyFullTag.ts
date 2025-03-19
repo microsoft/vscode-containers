@@ -16,7 +16,7 @@ export async function copyFullTag(context: IActionContext, node: ImageTreeItem |
             noItemFoundErrorMessage: vscode.l10n.t('No images are available to copy tag')
         });
     }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    vscode.env.clipboard.writeText(node.fullTag);
+
+    void vscode.env.clipboard.writeText(node.fullTag);
     return node.fullTag;
 }

@@ -40,7 +40,6 @@ const popular = [
 ];
 /* eslint-enable @typescript-eslint/naming-convention */
 
-/* eslint-disable-next-line @typescript-eslint/promise-function-async */ // Grandfathered in
 export function searchImagesInRegistryHub(prefix: string, cache: boolean): Promise<IHubSearchResponseResult[]> {
     if (prefix.length === 0) {
         // return the popular images if user invoked intellisense
@@ -72,7 +71,6 @@ export function searchImagesInRegistryHub(prefix: string, cache: boolean): Promi
 //     "query": "redis",
 //     "page": 1
 // }
-/* eslint-disable-next-line @typescript-eslint/promise-function-async */ // Grandfathered in
 function invokeHubSearch(imageName: string, count: number, cache: boolean): Promise<IHubSearchResponse> {
     const url = new URL('https://registry.hub.docker.com/v1/search');
     url.searchParams.append('q', imageName);

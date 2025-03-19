@@ -17,7 +17,6 @@ import { ResolvedDebugConfiguration } from './DebugHelper';
 
 const PATTERN = 'listening on.* (https?://\\S+|[0-9]+)'; // matches "listening on port 3000" or "Now listening on: https://localhost:5001"
 const URI_FORMAT = 'http://localhost:%s';
-/* eslint-disable-next-line no-template-curly-in-string */
 const WEB_ROOT = '${workspaceFolder}';
 
 class ServerReadyDetector implements DockerServerReadyDetector {
@@ -151,8 +150,7 @@ class ServerReadyDetector implements DockerServerReadyDetector {
         const args = configuration.dockerOptions.dockerServerReadyAction;
         switch (args.action || 'openExternally') {
             case 'openExternally':
-                /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-                vscode.env.openExternal(vscode.Uri.parse(uri));
+                void vscode.env.openExternal(vscode.Uri.parse(uri));
                 break;
             case 'debugWithChrome':
                 if (vscode.env['remoteName'] === 'wsl' || !!vscode.extensions.getExtension('msjsdiag.debugger-for-chrome')) {

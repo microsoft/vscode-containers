@@ -22,8 +22,7 @@ export class AzureRegistryNameStep extends AzureNameStep<IAzureRegistryWizardCon
         context.newRegistryName = (await context.ui.showInputBox({
             placeHolder: l10n.t('Registry name'),
             prompt: l10n.t('Provide a registry name'),
-            /* eslint-disable-next-line @typescript-eslint/promise-function-async */
-            validateInput: (name: string) => validateRegistryName(name, client)
+            validateInput: async (name: string) => validateRegistryName(name, client)
         })).trim();
 
         context.relatedNameTask = this.generateRelatedName(context, context.newRegistryName, azExtAzureUtils.resourceGroupNamingRules);

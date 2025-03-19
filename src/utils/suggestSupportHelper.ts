@@ -9,7 +9,6 @@ import * as vscode from 'vscode';
 import { searchImagesInRegistryHub, tagsForImage } from '../dockerHubSearch';
 
 export class SuggestSupportHelper {
-    /* eslint-disable-next-line @typescript-eslint/promise-function-async */ // Grandfathered in
     public suggestImages(word: string): Promise<vscode.CompletionItem[]> {
         return searchImagesInRegistryHub(word, true).then((results) => {
             return results.map((image) => {
