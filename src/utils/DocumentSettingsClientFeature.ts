@@ -20,6 +20,10 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
 
     public constructor(private readonly client: LanguageClient) { }
 
+    public clear(): void {
+        this.dispose();
+    }
+
     public getState(): FeatureState {
         return {
             kind: 'static'

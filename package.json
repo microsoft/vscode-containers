@@ -2991,7 +2991,7 @@
         ]
     },
     "engines": {
-        "vscode": "^1.92.0"
+        "vscode": "^1.95.0"
     },
     "capabilities": {
         "virtualWorkspaces": false,
@@ -3034,36 +3034,36 @@
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
         "@types/fs-extra": "^11.0.1",
-        "@types/glob": "^7.2.0",
+        "@types/glob": "^8.1.0",
         "@types/mocha": "^10.0.1",
         "@types/node": "20.x",
         "@types/semver": "^7.3.13",
-        "@types/vscode": "1.92.0",
+        "@types/vscode": "1.95.0",
         "@types/xml2js": "^0.4.11",
-        "@typescript-eslint/eslint-plugin": "^5.59.0",
-        "@typescript-eslint/parser": "^5.59.0",
+        "@typescript-eslint/eslint-plugin": "^8.26.1",
+        "@typescript-eslint/parser": "^8.26.1",
         "@vscode/test-electron": "^2.3.9",
         "@vscode/vsce": "^3.1.0",
-        "chai": "^4.3.7",
-        "copy-webpack-plugin": "^11.0.0",
-        "eslint": "^8.38.0",
-        "glob": "^8.1.0",
-        "mocha": "^10.2.0",
+        "chai": "^5.2.0",
+        "copy-webpack-plugin": "^13.0.0",
+        "eslint": "^9.22.0",
+        "glob": "^11.0.1",
+        "mocha": "^11.1.0",
         "node-loader": "^2.0.0",
         "ts-loader": "^9.4.2",
         "typescript": "^5.0.4",
         "umd-compat-loader": "^2.1.2",
         "webpack": "^5.94.0",
         "webpack-bundle-analyzer": "^4.8.0",
-        "webpack-cli": "^5.0.1"
+        "webpack-cli": "^6.0.1"
     },
     "dependencies": {
         "@azure/arm-authorization": "^9.0.0",
         "@azure/arm-containerregistry": "^10.1.0",
         "@azure/storage-blob": "^12.14.0",
         "@microsoft/compose-language-service": "^0.3.0",
-        "@microsoft/vscode-azext-azureappservice": "~3.3.0",
-        "@microsoft/vscode-azext-azureauth": "^2.4.1",
+        "@microsoft/vscode-azext-azureappservice": "~3.5.0",
+        "@microsoft/vscode-azext-azureauth": "^4.1.1",
         "@microsoft/vscode-azext-azureutils": "^3.0.1",
         "@microsoft/vscode-azext-utils": "^2.5.1",
         "@microsoft/vscode-container-client": "^0.2.1",
@@ -3075,8 +3075,8 @@
         "handlebars": "^4.7.7",
         "semver": "^7.5.2",
         "tar": "^6.2.1",
-        "vscode-languageclient": "^8.1.0",
+        "vscode-languageclient": "^9.0.1",
         "vscode-tas-client": "^0.1.75",
-        "xml2js": "^0.5.0"
+        "xml2js": "^0.6.0"
     }
 }

@@ -14,6 +14,10 @@ import type { ClientCapabilities, FeatureState, StaticFeature } from 'vscode-lan
  * that the compose language service can disable
  */
 export class AlternateYamlLanguageServiceClientFeature implements StaticFeature, vscode.Disposable {
+    public clear(): void {
+        this.dispose();
+    }
+
     public getState(): FeatureState {
         return {
             kind: 'static'
