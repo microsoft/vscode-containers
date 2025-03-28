@@ -3065,7 +3065,7 @@
         "@microsoft/vscode-azext-azureappservice": "~3.5.0",
         "@microsoft/vscode-azext-azureauth": "^4.1.1",
         "@microsoft/vscode-azext-azureutils": "^3.0.1",
-        "@microsoft/vscode-azext-utils": "^2.5.1",
+        "@microsoft/vscode-azext-utils": "^2.6.6",
         "@microsoft/vscode-container-client": "^0.2.1",
         "@microsoft/vscode-docker-registries": "^0.2.0",
         "dayjs": "^1.11.7",
