@@ -2820,34 +2820,41 @@
             "containersView": [
                 {
                     "id": "vscode-containers.views.containers",
-                    "name": "%vscode-containers.views.containers%"
+                    "name": "%vscode-containers.views.containers%",
+                    "icon": "resources/ContainerTools.svg"
                 },
                 {
                     "id": "vscode-containers.views.images",
-                    "name": "%vscode-containers.views.images%"
+                    "name": "%vscode-containers.views.images%",
+                    "icon": "resources/ContainerTools.svg"
                 },
                 {
                     "id": "vscode-containers.views.registries",
-                    "name": "%vscode-containers.views.registries%"
+                    "name": "%vscode-containers.views.registries%",
+                    "icon": "resources/ContainerTools.svg"
                 },
                 {
                     "id": "vscode-containers.views.networks",
                     "name": "%vscode-containers.views.networks%",
+                    "icon": "resources/ContainerTools.svg",
                     "visibility": "collapsed"
                 },
                 {
                     "id": "vscode-containers.views.volumes",
                     "name": "%vscode-containers.views.volumes%",
+                    "icon": "resources/ContainerTools.svg",
                     "visibility": "collapsed"
                 },
                 {
                     "id": "vscode-containers.views.dockerContexts",
                     "name": "%vscode-containers.views.dockerContexts%",
+                    "icon": "resources/ContainerTools.svg",
                     "visibility": "collapsed"
                 },
                 {
                     "id": "vscode-containers.views.help",
-                    "name": "%vscode-containers.views.help%"
+                    "name": "%vscode-containers.views.help%",
+                    "icon": "resources/ContainerTools.svg"
                 }
             ]
         },
