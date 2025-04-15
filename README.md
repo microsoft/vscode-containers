@@ -6,7 +6,8 @@ The Container Tools extension makes it easy to build, manage, and deploy contain
 
 **Check out the [Working with containers](https://aka.ms/AA7arez) topic on the Visual Studio Code documentation site to get started**.
 
-[The Container Tools extension wiki](https://github.com/Microsoft/vscode-containers/wiki) has troubleshooting tips and additional technical information.
+## Why do I have this extension?
+If you didn't install it directly, you probably got it as part of the [Docker Extension pack](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker). The extension pack is optional and can be uninstalled at any time.
 
 ## Installation
 
