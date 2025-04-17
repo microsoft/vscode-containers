@@ -88,6 +88,10 @@ You can debug services built using Node.js, Python, or .NET (C#) that are runnin
 
 You can start Azure CLI (command-line interface) in a standalone, Linux-based container with **Container Images: Run Azure CLI** command. This gives you access to the full Azure CLI command set in an isolated environment. For more information on available commands, see [Get started with Azure CLI](https://docs.microsoft.com/cli/azure/get-started-with-azure-cli?view=azure-cli-latest#sign-in).
 
+### Alternative container runtimes
+
+The Container Tools extension supports multiple container runtime options, such as Docker or Podman. If you want to change runtimes, you can do so with the VS Code setting `containers.containerClient`. Changing requires restart to take effect.
+
 ## Contributing
 
 See [the contribution guidelines](CONTRIBUTING.md) for ideas and guidance on how to improve the extension. Thank you!
