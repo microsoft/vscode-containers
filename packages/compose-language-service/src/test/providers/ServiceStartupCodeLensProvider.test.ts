@@ -30,7 +30,7 @@ describe('ServiceStartupCodeLensProvider', () => {
                 {
                     range: Range.create(0, 0, 0, 8),
                     command: {
-                        command: 'vscode-docker.compose.up'
+                        command: 'vscode-containers.compose.up'
                     }
                 },
             ];
@@ -56,19 +56,19 @@ describe('ServiceStartupCodeLensProvider', () => {
                 {
                     range: Range.create(1, 0, 1, 8),
                     command: {
-                        command: 'vscode-docker.compose.up'
+                        command: 'vscode-containers.compose.up'
                     }
                 },
                 {
                     range: Range.create(2, 2, 2, 5),
                     command: {
-                        command: 'vscode-docker.compose.up.subset',
+                        command: 'vscode-containers.compose.up.subset',
                     }
                 },
                 {
                     range: Range.create(4, 2, 4, 5),
                     command: {
-                        command: 'vscode-docker.compose.up.subset',
+                        command: 'vscode-containers.compose.up.subset',
                     }
                 },
             ];

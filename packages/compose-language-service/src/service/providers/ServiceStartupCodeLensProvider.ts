@@ -35,7 +35,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
                     const lens = CodeLens.create(yamlRangeToLspRange(params.document.textDocument, servicesKey.range));
                     lens.command = {
                         title: '$(run-all) Run All Services',
-                        command: 'vscode-docker.compose.up',
+                        command: 'vscode-containers.compose.up',
                         arguments: [
                             /* dockerComposeFileUri: */ params.document.uri
                         ],
@@ -63,7 +63,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
                     const lens = CodeLens.create(yamlRangeToLspRange(params.document.textDocument, service.key.range));
                     lens.command = {
                         title: '$(play) Run Service',
-                        command: 'vscode-docker.compose.up.subset',
+                        command: 'vscode-containers.compose.up.subset',
                         arguments: [ // Arguments are from here: https://github.com/microsoft/vscode-docker/blob/a45a3dfc8e582f563292a707bbe56f616f7fedeb/src/commands/compose/compose.ts#L79
                             /* dockerComposeFileUri: */ params.document.uri,
                             /* selectedComposeFileUris: */ undefined,

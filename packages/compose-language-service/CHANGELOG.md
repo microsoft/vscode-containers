@@ -1,3 +1,7 @@
+## 0.4.0 - 17 April 2025
+### Breaking Changes
+* The service startup CodeLens has changed the command it will call to `vscode-containers.compose.up`.
+
 ## 0.3.0 - 17 December 2024
 ### Breaking Changes
 * New properties have been added to `AlternateYamlLanguageServiceClientCapabilities`
