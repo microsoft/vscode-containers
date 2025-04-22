@@ -1,9 +1,9 @@
-# Docker for Visual Studio Code: Extensibility Model
+# Container Tools for Visual Studio Code: Extensibility Model
 
 ## Overview
-This package provides the necessary interfaces to implement a registry provider for the [Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) for Visual Studio Code. Additionally, it also contains an implementation of a registry provider for the common [Docker Registry HTTP API V2](https://docs.docker.com/registry/spec/api/). Most implementations will be a fairly slim inheriting implementation of this.
+This package provides the necessary interfaces to implement a registry provider for the [Container Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers) for Visual Studio Code. Additionally, it also contains an implementation of a registry provider for the common [Docker Registry HTTP API V2](https://docs.docker.com/registry/spec/api/). Most implementations will be a fairly slim inheriting implementation of this.
 
-In order to implement a provider, you must create a VS Code extension which will activate when the Docker explorer view is opened, and register itself with the Docker extension. The Docker extension will call into your provider to discover what nodes to show in the explorer view.
+In order to implement a provider, you must create a VS Code extension which will activate when the Container Explorer view is opened, and register itself with the Container Tools extension. The Container Tools extension will call into your provider to discover what nodes to show in the explorer view.
 
 ## When to implement a registry provider extension
 You should implement a registry provider extension if:
@@ -18,9 +18,9 @@ You should _not_ implement a registry provider extension if:
 
 ## How to implement a registry provider extension
 1. Create a new VS Code extension. [Learn more](https://code.visualstudio.com/api/get-started/your-first-extension)
-1. Add the following activation event to your extension's package.json: `onCommand:vscode-docker.activateRegistryProviders`. [Learn more](https://code.visualstudio.com/api/references/activation-events)
+1. Add the following activation event to your extension's package.json: `onCommand:vscode-containers.activateRegistryProviders`. [Learn more](https://code.visualstudio.com/api/references/activation-events)
 1. Implement the [`RegistryDataProvider`](https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-docker-registries/src/contracts/RegistryDataProvider.ts) interface. The easiest way to do this is to extend either [`CommonRegistryDataProvider`](https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-docker-registries/src/clients/Common/CommonRegistryDataProvider.ts) or, if your registry is compliant to the V2 registry spec, [`RegistryV2DataProvider`](https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-docker-registries/src/clients/RegistryV2/RegistryV2DataProvider.ts).
-1. In your extension's `activate()` method, call into the Docker extension to register your provider. [Learn more](https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-docker-registries/src/contracts/DockerExtension.ts)
+1. In your extension's `activate()` method, call into the Container Tools extension to register your provider. [Learn more](https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-docker-registries/src/contracts/DockerExtension.ts)
 
 ## License
 [MIT](LICENSE)

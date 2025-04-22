@@ -1,7 +1,7 @@
 # vscode-container-client
 
 ## Overview
-This package adds support for various Docker container runtimes, abstracting away the details of the runtime and the way it is called, to provide a common interface for any Docker runtime (e.g. Docker in WSL, Docker Engine, Docker Desktop, etc.).
+This package adds support for various container runtimes, abstracting away the details of the runtime and the way it is called, to provide a common interface for any container runtime (e.g. Docker in WSL, Docker Engine, Docker Desktop, Podman, etc.).
 
 ## Usage
 Each of the runtime clients provide a command line to execute and a function to parse the output, for each relevant operation. These items are combined into a `CommandResponse` object. In addition, many helpful utility classes are provided, for building command lines, running the commands, and a handful of other scenarios.
