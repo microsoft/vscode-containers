@@ -102,7 +102,7 @@ export class ContainersTreeItem extends LocalRootTreeItemBase<DockerContainerInf
 
     protected getTreeItemForEmptyList(): AzExtTreeItem[] {
         if (this.newContainerUser) {
-            const dockerTutorialTreeItem = new OpenUrlTreeItem(this, l10n.t('Tutorial: Get started with Docker'), 'https://aka.ms/getstartedwithdocker');
+            const dockerTutorialTreeItem = new OpenUrlTreeItem(this, l10n.t('Tutorial: Get started with containers'), 'https://aka.ms/getstartedwithdocker');
             dockerTutorialTreeItem.iconPath = new ThemeIcon('link-external');
             return [dockerTutorialTreeItem];
         }
