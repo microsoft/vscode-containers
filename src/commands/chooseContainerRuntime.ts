@@ -22,7 +22,6 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
             label: client.displayName,
             data: client,
             description: client.description,
-            detail: "foo"
         };
     });
 
