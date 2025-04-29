@@ -236,6 +236,7 @@
     "vscode-containers.commands.help": "Container Help",
     "vscode-containers.commands.help.reportIssue": "Report Issue",
     "vscode-containers.commands.help.openWalkthrough": "Open Container Tools Extension Walkthrough",
+    "vscode-containers.commands.chooseContainerRuntime": "Choose container runtime...",
     "vscode-containers.commands.images.build": "Build Image...",
     "vscode-containers.commands.images.configureExplorer": "Configure Explorer...",
     "vscode-containers.commands.images.inspect": "Inspect",

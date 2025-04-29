@@ -219,6 +219,11 @@
                     "group": "navigation@1"
                 },
                 {
+                    "command": "vscode-containers.chooseContainerRuntime",
+                    "when": "view == vscode-containers.views.containers",
+                    "group": "navigation@7"
+                },
+                {
                     "command": "vscode-containers.containers.configureExplorer",
                     "when": "view == vscode-containers.views.containers",
                     "group": "navigation@8"
@@ -2770,6 +2775,12 @@
                 "command": "vscode-containers.help.openWalkthrough",
                 "title": "%vscode-containers.commands.help.openWalkthrough%",
                 "category": "%vscode-containers.commands.category.containersGeneric%"
+            },
+            {
+                "command": "vscode-containers.chooseContainerRuntime",
+                "title": "%vscode-containers.commands.chooseContainerRuntime%",
+                "category": "%vscode-containers.commands.category.containersGeneric%",
+                "icon": "$(tools)"
             },
             {
                 "command": "vscode-containers.contexts.use",
