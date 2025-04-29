@@ -14,11 +14,15 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
         new PodmanClient(),
     ];
 
+    const configuration = vscode.workspace.getConfiguration(configPrefix);
+    const oldValue = configuration.get<string | undefined>('containerClient');
+
     const containerRuntimeChoices: IAzureQuickPickItem<IContainersClient>[] = clientOptions.map((client) => {
         return {
             label: client.displayName,
             data: client,
             description: client.description,
+            detail: "foo"
         };
     });
 
@@ -29,9 +33,11 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
 
     context.telemetry.properties.selectedRuntime = selectedClient.data.displayName;
 
-    const configuration = vscode.workspace.getConfiguration(configPrefix);
-    await configuration.update('containerClient', selectedClient.data.id);
-
+    if (oldValue === selectedClient.data.id) {
+        return;
+    } else {
+        await configuration.update('containerClient', selectedClient.data.id);
+    }
 
     const reload: vscode.MessageItem = {
         title: vscode.l10n.t('Reload Now'),
