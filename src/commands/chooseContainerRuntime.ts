@@ -35,7 +35,7 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
     if (oldValue === selectedClient.data.id) {
         return;
     } else {
-        await configuration.update('containerClient', selectedClient.data.id);
+        await configuration.update('containerClient', selectedClient.data.id, vscode.ConfigurationTarget.Global);
     }
 
     const reload: vscode.MessageItem = {
