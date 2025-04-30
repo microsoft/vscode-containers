@@ -320,6 +320,8 @@
     "vscode-containers.workspaceTrust.description": "Workspace must be trusted in order to perform relevant container actions.",
     "vscode-containers.walkthrough.containersStart.title": "Getting Started with Container Tools",
     "vscode-containers.walkthrough.containersStart.description": "Learn about Docker and the Container Tools extension for Visual Studio Code",
+    "vscode-containers.walkthrough.containersStart.chooseContainerRuntime.title": "Choose your Container Runtime",
+    "vscode-containers.walkthrough.containersStart.chooseContainerRuntime.description": "The Container Tools extension supports multiple container runtimes. Choose the one you want to use.\n[Choose Container Runtime](command:vscode-containers.chooseContainerRuntime)",
     "vscode-containers.walkthrough.containersStart.openFolder.title": "Open a Workspace Folder",
     "vscode-containers.walkthrough.containersStart.openFolder.description": "Open a workspace folder to get started with Container Tools extension features.\n[Open Folder](command:workbench.action.files.openFolder)",
     "vscode-containers.walkthrough.containersStart.openFolderMac.description": "Open a workspace folder to get started with Container Tools extension features.\n[Open Folder](command:workbench.action.files.openFileFolder)",

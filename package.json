@@ -2890,6 +2890,17 @@
                 "description": "%vscode-containers.walkthrough.containersStart.description%",
                 "steps": [
                     {
+                        "id": "chooseContainerRuntime",
+                        "title": "%vscode-containers.walkthrough.containersStart.chooseContainerRuntime.title%",
+                        "completionEvents": [
+                            "onCommand:vscode-containers.chooseContainerRuntime"
+                        ],
+                        "description": "%vscode-containers.walkthrough.containersStart.chooseContainerRuntime.description%",
+                        "media": {
+                            "markdown": "resources/walkthroughs/empty.md"
+                        }
+                    },
+                    {
                         "id": "openFolder",
                         "title": "%vscode-containers.walkthrough.containersStart.openFolder.title%",
                         "completionEvents": [
@@ -2987,7 +2998,6 @@
                             "onCommand:vscode-containers.registries.deployImageToAca"
                         ],
                         "description": "%vscode-containers.walkthrough.containersStart.azDeploy.description%",
-                        "when": "isAzureAccountInstalled",
                         "media": {
                             "image": "https://github.com/microsoft/vscode-containers/raw/main/resources/walkthroughs/6g-deployToAppSvc.gif",
                             "altText": "Deploying to Azure App Service"
