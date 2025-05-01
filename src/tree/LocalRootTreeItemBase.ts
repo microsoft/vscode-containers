@@ -292,11 +292,11 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
                 new GenericTreeItem(this, { label: l10n.t('Failed to connect. Is {0} running?', (await ext.runtimeManager.getClient()).displayName), contextValue: 'connectionError', iconPath: new ThemeIcon('warning', new ThemeColor('problemsWarningIcon.foreground')) }),
                 new GenericTreeItem(this, { label: l10n.t('  Error: {0}', parsedError.message), contextValue: 'connectionError' }),
                 new OpenUrlTreeItem(this, l10n.t('Additional Troubleshooting...'), 'https://aka.ms/AA37qt2'),
-                new GenericTreeItem(this, { label: l10n.t('Choose another container runtime...'), commandId: 'vscode-containers.chooseContainerRuntime', contextValue: 'connectionError', iconPath: new ThemeIcon('tools') })
+                new GenericTreeItem(this, { label: l10n.t('Configure container runtime...'), commandId: 'vscode-containers.chooseContainerRuntime', contextValue: 'connectionError', iconPath: new ThemeIcon('tools') })
             ]
             : [
                 new GenericTreeItem(this, { label: l10n.t('Failed to connect. Is {0} installed?', (await ext.runtimeManager.getClient()).displayName), contextValue: 'connectionError', iconPath: new ThemeIcon('warning', new ThemeColor('problemsWarningIcon.foreground')) }),
-                new GenericTreeItem(this, { label: l10n.t('Choose another container runtime...'), commandId: 'vscode-containers.chooseContainerRuntime', contextValue: 'connectionError', iconPath: new ThemeIcon('tools') })
+                new GenericTreeItem(this, { label: l10n.t('Configure container runtime...'), commandId: 'vscode-containers.chooseContainerRuntime', contextValue: 'connectionError', iconPath: new ThemeIcon('tools') })
             ];
 
         const remoteInfo: IVSCodeRemoteInfo = getVSCodeRemoteInfo(context);

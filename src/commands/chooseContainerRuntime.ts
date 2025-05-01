@@ -45,7 +45,7 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
         title: vscode.l10n.t('Later'),
     };
 
-    const message = vscode.l10n.t('The container runtime has been changed to {0}. A reload is required for the setting to take effect. Do you want to reload now? Please save your work before proceeding.', selectedClient.data.displayName);
+    const message = vscode.l10n.t('The container runtime has been changed to {0}. A reload is required for the updated container runtime to take effect. Do you want to reload now? Please save your work before proceeding.', selectedClient.data.displayName);
 
     const reloadChoice = await context.ui.showWarningMessage(message, reload, later);
 
