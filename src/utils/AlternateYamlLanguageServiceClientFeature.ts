@@ -24,20 +24,28 @@ export class AlternateYamlLanguageServiceClientFeature implements StaticFeature,
         };
     }
 
-    public fillClientCapabilities(capabilities: ClientCapabilities): void {
-        // If the RedHat YAML extension is present, we can disable many of the compose language service features
-        if (vscode.extensions.getExtension('redhat.vscode-yaml')) {
-            const altYamlClientCapabilities: AlternateYamlLanguageServiceClientCapabilities = {
-                syntaxValidation: true,
-                schemaValidation: true,
-                basicCompletions: true,
-                advancedCompletions: false, // YAML extension does not have advanced completions for compose docs
-                hover: false, // YAML extension provides hover, but the compose spec lacks descriptions -- https://github.com/compose-spec/compose-spec/issues/138
-                imageLinks: false, // YAML extension does not have image hyperlinks for compose docs
-                serviceStartupCodeLens: false, // YAML extension does not have service startup code lens for compose docs
-                formatting: true,
+    private createAlternateYamlLanguageServiceClientCapabilities(): AlternateYamlLanguageServiceClientCapabilities | null {
+        // If RedHat YAML's extension or Docker's extension is present, we can disable many of the compose language service features
+        const redhat = vscode.extensions.getExtension('redhat.vscode-yaml') !== undefined;
+        const docker = vscode.extensions.getExtension('docker.docker') !== undefined;
+        if (redhat || docker) {
+            return {
+                syntaxValidation: redhat || docker,
+                schemaValidation: redhat,
+                basicCompletions: redhat || docker,
+                advancedCompletions: false, // The other extensions do not have advanced completions for Compose docs
+                hover: redhat || docker, // Compose spec has descriptions
+                imageLinks: docker, // Docker's extension supports Docker Hub, GHCR, MAR, and Quay.io
+                serviceStartupCodeLens: false, // The other extensions do not provide any code lens
+                formatting: redhat || docker,
             };
+        }
+        return null;
+    }
 
+    public fillClientCapabilities(capabilities: ClientCapabilities): void {
+        const altYamlClientCapabilities = this.createAlternateYamlLanguageServiceClientCapabilities();
+        if (altYamlClientCapabilities !== null) {
             capabilities.experimental = {
                 ...capabilities.experimental,
                 alternateYamlLanguageService: altYamlClientCapabilities,
