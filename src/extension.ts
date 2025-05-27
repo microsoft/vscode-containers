@@ -75,7 +75,7 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
             const dockerExtensionVersion = semver.coerce(dockerExtension.packageJSON.version);
             if (dockerExtensionVersion && semver.lt(dockerExtensionVersion, '2.0.0')) {
                 activateContext.errorHandling.suppressReportIssue = true;
-                throw new Error(vscode.l10n.t('The Container Tools extension is incompatible with the Docker extension and cannot activate. Uninstall Docker and reload to use Container Tools.'));
+                throw new Error(vscode.l10n.t('An unsupported version of the Docker extension is installed. Please update the Docker extension to version 2.0.0 or later. The Container Tools extension will not activate.'));
             }
         }
 
