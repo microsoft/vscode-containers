@@ -1,3 +1,7 @@
+## 2.0.2 - 27 May 2025
+### Changed
+* Minor change to the toast notification when the [Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) is also installed. [#89](https://github.com/microsoft/vscode-containers/pull/89)
+
 ## 2.0.1 - 6 May 2025
 ### Added
 * Added a command to change container runtime, in the command palette and Containers view in the Container Explorer. [#56](https://github.com/microsoft/vscode-containers/issues/56)
