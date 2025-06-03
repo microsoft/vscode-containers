@@ -746,6 +746,10 @@ export type RunContainerCommandOptions = CommonCommandOptions & {
      */
     exposePorts?: Array<number>;
     /**
+     * Target platform for the container
+     */
+    platform?: ContainerPlatform;
+    /**
      * Additional custom options to pass
      */
     customOptions?: string;

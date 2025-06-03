@@ -197,4 +197,33 @@ describe('DockerClient (unit)', () => {
         expect(pwshQuoted).to.deep.equal(['container', 'run', 'someimage', 'sh', '-c', 'echo` hello` world']);
         expect(bashQuoted).to.deep.equal(['container', 'run', 'someimage', 'sh', '-c', 'echo\\ hello\\ world']);
     });
+
+    it('Should include platform flag when platform is specified', async () => {
+        const options: RunContainerCommandOptions = {
+            imageRef: 'someimage',
+            platform: {
+                os: 'linux',
+                architecture: 'arm64'
+            },
+        };
+
+        const commandResponse = await client.runContainer(options);
+        const args = commandResponse.args;
+
+        // Find the position of --platform flag
+        const platformFlagIndex = args.findIndex(arg => 
+            typeof arg === 'string' ? arg === '--platform' : arg.value === '--platform'
+        );
+        
+        // Verify that --platform flag is present
+        expect(platformFlagIndex).to.be.greaterThan(-1);
+        
+        // Verify that the value after --platform matches our expected platform
+        const platformValue = args[platformFlagIndex + 1];
+        const platformValueStr = typeof platformValue === 'string' 
+            ? platformValue 
+            : platformValue.value;
+        
+        expect(platformValueStr).to.equal('linux/arm64');
+    });
 });

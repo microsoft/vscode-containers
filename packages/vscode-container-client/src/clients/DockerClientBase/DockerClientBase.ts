@@ -699,6 +699,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
             withNamedArg('--env-file', options.environmentFiles),
             withNamedArg('--entrypoint', options.entrypoint),
             withDockerExposePortsArg(options.exposePorts),
+            withDockerPlatformArg(options.platform),
             withVerbatimArg(options.customOptions),
             withArg(options.imageRef),
             typeof options.command === 'string' ? withVerbatimArg(options.command) : withArg(...(toArray(options.command || []))),
