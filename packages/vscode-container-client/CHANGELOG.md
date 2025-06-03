@@ -1,3 +1,7 @@
+## 0.2.2 - 3 June 2025
+### Added
+* Added support for the `--platform` argument in `runContainer()`. [#258](https://github.com/microsoft/vscode-docker-extensibility/issues/258)
+
 ## 0.2.1 - 11 March 2025
 ### Added
 * Added the container stats command. This would previously always throw a `CommandNotSupportedError`. However, the typing has changed to a `VoidCommandResponse`. [#254](https://github.com/microsoft/vscode-docker-extensibility/issues/254)
