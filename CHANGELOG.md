@@ -1,3 +1,7 @@
+## 2.0.3 - 5 June 2025
+### Changed
+* Some compose language service features will automatically disable if the [Docker DX](https://marketplace.visualstudio.com/items?itemName=docker.docker) extension is present, in order to avoid duplication and conflicts. [#75](https://github.com/microsoft/vscode-containers/pull/75)
+
 ## 2.0.2 - 27 May 2025
 ### Changed
 * Minor change to the toast notification when the [Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) is also installed. [#89](https://github.com/microsoft/vscode-containers/pull/89)
