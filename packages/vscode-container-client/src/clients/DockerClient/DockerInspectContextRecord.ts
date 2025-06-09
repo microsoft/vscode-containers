@@ -3,14 +3,11 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type DockerInspectContextRecord = {
-    Name: string;
-    Metadata?: {
-        Description?: string;
-    }
-};
+import { z } from 'zod/v4';
 
-// TODO: Actually test properties
-export function isDockerInspectContextRecord(maybeContext: unknown): maybeContext is DockerInspectContextRecord {
-    return true;
-}
+export const DockerInspectContextRecordSchema = z.object({
+    Name: z.string(),
+    Metadata: z.object({
+        Description: z.string().optional(),
+    }).optional(),
+});

@@ -3,40 +3,15 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EventAction, EventType } from "../../contracts/ContainerClient";
+import { z } from 'zod/v4';
+import { EventActionSchema, EventTypeSchema } from '../../contracts/ZodEnums';
 
-export type PodmanEventRecord = {
-    ID?: string; // Not in v3
-    Type: EventType;
-    Status: EventAction;
-    Name: string;
-    Time?: string; // Not in v5
-    time?: number; // Not in v3, v4
-    Attributes?: Record<string, unknown>;
-};
-
-export function isPodmanEventRecord(maybeEvent: unknown): maybeEvent is PodmanEventRecord {
-    const event = maybeEvent as PodmanEventRecord;
-
-    if (!event || typeof event !== 'object') {
-        return false;
-    }
-
-    if (typeof event.Type !== 'string') {
-        return false;
-    }
-
-    if (typeof event.Status !== 'string') {
-        return false;
-    }
-
-    if (typeof event.Name !== 'string') {
-        return false;
-    }
-
-    if (typeof event.Time !== 'string' && typeof event.time !== 'number') {
-        return false;
-    }
-
-    return true;
-}
+export const PodmanEventRecordSchema = z.object({
+    ID: z.string().optional(), // Not in v3
+    Type: EventTypeSchema,
+    Status: EventActionSchema,
+    Name: z.string(),
+    Time: z.string().optional(), // Not in v5
+    time: z.number().optional(), // Not in v3, v4
+    Attributes: z.record(z.string(), z.unknown()).optional(),
+});

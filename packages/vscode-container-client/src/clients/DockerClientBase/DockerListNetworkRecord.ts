@@ -3,62 +3,23 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { z } from 'zod/v4';
 import { ListNetworkItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeLabels } from './parseDockerLikeLabels';
 
-export type DockerListNetworkRecord = {
-    ID: string;
-    Name: string;
-    Driver: string;
-    Labels: string;
-    Scope: string;
-    IPv6: string;
-    CreatedAt: string;
-    Internal: string;
-};
+export const DockerListNetworkRecordSchema = z.object({
+    ID: z.string(),
+    Name: z.string(),
+    Driver: z.string(),
+    Labels: z.string(),
+    Scope: z.string(),
+    IPv6: z.string(),
+    CreatedAt: z.string(),
+    Internal: z.string(),
+});
 
-export function isDockerListNetworkRecord(maybeNetwork: unknown): maybeNetwork is DockerListNetworkRecord {
-    const network = maybeNetwork as DockerListNetworkRecord;
-
-    if (!network || typeof network !== 'object') {
-        return false;
-    }
-
-    if (typeof network.ID !== 'string') {
-        return false;
-    }
-
-    if (typeof network.Name !== 'string') {
-        return false;
-    }
-
-    if (typeof network.Driver !== 'string') {
-        return false;
-    }
-
-    if (typeof network.Labels !== 'string') {
-        return false;
-    }
-
-    if (typeof network.Scope !== 'string') {
-        return false;
-    }
-
-    if (typeof network.IPv6 !== 'string') {
-        return false;
-    }
-
-    if (typeof network.CreatedAt !== 'string') {
-        return false;
-    }
-
-    if (typeof network.Internal !== 'string') {
-        return false;
-    }
-
-    return true;
-}
+type DockerListNetworkRecord = z.infer<typeof DockerListNetworkRecordSchema>;
 
 export function normalizeDockerListNetworkRecord(network: DockerListNetworkRecord): ListNetworkItem {
     // Parse the labels assigned to the networks and normalize to key value pairs

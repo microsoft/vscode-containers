@@ -3,89 +3,87 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { z } from 'zod/v4';
 import { InspectContainersItem, InspectContainersItemMount, InspectContainersItemNetwork, PortBinding } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { toArray } from '../../utils/toArray';
 import { parseDockerLikeEnvironmentVariables } from './parseDockerLikeEnvironmentVariables';
 
-export type DockerInspectContainerPortHost = {
-    HostIp?: string;
-    HostPort?: number;
-};
+const DockerInspectContainerPortHostSchema = z.object({
+    HostIp: z.string().optional(),
+    HostPort: z.number().optional(),
+});
 
-export type DockerInspectContainerBindMount = {
-    Type: 'bind';
-    Source: string;
-    Destination: string;
-    RW: boolean;
-};
+const DockerInspectContainerBindMountSchema = z.object({
+    Type: z.literal('bind'),
+    Source: z.string(),
+    Destination: z.string(),
+    RW: z.boolean(),
+});
 
-export type DockerInspectContainerVolumeMount = {
-    Type: 'volume';
-    Name: string;
-    Source: string;
-    Destination: string;
-    Driver: string;
-    RW: boolean;
-};
+const DockerInspectContainerVolumeMountSchema = z.object({
+    Type: z.literal('volume'),
+    Name: z.string(),
+    Source: z.string(),
+    Destination: z.string(),
+    Driver: z.string(),
+    RW: z.boolean(),
+});
 
-export type DockerInspectContainerMount =
-    | DockerInspectContainerBindMount
-    | DockerInspectContainerVolumeMount;
+const DockerInspectContainerMountSchema = z.union([
+    DockerInspectContainerBindMountSchema,
+    DockerInspectContainerVolumeMountSchema,
+]);
 
-export type DockerInspectNetwork = {
-    Gateway: string;
-    IPAddress: string;
-    MacAddress: string;
-};
+const DockerInspectContainerNetworkSchema = z.object({
+    Gateway: z.string(),
+    IPAddress: z.string(),
+    MacAddress: z.string(),
+});
 
-export type DockerInspectContainerConfig = {
-    Image: string;
-    Status: string;
-    Entrypoint: Array<string> | string | null;
-    Cmd: Array<string> | string | null;
-    Env?: Array<string> | null;
-    Labels?: Record<string, string> | null;
-    WorkingDir?: string | null;
-};
+const DockerInspectContainerConfigSchema = z.object({
+    Image: z.string(),
+    Status: z.string().optional(),
+    Entrypoint: z.union([z.array(z.string()), z.string(), z.null()]),
+    Cmd: z.union([z.array(z.string()), z.string(), z.null()]),
+    Env: z.union([z.array(z.string()), z.null()]).optional(),
+    Labels: z.union([z.record(z.string(), z.string()), z.null()]).optional(),
+    WorkingDir: z.union([z.string(), z.null()]).optional(),
+});
 
-export type DockerInspectContainerHostConfig = {
-    PublishAllPorts?: boolean | null;
-    Isolation?: string;
-};
+const DockerInspectContainerHostConfigSchema = z.object({
+    PublishAllPorts: z.union([z.boolean(), z.null()]).optional(),
+    Isolation: z.string().optional(),
+});
 
-export type DockerInspectContainerNetworkSettings = {
-    Networks?: Record<string, DockerInspectNetwork> | null;
-    IPAddress?: string;
-    Ports?: Record<string, Array<DockerInspectContainerPortHost>> | null;
-};
+const DockerInspectContainerNetworkSettingsSchema = z.object({
+    Networks: z.record(z.string(), DockerInspectContainerNetworkSchema).nullable().optional(),
+    IPAddress: z.string().optional(),
+    Ports: z.record(z.string(), z.array(DockerInspectContainerPortHostSchema)).nullable().optional(),
+});
 
-export type DockerInspectContainerState = {
-    Status?: string;
-    StartedAt?: string;
-    FinishedAt?: string;
-};
+const DockerInspectContainerStateSchema = z.object({
+    Status: z.string().optional(),
+    StartedAt: z.string().optional(),
+    FinishedAt: z.string().optional(),
+});
 
-export type DockerInspectContainerRecord = {
-    Id: string;
-    Name: string;
-    Image: string;
-    Platform: string;
-    Created: string;
-    Mounts: Array<DockerInspectContainerMount>;
-    State: DockerInspectContainerState;
-    Config: DockerInspectContainerConfig;
-    HostConfig: DockerInspectContainerHostConfig;
-    NetworkSettings: DockerInspectContainerNetworkSettings;
-};
+export const DockerInspectContainerRecordSchema = z.object({
+    Id: z.string(),
+    Name: z.string(),
+    Image: z.string(),
+    Platform: z.string(),
+    Created: z.string(),
+    Mounts: z.array(DockerInspectContainerMountSchema),
+    State: DockerInspectContainerStateSchema,
+    Config: DockerInspectContainerConfigSchema,
+    HostConfig: DockerInspectContainerHostConfigSchema,
+    NetworkSettings: DockerInspectContainerNetworkSettingsSchema,
+});
+type DockerInspectContainerRecord = z.infer<typeof DockerInspectContainerRecordSchema>;
 
-// TODO: Actually test properties
-export function isDockerInspectContainerRecord(maybeContainer: unknown): maybeContainer is DockerInspectContainerRecord {
-    return true;
-}
-
-export function normalizeDockerInspectContainerRecord(container: DockerInspectContainerRecord): InspectContainersItem {
+export function normalizeDockerInspectContainerRecord(container: DockerInspectContainerRecord, raw: string): InspectContainersItem {
     // Parse the environment variables assigned to the container at runtime
     const environmentVariables = parseDockerLikeEnvironmentVariables(container.Config?.Env || []);
 
@@ -172,6 +170,6 @@ export function normalizeDockerInspectContainerRecord(container: DockerInspectCo
         finishedAt: finishedAt && (finishedAt.isSame(createdAt) || finishedAt.isAfter(createdAt))
             ? finishedAt.toDate()
             : undefined,
-        raw: JSON.stringify(container),
+        raw,
     };
 }

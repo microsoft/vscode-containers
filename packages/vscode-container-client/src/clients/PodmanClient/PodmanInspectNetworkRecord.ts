@@ -3,38 +3,23 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { InspectNetworksItem } from "../../contracts/ContainerClient";
+import { z } from 'zod/v4';
+import { InspectNetworksItem } from '../../contracts/ContainerClient';
 
-export type PodmanInspectNetworkRecord = {
-    id?: string; // Not in v3
-    driver?: string; // Not in v3
-    created?: string; // Not in v3
+export const PodmanInspectNetworkRecordSchema = z.object({
+    id: z.string().optional(), // Not in v3
+    driver: z.string().optional(), // Not in v3
+    created: z.string().optional(), // Not in v3
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    ipv6_enabled?: boolean; // Not in v3
-    internal?: boolean; // Not in v3
-    name: string;
-    labels?: Record<string, string>;
-};
+    ipv6_enabled: z.boolean().optional(), // Not in v3
+    internal: z.boolean().optional(), // Not in v3
+    name: z.string(),
+    labels: z.record(z.string(), z.string()).optional().nullable(),
+});
 
-export function isPodmanInspectNetworkRecord(maybeNetwork: unknown): maybeNetwork is PodmanInspectNetworkRecord {
-    const network = maybeNetwork as PodmanInspectNetworkRecord;
+type PodmanInspectNetworkRecord = z.infer<typeof PodmanInspectNetworkRecordSchema>;
 
-    if (!network || typeof network !== 'object') {
-        return false;
-    }
-
-    if (typeof network.name !== 'string') {
-        return false;
-    }
-
-    if (network.labels && typeof network.labels !== 'object') {
-        return false;
-    }
-
-    return true;
-}
-
-export function normalizePodmanInspectNetworkRecord(network: PodmanInspectNetworkRecord): InspectNetworksItem {
+export function normalizePodmanInspectNetworkRecord(network: PodmanInspectNetworkRecord, raw: string): InspectNetworksItem {
     return {
         name: network.name,
         id: network.id,
@@ -47,6 +32,6 @@ export function normalizePodmanInspectNetworkRecord(network: PodmanInspectNetwor
         attachable: undefined,
         ingress: undefined,
         ipam: undefined,
-        raw: JSON.stringify(network),
+        raw,
     };
 }

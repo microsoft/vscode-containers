@@ -5,19 +5,10 @@
 
 import type { FileType, ShellQuotedString } from 'vscode';
 import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from './CommandRunner';
+import { ContainerOS, EventAction, EventType } from './ZodEnums';
 
-export type ContainerOS = "linux" | "windows";
-
-export function isContainerOS(maybeContainerOS: unknown): maybeContainerOS is ContainerOS {
-    switch (maybeContainerOS) {
-        case 'linux':
-            return true;
-        case 'windows':
-            return true;
-        default:
-            return false;
-    }
-}
+// Reexport the nativized Zod enums, but not their Zod schemas
+export { ContainerOS, EventAction, EventType } from './ZodEnums';
 
 /**
  * Information about an image's name
@@ -46,13 +37,9 @@ export interface ImageNameInfo {
     readonly digest?: string;
 }
 
-export type Labels = {
-    [key: string]: string;
-};
+export type Labels = Record<string, string>;
 
-export type LabelFilters = {
-    [key: string]: string | boolean;
-};
+export type LabelFilters = Record<string, string | boolean>;
 
 // Client Identity Types
 
@@ -157,16 +144,6 @@ type InfoCommand = {
 };
 
 // Event Stream Command Types
-
-/**
- * Types of objects that can be listened for events to
- */
-export type EventType = 'container' | 'image' | 'network' | 'volume' | 'daemon' | 'plugin' | 'config' | 'secret' | 'service' | 'node' | 'task' | 'engine' | string;
-
-/**
- * Types of event actions that can be listened for. Many more beyond these exist.
- */
-export type EventAction = 'create' | 'destroy' | 'delete' | 'start' | 'stop' | 'restart' | 'pause' | 'update' | string;
 
 /**
  * Options for the Event Stream command
@@ -587,7 +564,7 @@ export type InspectImagesItem = {
     /**
      * The image architecture
      */
-    architecture?: "amd64" | "arm64";
+    architecture?: 'amd64' | 'arm64';
     /**
      * The image operating system
      */
@@ -732,7 +709,7 @@ export type RunContainerCommandOptions = CommonCommandOptions & {
     /**
      * Rule for pulling base images
      */
-    pull?: "always" | "missing" | "never";
+    pull?: 'always' | 'missing' | 'never';
     /**
      * Optional entrypoint for running the container
      */
@@ -1437,11 +1414,11 @@ export type ListNetworkItem = {
     /**
      * The ID of the network
      */
-    id: string | undefined;
+    id?: string;
     /**
      * The network driver
      */
-    driver: string | undefined;
+    driver?: string;
     /**
      * Labels assigned to the network
      */
@@ -1449,19 +1426,19 @@ export type ListNetworkItem = {
     /**
      * The network scope
      */
-    scope: string | undefined;
+    scope?: string;
     /**
      * True if IPv6 network
      */
-    ipv6: boolean | undefined;
+    ipv6?: boolean;
     /**
      * The date the network was created
      */
-    createdAt: Date | undefined;
+    createdAt?: Date;
     /**
      * True if internal network
      */
-    internal: boolean | undefined;
+    internal?: boolean;
 };
 
 type ListNetworksCommand = {
@@ -1548,11 +1525,11 @@ export type InspectNetworksItem = {
     /**
      * The ID of the network
      */
-    id: string | undefined;
+    id?: string;
     /**
      * The network driver
      */
-    driver: string | undefined;
+    driver?: string;
     /**
      * Labels assigned to the network
      */
@@ -1560,31 +1537,31 @@ export type InspectNetworksItem = {
     /**
      * The network scope
      */
-    scope: string | undefined;
+    scope?: string;
     /**
      * The IPAM config
      */
-    ipam: NetworkIpamConfig | undefined;
+    ipam?: NetworkIpamConfig;
     /**
      * True if IPv6 network
      */
-    ipv6: boolean | undefined;
+    ipv6?: boolean;
     /**
      * True if internal network
      */
-    internal: boolean | undefined;
+    internal?: boolean;
     /**
      * True if attachable
      */
-    attachable: boolean | undefined;
+    attachable?: boolean;
     /**
      * True if ingress
      */
-    ingress: boolean | undefined;
+    ingress?: boolean;
     /**
      * The date the network was created
      */
-    createdAt: Date | undefined;
+    createdAt?: Date;
     /**
      * The raw JSON from the inspect record
      */

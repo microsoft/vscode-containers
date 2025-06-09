@@ -88,17 +88,17 @@ import { dayjs } from '../../utils/dayjs';
 import { byteStreamToGenerator, stringStreamToGenerator } from '../../utils/streamToGenerator';
 import { toArray } from '../../utils/toArray';
 import { ConfigurableClient } from '../ConfigurableClient';
-import { DockerEventRecord, isDockerEventRecord } from './DockerEventRecord';
-import { isDockerInfoRecord } from './DockerInfoRecord';
-import { isDockerInspectContainerRecord, normalizeDockerInspectContainerRecord } from './DockerInspectContainerRecord';
-import { isDockerInspectImageRecord, normalizeDockerInspectImageRecord } from './DockerInspectImageRecord';
-import { isDockerInspectNetworkRecord, normalizeDockerInspectNetworkRecord } from './DockerInspectNetworkRecord';
-import { isDockerInspectVolumeRecord, normalizeDockerInspectVolumeRecord } from './DockerInspectVolumeRecord';
-import { isDockerListContainerRecord, normalizeDockerListContainerRecord } from './DockerListContainerRecord';
-import { isDockerListImageRecord, normalizeDockerListImageRecord } from "./DockerListImageRecord";
-import { isDockerListNetworkRecord, normalizeDockerListNetworkRecord } from './DockerListNetworkRecord';
-import { isDockerVersionRecord } from "./DockerVersionRecord";
-import { isDockerVolumeRecord } from './DockerVolumeRecord';
+import { DockerEventRecordSchema } from './DockerEventRecord';
+import { DockerInfoRecordSchema } from './DockerInfoRecord';
+import { DockerInspectContainerRecordSchema, normalizeDockerInspectContainerRecord } from './DockerInspectContainerRecord';
+import { DockerInspectImageRecordSchema, normalizeDockerInspectImageRecord } from './DockerInspectImageRecord';
+import { DockerInspectNetworkRecordSchema, normalizeDockerInspectNetworkRecord } from './DockerInspectNetworkRecord';
+import { DockerInspectVolumeRecordSchema, normalizeDockerInspectVolumeRecord } from './DockerInspectVolumeRecord';
+import { DockerListContainerRecordSchema, normalizeDockerListContainerRecord } from './DockerListContainerRecord';
+import { DockerListImageRecordSchema, normalizeDockerListImageRecord } from "./DockerListImageRecord";
+import { DockerListNetworkRecordSchema, normalizeDockerListNetworkRecord } from './DockerListNetworkRecord';
+import { DockerVersionRecordSchema } from './DockerVersionRecord';
+import { DockerVolumeRecordSchema } from './DockerVolumeRecord';
 import { parseDockerLikeLabels } from './parseDockerLikeLabels';
 import { parseListFilesCommandLinuxOutput, parseListFilesCommandWindowsOutput } from './parseListFilesCommandOutput';
 import { tryParseSize } from './tryParseSize';
@@ -149,11 +149,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
     }
 
     protected async parseInfoCommandOutput(output: string, strict: boolean): Promise<InfoItem> {
-        const info = JSON.parse(output);
-
-        if (!isDockerInfoRecord(info)) {
-            throw new Error('Invalid info JSON');
-        }
+        const info = DockerInfoRecordSchema.parse(JSON.parse(output));
 
         return {
             operatingSystem: info.OperatingSystem,
@@ -189,10 +185,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
      * @returns
      */
     protected async parseVersionCommandOutput(output: string, strict: boolean): Promise<VersionItem> {
-        const version = JSON.parse(output);
-        if (!isDockerVersionRecord(version)) {
-            throw new Error('Invalid version JSON');
-        }
+        const version = DockerVersionRecordSchema.parse(JSON.parse(output));
 
         return {
             client: version.Client.ApiVersion,
@@ -272,10 +265,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
 
             try {
                 // Parse a line at a time
-                const item: DockerEventRecord = JSON.parse(line);
-                if (!isDockerEventRecord(item)) {
-                    throw new Error('Invalid event JSON');
-                }
+                const item = DockerEventRecordSchema.parse(JSON.parse(line));
 
                 // Yield the parsed data
                 yield {
@@ -283,7 +273,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                     action: item.Action,
                     actor: { id: item.Actor.ID, attributes: item.Actor.Attributes },
                     timestamp: new Date(item.time),
-                    raw: JSON.stringify(line),
+                    raw: line,
                 };
             } catch (err) {
                 if (strict) {
@@ -423,14 +413,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                         return;
                     }
 
-                    const rawImage = JSON.parse(imageJson);
-
-                    // Validate that the image object matches the expected output
-                    // for the list images command
-                    if (!isDockerListImageRecord(rawImage)) {
-                        throw new Error('Invalid image JSON');
-                    }
-
+                    const rawImage = DockerListImageRecordSchema.parse(JSON.parse(imageJson));
                     images.push(normalizeDockerListImageRecord(rawImage));
                 } catch (err) {
                     if (strict) {
@@ -616,7 +599,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
      * Parse the standard output from a Docker-like inspect images command and
      * normalize the result
      * @param options Inspect images command options
-     * @param output The standard out from a Docker-like runtime inspect images command
+     * @param output The standard out from the inspect images command
      * @param strict Should strict parsing be enforced?
      * @returns Normalized array of InspectImagesItem records
      */
@@ -632,13 +615,8 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                 }
 
                 try {
-                    const inspect = JSON.parse(inspectString);
-
-                    if (!isDockerInspectImageRecord(inspect)) {
-                        throw new Error('Invalid image inspect json');
-                    }
-
-                    return [...images, normalizeDockerInspectImageRecord(inspect)];
+                    const inspect = DockerInspectImageRecordSchema.parse(JSON.parse(inspectString));
+                    return [...images, normalizeDockerInspectImageRecord(inspect, inspectString)];
                 } catch (err) {
                     if (strict) {
                         throw err;
@@ -794,12 +772,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                         return;
                     }
 
-                    const rawContainer = JSON.parse(containerJson);
-
-                    if (!isDockerListContainerRecord(rawContainer)) {
-                        throw new Error('Invalid container JSON');
-                    }
-
+                    const rawContainer = DockerListContainerRecordSchema.parse(JSON.parse(containerJson));
                     containers.push(normalizeDockerListContainerRecord(rawContainer, strict));
                 } catch (err) {
                     if (strict) {
@@ -1071,13 +1044,8 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                 }
 
                 try {
-                    const inspect = JSON.parse(inspectString);
-
-                    if (!isDockerInspectContainerRecord(inspect)) {
-                        throw new Error('Invalid container inspect json');
-                    }
-
-                    return [...containers, normalizeDockerInspectContainerRecord(inspect)];
+                    const inspect = DockerInspectContainerRecordSchema.parse(JSON.parse(inspectString));
+                    return [...containers, normalizeDockerInspectContainerRecord(inspect, inspectString)];
                 } catch (err) {
                     if (strict) {
                         throw err;
@@ -1155,11 +1123,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                         return;
                     }
 
-                    const rawVolume = JSON.parse(volumeJson);
-
-                    if (!isDockerVolumeRecord(rawVolume)) {
-                        throw new Error('Invalid volume JSON');
-                    }
+                    const rawVolume = DockerVolumeRecordSchema.parse(JSON.parse(volumeJson));
 
                     // Parse the labels assigned to the volumes and normalize to key value pairs
                     const labels = parseDockerLikeLabels(rawVolume.Labels);
@@ -1309,13 +1273,8 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                 }
 
                 try {
-                    const inspect = JSON.parse(inspectString);
-
-                    if (!isDockerInspectVolumeRecord(inspect)) {
-                        throw new Error('Invalid volume inspect json');
-                    }
-
-                    return [...volumes, normalizeDockerInspectVolumeRecord(inspect)];
+                    const inspect = DockerInspectVolumeRecordSchema.parse(JSON.parse(inspectString));
+                    return [...volumes, normalizeDockerInspectVolumeRecord(inspect, inspectString)];
                 } catch (err) {
                     if (strict) {
                         throw err;
@@ -1392,12 +1351,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                         return;
                     }
 
-                    const rawNetwork = JSON.parse(networkJson);
-
-                    if (!isDockerListNetworkRecord(rawNetwork)) {
-                        throw new Error('Invalid volume JSON');
-                    }
-
+                    const rawNetwork = DockerListNetworkRecordSchema.parse(JSON.parse(networkJson));
                     networks.push(normalizeDockerListNetworkRecord(rawNetwork));
                 } catch (err) {
                     if (strict) {
@@ -1512,13 +1466,8 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
                 }
 
                 try {
-                    const inspect = JSON.parse(inspectString);
-
-                    if (!isDockerInspectNetworkRecord(inspect)) {
-                        throw new Error('Invalid network inspect json');
-                    }
-
-                    return [...networks, normalizeDockerInspectNetworkRecord(inspect)];
+                    const inspect = DockerInspectNetworkRecordSchema.parse(JSON.parse(inspectString));
+                    return [...networks, normalizeDockerInspectNetworkRecord(inspect, inspectString)];
                 } catch (err) {
                     if (strict) {
                         throw err;

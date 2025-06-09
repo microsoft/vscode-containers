@@ -3,57 +3,22 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { InspectVolumesItem } from "../../contracts/ContainerClient";
+import { z } from 'zod/v4';
+import { InspectVolumesItem } from '../../contracts/ContainerClient';
 
-export type PodmanInspectVolumeRecord = {
-    Name: string;
-    Driver: string;
-    Mountpoint: string;
-    CreatedAt: string;
-    Labels?: Record<string, string>;
-    Scope: string;
-    Options?: Record<string, unknown>;
-};
+export const PodmanInspectVolumeRecordSchema = z.object({
+    Name: z.string(),
+    Driver: z.string(),
+    Mountpoint: z.string(),
+    CreatedAt: z.string(),
+    Labels: z.record(z.string(), z.string()).optional(),
+    Scope: z.string(),
+    Options: z.record(z.string(), z.unknown()).optional(),
+});
 
-export function isPodmanInspectVolumeRecord(maybeVolume: unknown): maybeVolume is PodmanInspectVolumeRecord {
-    const volume = maybeVolume as PodmanInspectVolumeRecord;
+type PodmanInspectVolumeRecord = z.infer<typeof PodmanInspectVolumeRecordSchema>;
 
-    if (!volume || typeof volume !== 'object') {
-        return false;
-    }
-
-    if (typeof volume.Name !== 'string') {
-        return false;
-    }
-
-    if (typeof volume.Driver !== 'string') {
-        return false;
-    }
-
-    if (typeof volume.Mountpoint !== 'string') {
-        return false;
-    }
-
-    if (typeof volume.CreatedAt !== 'string') {
-        return false;
-    }
-
-    if (volume.Labels && typeof volume.Labels !== 'object') {
-        return false;
-    }
-
-    if (typeof volume.Scope !== 'string') {
-        return false;
-    }
-
-    if (volume.Options && typeof volume.Options !== 'object') {
-        return false;
-    }
-
-    return true;
-}
-
-export function normalizePodmanInspectVolumeRecord(volume: PodmanInspectVolumeRecord): InspectVolumesItem {
+export function normalizePodmanInspectVolumeRecord(volume: PodmanInspectVolumeRecord, raw: string): InspectVolumesItem {
     return {
         name: volume.Name,
         driver: volume.Driver,
@@ -62,6 +27,6 @@ export function normalizePodmanInspectVolumeRecord(volume: PodmanInspectVolumeRe
         labels: volume.Labels || {},
         scope: volume.Scope,
         options: volume.Options || {},
-        raw: JSON.stringify(volume),
+        raw,
     };
 }

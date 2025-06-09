@@ -3,29 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type PodmanVersionRecord = {
-    Client: { APIVersion: string };
-    Server?: { APIVersion: string };
-};
+import { z } from 'zod/v4';
 
-export function isPodmanVersionRecord(maybeVersion: unknown): maybeVersion is PodmanVersionRecord {
-    const version = maybeVersion as PodmanVersionRecord;
-
-    if (typeof version !== 'object') {
-        return false;
-    }
-
-    if (typeof version.Client !== 'object') {
-        return false;
-    }
-
-    if (typeof version.Client.APIVersion !== 'string') {
-        return false;
-    }
-
-    if (typeof version.Server === 'object' && typeof version.Server.APIVersion !== 'string') {
-        return false;
-    }
-
-    return true;
-}
+export const PodmanVersionRecordSchema = z.object({
+    Client: z.object({
+        APIVersion: z.string(),
+    }),
+    Server: z.object({
+        APIVersion: z.string(),
+    }).optional(),
+});

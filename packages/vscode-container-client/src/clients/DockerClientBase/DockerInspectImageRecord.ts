@@ -3,115 +3,38 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { z } from 'zod/v4';
 import { ImageNameInfo, InspectImagesItem, PortBinding } from "../../contracts/ContainerClient";
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from "../../utils/parseDockerLikeImageName";
 import { toArray } from "../../utils/toArray";
 import { parseDockerLikeEnvironmentVariables } from "./parseDockerLikeEnvironmentVariables";
 
-export type DockerInspectImageConfig = {
-    Entrypoint?: Array<string> | string | null;
-    Cmd?: Array<string> | string | null;
-    Env?: Array<string>,
-    Labels?: Record<string, string> | null,
-    ExposedPorts?: Record<string, unknown> | null;
-    Volumes?: Record<string, unknown> | null;
-    WorkingDir?: string | null;
-    User?: string | null;
-};
+const DockerInspectImageConfigSchema = z.object({
+    Entrypoint: z.union([z.array(z.string()), z.string(), z.null()]).optional(),
+    Cmd: z.union([z.array(z.string()), z.string(), z.null()]).optional(),
+    Env: z.array(z.string()).optional(),
+    Labels: z.record(z.string(), z.string()).nullable().optional(),
+    ExposedPorts: z.record(z.string(), z.unknown()).nullable().optional(),
+    Volumes: z.record(z.string(), z.unknown()).nullable().optional(),
+    WorkingDir: z.string().nullable().optional(),
+    User: z.string().nullable().optional(),
+});
 
-export type DockerInspectImageRecord = {
-    Id: string;
-    RepoTags: Array<string>;
-    Config: DockerInspectImageConfig,
-    RepoDigests: Array<string>;
-    Architecture: string;
-    Os: string;
-    Created: string;
-    User?: string;
-};
+export const DockerInspectImageRecordSchema = z.object({
+    Id: z.string(),
+    RepoTags: z.array(z.string()),
+    Config: DockerInspectImageConfigSchema,
+    RepoDigests: z.array(z.string()),
+    Architecture: z.string(),
+    Os: z.string(),
+    Created: z.string(),
+    User: z.string().optional(),
+});
 
-function isDockerInspectImageConfig(maybeImageConfig: unknown): maybeImageConfig is DockerInspectImageConfig {
-    const imageConfig = maybeImageConfig as DockerInspectImageConfig;
+type DockerInspectImageRecord = z.infer<typeof DockerInspectImageRecordSchema>;
 
-    if (!imageConfig || typeof imageConfig !== 'object') {
-        return false;
-    }
-
-    if (imageConfig.Env && !Array.isArray(imageConfig.Env)) {
-        return false;
-    }
-
-    if (imageConfig.Labels && typeof imageConfig.Labels !== 'object') {
-        return false;
-    }
-
-    if (imageConfig.ExposedPorts && typeof imageConfig.ExposedPorts !== 'object') {
-        return false;
-    }
-
-    if (imageConfig.Volumes && typeof imageConfig.Volumes !== 'object') {
-        return false;
-    }
-
-    if (imageConfig.WorkingDir && typeof imageConfig.WorkingDir !== 'string') {
-        return false;
-    }
-
-    if (imageConfig.User && typeof imageConfig.User !== 'string') {
-        return false;
-    }
-
-    if (imageConfig.Entrypoint && !Array.isArray(imageConfig.Entrypoint) && typeof imageConfig.Entrypoint !== 'string') {
-        return false;
-    }
-
-    if (imageConfig.Cmd && !Array.isArray(imageConfig.Cmd) && typeof imageConfig.Cmd !== 'string') {
-        return false;
-    }
-
-    return true;
-}
-
-export function isDockerInspectImageRecord(maybeImage: unknown): maybeImage is DockerInspectImageRecord {
-    const image = maybeImage as DockerInspectImageRecord;
-
-    if (!image || typeof image !== 'object') {
-        return false;
-    }
-
-    if (typeof image.Id !== 'string') {
-        return false;
-    }
-
-    if (!Array.isArray(image.RepoTags)) {
-        return false;
-    }
-
-    if (!isDockerInspectImageConfig(image.Config)) {
-        return false;
-    }
-
-    if (!Array.isArray(image.RepoDigests)) {
-        return false;
-    }
-
-    if (typeof image.Architecture !== 'string') {
-        return false;
-    }
-
-    if (typeof image.Os !== 'string') {
-        return false;
-    }
-
-    if (typeof image.Created !== 'string') {
-        return false;
-    }
-
-    return true;
-}
-
-export function normalizeDockerInspectImageRecord(image: DockerInspectImageRecord): InspectImagesItem {
+export function normalizeDockerInspectImageRecord(image: DockerInspectImageRecord, raw: string): InspectImagesItem {
     // This is effectively doing firstOrDefault on the RepoTags for the image. If there are any values
     // in RepoTags, the first one will be parsed and returned as the tag name for the image.
     const imageNameInfo: ImageNameInfo = parseDockerLikeImageName(image.RepoTags?.[0]);
@@ -166,6 +89,6 @@ export function normalizeDockerInspectImageRecord(image: DockerInspectImageRecor
         operatingSystem: os,
         createdAt: dayjs(image.Created).toDate(),
         user: image.Config?.User || undefined,
-        raw: JSON.stringify(image),
+        raw,
     };
 }

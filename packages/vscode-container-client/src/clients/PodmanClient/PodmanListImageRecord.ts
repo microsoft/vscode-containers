@@ -3,36 +3,14 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type PodmanListImageRecord = {
-    Id: string;
-    Names?: Array<string>;
-    Size: number;
-    Labels?: Record<string, string>;
-    Created: number;
-};
+import { z } from 'zod/v4';
 
-export function isPodmanListImageRecord(maybeImage: unknown): maybeImage is PodmanListImageRecord {
-    const image = maybeImage as PodmanListImageRecord;
+export const PodmanListImageRecordSchema = z.object({
+    Id: z.string(),
+    Names: z.array(z.string()).optional(),
+    Size: z.number(),
+    Labels: z.record(z.string(), z.string()).optional().nullable(),
+    Created: z.number(),
+});
 
-    if (!image || typeof image !== 'object') {
-        return false;
-    }
-
-    if (typeof image.Id !== 'string') {
-        return false;
-    }
-
-    if (typeof image.Size !== 'number') {
-        return false;
-    }
-
-    if (!!image.Names && !Array.isArray(image.Names)) {
-        return false;
-    }
-
-    if (typeof image.Created !== 'number') {
-        return false;
-    }
-
-    return true;
-}
+export type PodmanListImageRecord = z.infer<typeof PodmanListImageRecordSchema>;

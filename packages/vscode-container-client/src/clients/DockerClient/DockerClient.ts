@@ -9,8 +9,8 @@ import { asIds } from "../../utils/asIds";
 import { CommandLineArgs, composeArgs, withArg } from "../../utils/commandLineBuilder";
 import { DockerClientBase } from "../DockerClientBase/DockerClientBase";
 import { withDockerJsonFormatArg } from "../DockerClientBase/withDockerJsonFormatArg";
-import { isDockerContextRecord } from "./DockerContextRecord";
-import { isDockerInspectContextRecord } from "./DockerInspectContextRecord";
+import { DockerContextRecordSchema } from "./DockerContextRecord";
+import { DockerInspectContextRecordSchema } from "./DockerInspectContextRecord";
 
 export class DockerClient extends DockerClientBase implements IContainersClient {
     /**
@@ -67,13 +67,7 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
                         return;
                     }
 
-                    const rawContext = JSON.parse(contextJson);
-
-                    // Validate that the image object matches the expected output
-                    // for the list contexts command
-                    if (!isDockerContextRecord(rawContext)) {
-                        throw new Error('Invalid context JSON');
-                    }
+                    const rawContext = DockerContextRecordSchema.parse(JSON.parse(contextJson));
 
                     contexts.push({
                         name: rawContext.Name,
@@ -172,11 +166,7 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
                 }
 
                 try {
-                    const inspect = JSON.parse(inspectString);
-
-                    if (!isDockerInspectContextRecord(inspect)) {
-                        throw new Error('Invalid context inspect json');
-                    }
+                    const inspect = DockerInspectContextRecordSchema.parse(JSON.parse(inspectString));
 
                     // Return the normalized InspectVolumesItem record
                     const volume: InspectContextsItem = {

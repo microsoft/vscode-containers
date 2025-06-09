@@ -3,65 +3,26 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { z } from 'zod/v4';
 import { ListContainersItem, PortBinding } from "../../contracts/ContainerClient";
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from "../../utils/parseDockerLikeImageName";
 import { parseDockerLikeLabels } from "./parseDockerLikeLabels";
 import { parseDockerRawPortString } from "./parseDockerRawPortString";
 
-export type DockerListContainerRecord = {
-    ID: string;
-    Names: string;
-    Image: string;
-    Ports: string;
-    Networks: string;
-    Labels: string;
-    CreatedAt: string;
-    State?: string;
-    Status: string;
-};
+export const DockerListContainerRecordSchema = z.object({
+    ID: z.string(),
+    Names: z.string(),
+    Image: z.string(),
+    Ports: z.string(),
+    Networks: z.string(),
+    Labels: z.string(),
+    CreatedAt: z.string(),
+    State: z.string().optional(),
+    Status: z.string(),
+});
 
-export function isDockerListContainerRecord(maybeContainer: unknown): maybeContainer is DockerListContainerRecord {
-    const container = maybeContainer as DockerListContainerRecord;
-
-    if (!container || typeof container !== 'object') {
-        return false;
-    }
-
-    if (typeof container.ID !== 'string') {
-        return false;
-    }
-
-    if (typeof container.Names !== 'string') {
-        return false;
-    }
-
-    if (typeof container.Image !== 'string') {
-        return false;
-    }
-
-    if (typeof container.Ports !== 'string') {
-        return false;
-    }
-
-    if (typeof container.Networks !== 'string') {
-        return false;
-    }
-
-    if (typeof container.Labels !== 'string') {
-        return false;
-    }
-
-    if (typeof container.CreatedAt !== 'string') {
-        return false;
-    }
-
-    if (typeof container.Status !== 'string') {
-        return false;
-    }
-
-    return true;
-}
+type DockerListContainerRecord = z.infer<typeof DockerListContainerRecordSchema>;
 
 export function normalizeDockerListContainerRecord(container: DockerListContainerRecord, strict: boolean): ListContainersItem {
     const labels = parseDockerLikeLabels(container.Labels);

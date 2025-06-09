@@ -3,25 +3,23 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { z } from 'zod/v4';
 import { InspectVolumesItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 
-export type DockerInspectVolumeRecord = {
-    Name: string;
-    Driver: string;
-    Mountpoint: string;
-    Scope: string;
-    Labels: Record<string, string>;
-    Options: Record<string, unknown>;
-    CreatedAt: string;
-};
+export const DockerInspectVolumeRecordSchema = z.object({
+    Name: z.string(),
+    Driver: z.string(),
+    Mountpoint: z.string(),
+    Scope: z.string(),
+    Labels: z.record(z.string(), z.string()).nullish(),
+    Options: z.record(z.string(), z.unknown()).nullish(),
+    CreatedAt: z.string(),
+});
 
-// TODO: Actually test properties
-export function isDockerInspectVolumeRecord(maybeVolume: unknown): maybeVolume is DockerInspectVolumeRecord {
-    return true;
-}
+type DockerInspectVolumeRecord = z.infer<typeof DockerInspectVolumeRecordSchema>;
 
-export function normalizeDockerInspectVolumeRecord(volume: DockerInspectVolumeRecord): InspectVolumesItem {
+export function normalizeDockerInspectVolumeRecord(volume: DockerInspectVolumeRecord, raw: string): InspectVolumesItem {
     const createdAt = dayjs.utc(volume.CreatedAt);
 
     // Return the normalized InspectVolumesItem record
@@ -30,9 +28,9 @@ export function normalizeDockerInspectVolumeRecord(volume: DockerInspectVolumeRe
         driver: volume.Driver,
         mountpoint: volume.Mountpoint,
         scope: volume.Scope,
-        labels: volume.Labels,
-        options: volume.Options,
+        labels: volume.Labels || {},
+        options: volume.Options || {},
         createdAt: createdAt.toDate(),
-        raw: JSON.stringify(volume),
+        raw,
     };
 }

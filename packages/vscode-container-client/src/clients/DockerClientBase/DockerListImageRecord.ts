@@ -3,48 +3,21 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { z } from 'zod/v4';
 import { ListImagesItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { tryParseSize } from './tryParseSize';
 
-export type DockerListImageRecord = {
-    ID: string;
-    Repository: string;
-    Tag: string;
-    CreatedAt: string;
-    Size: string | number;
-};
+export const DockerListImageRecordSchema = z.object({
+    ID: z.string(),
+    Repository: z.string(),
+    Tag: z.string(),
+    CreatedAt: z.string(),
+    Size: z.union([z.string(), z.number()]),
+});
 
-export function isDockerListImageRecord(maybeImage: unknown): maybeImage is DockerListImageRecord {
-    const image = maybeImage as DockerListImageRecord;
-
-    if (!image || typeof image !== 'object') {
-        return false;
-    }
-
-    if (typeof image.ID !== 'string') {
-        return false;
-    }
-
-    if (typeof image.Repository !== 'string') {
-        return false;
-    }
-
-    if (typeof image.Tag !== 'string') {
-        return false;
-    }
-
-    if (typeof image.CreatedAt !== 'string') {
-        return false;
-    }
-
-    if (typeof image.Size !== 'string' && typeof image.Size !== 'number') {
-        return false;
-    }
-
-    return true;
-}
+type DockerListImageRecord = z.infer<typeof DockerListImageRecordSchema>;
 
 export function normalizeDockerListImageRecord(image: DockerListImageRecord): ListImagesItem {
     const createdAt = dayjs.utc(image.CreatedAt).toDate();

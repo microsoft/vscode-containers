@@ -3,87 +3,86 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { z } from 'zod/v4';
 import { InspectContainersItem, InspectContainersItemMount, InspectContainersItemNetwork, PortBinding } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { toArray } from '../../utils/toArray';
 import { parseDockerLikeEnvironmentVariables } from '../DockerClientBase/parseDockerLikeEnvironmentVariables';
 
-export type PodmanInspectContainerPortHost = {
-    HostIp?: string;
-    HostPort?: number;
-};
+const PodmanInspectContainerPortHostSchema = z.object({
+    HostIp: z.string().optional(),
+    HostPort: z.number().optional(),
+});
 
-export type PodmanInspectContainerBindMount = {
-    Type: 'bind';
-    Source: string;
-    Destination: string;
-    RW: boolean;
-};
+const PodmanInspectContainerBindMountSchema = z.object({
+    Type: z.literal('bind'),
+    Source: z.string(),
+    Destination: z.string(),
+    RW: z.boolean(),
+});
 
-export type PodmanInspectContainerVolumeMount = {
-    Type: 'volume';
-    Name: string;
-    Source: string;
-    Destination: string;
-    Driver: string;
-    RW: boolean;
-};
+const PodmanInspectContainerVolumeMountSchema = z.object({
+    Type: z.literal('volume'),
+    Name: z.string(),
+    Source: z.string(),
+    Destination: z.string(),
+    Driver: z.string(),
+    RW: z.boolean(),
+});
 
-export type PodmanInspectContainerMount =
-    | PodmanInspectContainerBindMount
-    | PodmanInspectContainerVolumeMount;
+const PodmanInspectContainerMountSchema = z.union([
+    PodmanInspectContainerBindMountSchema,
+    PodmanInspectContainerVolumeMountSchema,
+]);
 
-export type PodmanInspectNetwork = {
-    Gateway: string;
-    IPAddress: string;
-    MacAddress: string;
-};
+const PodmanInspectNetworkSchema = z.object({
+    Gateway: z.string(),
+    IPAddress: z.string(),
+    MacAddress: z.string(),
+});
 
-export type PodmanInspectContainerConfig = {
-    Image: string;
-    Entrypoint: Array<string> | string | null;
-    Cmd: Array<string> | string | null;
-    Env?: Array<string> | null;
-    Labels?: Record<string, string> | null;
-    WorkingDir?: string | null;
-};
+const PodmanInspectContainerConfigSchema = z.object({
+    Image: z.string(),
+    Entrypoint: z.union([z.array(z.string()), z.string(), z.null()]),
+    Cmd: z.union([z.array(z.string()), z.string(), z.null()]),
+    Env: z.array(z.string()).nullable().optional(),
+    Labels: z.record(z.string(), z.string()).nullable().optional(),
+    WorkingDir: z.string().nullable().optional(),
+});
 
-export type PodmanInspectContainerHostConfig = {
-    PublishAllPorts?: boolean | null;
-    Isolation?: string;
-};
+const PodmanInspectContainerHostConfigSchema = z.object({
+    PublishAllPorts: z.boolean().nullable().optional(),
+    Isolation: z.string().optional(),
+});
 
-export type PodmanInspectContainerNetworkSettings = {
-    Networks?: Record<string, PodmanInspectNetwork> | null;
-    IPAddress?: string;
-    Ports?: Record<string, Array<PodmanInspectContainerPortHost>> | null;
-};
+const PodmanInspectContainerNetworkSettingsSchema = z.object({
+    Networks: z.record(z.string(), PodmanInspectNetworkSchema).nullable().optional(),
+    IPAddress: z.string().optional(),
+    Ports: z.record(z.string(), z.array(PodmanInspectContainerPortHostSchema)).nullable().optional(),
+});
 
-export type PodmanInspectContainerState = {
-    Status?: string;
-    StartedAt?: string;
-    FinishedAt?: string;
-};
+const PodmanInspectContainerStateSchema = z.object({
+    Status: z.string().optional(),
+    StartedAt: z.string().optional(),
+    FinishedAt: z.string().optional(),
+});
 
-export type PodmanInspectContainerRecord = {
-    Id: string;
-    Name: string;
-    Image: string;
-    Created: string;
-    Mounts: Array<PodmanInspectContainerMount>;
-    State: PodmanInspectContainerState;
-    Config: PodmanInspectContainerConfig;
-    HostConfig: PodmanInspectContainerHostConfig;
-    NetworkSettings: PodmanInspectContainerNetworkSettings;
-};
+export const PodmanInspectContainerRecordSchema = z.object({
+    Id: z.string(),
+    Name: z.string(),
+    Image: z.string(),
+    Created: z.string(),
+    Mounts: z.array(PodmanInspectContainerMountSchema),
+    State: PodmanInspectContainerStateSchema,
+    Config: PodmanInspectContainerConfigSchema,
+    HostConfig: PodmanInspectContainerHostConfigSchema,
+    NetworkSettings: PodmanInspectContainerNetworkSettingsSchema,
+});
 
-// TODO: Actually test properties
-export function isPodmanInspectContainerRecord(maybeContainer: unknown): maybeContainer is PodmanInspectContainerRecord {
-    return true;
-}
+type PodmanInspectContainerRecord = z.infer<typeof PodmanInspectContainerRecordSchema>;
 
-export function normalizePodmanInspectContainerRecord(container: PodmanInspectContainerRecord): InspectContainersItem {
+export function normalizePodmanInspectContainerRecord(container: PodmanInspectContainerRecord, raw: string): InspectContainersItem {
     // Parse the environment variables assigned to the container at runtime
     const environmentVariables = parseDockerLikeEnvironmentVariables(container.Config?.Env || []);
 
@@ -170,6 +169,6 @@ export function normalizePodmanInspectContainerRecord(container: PodmanInspectCo
         finishedAt: finishedAt && (finishedAt.isSame(createdAt) || finishedAt.isAfter(createdAt))
             ? finishedAt.toDate()
             : undefined,
-        raw: JSON.stringify(container),
+        raw,
     };
 }

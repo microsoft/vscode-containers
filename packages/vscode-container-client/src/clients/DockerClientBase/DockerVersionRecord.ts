@@ -3,21 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type DockerVersionRecord = {
-    Client: { ApiVersion: string };
-    Server: { ApiVersion: string };
-};
+import { z } from 'zod/v4';
 
-export function isDockerVersionRecord(maybeVersion: unknown): maybeVersion is DockerVersionRecord {
-    const version = maybeVersion as DockerVersionRecord;
-
-    if (typeof version?.Client?.ApiVersion !== 'string') {
-        return false;
-    }
-
-    if (typeof version?.Server?.ApiVersion !== 'string') {
-        return false;
-    }
-
-    return true;
-}
+export const DockerVersionRecordSchema = z.object({
+    Client: z.object({
+        ApiVersion: z.string(),
+    }),
+    Server: z.object({
+        ApiVersion: z.string(),
+    }),
+});
