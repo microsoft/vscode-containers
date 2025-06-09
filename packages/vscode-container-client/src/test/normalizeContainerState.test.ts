@@ -7,7 +7,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { normalizeContainerState } from '../clients/DockerClientBase/DockerListContainerRecord';
 
-describe('normalizeContainerState', () => {
+describe('(unit) normalizeContainerState', () => {
 
     it('Should use the state if it is present', () => {
         expect(normalizeContainerState({ State: 'running', Status: 'Ignore' })).to.equal('running');

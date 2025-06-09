@@ -869,7 +869,7 @@ export type StopContainersCommandOptions = CommonCommandOptions & {
      */
     container: Array<string>;
     /**
-     * Time to wait for graceful exit before halting the container
+     * Time (in seconds) to wait for graceful exit before halting the container
      */
     time?: number;
 };
@@ -906,6 +906,10 @@ export type RestartContainersCommandOptions = CommonCommandOptions & {
      * Containers to restart
      */
     container: Array<string>;
+    /**
+     * Time (in seconds) to wait for graceful exit before halting the container
+     */
+    time?: number;
 };
 
 type RestartContainersCommand = {

@@ -6,7 +6,7 @@
 import { expect } from 'chai';
 import { parseDockerLikeImageName } from '../utils/parseDockerLikeImageName';
 
-describe('parseDockerLikeImageName', () => {
+describe('(unit) parseDockerLikeImageName', () => {
     describe('Should parse valid image names', () => {
         it('Should parse those without a registry or tag', () => {
             expect(parseDockerLikeImageName('alpine')).to.deep.equal({

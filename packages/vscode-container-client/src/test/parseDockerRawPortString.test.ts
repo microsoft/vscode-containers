@@ -6,7 +6,7 @@
 import { expect } from 'chai';
 import { parseDockerRawPortString } from '../clients/DockerClientBase/parseDockerRawPortString';
 
-describe('parseDockerRawPortString', () => {
+describe('(unit) parseDockerRawPortString', () => {
     it('Should parse short-form ports', () => {
         const result = parseDockerRawPortString('1234/udp');
 

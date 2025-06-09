@@ -15,7 +15,7 @@ import { BuildImageCommandOptions, RunContainerCommandOptions } from '../contrac
 import { escaped } from '../utils/commandLineBuilder';
 import { Bash, Powershell } from '../utils/spawnStreamAsync';
 
-describe('DockerClient', () => {
+describe('(unit) DockerClient', () => {
     const client = new DockerClient();
 
     describe('#listImagesAsync()', () => {

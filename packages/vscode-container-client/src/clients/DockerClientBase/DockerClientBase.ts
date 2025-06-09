@@ -831,6 +831,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
     protected getRestartContainersCommandArgs(options: RestartContainersCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('container', 'restart'),
+            withNamedArg('--time', typeof options.time === 'number' ? options.time.toString() : undefined),
             withArg(...toArray(options.container)),
         )();
     }

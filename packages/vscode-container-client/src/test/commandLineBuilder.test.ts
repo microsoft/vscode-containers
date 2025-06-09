@@ -15,7 +15,7 @@ import {
     withArg,
 } from '../utils/commandLineBuilder';
 
-describe('commandLineBuilder', () => {
+describe('(unit) commandLineBuilder', () => {
     describe('#withArg()', () => {
         it('creates arg list if no initial args provided', () => {
             const arg = crypto.randomBytes(crypto.randomInt(20, 101)).toString('utf8');

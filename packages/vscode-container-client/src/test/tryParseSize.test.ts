@@ -10,7 +10,7 @@ const KB = 1024;
 const MB = KB * 1024;
 const GB = MB * 1024;
 
-describe('tryParseSize tests', () => {
+describe('(unit) tryParseSize tests', () => {
     it('Should parse falsy values correctly', () => {
         expect(tryParseSize(null)).to.be.undefined;
         expect(tryParseSize(undefined)).to.be.undefined;

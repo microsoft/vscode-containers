@@ -24,7 +24,7 @@ const commonOptions: CommonOrchestratorCommandOptions = {
     files: ['docker-compose.yml'],
 };
 
-xdescribe('DockerComposeClient', () => {
+xdescribe('(integration) DockerComposeClient', () => {
     const client = new DockerComposeClient();
     const cwd = 'TODO';
     const runnerFactory = new ShellStreamCommandRunnerFactory({
@@ -104,7 +104,7 @@ xdescribe('DockerComposeClient', () => {
     });
 });
 
-describe('DockerComposeClient (unit)', () => {
+describe('(unit) DockerComposeClient', () => {
     const client = new DockerComposeClient();
     client.composeV2 = false;
 
