@@ -120,9 +120,7 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
                     }),
                 );
 
-                const atime = new Date(fileStats?.atime ?? Date.now());
-                const mtime = new Date(fileStats?.mtime ?? Date.now());
-                const ctime = new Date(fileStats?.ctime ?? Date.now());
+                const nowDate = new Date(Date.now());
                 const mode = fileStats?.mode;
                 const gid = fileStats?.gid;
                 const uid = fileStats?.uid;
@@ -134,7 +132,7 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
                         operatingSystem: containerOS,
                     }),
                     {
-                        stdInPipe: tarPackStream(Buffer.from(content), path.basename(uri.path), atime, mtime, ctime, mode, gid, uid),
+                        stdInPipe: tarPackStream(Buffer.from(content), path.basename(uri.path), nowDate, nowDate, nowDate, mode, gid, uid),
                     },
                 );
             });
