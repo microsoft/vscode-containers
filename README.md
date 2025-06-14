@@ -21,11 +21,11 @@ To install the extension, open the Extensions view, search for `container tools`
 
 ### Editing Docker files
 
-You can get IntelliSense when editing your `Dockerfile` and `docker-compose.yml` files, with completions and syntax help for common commands.
+You can get IntelliSense when editing your `Dockerfile` and `compose.yaml` files, with completions and syntax help for common commands.
 
 ![IntelliSense for Dockerfiles](resources/readme/dockerfile-intellisense.png)
 
-In addition, you can use the Problems panel (<kbd>Ctrl+Shift+M</kbd> on Windows/Linux, <kbd>Shift+Command+M</kbd> on Mac) to view common errors for `Dockerfile` and `docker-compose.yml` files.
+In addition, you can use the Problems panel (<kbd>Ctrl+Shift+M</kbd> on Windows/Linux, <kbd>Shift+Command+M</kbd> on Mac) to view common errors for `Dockerfile` and `compose.yaml` files.
 
 ### Generating Docker files
 
@@ -56,7 +56,7 @@ You can run container commands to manage [images](https://docs.docker.com/engine
 
 ### Docker Compose
 
-[Docker Compose](https://docs.docker.com/compose/) lets you define and run multi-container applications. Our [Compose Language Service](https://github.com/microsoft/compose-language-service) in the Container Tools extension gives you IntelliSense and tab completions when authoring `docker-compose.yml` files. Press `Ctrl+Space` to see a list of valid Compose directives.
+[Docker Compose](https://docs.docker.com/compose/) lets you define and run multi-container applications. Our [Compose Language Service](https://github.com/microsoft/compose-language-service) in the Container Tools extension gives you IntelliSense and tab completions when authoring `compose.yaml` files. Press `Ctrl+Space` to see a list of valid Compose directives.
 
  ![Compose IntelliSense](resources/readme/tab-completions.gif)
 

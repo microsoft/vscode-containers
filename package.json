@@ -1475,7 +1475,7 @@
                                 "build": true
                             },
                             "files": [
-                                "${workspaceFolder}/docker-compose.yml"
+                                "${workspaceFolder}/compose.yaml"
                             ]
                         }
                     },
@@ -2884,8 +2884,10 @@
                 "title": "%vscode-containers.walkthrough.containersStart.title%",
                 "featuredFor": [
                     "Dockerfile",
+                    "compose.yaml",
                     "docker-compose.yml",
-                    "docker-compose.yaml"
+                    "docker-compose.yaml",
+                    "compose.yml"
                 ],
                 "description": "%vscode-containers.walkthrough.containersStart.description%",
                 "steps": [
