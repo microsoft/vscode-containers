@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
 import { IActionContext } from '@microsoft/vscode-azext-utils';
+import * as vscode from 'vscode';
 import { Platform } from '../../utils/platform';
 
-export type ScaffoldedFileType = '.dockerignore' | 'Dockerfile' | 'docker-compose.yml' | 'docker-compose.debug.yml' | 'requirements.txt';
+export type ScaffoldedFileType = '.dockerignore' | 'Dockerfile' | 'compose.yaml' | 'compose.debug.yaml' | 'requirements.txt';
 
 export interface ScaffoldingWizardContext extends IActionContext {
     // These are set at the beginning

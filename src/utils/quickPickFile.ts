@@ -117,7 +117,7 @@ export async function quickPickDockerComposeFileItem(context: IActionContext, ro
         if (composeFiles) {
             if ((composeFiles.length === 1 && isDefaultDockerComposeFile(composeFiles[0].label))
                 || (composeFiles.length === 2 && composeFiles.some(i => isDefaultDockerComposeFile(i.label)) && composeFiles.some(i => isDefaultDockerComposeOverrideFile(i.label)))) {
-                // if the current set of docker files contain only docker-compose.yml or docker-compose.yml with override file,
+                // if the current set of docker files contain only compose.yaml or compose.yaml with override file,
                 // don't ask user for a docker file and let docker-compose automatically pick these files.
                 return undefined;
             } else {
@@ -136,7 +136,7 @@ export async function quickPickDockerComposeFileItem(context: IActionContext, ro
 function isDefaultDockerComposeFile(fileName: string): boolean {
     if (fileName) {
         const lowerCasefileName: string = fileName.toLowerCase();
-        return lowerCasefileName === 'docker-compose.yml' || lowerCasefileName === 'docker-compose.yaml';
+        return lowerCasefileName === 'compose.yaml' || lowerCasefileName === 'docker-compose.yml' || lowerCasefileName === 'docker-compose.yaml' || lowerCasefileName === 'compose.yml';
     }
 
     return false;
@@ -145,7 +145,7 @@ function isDefaultDockerComposeFile(fileName: string): boolean {
 function isDefaultDockerComposeOverrideFile(fileName: string): boolean {
     if (fileName) {
         const lowerCasefileName: string = fileName.toLowerCase();
-        return lowerCasefileName === 'docker-compose.override.yml' || lowerCasefileName === 'docker-compose.override.yaml';
+        return lowerCasefileName === 'compose.override.yaml' || lowerCasefileName === 'docker-compose.override.yml' || lowerCasefileName === 'docker-compose.override.yaml' || lowerCasefileName === 'compose.override.yml';
     }
 
     return false;
