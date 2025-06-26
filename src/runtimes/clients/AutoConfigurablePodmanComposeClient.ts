@@ -12,6 +12,9 @@ import { AsyncLazy } from '../../utils/lazy';
 import { AutoConfigurableClient } from './AutoConfigurableClient';
 import { ComposeConfig } from './AutoConfigurableDockerComposeClient';
 
+/**
+ * IMPORTANT NOTE: This class is largely identical to {@link AutoConfigurableDockerComposeClient}, and the two should be kept in sync.
+ */
 export class AutoConfigurablePodmanComposeClient extends PodmanComposeClient implements AutoConfigurableClient {
     private readonly composeConfigLazy = new AsyncLazy<ComposeConfig>(() => this.detectComposeConfig());
 

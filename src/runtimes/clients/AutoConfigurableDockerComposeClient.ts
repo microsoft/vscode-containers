@@ -16,6 +16,9 @@ export interface ComposeConfig {
     composeV2: boolean;
 }
 
+/**
+ * IMPORTANT NOTE: This class is largely identical to {@link AutoConfigurablePodmanComposeClient}, and the two should be kept in sync.
+ */
 export class AutoConfigurableDockerComposeClient extends DockerComposeClient implements AutoConfigurableClient {
     private readonly composeConfigLazy = new AsyncLazy<ComposeConfig>(() => this.detectComposeConfig());
 
