@@ -15,7 +15,6 @@ import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from
 import { WslShellCommandRunnerFactory, WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
 import { IContainersClient, ListContainersItem, ListImagesItem, ListNetworkItem, ListVolumeItem, StatPathItem } from '../contracts/ContainerClient';
 import { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
-import { isCommandNotSupportedError } from '../utils/CommandNotSupportedError';
 import { Bash } from '../utils/spawnStreamAsync';
 import { wslifyPath } from '../utils/wslifyPath';
 
@@ -459,17 +458,14 @@ describe('(integration) ContainersClientE2E', function () {
         });
 
         it('StatsContainersCommand', async function () {
-            // Not implemented, so expect it to throw
-            try {
-                await defaultRunner.getCommandRunner()(
-                    client.statsContainers({ containers: [testContainerId] })
-                );
-            } catch (error) {
-                expect(isCommandNotSupportedError(error)).to.be.true;
-                return;
-            }
+            // Since we can't actually run stats (it runs forever), we'll just verify the command generation
+            const command = await client.statsContainers({ all: true });
+            expect(command).to.be.ok;
+            expect(command.command).to.be.a('string');
+            expect(command.args).to.be.an('array');
 
-            expect.fail('Expected error not thrown');
+            // We expect `container stats --all`
+            expect(getBashCommandLine(command)).to.equal(`${client.commandName} container stats --all`);
         });
 
         it('RemoveContainersCommand', async function () {

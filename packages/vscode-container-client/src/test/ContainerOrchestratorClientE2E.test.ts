@@ -27,9 +27,10 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
     let containerClient: DockerClient;
     let defaultRunner: ICommandRunnerFactory;
     let defaultRunnerFactory: (options: ShellStreamCommandRunnerOptions) => ICommandRunnerFactory;
-    let composeFilePath: string;
     let composeDir: string;
-    let composeProfileFilePath: string;
+    let composeFilePath: string;
+    let composeWithLogsFilePath: string;
+    let composeWithProfilesFilePath: string;
 
     this.timeout(10000); // Set a longer timeout for integration tests
 
@@ -45,20 +46,23 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
 
         defaultRunner = defaultRunnerFactory({ strict: true, });
 
-        // Set up paths for test docker-compose file
+        // Set up paths for test docker-compose files
         composeDir = path.resolve(__dirname, 'buildContext');
         composeFilePath = path.resolve(composeDir, 'docker-compose.yml');
-        composeProfileFilePath = path.resolve(composeDir, 'docker-compose.profiles.yml');
+        composeWithLogsFilePath = path.resolve(composeDir, 'docker-compose.logs.yml');
+        composeWithProfilesFilePath = path.resolve(composeDir, 'docker-compose.profiles.yml');
 
-        // Create the test docker-compose.yml file
+        // Create the test docker-compose.yml files
         await fs.mkdir(composeDir, { recursive: true });
         await fs.writeFile(composeFilePath, TestComposeFileContent);
-        await fs.writeFile(composeProfileFilePath, TestComposeFileContentWithProfiles);
+        await fs.writeFile(composeWithLogsFilePath, TestComposeWithLogsFileContent);
+        await fs.writeFile(composeWithProfilesFilePath, TestComposeWithProfilesFileContent);
 
         if (runInWsl) {
             composeDir = wslifyPath(composeDir);
             composeFilePath = wslifyPath(composeFilePath);
-            composeProfileFilePath = wslifyPath(composeProfileFilePath);
+            composeWithLogsFilePath = wslifyPath(composeWithLogsFilePath);
+            composeWithProfilesFilePath = wslifyPath(composeWithProfilesFilePath);
         }
     });
 
@@ -68,7 +72,8 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             await defaultRunner.getCommandRunner()(
                 client.down({
                     files: [composeFilePath],
-                    removeVolumes: true
+                    removeVolumes: true,
+                    timeoutSeconds: 1,
                 })
             );
         } catch (error) {
@@ -130,6 +135,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
                 client.down({
                     files: [composeFilePath],
                     removeVolumes: true,
+                    timeoutSeconds: 1,
                 })
             );
 
@@ -155,6 +161,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             await defaultRunner.getCommandRunner()(
                 client.stop({
                     files: [composeFilePath],
+                    timeoutSeconds: 1,
                 })
             );
         });
@@ -200,6 +207,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             await defaultRunner.getCommandRunner()(
                 client.stop({
                     files: [composeFilePath],
+                    timeoutSeconds: 1,
                 })
             );
 
@@ -236,6 +244,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             await defaultRunner.getCommandRunner()(
                 client.restart({
                     files: [composeFilePath],
+                    timeoutSeconds: 1,
                 })
             );
 
@@ -261,8 +270,18 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             // Ensure services are up before logs test
             await defaultRunner.getCommandRunner()(
                 client.up({
-                    files: [composeFilePath],
+                    files: [composeWithLogsFilePath],
                     detached: true,
+                })
+            );
+        });
+
+        after('Logs', async function () {
+            // Ensure services are down after logs test
+            await defaultRunner.getCommandRunner()(
+                client.down({
+                    files: [composeWithLogsFilePath],
+                    timeoutSeconds: 1,
                 })
             );
         });
@@ -271,7 +290,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             // Get logs without following
             const logsStream = defaultRunner.getStreamingCommandRunner()(
                 client.logs({
-                    files: [composeFilePath],
+                    files: [composeWithLogsFilePath],
                     follow: false,
                     tail: 10,
                 })
@@ -322,7 +341,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             // The test docker-compose.yml doesn't define profiles, but the command should still work
             const profiles = await defaultRunner.getCommandRunner()(
                 client.config({
-                    files: [composeFilePath, composeProfileFilePath],
+                    files: [composeFilePath, composeWithProfilesFilePath],
                     configType: 'profiles',
                 })
             );
@@ -354,16 +373,24 @@ services:
     image: alpine:latest
     volumes:
       - test-volume:/test-volume
+    tty: true # Will keep the container running
 
   backend:
     image: alpine:latest
-    entrypoint: ["echo", "Log entry for testing"]
+    entrypoint: ["tail", "-f", "/dev/null"] # Another way to keep the container running
 
 volumes:
   test-volume:
 `;
 
-const TestComposeFileContentWithProfiles = `
+const TestComposeWithLogsFileContent = `
+services:
+  serviceWithLogs:
+    image: alpine:latest
+    entrypoint: ["echo", "Log entry for testing"]
+`;
+
+const TestComposeWithProfilesFileContent = `
 services:
   frontend:
     profiles:
