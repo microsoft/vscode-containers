@@ -3,8 +3,10 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunContainerBindMount, RunContainerCommandOptions, Shell, composeArgs, withArg, withNamedArg } from "@microsoft/vscode-container-client";
+import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions, Shell, composeArgs, withArg, withNamedArg } from "@microsoft/vscode-container-client";
 import * as os from 'os';
+import * as vscode from 'vscode';
+import { configPrefix } from "../../constants";
 import { vsDbgInstallBasePath } from "../../debugging/netcore/VsDbgHelper";
 import { ext } from "../../extensionVariables";
 import { getImageNameWithTag } from "../../utils/getValidImageName";
@@ -36,7 +38,8 @@ export async function getNetSdkBuildCommand(): Promise<string> {
         withNamedArg('--arch', await normalizeArchitectureToRidArchitecture()),
         withArg('/t:PublishContainer'),
         withNamedArg('--configuration', 'Debug'),
-        withNamedArg('-p:ContainerImageTag', NetSdkDefaultImageTag, { assignValue: true })
+        withNamedArg('-p:ContainerImageTag', NetSdkDefaultImageTag, { assignValue: true }),
+        withNamedArg('-p:LocalRegistry', getLocalRegistry(), { assignValue: true }),
     )();
 
     const quotedArgs = Shell.getShellOrDefault().quote(args);
@@ -85,6 +88,25 @@ export async function normalizeArchitectureToRidArchitecture(): Promise<RidCpuAr
             return 'x86';
         default:
             return architecture;
+    }
+}
+
+/**
+ * This method gets the local registry to push the image to after it is built. It can be either
+ * "Docker", "Podman", or undefined to allow the .NET SDK to choose on its own.
+ * See https://learn.microsoft.com/en-us/dotnet/core/containers/publish-configuration#localregistry
+ */
+function getLocalRegistry(): 'Docker' | 'Podman' | undefined {
+    const config = vscode.workspace.getConfiguration(configPrefix);
+    const containerClientId = config.get<string>('containerClient', '');
+
+    switch (containerClientId) {
+        case DockerClient.ClientId:
+            return 'Docker';
+        case PodmanClient.ClientId:
+            return 'Podman';
+        default:
+            return undefined;
     }
 }
 
