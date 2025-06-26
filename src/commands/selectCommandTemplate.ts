@@ -8,7 +8,7 @@ import { PortBinding, quoted, VoidCommandResponse } from '@microsoft/vscode-cont
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
-import { isComposeV2ableOrchestratorClient } from '../runtimes/OrchestratorRuntimeManager';
+import { isComposeV2ableOrchestratorClient } from '../runtimes/clients/AutoConfigurableDockerComposeClient';
 import { resolveVariables } from '../utils/resolveVariables';
 
 type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset';

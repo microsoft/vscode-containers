@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DockerComposeClient, IContainerOrchestratorClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
+import { DockerComposeClient, IContainerOrchestratorClient } from '@microsoft/vscode-container-client';
 import { RuntimeManager } from './RuntimeManager';
 import { isSlowConfigurableOrchestratorClient } from './clients/AutoConfigurableDockerComposeClient';
 
@@ -32,13 +32,4 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
 
 export function isDockerComposeClient(maybeComposeClient: IContainerOrchestratorClient): maybeComposeClient is DockerComposeClient {
     return maybeComposeClient.id === DockerComposeClient.ClientId;
-}
-
-interface ComposeV2ableOrchestratorClient extends IContainerOrchestratorClient {
-    composeV2: boolean;
-}
-
-export function isComposeV2ableOrchestratorClient(maybeClient: IContainerOrchestratorClient): maybeClient is ComposeV2ableOrchestratorClient {
-    return maybeClient.id === DockerComposeClient.ClientId ||
-        maybeClient.id === PodmanComposeClient.ClientId;
 }
