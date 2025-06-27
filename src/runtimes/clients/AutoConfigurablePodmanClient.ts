@@ -9,6 +9,9 @@ import { configPrefix } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { AutoConfigurableClient } from './AutoConfigurableClient';
 
+/**
+ * IMPORTANT NOTE: This class is largely identical to {@link AutoConfigurableDockerClient}, and the two should be kept in sync.
+ */
 export class AutoConfigurablePodmanClient extends PodmanClient implements AutoConfigurableClient {
     public constructor() {
         super();

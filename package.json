@@ -2320,11 +2320,13 @@
                     "scope": "machine-overridable",
                     "enum": [
                         "",
-                        "com.microsoft.visualstudio.orchestrators.dockercompose"
+                        "com.microsoft.visualstudio.orchestrators.dockercompose",
+                        "com.microsoft.visualstudio.orchestrators.podmancompose"
                     ],
                     "enumItemLabels": [
                         "Default",
-                        "Docker Compose"
+                        "Docker Compose",
+                        "Podman Compose"
                     ]
                 }
             }

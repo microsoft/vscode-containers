@@ -19,6 +19,7 @@ import { ext } from './extensionVariables';
 import { AutoConfigurableDockerClient } from './runtimes/clients/AutoConfigurableDockerClient';
 import { AutoConfigurableDockerComposeClient } from './runtimes/clients/AutoConfigurableDockerComposeClient';
 import { AutoConfigurablePodmanClient } from './runtimes/clients/AutoConfigurablePodmanClient';
+import { AutoConfigurablePodmanComposeClient } from './runtimes/clients/AutoConfigurablePodmanComposeClient';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
 import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
@@ -112,8 +113,8 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
             ext.orchestratorManager = new OrchestratorRuntimeManager()
         );
 
-        // Set up Docker clients
-        registerDockerClients();
+        // Set up Container clients
+        registerContainerClients();
 
         // Set up container filesystem provider
         ctx.subscriptions.push(
@@ -197,17 +198,19 @@ function setEnvironmentVariableContributions(): void {
     }
 }
 
-function registerDockerClients(): void {
+function registerContainerClients(): void {
     // Create the clients
     const dockerClient = new AutoConfigurableDockerClient();
     const podmanClient = new AutoConfigurablePodmanClient();
-    const composeClient = new AutoConfigurableDockerComposeClient();
+    const dockerComposeClient = new AutoConfigurableDockerComposeClient();
+    const podmanComposeClient = new AutoConfigurablePodmanComposeClient();
 
     // Register the clients
     ext.context.subscriptions.push(
         ext.runtimeManager.registerRuntimeClient(dockerClient),
         ext.runtimeManager.registerRuntimeClient(podmanClient),
-        ext.orchestratorManager.registerRuntimeClient(composeClient)
+        ext.orchestratorManager.registerRuntimeClient(dockerComposeClient),
+        ext.orchestratorManager.registerRuntimeClient(podmanComposeClient),
     );
 
     // Register an event to watch for changes to config, reconfigure if needed
@@ -221,7 +224,8 @@ function registerDockerClients(): void {
         }
 
         if (e.affectsConfiguration(`${configPrefix}.composeCommand`)) {
-            composeClient.reconfigure();
+            dockerComposeClient.reconfigure();
+            podmanComposeClient.reconfigure();
         }
     });
 }
