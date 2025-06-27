@@ -10,6 +10,9 @@
         <!-- Temporary patch for .NET 10 Previews 3 and 4. -->
         <GetProjectPropertiesDependsOn Condition=" $([MSBuild]::VersionEquals($(NetCoreSdkVersion), 10.0.100-preview.3)) or $([MSBuild]::VersionEquals($(NetCoreSdkVersion), 10.0.100-preview.4)) ">$(GetProjectPropertiesDependsOn);_ComputeContainerExecutionArgs</GetProjectPropertiesDependsOn>
 
+        <!-- Temporary patch for .NET 10 Previews 5 and 6. -->
+        <GetProjectPropertiesDependsOn Condition=" $([MSBuild]::VersionEquals($(NetCoreSdkVersion), 10.0.100-preview.5)) or $([MSBuild]::VersionEquals($(NetCoreSdkVersion), 10.0.100-preview.6)) ">$(GetProjectPropertiesDependsOn);_ContainerEstablishRIDNess;_ComputeContainerExecutionArgs</GetProjectPropertiesDependsOn>
+
     </PropertyGroup>
 
     <Target Name="GetProjectProperties" DependsOnTargets="$(GetProjectPropertiesDependsOn)">
