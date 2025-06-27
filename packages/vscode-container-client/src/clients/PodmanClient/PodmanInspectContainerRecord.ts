@@ -12,7 +12,7 @@ import { parseDockerLikeEnvironmentVariables } from '../DockerClientBase/parseDo
 
 const PodmanInspectContainerPortHostSchema = z.object({
     HostIp: z.string().optional(),
-    HostPort: z.number().optional(),
+    HostPort: z.string().optional(),
 });
 
 const PodmanInspectContainerBindMountSchema = z.object({
@@ -102,7 +102,7 @@ export function normalizePodmanInspectContainerRecord(container: PodmanInspectCo
         const [port, protocol] = rawPort.split('/');
         return {
             hostIp: hostBinding?.[0]?.HostIp,
-            hostPort: hostBinding?.[0]?.HostPort,
+            hostPort: hostBinding?.[0]?.HostPort ? parseInt(hostBinding[0].HostPort) : undefined,
             containerPort: parseInt(port),
             protocol: protocol.toLowerCase() === 'tcp'
                 ? 'tcp'
