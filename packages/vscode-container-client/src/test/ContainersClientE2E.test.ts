@@ -23,15 +23,16 @@ import { wslifyPath } from '../utils/wslifyPath';
  */
 
 // Modify the below options to configure the tests
-const clientTypeToTest: ClientType = 'docker' as ClientType;
-const runInWsl: boolean = false; // Set to true if running in WSL
+const clientTypeToTest: ClientType = (process.env.CONTAINER_CLIENT_TYPE || 'docker') as ClientType;
+const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_WSL === 'true') || false; // Set to true if running in WSL
 
 // Supply to run the login/logout tests
 const dockerHubUsername = process.env.DOCKER_HUB_USERNAME || ''; // Set your Docker Hub username in an environment variable or here
 const dockerHubPAT = process.env.DOCKER_HUB_PAT || ''; // Never commit this value!!
 
 // No need to modify below this
-type ClientType = 'docker' | 'podman';
+
+export type ClientType = 'docker' | 'podman';
 
 describe('(integration) ContainersClientE2E', function () {
 
@@ -572,9 +573,13 @@ describe('(integration) ContainersClientE2E', function () {
 
             const network = networks[0];
             expect(network.name).to.equal(testNetworkName);
-            expect(network.driver).to.be.a('string');
             expect(network.labels).to.be.an('object');
             expect(network.raw).to.be.a('string');
+
+            if (clientTypeToTest === 'docker') {
+                // Newer Podman versions have a "driver" field but older ones do not
+                expect(network.driver).to.be.a('string');
+            }
         });
 
         it('RemoveNetworksCommand', async function () {

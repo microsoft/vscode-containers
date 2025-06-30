@@ -61,10 +61,10 @@ export function withQuotedArg(...args: Array<string | ShellQuotedString | null |
 }
 
 /**
- * Functional method for adding a flag argument (--name=value) to an existing list
+ * Functional method for adding a flag argument (--name) to an existing list
  * of arguments.
  * @param name The name of the flag argument
- * @param value The value to set for the flag argument
+ * @param value If truthy, the flag argument will be included, otherwise it will be ignored
  * @returns A function that takes an optional array of CommandLineArguments and appends the specified flag argument
  */
 export function withFlagArg(name: string, value: boolean | undefined): CommandLineCurryFn {
