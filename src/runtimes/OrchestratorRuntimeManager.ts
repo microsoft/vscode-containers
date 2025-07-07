@@ -30,6 +30,6 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
     }
 }
 
-export function isDockerComposeClient(maybeComposeClient: IContainerOrchestratorClient): maybeComposeClient is DockerComposeClient {
+function isDockerComposeClient(maybeComposeClient: IContainerOrchestratorClient): maybeComposeClient is DockerComposeClient {
     return maybeComposeClient.id === DockerComposeClient.ClientId;
 }
