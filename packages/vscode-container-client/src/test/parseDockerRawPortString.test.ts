@@ -31,7 +31,7 @@ describe('(unit) parseDockerRawPortString', () => {
         expect(result).to.be.ok;
         expect(result?.containerPort).to.equal(5678);
         expect(result?.protocol).to.equal('tcp');
-        expect(result?.hostIp).to.equal('[1234:abcd::0]');
+        expect(result?.hostIp).to.equal('1234:abcd::0');
         expect(result?.hostPort).to.equal(2345);
     });
 

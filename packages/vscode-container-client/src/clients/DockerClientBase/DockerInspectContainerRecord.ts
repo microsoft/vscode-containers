@@ -8,6 +8,7 @@ import { InspectContainersItem, InspectContainersItemBindMount, InspectContainer
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { toArray } from '../../utils/toArray';
+import { normalizeIpAddress } from './normalizeIpAddress';
 import { parseDockerLikeEnvironmentVariables } from './parseDockerLikeEnvironmentVariables';
 
 const DockerInspectContainerPortHostSchema = z.object({
@@ -93,7 +94,7 @@ export function normalizeDockerInspectContainerRecord(container: DockerInspectCo
         return {
             name,
             gateway: dockerNetwork.Gateway || undefined,
-            ipAddress: dockerNetwork.IPAddress || undefined,
+            ipAddress: normalizeIpAddress(dockerNetwork.IPAddress),
             macAddress: dockerNetwork.MacAddress || undefined,
         } satisfies InspectContainersItemNetwork;
     });
@@ -102,7 +103,7 @@ export function normalizeDockerInspectContainerRecord(container: DockerInspectCo
     const ports = Object.entries(container.NetworkSettings?.Ports || {}).map<PortBinding>(([rawPort, hostBinding]) => {
         const [port, protocol] = rawPort.split('/');
         return {
-            hostIp: hostBinding?.[0]?.HostIp,
+            hostIp: normalizeIpAddress(hostBinding?.[0]?.HostIp),
             hostPort: hostBinding?.[0]?.HostPort ? parseInt(hostBinding[0].HostPort) : undefined,
             containerPort: parseInt(port),
             protocol: protocol.toLowerCase() === 'tcp'
@@ -155,7 +156,7 @@ export function normalizeDockerInspectContainerRecord(container: DockerInspectCo
         status: container.State?.Status,
         environmentVariables,
         networks,
-        ipAddress: container.NetworkSettings?.IPAddress ? container.NetworkSettings?.IPAddress : undefined,
+        ipAddress: normalizeIpAddress(container.NetworkSettings?.IPAddress),
         ports,
         mounts,
         labels,

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { PortBinding } from "../../contracts/ContainerClient";
+import { PortBinding } from '../../contracts/ContainerClient';
+import { normalizeIpAddress } from './normalizeIpAddress';
 
 /**
  * Attempt to parse a Docker-like raw port binding string
@@ -28,7 +29,7 @@ export function parseDockerRawPortString(portString: string): PortBinding | unde
     }
 
     return {
-        hostIp,
+        hostIp: normalizeIpAddress(hostIp),
         hostPort,
         containerPort,
         protocol,
