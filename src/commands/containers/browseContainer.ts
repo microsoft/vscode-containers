@@ -5,9 +5,10 @@
 
 import { IActionContext, IAzureQuickPickItem, TelemetryProperties } from '@microsoft/vscode-azext-utils';
 import { PortBinding } from '@microsoft/vscode-container-client';
+import { isIPv6 } from 'net';
 import * as vscode from 'vscode';
-import { ext } from "../../extensionVariables";
-import { ContainerTreeItem } from "../../tree/containers/ContainerTreeItem";
+import { ext } from '../../extensionVariables';
+import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
 
 type BrowseTelemetryProperties = TelemetryProperties & { possiblePorts?: string, selectedPort?: string };
 
@@ -128,7 +129,8 @@ export async function browseContainer(context: IActionContext, node?: ContainerT
     telemetryProperties.selectedPort = selectedPort.containerPort.toString();
 
     const protocol = commonSslPorts.some(commonPort => commonPort === selectedPort.containerPort) ? 'https' : 'http';
-    const url = `${protocol}://${selectedPort.host}:${selectedPort.hostPort}`;
+    const host = isIPv6(selectedPort.host) ? `[${selectedPort.host}]` : selectedPort.host; // IPv6 addresses need to be wrapped in square brackets
+    const url = `${protocol}://${host}:${selectedPort.hostPort}`;
 
     void vscode.env.openExternal(vscode.Uri.parse(url));
 }
