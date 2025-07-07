@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { z } from 'zod/v4';
-import { InspectContainersItem, InspectContainersItemMount, InspectContainersItemNetwork, PortBinding } from '../../contracts/ContainerClient';
+import { InspectContainersItem, InspectContainersItemBindMount, InspectContainersItemMount, InspectContainersItemNetwork, InspectContainersItemVolumeMount, PortBinding } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { toArray } from '../../utils/toArray';
@@ -95,7 +95,7 @@ export function normalizeDockerInspectContainerRecord(container: DockerInspectCo
             gateway: dockerNetwork.Gateway || undefined,
             ipAddress: dockerNetwork.IPAddress || undefined,
             macAddress: dockerNetwork.MacAddress || undefined,
-        };
+        } satisfies InspectContainersItemNetwork;
     });
 
     // Parse the exposed ports for the container and normalize to a PortBinding record
@@ -110,7 +110,7 @@ export function normalizeDockerInspectContainerRecord(container: DockerInspectCo
                 : protocol.toLowerCase() === 'udp'
                     ? 'udp'
                     : undefined,
-        };
+        } satisfies PortBinding;
     });
 
     // Parse the volume and bind mounts associated with the given runtime and normalize to
@@ -123,16 +123,15 @@ export function normalizeDockerInspectContainerRecord(container: DockerInspectCo
                     source: mount.Source,
                     destination: mount.Destination,
                     readOnly: !mount.RW,
-                }];
+                } satisfies InspectContainersItemBindMount];
             case 'volume':
                 return [...curMounts, {
                     type: 'volume',
-                    name: mount.Name,
-                    source: mount.Source,
+                    source: mount.Name,
                     destination: mount.Destination,
                     driver: mount.Driver,
                     readOnly: !mount.RW,
-                }];
+                } satisfies InspectContainersItemVolumeMount];
         }
 
     }, new Array<InspectContainersItemMount>());
