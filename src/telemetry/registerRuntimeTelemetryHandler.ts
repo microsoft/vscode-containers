@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { registerTelemetryHandler } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, PodmanClient } from '@microsoft/vscode-container-client';
+import { DockerClient, DockerComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 
@@ -37,6 +37,9 @@ export function registerRuntimeTelemetryHandler(ctx: vscode.ExtensionContext): v
                 break;
             case DockerComposeClient.ClientId:
                 context.telemetry.properties.orchestratorClient = DockerComposeClient.prototype.constructor.name;
+                break;
+            case PodmanComposeClient.ClientId:
+                context.telemetry.properties.orchestratorClient = PodmanComposeClient.prototype.constructor.name;
                 break;
             default:
                 context.telemetry.properties.orchestratorClient = 'unknown';

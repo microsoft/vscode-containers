@@ -90,7 +90,7 @@ You can start Azure CLI (command-line interface) in a standalone, Linux-based co
 
 ### Alternative container runtimes
 
-The Container Tools extension supports multiple container runtime options, such as Docker or Podman. If you want to change runtimes, you can do so with the VS Code setting `containers.containerClient`. Changing requires a restart to take effect.
+The Container Tools extension supports multiple container runtime options, such as Docker or Podman. If you want to change runtimes, you can do so with the VS Code settings `containers.containerClient` and `containers.orchestratorClient`. Changing requires a restart to take effect.
 
 ## Contributing
 
