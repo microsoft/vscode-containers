@@ -1,3 +1,11 @@
+## 0.3.0 - 7 July 2025
+### Added
+* Support has been added for Podman Compose. [#264](https://github.com/microsoft/vscode-docker-extensibility/issues/264)
+
+### Changed
+* IPv6 addresses returned by the API will no longer have brackets. [#272](https://github.com/microsoft/vscode-docker-extensibility/pull/272)
+* Internal to the library, Zod is now being used for validating objects from the various clients. [#248](https://github.com/microsoft/vscode-docker-extensibility/issues/248)
+
 ## 0.2.2 - 3 June 2025
 ### Added
 * Added support for the `--platform` argument in `runContainer()`. [#258](https://github.com/microsoft/vscode-docker-extensibility/issues/258)
