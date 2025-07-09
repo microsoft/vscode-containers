@@ -21,6 +21,7 @@ export * from './utils/ChildProcessError';
 export * from './utils/CommandNotSupportedError';
 export * from './utils/commandLineBuilder';
 export * from './utils/getNativeArchitecture';
+export * from './utils/getSafeExecPath';
 export * from './utils/parseDockerLikeImageName';
 export * from './utils/normalizeContainerOS';
 export * from './utils/spawnStreamAsync';

@@ -6,7 +6,7 @@
 import { expect } from 'chai';
 import { wslifyPath } from '../utils/wslifyPath';
 
-describe('(unit) wslifyPath tests', () => {
+describe('(unit) wslifyPath', () => {
     it('Should wslify Windows paths correctly', () => {
         const windowsPath = 'C:\\Users\\user\\Desktop\\file.txt';
         const wslPath = '/mnt/c/Users/user/Desktop/file.txt';

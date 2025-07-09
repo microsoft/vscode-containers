@@ -6,6 +6,9 @@
 import { ShellQuotedString, ShellQuoting } from 'vscode';
 import { toArray } from './toArray';
 
+/**
+ * Command line arguments that can be passed to a command
+ */
 export type CommandLineArgs = Array<ShellQuotedString | string>;
 
 export type CommandLineCurryFn = (cmdLineArgs?: CommandLineArgs) => CommandLineArgs;
