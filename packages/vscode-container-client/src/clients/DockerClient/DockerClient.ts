@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CommandLineArgs, composeArgs, withArg } from "@microsoft/vscode-processutils";
 import { PromiseCommandResponse, VoidCommandResponse } from "../../contracts/CommandRunner";
 import { IContainersClient, InspectContextsCommandOptions, InspectContextsItem, ListContextItem, ListContextsCommandOptions, RemoveContextsCommandOptions, UseContextCommandOptions } from "../../contracts/ContainerClient";
 import { asIds } from "../../utils/asIds";
-import { CommandLineArgs, composeArgs, withArg } from "../../utils/commandLineBuilder";
 import { DockerClientBase } from "../DockerClientBase/DockerClientBase";
 import { withDockerJsonFormatArg } from "../DockerClientBase/withDockerJsonFormatArg";
 import { DockerContextRecordSchema } from "./DockerContextRecord";

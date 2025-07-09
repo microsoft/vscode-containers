@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { withNamedArg } from "../../utils/commandLineBuilder";
+import { withNamedArg } from "@microsoft/vscode-processutils";
 
 export function withDockerBuildArg(buildArgs?: Record<string, string>) {
     return withNamedArg('--build-arg', Object.entries(buildArgs || {}).map(([key, value]) => `${key}=${value}`));

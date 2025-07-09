@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Bash, Cmd, NoShell, Powershell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 
 import { DockerComposeClient } from '../clients/DockerComposeClient/DockerComposeClient';
@@ -10,7 +11,6 @@ import {
     CommonOrchestratorCommandOptions,
     UpCommandOptions
 } from '../contracts/ContainerOrchestratorClient';
-import { Bash, Cmd, NoShell, Powershell } from '../utils/Shell';
 
 const commonOptions: CommonOrchestratorCommandOptions = {
     files: ['docker-compose.yml'],

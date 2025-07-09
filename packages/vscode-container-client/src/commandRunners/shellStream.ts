@@ -3,6 +3,14 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+    AccumulatorStream,
+    CancellationError,
+    CancellationTokenLike,
+    CommandLineArgs,
+    spawnStreamAsync,
+    StreamSpawnOptions
+} from '@microsoft/vscode-processutils';
 import * as stream from 'stream';
 import {
     CommandResponseBase,
@@ -15,14 +23,6 @@ import {
     StreamingCommandRunner,
     VoidCommandResponse,
 } from '../contracts/CommandRunner';
-import { CancellationTokenLike } from '../typings/CancellationTokenLike';
-import { AccumulatorStream } from '../utils/AccumulatorStream';
-import { CancellationError } from '../utils/CancellationError';
-import { CommandLineArgs } from '../utils/commandLineBuilder';
-import {
-    spawnStreamAsync,
-    StreamSpawnOptions,
-} from '../utils/spawnStreamAsync';
 
 export type ShellStreamCommandRunnerOptions = StreamSpawnOptions & {
     strict?: boolean;

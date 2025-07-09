@@ -1,8 +1,8 @@
 {
-    "name": "@microsoft/vscode-container-client",
+    "name": "@microsoft/vscode-processutils",
     "author": "Microsoft Corporation",
-    "version": "0.3.0",
-    "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
+    "version": "0.1.0",
+    "description": "Library support for building command lines and running external processes, primarily for use in VS Code.",
     "license": "See LICENSE in the project root for license information.",
     "repository": {
         "type": "git",
@@ -11,21 +11,18 @@
     "bugs": {
         "url": "https://github.com/microsoft/vscode-docker-extensibility/issues"
     },
-    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-container-client/README.md",
+    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-processutils/README.md",
     "main": "lib/index.js",
     "scripts": {
         "build": "tsc",
         "clean": "tsc --build --clean",
         "lint": "eslint --max-warnings 0 . --ext ts",
         "package": "npm pack",
-        "test": "mocha",
-        "testintegration": "mocha --grep \"(integration)\"",
-        "testintegrationcov": "nyc --reporter=html mocha --grep \"(integration)\""
+        "test": "mocha"
     },
     "dependencies": {
-        "@microsoft/vscode-processutils": "^0.1.0",
-        "dayjs": "^1.11.2",
-        "zod": "^3.25.56"
+        "tree-kill": "^1.2.2",
+        "which": "^5.0.0"
     },
     "devDependencies": {
         "@types/chai": "^4.3.0",

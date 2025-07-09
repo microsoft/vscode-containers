@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { withNamedArg } from "@microsoft/vscode-processutils";
 import { Labels } from "../../contracts/ContainerClient";
-import { withNamedArg } from "../../utils/commandLineBuilder";
 
 export function withDockerLabelsArg(labels?: Labels) {
     return withNamedArg(

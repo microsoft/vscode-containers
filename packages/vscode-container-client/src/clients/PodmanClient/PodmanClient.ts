@@ -3,6 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+    CancellationError,
+    CancellationTokenLike
+} from '@microsoft/vscode-processutils';
 import * as readline from 'readline';
 import {
     EventItem,
@@ -35,10 +39,8 @@ import {
     VersionItem
 } from '../../contracts/ContainerClient';
 import { asIds } from '../../utils/asIds';
-import { CancellationError } from '../../utils/CancellationError';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
-import { CancellationTokenLike } from '../../typings/CancellationTokenLike';
 import { DockerClientBase } from '../DockerClientBase/DockerClientBase';
 import { PodmanEventRecordSchema } from './PodmanEventRecord';
 import { PodmanInspectContainerRecordSchema, normalizePodmanInspectContainerRecord } from './PodmanInspectContainerRecord';

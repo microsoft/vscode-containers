@@ -3,6 +3,16 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+    CommandLineArgs,
+    CommandLineCurryFn,
+    composeArgs,
+    stringStreamToGenerator,
+    withArg,
+    withFlagArg,
+    withNamedArg,
+    withVerbatimArg
+} from '@microsoft/vscode-processutils';
 import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from '../../contracts/CommandRunner';
 import {
     CheckOrchestratorInstallCommandOptions,
@@ -17,16 +27,6 @@ import {
     StopCommandOptions,
     UpCommandOptions,
 } from '../../contracts/ContainerOrchestratorClient';
-import {
-    CommandLineArgs,
-    CommandLineCurryFn,
-    composeArgs,
-    withArg,
-    withFlagArg,
-    withNamedArg,
-    withVerbatimArg,
-} from '../../utils/commandLineBuilder';
-import { stringStreamToGenerator } from '../../utils/streamToGenerator';
 import { ConfigurableClient } from '../ConfigurableClient';
 
 function withCommonOrchestratorArgs(options: CommonOrchestratorCommandOptions): CommandLineCurryFn {

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { withNamedArg } from "@microsoft/vscode-processutils";
 import { RunContainerMount } from "../../contracts/ContainerClient";
-import { withNamedArg } from "../../utils/commandLineBuilder";
 
 export function formatDockerMount(mount: RunContainerMount): string {
     const mountParts = new Array<string>(

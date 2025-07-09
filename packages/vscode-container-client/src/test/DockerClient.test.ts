@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Bash, escaped, Powershell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import * as crypto from 'crypto';
 import { describe, it } from 'mocha';
@@ -12,8 +13,6 @@ import {
     DockerClient,
 } from '../clients/DockerClient/DockerClient';
 import { BuildImageCommandOptions, RunContainerCommandOptions } from '../contracts/ContainerClient';
-import { escaped } from '../utils/commandLineBuilder';
-import { Bash, Powershell } from '../utils/Shell';
 
 describe('(unit) DockerClient', () => {
     const client = new DockerClient();
@@ -153,7 +152,7 @@ test_network2`, true);
     });
 });
 
-describe('DockerClient (unit)', () => {
+describe('(unit) DockerClient s\'more', () => {
     const client = new DockerClient();
 
     it('Should produce the expected lack of quoting/escaping customOptions', async () => {

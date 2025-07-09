@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandLineArgs } from '../utils/commandLineBuilder';
+import { CommandLineArgs } from "@microsoft/vscode-processutils";
 
 /**
  * A command response includes the command (i.e., the executable) to execute, and arguments to pass

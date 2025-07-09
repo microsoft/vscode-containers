@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { withNamedArg } from "@microsoft/vscode-processutils";
 import { RunContainerExtraHost } from "../../contracts/ContainerClient";
-import { withNamedArg } from "../../utils/commandLineBuilder";
 
 export function formatAddHost(addHost: RunContainerExtraHost): string {
     return `${addHost.hostname}:${addHost.ip}`;

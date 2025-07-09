@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Bash } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import * as fs from 'fs/promises';
 import * as os from 'os';
@@ -15,7 +16,6 @@ import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from
 import { WslShellCommandRunnerFactory, WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
 import { IContainersClient, ListContainersItem, ListImagesItem, ListNetworkItem, ListVolumeItem, StatPathItem } from '../contracts/ContainerClient';
 import { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
-import { Bash } from '../utils/Shell';
 import { wslifyPath } from '../utils/wslifyPath';
 
 /**

@@ -3,6 +3,20 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+    byteStreamToGenerator,
+    CancellationError,
+    CancellationTokenLike,
+    CommandLineArgs,
+    composeArgs,
+    stringStreamToGenerator,
+    toArray,
+    withArg,
+    withFlagArg,
+    withNamedArg,
+    withQuotedArg,
+    withVerbatimArg
+} from '@microsoft/vscode-processutils';
 import * as readline from 'readline';
 import { ShellQuotedString, ShellQuoting } from 'vscode';
 import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from '../../contracts/CommandRunner';
@@ -71,22 +85,9 @@ import {
     VersionItem,
     WriteFileCommandOptions
 } from "../../contracts/ContainerClient";
-import { CancellationTokenLike } from '../../typings/CancellationTokenLike';
-import { CancellationError } from '../../utils/CancellationError';
 import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
 import { asIds } from '../../utils/asIds';
-import {
-    CommandLineArgs,
-    composeArgs,
-    withArg,
-    withFlagArg,
-    withNamedArg,
-    withQuotedArg,
-    withVerbatimArg,
-} from "../../utils/commandLineBuilder";
 import { dayjs } from '../../utils/dayjs';
-import { byteStreamToGenerator, stringStreamToGenerator } from '../../utils/streamToGenerator';
-import { toArray } from '../../utils/toArray';
 import { ConfigurableClient } from '../ConfigurableClient';
 import { DockerEventRecordSchema } from './DockerEventRecord';
 import { DockerInfoRecordSchema } from './DockerInfoRecord';

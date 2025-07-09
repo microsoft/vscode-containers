@@ -4,10 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+    CommandLineArgs,
+    composeArgs,
+    withArg,
+    withNamedArg
+} from '@microsoft/vscode-processutils';
+import {
     CommandResponseBase,
     ICommandRunnerFactory,
 } from '../contracts/CommandRunner';
-import { CommandLineArgs, composeArgs, withArg, withNamedArg } from '../utils/commandLineBuilder';
 import {
     ShellStreamCommandRunnerFactory,
     ShellStreamCommandRunnerOptions,
