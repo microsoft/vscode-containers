@@ -24,4 +24,5 @@ export * from './utils/getNativeArchitecture';
 export * from './utils/getSafeExecPath';
 export * from './utils/parseDockerLikeImageName';
 export * from './utils/normalizeContainerOS';
+export * from './utils/Shell';
 export * from './utils/spawnStreamAsync';

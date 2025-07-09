@@ -13,7 +13,7 @@ import {
 } from '../clients/DockerClient/DockerClient';
 import { BuildImageCommandOptions, RunContainerCommandOptions } from '../contracts/ContainerClient';
 import { escaped } from '../utils/commandLineBuilder';
-import { Bash, Powershell } from '../utils/spawnStreamAsync';
+import { Bash, Powershell } from '../utils/Shell';
 
 describe('(unit) DockerClient', () => {
     const client = new DockerClient();
@@ -211,19 +211,19 @@ describe('DockerClient (unit)', () => {
         const args = commandResponse.args;
 
         // Find the position of --platform flag
-        const platformFlagIndex = args.findIndex(arg => 
+        const platformFlagIndex = args.findIndex(arg =>
             typeof arg === 'string' ? arg === '--platform' : arg.value === '--platform'
         );
-        
+
         // Verify that --platform flag is present
         expect(platformFlagIndex).to.be.greaterThan(-1);
-        
+
         // Verify that the value after --platform matches our expected platform
         const platformValue = args[platformFlagIndex + 1];
-        const platformValueStr = typeof platformValue === 'string' 
-            ? platformValue 
+        const platformValueStr = typeof platformValue === 'string'
+            ? platformValue
             : platformValue.value;
-        
+
         expect(platformValueStr).to.equal('linux/arm64');
     });
 });

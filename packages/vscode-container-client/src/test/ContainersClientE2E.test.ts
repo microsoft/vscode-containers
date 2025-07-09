@@ -15,7 +15,7 @@ import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from
 import { WslShellCommandRunnerFactory, WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
 import { IContainersClient, ListContainersItem, ListImagesItem, ListNetworkItem, ListVolumeItem, StatPathItem } from '../contracts/ContainerClient';
 import { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
-import { Bash } from '../utils/spawnStreamAsync';
+import { Bash } from '../utils/Shell';
 import { wslifyPath } from '../utils/wslifyPath';
 
 /**

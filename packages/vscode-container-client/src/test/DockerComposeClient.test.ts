@@ -10,7 +10,7 @@ import {
     CommonOrchestratorCommandOptions,
     UpCommandOptions
 } from '../contracts/ContainerOrchestratorClient';
-import { Bash, Cmd, NoShell, Powershell } from '../utils/spawnStreamAsync';
+import { Bash, Cmd, NoShell, Powershell } from '../utils/Shell';
 
 const commonOptions: CommonOrchestratorCommandOptions = {
     files: ['docker-compose.yml'],
