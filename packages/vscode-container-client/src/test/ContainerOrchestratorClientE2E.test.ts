@@ -108,6 +108,23 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
 
     // #endregion
 
+    // #region Check Orchestrator Install Command
+
+    describe('Check Orchestrator Install', function () {
+        it('CheckOrchestratorInstallCommand', async function () {
+            const response = await defaultRunner.getCommandRunner()(
+                client.checkOrchestratorInstall({
+                    composeVersion: 'v2', // Force check for V2
+                })
+            );
+
+            expect(response).to.be.a('string');
+            expect(response).to.include('Docker Compose version');
+        });
+    });
+
+    // #endregion
+
     // #region Up Command
 
     describe('Up', function () {
