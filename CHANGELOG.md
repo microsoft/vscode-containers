@@ -1,3 +1,15 @@
+## 2.1.0 - 21 July 2025
+### Added
+* Added support for Podman Compose (`podman compose`). You can use the command `Containers: Choose container runtime...` to select Podman and Podman Compose. [#54](https://github.com/microsoft/vscode-containers/issues/54)
+
+### Changed
+* Newly-scaffolded compose files will be named `compose.yaml` (as opposed to `docker-compose.yml`). Old files will continue to work as before. [#146](https://github.com/microsoft/vscode-containers/issues/146)
+
+### Fixed
+* Fixed an issue preventing .NET SDK-style debugging of .NET 10 Preview 5 apps. [#157](https://github.com/microsoft/vscode-containers/issues/157)
+* Fixed an issue where a broken port choice would appear when opening a container in the browser, beginning with Docker Desktop 4.42.0. [#163](https://github.com/microsoft/vscode-containers/issues/163)
+* Fixed `ctime`, `mtime`, and `atime` file timestamps not being updated when modifying files in the Container Explorer view. [#95](https://github.com/microsoft/vscode-containers/issues/95)
+
 ## 2.0.3 - 5 June 2025
 ### Changed
 * Some compose language service features will automatically disable if the [Docker DX](https://marketplace.visualstudio.com/items?itemName=docker.docker) extension is present, in order to avoid duplication and conflicts. [#75](https://github.com/microsoft/vscode-containers/pull/75)
