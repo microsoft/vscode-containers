@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem, IAzureQuickPickOptions, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { PortBinding, quoted, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { PortBinding, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { quoted } from '@microsoft/vscode-processutils';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';

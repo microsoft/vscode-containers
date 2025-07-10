@@ -29,9 +29,10 @@ export class NetSdkRunTaskProvider extends DockerTaskProvider {
         const projectFolderPath = path.dirname(projectPath);
 
         // use dotnet to build the image
-        const buildCommand = await getNetSdkBuildCommand();
+        const { command: buildCommand, args: buildArgs } = await getNetSdkBuildCommand();
         await context.terminal.execAsyncInTerminal(
             buildCommand,
+            buildArgs,
             {
                 folder: context.folder,
                 token: context.cancellationToken,
@@ -40,9 +41,10 @@ export class NetSdkRunTaskProvider extends DockerTaskProvider {
         );
 
         // use docker run to run the image
-        const runCommand = await getNetSdkRunCommand(task.definition.dockerRun.image);
+        const { command: runCommand, args: runArgs } = await getNetSdkRunCommand(task.definition.dockerRun.image);
         await context.terminal.execAsyncInTerminal(
             runCommand,
+            runArgs,
             {
                 folder: context.folder,
                 token: context.cancellationToken,

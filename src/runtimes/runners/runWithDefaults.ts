@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccumulatorStream, ClientIdentity, GeneratorCommandResponse, IContainersClient, isChildProcessError, Like, normalizeCommandResponseLike, NoShell, PromiseCommandResponse, ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { ClientIdentity, GeneratorCommandResponse, IContainersClient, Like, normalizeCommandResponseLike, PromiseCommandResponse, ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { AccumulatorStream, isChildProcessError, NoShell } from '@microsoft/vscode-processutils';
 import * as stream from 'stream';
 import * as vscode from 'vscode';
 import { ext } from '../../extensionVariables';

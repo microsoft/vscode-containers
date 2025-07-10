@@ -7,7 +7,6 @@ import { PodmanComposeClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../../constants';
 import { ext } from '../../extensionVariables';
-import { execAsync } from '../../utils/execAsync';
 import { AsyncLazy } from '../../utils/lazy';
 import { AutoConfigurableClient } from './AutoConfigurableClient';
 import { ComposeConfig } from './AutoConfigurableDockerComposeClient';
@@ -57,7 +56,9 @@ export class AutoConfigurablePodmanComposeClient extends PodmanComposeClient imp
 
             try {
                 ext.outputChannel.info('Attempting to autodetect Podman Compose command...');
-                await execAsync('podman compose version');
+                await ext.runWithDefaults(
+                    () => this.checkOrchestratorInstall({ composeVersion: 'v2' }),
+                );
 
                 // If successful, then assume we can use compose V2
                 return {
