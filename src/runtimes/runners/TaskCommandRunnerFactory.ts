@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandLineArgs, CommandNotSupportedError, CommandRunner, ICommandRunnerFactory, Like, normalizeCommandResponseLike, PromiseCommandResponse, StreamingCommandRunner, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { CommandNotSupportedError, CommandRunner, ICommandRunnerFactory, Like, normalizeCommandResponseLike, PromiseCommandResponse, StreamingCommandRunner, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { CommandLineArgs } from '@microsoft/vscode-processutils';
 import * as os from 'os';
 import * as vscode from 'vscode';
 

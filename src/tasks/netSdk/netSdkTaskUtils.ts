@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions, Shell, composeArgs, withArg, withNamedArg } from "@microsoft/vscode-container-client";
+import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions } from "@microsoft/vscode-container-client";
+import { Shell, composeArgs, withArg, withNamedArg } from '@microsoft/vscode-processutils';
 import * as os from 'os';
 import * as vscode from 'vscode';
 import { configPrefix } from "../../constants";

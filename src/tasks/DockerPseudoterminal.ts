@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { PromiseCommandResponse, Shell, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { PromiseCommandResponse, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { Shell } from '@microsoft/vscode-processutils';
 import { CancellationToken, CancellationTokenSource, Event, EventEmitter, Pseudoterminal, TaskScope, TerminalDimensions, workspace, WorkspaceFolder } from 'vscode';
 import { execAsync, ExecAsyncOutput } from '../utils/execAsync';
 import { resolveVariables } from '../utils/resolveVariables';

@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
-import { CommandLineArgs, PromiseCommandResponse, quoted, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { PromiseCommandResponse, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { CommandLineArgs, quoted } from '@microsoft/vscode-processutils';
 import * as vscode from 'vscode';
 import { ext } from '../../extensionVariables';
 import { runWithDefaults } from '../../runtimes/runners/runWithDefaults';

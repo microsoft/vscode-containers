@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccumulatorStream, Shell, spawnStreamAsync, StreamSpawnOptions } from '@microsoft/vscode-container-client';
+import { AccumulatorStream, Shell, spawnStreamAsync, StreamSpawnOptions } from '@microsoft/vscode-processutils';
 import * as cp from 'child_process';
 import * as stream from 'stream';
 import { CancellationToken } from 'vscode';
