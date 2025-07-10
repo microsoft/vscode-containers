@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { composeArgs, withNamedArg } from "@microsoft/vscode-processutils";
 import * as path from "path";
 import { WorkspaceFolder, commands, l10n, tasks } from "vscode";
 import { ext } from "../../extensionVariables";
@@ -109,7 +110,9 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
     protected override async getProjectProperties(debugConfiguration: DockerDebugConfiguration, folder?: WorkspaceFolder): Promise<NetSdkProjectProperties> {
         const ridOS = await normalizeOsToRidOs();
         const ridArchitecture = await normalizeArchitectureToRidArchitecture();
-        const additionalProperties = `/p:ContainerRuntimeIdentifier="${ridOS}-${ridArchitecture}"`;
+        const additionalProperties = composeArgs(
+            withNamedArg('/p:ContainerRuntimeIdentifier', `${ridOS}-${ridArchitecture}`, { assignValue: true, shouldQuote: true }),
+        )();
         const resolvedAppProject = resolveVariables(debugConfiguration.netCore?.appProject, folder);
 
         const projectInfo = await getNetCoreProjectInfo('GetProjectProperties', resolvedAppProject, additionalProperties);
