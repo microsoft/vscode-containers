@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CommandNotSupportedError, CommandRunner, ICommandRunnerFactory, Like, normalizeCommandResponseLike, PromiseCommandResponse, StreamingCommandRunner, VoidCommandResponse } from '@microsoft/vscode-container-client';
-import { CommandLineArgs } from '@microsoft/vscode-processutils';
+import { CommandLineArgs, getSafeExecPath } from '@microsoft/vscode-processutils';
 import * as os from 'os';
 import * as vscode from 'vscode';
 
@@ -39,7 +39,7 @@ async function executeAsTask(options: TaskCommandRunnerOptions, command: string,
     const shellExecutionOptions = { cwd: options.cwd || options.workspaceFolder?.uri?.fsPath || os.homedir() };
 
     const shellExecution = args ?
-        new vscode.ShellExecution(command, args, shellExecutionOptions) : // Command is the process, and args contains arguments
+        new vscode.ShellExecution(getSafeExecPath(command), args, shellExecutionOptions) : // Command is the process, and args contains arguments
         new vscode.ShellExecution(command, shellExecutionOptions); // Command is the full command line
 
     const task = new vscode.Task(
