@@ -1,3 +1,10 @@
+## 0.4.0 - 10 July 2025
+### Added
+* Added a new `checkOrchestratorInstall` command for `ContainerOrchestratorClient`. [#274](https://github.com/microsoft/vscode-docker-extensibility/pull/274)
+
+### Breaking Changes
+* `spawnStreamAsync`, `Shell`, `commandLineBuilder`, and some related utilities have been moved to a new `@microsoft/vscode-processutils` package. Imports will need to be updated. [#277](https://github.com/microsoft/vscode-docker-extensibility/pull/277)
+
 ## 0.3.0 - 7 July 2025
 ### Added
 * Support has been added for Podman Compose. [#264](https://github.com/microsoft/vscode-docker-extensibility/issues/264)
