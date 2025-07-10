@@ -10,7 +10,7 @@ import { scaffold } from "../scaffolding/scaffold";
 import { scaffoldCompose } from "../scaffolding/scaffoldCompose";
 import { scaffoldDebugConfig } from "../scaffolding/scaffoldDebugConfig";
 import { chooseContainerRuntime } from "./chooseContainerRuntime";
-import { composeDown, composeRestart, composeUp, composeUpSubset } from "./compose/compose";
+import { composeDown, composeDownSubset, composeRestart, composeUp, composeUpSubset } from "./compose/compose";
 import { attachShellContainer } from "./containers/attachShellContainer";
 import { browseContainer } from "./containers/browseContainer";
 import { composeGroupDown, composeGroupLogs, composeGroupRestart, composeGroupStart, composeGroupStop } from "./containers/composeGroup";
@@ -121,6 +121,7 @@ export function registerCommands(): void {
     registerWorkspaceCommand('vscode-containers.compose.restart', composeRestart);
     registerWorkspaceCommand('vscode-containers.compose.up', composeUp);
     registerWorkspaceCommand('vscode-containers.compose.up.subset', composeUpSubset);
+    registerWorkspaceCommand('vscode-containers.compose.down.subset', composeDownSubset);
     registerCommand('vscode-containers.pruneSystem', pruneSystem);
 
     registerWorkspaceCommand('vscode-containers.containers.attachShell', attachShellContainer);

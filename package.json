@@ -100,6 +100,10 @@
                     "when": "isWorkspaceTrusted"
                 },
                 {
+                    "command": "vscode-containers.compose.down.subset",
+                    "when": "isWorkspaceTrusted"
+                },
+                {
                     "command": "vscode-containers.configure",
                     "when": "isWorkspaceTrusted"
                 },
@@ -175,6 +179,11 @@
                     "group": "containers"
                 },
                 {
+                    "when": "isWorkspaceTrusted && editorLangId == dockercompose",
+                    "command": "vscode-containers.compose.down.subset",
+                    "group": "containers"
+                },
+                {
                     "when": "isWorkspaceTrusted && editorLangId == dockerfile",
                     "command": "vscode-containers.images.build",
                     "group": "containers"
@@ -204,6 +213,11 @@
                 {
                     "when": "isWorkspaceTrusted && resourceLangId == dockercompose",
                     "command": "vscode-containers.compose.up.subset",
+                    "group": "containers"
+                },
+                {
+                    "when": "isWorkspaceTrusted && resourceLangId == dockercompose",
+                    "command": "vscode-containers.compose.down.subset",
                     "group": "containers"
                 },
                 {
@@ -1843,6 +1857,43 @@
                     ],
                     "description": "%vscode-containers.config.template.composeDown.description%"
                 },
+                "containers.commands.composeDownSubset": {
+                    "oneOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "properties": {
+                                    "template": {
+                                        "type": "string",
+                                        "description": "%vscode-containers.config.template.composeDownSubset.template%"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "description": "%vscode-containers.config.template.composeDownSubset.label%"
+                                    },
+                                    "match": {
+                                        "type": "string",
+                                        "description": "%vscode-containers.config.template.composeDownSubset.match%"
+                                    }
+                                },
+                                "required": [
+                                    "label",
+                                    "template"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "default": [
+                        {
+                            "label": "Compose Down",
+                            "template": "${composeCommand} ${profileList} ${configurationFile} down ${serviceList}"
+                        }
+                    ],
+                    "description": "%vscode-containers.config.template.composeDownSubset.description%"
+                },
                 "containers.containers.groupBy": {
                     "type": "string",
                     "default": "Compose Project Name",
@@ -2350,6 +2401,11 @@
             {
                 "command": "vscode-containers.compose.up.subset",
                 "title": "%vscode-containers.commands.compose.up.subset%",
+                "category": "%vscode-containers.commands.category.containersGeneric%"
+            },
+            {
+                "command": "vscode-containers.compose.down.subset",
+                "title": "%vscode-containers.commands.compose.down.subset%",
                 "category": "%vscode-containers.commands.category.containersGeneric%"
             },
             {
@@ -2961,7 +3017,8 @@
                         "completionEvents": [
                             "onCommand:vscode-containers.images.run",
                             "onCommand:vscode-containers.compose.up",
-                            "onCommand:vscode-containers.compose.up.subset"
+                            "onCommand:vscode-containers.compose.up.subset",
+                            "onCommand:vscode-containers.compose.down.subset"
                         ],
                         "description": "%vscode-containers.walkthrough.containersStart.runContainer.description%",
                         "media": {
