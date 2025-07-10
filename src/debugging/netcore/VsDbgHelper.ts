@@ -22,12 +22,12 @@ const dayInMs = 24 * 60 * 60 * 1000;
 
 export const vsDbgInstallBasePath = path.join(os.homedir(), '.vsdbg');
 
-const acquisition: { url: string, scriptPath: string, getShellCommand(runtime: VsDbgRuntime, version: VsDbgVersion): { command: string, args: CommandLineArgs }[]; } =
+const acquisition: { url: string, scriptPath: string, getShellCommands(runtime: VsDbgRuntime, version: VsDbgVersion): { command: string, args: CommandLineArgs }[]; } =
     isWindows() ?
         {
             url: 'https://aka.ms/getvsdbgps1',
             scriptPath: path.join(vsDbgInstallBasePath, 'GetVsDbg.ps1'),
-            getShellCommand: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
+            getShellCommands: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
                 const args = composeArgs(
                     withArg('-NonInteractive', '-NoProfile'),
                     withNamedArg('-WindowStyle', 'Hidden'),
@@ -46,7 +46,7 @@ const acquisition: { url: string, scriptPath: string, getShellCommand(runtime: V
         {
             url: 'https://aka.ms/getvsdbgsh',
             scriptPath: path.join(vsDbgInstallBasePath, 'getvsdbg.sh'),
-            getShellCommand: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
+            getShellCommands: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
                 const chmodArgs = composeArgs(
                     withArg('+x'),
                     withQuotedArg(acquisition.scriptPath)
@@ -65,7 +65,7 @@ const acquisition: { url: string, scriptPath: string, getShellCommand(runtime: V
                         args: chmodArgs
                     },
                     {
-                        command: acquisition.scriptPath,
+                        command: acquisition.scriptPath, // TODO: Does this need to be quoted? We are running in a shell
                         args: scriptArgs,
                     },
                 ];
@@ -119,7 +119,7 @@ async function executeAcquisitionScriptIfNecessary(runtime: VsDbgRuntime, versio
 
     ext.outputChannel.info(l10n.t('Installing VsDbg, Runtime = {0}, Version = {1}...', runtime, version));
 
-    const commands = acquisition.getShellCommand(runtime, version);
+    const commands = acquisition.getShellCommands(runtime, version);
 
     for (const { command, args } of commands) {
         await execAsync(command, args, {
