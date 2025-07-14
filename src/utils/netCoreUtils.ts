@@ -23,7 +23,7 @@ export async function getNetCoreProjectInfo(target: 'GetBlazorManifestLocations'
         withNamedArg('/p:CustomAfterMicrosoftCommonTargets', targetsFile, { assignValue: true, shouldQuote: true }),
         withNamedArg('/p:CustomAfterMicrosoftCommonCrossTargetingTargets', targetsFile, { assignValue: true, shouldQuote: true }),
         withNamedArg('/p:InfoOutputPath', outputFile, { assignValue: true, shouldQuote: true }),
-        withArg(...additionalProperties),
+        withArg(...(additionalProperties ?? [])),
         withQuotedArg(project),
     )();
 
