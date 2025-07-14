@@ -21,7 +21,9 @@ To install the extension, open the Extensions view, search for `container tools`
 
 ### Editing Docker files
 
-You can get IntelliSense when editing your `Dockerfile` and `compose.yaml` files, with completions and syntax help for common commands.
+Container Tools provides basic IntelliSense when editing your `Dockerfile` and `compose.yaml` files including completions and syntax help for common commands.
+
+> Note: [Docker DX](https://marketplace.visualstudio.com/items?itemName=docker.docker) is the official language service from Docker that provides more advanced IntelliSense for Docker, Compose, and Bake configuration files. This extension is recommended to be installed alongside Container Tools for enhanced editing support.
 
 ![IntelliSense for Dockerfiles](resources/readme/dockerfile-intellisense.png)
 
