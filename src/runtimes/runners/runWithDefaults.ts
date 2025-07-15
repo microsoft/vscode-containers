@@ -138,12 +138,10 @@ class DefaultEnvStreamCommandRunnerFactory<TOptions extends DefaultEnvStreamComm
         super({
             ...options,
             env: withDockerEnvSettings(process.env),
-            shell: false,
             shellProvider: new NoShell(),
             onCommand,
             stdOutPipe,
             stdErrPipe,
-            windowsVerbatimArguments: true,
             strict: true,
         });
 

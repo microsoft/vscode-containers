@@ -43,7 +43,6 @@ export async function execAsync(command: string, args: CommandLineArgs, options?
 
     const spawnOptions: StreamSpawnOptions = {
         ...options,
-        shell: true,
         shellProvider: Shell.getShellOrDefault(),
         stdOutPipe: stdoutIntermediate ?? stdoutFinal,
         stdErrPipe: stderrIntermediate ?? stderrFinal,
