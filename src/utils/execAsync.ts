@@ -3,10 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccumulatorStream, Shell, spawnStreamAsync, StreamSpawnOptions } from '@microsoft/vscode-container-client';
-import * as cp from 'child_process';
+import { AccumulatorStream, CommandLineArgs, Shell, spawnStreamAsync, StreamSpawnOptions } from '@microsoft/vscode-processutils';
 import * as stream from 'stream';
-import { CancellationToken } from 'vscode';
 
 type Progress = (content: string, err: boolean) => void;
 
@@ -15,14 +13,9 @@ export type ExecError = Error & { code: any, signal: any, stdErrHandled: boolean
 
 export type ExecAsyncOutput = { stdout: string, stderr: string };
 
-export async function execAsync(command: string, options?: cp.ExecOptions & { stdin?: string, cancellationToken?: CancellationToken }, progress?: Progress): Promise<ExecAsyncOutput> {
+export async function execAsync(command: string, args: CommandLineArgs, options?: Partial<StreamSpawnOptions>, progress?: Progress): Promise<ExecAsyncOutput> {
     const stdoutFinal = new AccumulatorStream();
     const stderrFinal = new AccumulatorStream();
-
-    let stdinPipe: stream.Readable | undefined;
-    if (options?.stdin) {
-        stdinPipe = stream.Readable.from(options.stdin);
-    }
 
     let stdoutIntermediate: stream.PassThrough | undefined;
     let stderrIntermediate: stream.PassThrough | undefined;
@@ -50,14 +43,12 @@ export async function execAsync(command: string, options?: cp.ExecOptions & { st
 
     const spawnOptions: StreamSpawnOptions = {
         ...options,
-        shell: true,
         shellProvider: Shell.getShellOrDefault(),
-        stdInPipe: stdinPipe,
         stdOutPipe: stdoutIntermediate ?? stdoutFinal,
         stdErrPipe: stderrIntermediate ?? stderrFinal,
     };
 
-    await spawnStreamAsync(command, [], spawnOptions);
+    await spawnStreamAsync(command, args, spawnOptions);
 
     return {
         stdout: await stdoutFinal.getString(),

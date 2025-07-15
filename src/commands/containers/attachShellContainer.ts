@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext } from '@microsoft/vscode-azext-utils';
-import { composeArgs, ContainerOS, VoidCommandResponse, withArg, withQuotedArg } from '@microsoft/vscode-container-client';
+import { ContainerOS, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { composeArgs, withArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import { l10n } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
