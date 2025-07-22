@@ -111,7 +111,7 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
         const ridOS = await normalizeOsToRidOs();
         const ridArchitecture = await normalizeArchitectureToRidArchitecture();
         const additionalProperties = composeArgs(
-            withNamedArg('/p:ContainerRuntimeIdentifier', `${ridOS}-${ridArchitecture}`, { assignValue: true, shouldQuote: true }),
+            withNamedArg('/p:ContainerRuntimeIdentifier', `"${ridOS}-${ridArchitecture}"`, { assignValue: true }), // We have to pre-quote the file paths because we cannot simultaneously use `assignValue` and `shouldQuote`
         )();
         const resolvedAppProject = resolveVariables(debugConfiguration.netCore?.appProject, folder);
 

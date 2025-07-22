@@ -20,9 +20,9 @@ export async function getNetCoreProjectInfo(target: 'GetBlazorManifestLocations'
         withArg('build'),
         withArg('/r:false'),
         withArg(`/t:${target}`), // Target name doesn't need quoting
-        withNamedArg('/p:CustomAfterMicrosoftCommonTargets', targetsFile, { assignValue: true, shouldQuote: true }),
-        withNamedArg('/p:CustomAfterMicrosoftCommonCrossTargetingTargets', targetsFile, { assignValue: true, shouldQuote: true }),
-        withNamedArg('/p:InfoOutputPath', outputFile, { assignValue: true, shouldQuote: true }),
+        withNamedArg('/p:CustomAfterMicrosoftCommonTargets', `"${targetsFile}"`, { assignValue: true }), // We have to pre-quote the file paths because we cannot simultaneously use `assignValue` and `shouldQuote`
+        withNamedArg('/p:CustomAfterMicrosoftCommonCrossTargetingTargets', `"${targetsFile}"`, { assignValue: true }),
+        withNamedArg('/p:InfoOutputPath', `"${outputFile}"`, { assignValue: true }),
         withArg(...(additionalProperties ?? [])),
         withQuotedArg(project),
     )();
