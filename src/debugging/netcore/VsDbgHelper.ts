@@ -65,7 +65,7 @@ const acquisition: { url: string, scriptPath: string, getShellCommands(runtime: 
                         args: chmodArgs
                     },
                     {
-                        command: acquisition.scriptPath, // TODO: Does this need to be quoted? We are running in a shell
+                        command: acquisition.scriptPath, // This doesn't need to be quoted, `spawnStreamAsync` does it internally
                         args: scriptArgs,
                     },
                 ];
