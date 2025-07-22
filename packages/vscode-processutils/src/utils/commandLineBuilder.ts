@@ -80,9 +80,22 @@ export function withFlagArg(name: string, value: boolean | undefined): CommandLi
     };
 }
 
+/**
+ * Options for the withNamedArg function
+ * - `assignValue`: If true, the argument will be formatted as `name=value`
+ * - `shouldQuote`: If true, the argument value will be quoted. Default true.
+ *
+ * These options cannot be used together
+ */
 type WithNamedArgOptions = {
-    assignValue?: boolean;
-    shouldQuote?: boolean;
+    assignValue?: true,
+    shouldQuote?: never | false,
+} | {
+    assignValue?: never | false,
+    shouldQuote?: true,
+} | {
+    assignValue?: never | false,
+    shouldQuote?: never | false,
 };
 /**
  * Functional method for assigning an array style argument (multiple instances

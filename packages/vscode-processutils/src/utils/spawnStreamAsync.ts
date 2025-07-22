@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { spawn, SpawnOptions } from 'child_process';
+import * as os from 'os';
 import * as treeKill from 'tree-kill';
 
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
@@ -82,14 +83,30 @@ export async function spawnStreamAsync(
         throw new CancellationError('Command cancelled', cancellationToken);
     }
 
-    const safeCommand = !!options.allowUnsafeExecutablePath ? command : getSafeExecPath(command);
+    let finalCommand: string;
+    if (!!options.allowUnsafeExecutablePath) {
+        // If allowUnsafeExecutablePath is true, we assume the command is a full command line
+        // and we do not apply any quoting or checks.
+        finalCommand = command;
+    } else {
+        // Otherwise, we do some checks and quoting.
+        const safeCommand = getSafeExecPath(command);
+        const quotedSafeCommand = quoteExecutableCommandIfNeeded(safeCommand);
+        finalCommand = !!shell ? quotedSafeCommand : safeCommand;
+
+        // If we're on Windows and not using a shell, we must use `windowsVerbatimArguments`
+        options.windowsVerbatimArguments ??= os.platform() === 'win32' && !shell;
+
+        // If we use `windowsVerbatimArguments`, we must also set `argv0` to the quoted command
+        options.argv0 ??= options.windowsVerbatimArguments ? quotedSafeCommand : undefined;
+    }
 
     if (options.onCommand) {
-        options.onCommand([safeCommand, ...normalizedArgs].join(' '));
+        options.onCommand([finalCommand, ...normalizedArgs].join(' '));
     }
 
     const childProcess = spawn(
-        safeCommand,
+        finalCommand,
         normalizedArgs,
         {
             ...options,
@@ -147,4 +164,17 @@ export async function spawnStreamAsync(
             }
         });
     });
+}
+
+/**
+ * Gets a double-quoted version of the executable command, if it contains any spaces
+ * Useful when the command is expected to be executed in a shell, or if it needs to
+ * be supplied as {@link SpawnOptions.argv0} when using {@link SpawnOptions.windowsVerbatimArguments}.
+ * @param command The executable command
+ */
+function quoteExecutableCommandIfNeeded(command: string): string {
+    if (command.includes(' ') && !command.startsWith('"') && !command.endsWith('"')) {
+        return `"${command}"`;
+    }
+    return command;
 }

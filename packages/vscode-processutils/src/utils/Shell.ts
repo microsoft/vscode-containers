@@ -44,7 +44,7 @@ export abstract class Shell implements IShell {
     }
 
     public getShellOrDefault(shell?: string | boolean): string | boolean | undefined {
-        return shell;
+        return shell || true;
     }
 }
 
