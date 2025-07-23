@@ -3101,7 +3101,7 @@
         "@microsoft/vscode-container-client": "^0.3.0",
         "@microsoft/vscode-docker-registries": "^0.2.0",
         "dayjs": "^1.11.7",
-        "dockerfile-language-server-nodejs": "^0.14.0",
+        "dockerfile-language-server-nodejs": "^0.14.1",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
         "handlebars": "^4.7.7",
