@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DialogResponses, IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { CommandLineArgs, ContainerOS, VoidCommandResponse, composeArgs, withArg, withQuotedArg } from '@microsoft/vscode-container-client';
+import { CommandLineArgs, ContainerOS, Shell, VoidCommandResponse, composeArgs, quoted, withArg, withNamedArg, withQuotedArg } from '@microsoft/vscode-container-client';
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import { DebugConfiguration, MessageItem, ProgressLocation, l10n, window } from 'vscode';
+import { DebugConfiguration, MessageItem, ProgressLocation, ShellQuotedString, l10n, window } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { NetCoreTaskHelper, NetCoreTaskOptions } from '../../tasks/netcore/NetCoreTaskHelper';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
@@ -110,12 +110,14 @@ export class NetCoreDebugHelper implements DebugHelper {
             configureSsl || await NetCoreTaskHelper.isWebApp(debugConfiguration.netCore.appProject) // For .NET Console we won't create a DockerServerReadyAction unless at least part of one is user-provided
         );
 
+        const coreClrArgs = Shell.getShellOrDefault().quote([...additionalProbingPathsArgs, containerAppOutput]);
+
         return {
             ...debugConfiguration, // Gets things like name, preLaunchTask, serverReadyAction, etc.
             type: 'coreclr',
             request: 'launch',
             program: debugConfiguration.program || 'dotnet',
-            args: debugConfiguration.args || [additionalProbingPathsArgs, containerAppOutput].join(' '),
+            args: debugConfiguration.args || coreClrArgs,
             cwd: debugConfiguration.cwd || platformOS === 'Windows' ? 'C:\\app' : '/app',
             dockerOptions: {
                 containerName: containerName,
@@ -185,12 +187,12 @@ export class NetCoreDebugHelper implements DebugHelper {
         return projectProperties.appOutput;
     }
 
-    protected inferAppContainerOutput(appOutput: string, platformOS: PlatformOS): string {
+    protected inferAppContainerOutput(appOutput: string, platformOS: PlatformOS): ShellQuotedString {
         const result = platformOS === 'Windows' ?
             path.win32.join('C:\\app', appOutput) :
             path.posix.join('/app', appOutput);
 
-        return pathNormalize(result, platformOS);
+        return quoted(pathNormalize(result, platformOS));
     }
 
     protected async loadExternalInfo(context: DockerDebugContext, debugConfiguration: DockerDebugConfiguration): Promise<{ configureSsl: boolean, containerName: string, platformOS: PlatformOS }> {
@@ -258,7 +260,7 @@ export class NetCoreDebugHelper implements DebugHelper {
         await exportCertificateIfNecessary(debugConfiguration.netCore.appProject, certificateExportPath);
     }
 
-    private static getAdditionalProbingPathsArgs(platformOS: PlatformOS): string {
+    private static getAdditionalProbingPathsArgs(platformOS: PlatformOS): CommandLineArgs {
         const additionalProbingPaths = platformOS === 'Windows'
             ? [
                 'C:\\.nuget\\packages',
@@ -268,7 +270,8 @@ export class NetCoreDebugHelper implements DebugHelper {
                 '/root/.nuget/packages',
                 '/root/.nuget/fallbackpackages'
             ];
-        return additionalProbingPaths.map(probingPath => `--additionalProbingPath ${probingPath}`).join(' ');
+
+        return composeArgs(withNamedArg('--additionalProbingPath', additionalProbingPaths, { shouldQuote: true }))();
     }
 
     private async copyDebuggerToContainer(context: IActionContext, containerName: string, containerDebuggerDirectory: string, containerOS: ContainerOS): Promise<void> {
