@@ -124,8 +124,12 @@ async function executeAcquisitionScriptIfNecessary(runtime: VsDbgRuntime, versio
     for (const { command, args } of commands) {
         await execAsync(command, args, {
             onCommand: (commandLine: string) => ext.outputChannel.info(commandLine),
-        }, (stdoutContent: string) => {
-            ext.outputChannel.info(stdoutContent);
+        }, (output: string, err: boolean) => {
+            if (err) {
+                ext.outputChannel.error(output);
+            } else {
+                ext.outputChannel.info(output);
+            }
         });
     }
 
