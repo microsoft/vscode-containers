@@ -7,7 +7,6 @@ import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-uti
 import { CommandLineArgs, PromiseCommandResponse, quoted, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { ext } from '../../extensionVariables';
-import { runWithDefaults } from '../../runtimes/runners/runWithDefaults';
 import { execAsync } from '../../utils/execAsync';
 
 // Matches an `up` or `down` and everything after it--so that it can be replaced with `config --services`, to get a service list using all of the files originally part of the compose command
@@ -221,7 +220,7 @@ async function getDefaultCommandServiceSubsets(workspaceFolder: vscode.Workspace
     configCommand.args.push('config', `--${type}`);
 
     try {
-        return await runWithDefaults(() => configCommand, { cwd: workspaceFolder.uri?.fsPath });
+        return await ext.runWithDefaults(() => configCommand, { cwd: workspaceFolder.uri?.fsPath });
     } catch (err) {
         // Profiles is not yet widely supported, so those errors will be eaten--otherwise, rethrow
         if (type === 'profiles') {

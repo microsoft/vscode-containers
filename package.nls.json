@@ -204,6 +204,8 @@
     "vscode-containers.config.containers.enableComposeLanguageService": "Whether or not to enable the Compose Language Service. Changing requires a restart to take effect.",
     "vscode-containers.config.containers.containerClient": "Which container client to use. If not specified, Docker will be used. Changing requires a restart to take effect.",
     "vscode-containers.config.containers.orchestratorClient": "Which container orchestrator client to use. If not specified, Docker Compose will be used. Changing requires a restart to take effect.",
+    "vscode-containers.config.containers.executeInWSL": "Controls whether container and compose actions should be executed in WSL. This setting has no effect on other platforms than Windows.",
+    "vscode-containers.config.containers.executeInWSLDistro": "WSL distribution to use when executing container actions. The default is to use the default WSL distro (see `wsl -l`). This setting has no effect when `#vscode-containers.config.containers.executeInWSL#` is not enabled or on other platforms than Windows.",
     "vscode-containers.config.deprecated": "This setting has been deprecated and will be removed in a future release.",
     "vscode-containers.commands.compose.down": "Compose Down",
     "vscode-containers.commands.compose.restart": "Compose Restart",

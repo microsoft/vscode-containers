@@ -7,6 +7,7 @@ import { AzExtTreeDataProvider, AzExtTreeItem, IExperimentationServiceAdapter } 
 import { DockerHubRegistryDataProvider, GenericRegistryV2DataProvider, GitHubRegistryDataProvider } from '@microsoft/vscode-docker-registries';
 import { ExtensionContext, StatusBarItem, TreeView } from 'vscode';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
+import { ExecutionEnvironmentManager } from './runtimes/ExecutionEnvironmentManager';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
 import { runWithDefaults as runWithDefaultsImpl, streamWithDefaults as streamWithDefaultsImpl } from './runtimes/runners/runWithDefaults';
 import { IActivityMeasurementService } from './telemetry/ActivityMeasurementService';
@@ -65,6 +66,7 @@ export namespace ext {
     // Container runtime related items
     export let runtimeManager: ContainerRuntimeManager;
     export let orchestratorManager: OrchestratorRuntimeManager;
+    export let executionManger: ExecutionEnvironmentManager;
     export const runWithDefaults = runWithDefaultsImpl;
     export const streamWithDefaults = streamWithDefaultsImpl;
 

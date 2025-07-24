@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccumulatorStream, ClientIdentity, GeneratorCommandResponse, IContainersClient, isChildProcessError, Like, normalizeCommandResponseLike, NoShell, PromiseCommandResponse, ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { AccumulatorStream, ClientIdentity, CommandLineArgs, CommandResponseBase, GeneratorCommandResponse, IContainersClient, isChildProcessError, Like, normalizeCommandResponseLike, NoShell, PromiseCommandResponse, ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as stream from 'stream';
 import * as vscode from 'vscode';
 import { ext } from '../../extensionVariables';
@@ -147,6 +147,11 @@ class DefaultEnvStreamCommandRunnerFactory<TOptions extends DefaultEnvStreamComm
         });
 
         this.errAccumulator = errAccumulator;
+    }
+
+    protected override getCommandAndArgs(commandResponse: CommandResponseBase): { command: string; args: CommandLineArgs; } {
+        // This needs to remain unquoted as it's being passed to child_process.spawn
+        return ext.executionManger.adjustExecutionArguments(super.getCommandAndArgs(commandResponse), {shouldQuote: false});
     }
 
     public dispose(): void {
