@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CommandLineArgs, composeArgs, withArg, withNamedArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
@@ -21,20 +22,53 @@ const dayInMs = 24 * 60 * 60 * 1000;
 
 export const vsDbgInstallBasePath = path.join(os.homedir(), '.vsdbg');
 
-const acquisition: { url: string, scriptPath: string, getShellCommand(runtime: VsDbgRuntime, version: VsDbgVersion): string; } =
+const acquisition: { url: string, scriptPath: string, getShellCommands(runtime: VsDbgRuntime, version: VsDbgVersion): { command: string, args: CommandLineArgs }[]; } =
     isWindows() ?
         {
             url: 'https://aka.ms/getvsdbgps1',
             scriptPath: path.join(vsDbgInstallBasePath, 'GetVsDbg.ps1'),
-            getShellCommand: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
-                return `powershell -NonInteractive -NoProfile -WindowStyle Hidden -ExecutionPolicy RemoteSigned -File "${acquisition.scriptPath}" -Version ${version} -RuntimeID ${runtime} -InstallPath "${getInstallDirectory(runtime, version)}"`;
+            getShellCommands: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
+                const args = composeArgs(
+                    withArg('-NonInteractive', '-NoProfile'),
+                    withNamedArg('-WindowStyle', 'Hidden'),
+                    withNamedArg('-ExecutionPolicy', 'RemoteSigned'),
+                    withNamedArg('-File', acquisition.scriptPath, { shouldQuote: true }),
+                    withNamedArg('-Version', version),
+                    withNamedArg('-RuntimeID', runtime),
+                    withNamedArg('-InstallPath', getInstallDirectory(runtime, version), { shouldQuote: true }),
+                )();
+                return [{
+                    command: 'powershell',
+                    args: args,
+                }];
             }
         } :
         {
             url: 'https://aka.ms/getvsdbgsh',
             scriptPath: path.join(vsDbgInstallBasePath, 'getvsdbg.sh'),
-            getShellCommand: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
-                return `chmod +x "${acquisition.scriptPath}" && "${acquisition.scriptPath}" -u -v ${version} -r ${runtime} -l "${getInstallDirectory(runtime, version)}"`;
+            getShellCommands: (runtime: VsDbgRuntime, version: VsDbgVersion) => {
+                const chmodArgs = composeArgs(
+                    withArg('+x'),
+                    withQuotedArg(acquisition.scriptPath)
+                )();
+
+                const scriptArgs = composeArgs(
+                    withArg('-u'),
+                    withNamedArg('-v', version),
+                    withNamedArg('-r', runtime),
+                    withNamedArg('-l', getInstallDirectory(runtime, version), { shouldQuote: true })
+                )();
+
+                return [
+                    {
+                        command: 'chmod',
+                        args: chmodArgs
+                    },
+                    {
+                        command: acquisition.scriptPath, // This doesn't need to be quoted, `spawnStreamAsync` does it internally
+                        args: scriptArgs,
+                    },
+                ];
             }
         };
 
@@ -83,14 +117,21 @@ async function executeAcquisitionScriptIfNecessary(runtime: VsDbgRuntime, versio
         return;
     }
 
-    const command = acquisition.getShellCommand(runtime, version);
-
     ext.outputChannel.info(l10n.t('Installing VsDbg, Runtime = {0}, Version = {1}...', runtime, version));
-    ext.outputChannel.info(command);
 
-    await execAsync(command, {}, (output: string) => {
-        ext.outputChannel.info(output);
-    });
+    const commands = acquisition.getShellCommands(runtime, version);
+
+    for (const { command, args } of commands) {
+        await execAsync(command, args, {
+            onCommand: (commandLine: string) => ext.outputChannel.info(commandLine),
+        }, (output: string, err: boolean) => {
+            if (err) {
+                ext.outputChannel.error(output);
+            } else {
+                ext.outputChannel.info(output);
+            }
+        });
+    }
 
     await ext.context.globalState.update(scriptExecutedDateKey, Date.now());
     ext.outputChannel.info(l10n.t('VsDbg installed, Runtime = {0}, Version = {1}...', runtime, version));

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions, Shell, composeArgs, withArg, withNamedArg } from "@microsoft/vscode-container-client";
+import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions } from "@microsoft/vscode-container-client";
+import { CommandLineArgs, composeArgs, withArg, withNamedArg } from '@microsoft/vscode-processutils';
 import * as os from 'os';
 import * as vscode from 'vscode';
 import { configPrefix } from "../../constants";
@@ -31,9 +32,9 @@ export type RidCpuArchitecture =
 export const NetSdkRunTaskType = 'dotnet-container-sdk';
 const NetSdkDefaultImageTag = 'dev'; // intentionally default to dev tag for phase 1 of this feature
 
-export async function getNetSdkBuildCommand(): Promise<string> {
+export async function getNetSdkBuildCommand(): Promise<{ command: string, args: CommandLineArgs }> {
     const args = composeArgs(
-        withArg('dotnet', 'publish'),
+        withArg('publish'),
         withNamedArg('--os', await normalizeOsToRidOs()),
         withNamedArg('--arch', await normalizeArchitectureToRidArchitecture()),
         withArg('/t:PublishContainer'),
@@ -42,11 +43,10 @@ export async function getNetSdkBuildCommand(): Promise<string> {
         withNamedArg('-p:LocalRegistry', getLocalRegistry(), { assignValue: true }),
     )();
 
-    const quotedArgs = Shell.getShellOrDefault().quote(args);
-    return quotedArgs.join(' ');
+    return { command: 'dotnet', args: args };
 }
 
-export async function getNetSdkRunCommand(imageName: string): Promise<string> {
+export async function getNetSdkRunCommand(imageName: string): Promise<{ command: string, args: CommandLineArgs }> {
     const client = await ext.runtimeManager.getClient();
 
     const options: RunContainerCommandOptions = {
@@ -61,10 +61,8 @@ export async function getNetSdkRunCommand(imageName: string): Promise<string> {
         entrypoint: await getDockerOSType() === 'windows' ? 'cmd.exe' : '/bin/sh'
     };
 
-    const command = await client.runContainer(options);
-    const quotedArgs = Shell.getShellOrDefault().quote(command.args);
-    const commandLine = [client.commandName, ...quotedArgs].join(' ');
-    return commandLine;
+    const commandResponse = await client.runContainer(options);
+    return { command: commandResponse.command, args: commandResponse.args };
 }
 
 /**

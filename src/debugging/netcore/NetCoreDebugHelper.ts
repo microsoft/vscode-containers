@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DialogResponses, IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { CommandLineArgs, ContainerOS, Shell, VoidCommandResponse, composeArgs, quoted, withArg, withNamedArg, withQuotedArg } from '@microsoft/vscode-container-client';
+import { ContainerOS, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { CommandLineArgs, Shell, composeArgs, quoted, withArg, withNamedArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { DebugConfiguration, MessageItem, ProgressLocation, ShellQuotedString, l10n, window } from 'vscode';

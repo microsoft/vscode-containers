@@ -7,7 +7,6 @@ import { DockerComposeClient, IContainerOrchestratorClient, PodmanComposeClient 
 import * as vscode from 'vscode';
 import { configPrefix } from '../../constants';
 import { ext } from '../../extensionVariables';
-import { execAsync } from '../../utils/execAsync';
 import { AsyncLazy } from '../../utils/lazy';
 import { AutoConfigurableClient } from './AutoConfigurableClient';
 
@@ -61,7 +60,9 @@ export class AutoConfigurableDockerComposeClient extends DockerComposeClient imp
 
             try {
                 ext.outputChannel.info('Attempting to autodetect Docker Compose command...');
-                await execAsync('docker compose version');
+                await ext.runWithDefaults(
+                    () => this.checkOrchestratorInstall({ composeVersion: 'v2' }),
+                );
 
                 // If successful, then assume we can use compose V2
                 return {
