@@ -6,6 +6,7 @@
 import { CommandLineArgs, CommandNotSupportedError, CommandRunner, ICommandRunnerFactory, Like, normalizeCommandResponseLike, PromiseCommandResponse, StreamingCommandRunner, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as os from 'os';
 import * as vscode from 'vscode';
+import { ext } from '../../extensionVariables';
 
 interface TaskCommandRunnerOptions {
     taskName: string;
@@ -23,7 +24,7 @@ export class TaskCommandRunnerFactory implements ICommandRunnerFactory {
 
     public getCommandRunner(): CommandRunner {
         return async <T>(commandResponseLike: Like<PromiseCommandResponse<T> | VoidCommandResponse>) => {
-            const commandResponse = await normalizeCommandResponseLike(commandResponseLike);
+            const commandResponse = ext.executionManger.adjustExecutionArguments(await normalizeCommandResponseLike(commandResponseLike));
             await executeAsTask(this.options, commandResponse.command, commandResponse.args);
             return undefined!;
         };

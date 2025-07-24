@@ -2328,6 +2328,18 @@
                         "Docker Compose",
                         "Podman Compose"
                     ]
+                },
+                "containers.executeInWSL": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "%vscode-containers.config.containers.executeInWSL%",
+                    "scope": "machine-overridable"
+                },
+                "containers.executeInWSLDistro": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "%vscode-containers.config.containers.executeInWSLDistro%",
+                    "scope": "machine-overridable"
                 }
             }
         },

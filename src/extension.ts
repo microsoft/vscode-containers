@@ -21,6 +21,7 @@ import { AutoConfigurableDockerComposeClient } from './runtimes/clients/AutoConf
 import { AutoConfigurablePodmanClient } from './runtimes/clients/AutoConfigurablePodmanClient';
 import { AutoConfigurablePodmanComposeClient } from './runtimes/clients/AutoConfigurablePodmanComposeClient';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
+import { ExecutionEnvironmentManager } from './runtimes/ExecutionEnvironmentManager';
 import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
 import { registerTaskProviders } from './tasks/TaskHelper';
@@ -109,9 +110,11 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
 
         // Set up runtime managers
         ctx.subscriptions.push(
+            ext.executionManger = new ExecutionEnvironmentManager(),
             ext.runtimeManager = new ContainerRuntimeManager(),
             ext.orchestratorManager = new OrchestratorRuntimeManager()
         );
+        ext.executionManger.registerConfigListener();
 
         // Set up Container clients
         registerContainerClients();
