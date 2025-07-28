@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Bash } from '@microsoft/vscode-processutils';
+import { Bash, NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import * as fs from 'fs/promises';
 import * as os from 'os';
@@ -59,7 +59,7 @@ describe('(integration) ContainersClientE2E', function () {
             defaultRunnerFactory = (options: WslShellCommandRunnerOptions) => new WslShellCommandRunnerFactory(options);
         }
 
-        defaultRunner = defaultRunnerFactory({ strict: true, });
+        defaultRunner = defaultRunnerFactory({ strict: true, shellProvider: new NoShell(), });
     });
 
     // #endregion
@@ -813,7 +813,7 @@ describe('(integration) ContainersClientE2E', function () {
             }
 
             const secretStream = stream.Readable.from(dockerHubPAT);
-            const runnerFactory = defaultRunnerFactory({ stdInPipe: secretStream });
+            const runnerFactory = defaultRunnerFactory({ stdInPipe: secretStream, shellProvider: new NoShell(), });
             await runnerFactory.getCommandRunner()(
                 client.login({ username: dockerHubUsername, passwordStdIn: true, registry: client.defaultRegistry })
             );

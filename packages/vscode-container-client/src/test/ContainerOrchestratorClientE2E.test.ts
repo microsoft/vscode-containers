@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -56,7 +57,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             defaultRunnerFactory = (options: WslShellCommandRunnerOptions) => new WslShellCommandRunnerFactory(options);
         }
 
-        defaultRunner = defaultRunnerFactory({ strict: true, });
+        defaultRunner = defaultRunnerFactory({ strict: true, shellProvider: new NoShell() });
 
         // Set up paths for test docker-compose files
         composeDir = path.resolve(__dirname, 'buildContext');
