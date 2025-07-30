@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { composeArgs, quoted, withNamedArg } from "@microsoft/vscode-processutils";
+import { composeArgs, withNamedArg } from "@microsoft/vscode-processutils";
 import * as path from "path";
-import { ShellQuotedString, WorkspaceFolder, commands, l10n, tasks } from "vscode";
+import { WorkspaceFolder, commands, l10n, tasks } from "vscode";
 import { ext } from "../../extensionVariables";
 import { NetChooseBuildTypeContext, netContainerBuild } from "../../scaffolding/wizard/net/NetContainerBuild";
 import { AllNetContainerBuildOptions, NetContainerBuildOptionsKey } from "../../scaffolding/wizard/net/NetSdkChooseBuildStep";
@@ -103,8 +103,8 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
         };
     }
 
-    protected override inferAppContainerOutput(appOutput: string, platformOS: PlatformOS): ShellQuotedString {
-        return quoted(appOutput);
+    protected override inferAppContainerOutput(appOutput: string, platformOS: PlatformOS): string {
+        return appOutput;
     }
 
     protected override async getProjectProperties(debugConfiguration: DockerDebugConfiguration, folder?: WorkspaceFolder): Promise<NetSdkProjectProperties> {
