@@ -37,7 +37,7 @@ export class AlternateYamlLanguageServiceClientFeature implements StaticFeature,
                 hover: redhat || docker, // Compose spec has descriptions
                 imageLinks: docker, // Docker's extension supports Docker Hub, GHCR, MAR, and Quay.io
                 serviceStartupCodeLens: false, // The other extensions do not provide any code lens
-                formatting: redhat || docker,
+                formatting: false, // The other extensions do support formatting, but we enable it regardless so that an explicitly-chosen formatter always works
             };
         }
         return null;

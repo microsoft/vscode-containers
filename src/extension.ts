@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelector, LanguageClient, LanguageClientOptions, Middleware, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import * as tas from 'vscode-tas-client';
 import { registerCommands } from './commands/registerCommands';
-import { configPrefix } from './constants';
+import { configPrefix, legacyExtensionId } from './constants';
 import { registerDebugProvider } from './debugging/DebugHelper';
 import { DockerExtensionApi } from './DockerExtensionApi';
 import { DockerfileCompletionItemProvider } from './dockerfileCompletionItemProvider';
@@ -32,6 +32,7 @@ import { AlternateYamlLanguageServiceClientFeature } from './utils/AlternateYaml
 import { AzExtLogOutputChannelWrapper } from './utils/AzExtLogOutputChannelWrapper';
 import { logDockerEnvironment, logSystemInfo } from './utils/diagnostics';
 import { DocumentSettingsClientFeature } from './utils/DocumentSettingsClientFeature';
+import { migrateLanguageSpecificSettingsIfNeeded } from './utils/migration/languageSettings';
 import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
 
@@ -71,7 +72,7 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
         activateContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
 
         // Bail out of activation if old versions of the Docker extension are present
-        const dockerExtension = vscode.extensions.getExtension('ms-azuretools.vscode-docker');
+        const dockerExtension = vscode.extensions.getExtension(legacyExtensionId);
         if (dockerExtension && (dockerExtension.packageJSON as { version: string }).version) {
             const dockerExtensionVersion = semver.coerce(dockerExtension.packageJSON.version);
             if (dockerExtensionVersion && semver.lt(dockerExtensionVersion, '2.0.0')) {
@@ -148,6 +149,7 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
     // Migrate settings
     // Don't wait
     void migrateDockerToContainersSettingsIfNeeded(ctx);
+    void migrateLanguageSpecificSettingsIfNeeded(ctx);
 
     // Call command to activate container runtime provider extensions
     // Don't wait
