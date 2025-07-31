@@ -1,3 +1,7 @@
+## 0.2.1 - 31 July 2025
+### Fixed
+* Fixed an issue where `service` and `scope` parameters for OAuth requests were being sent as headers, when they should have been sent as query parameters. [#279](https://github.com/microsoft/vscode-docker-extensibility/issues/279)
+
 ## 0.2.0 - 7 January 2025
 ### Fixed
 * Fixes an issue that would cause infinite looping on registries that used paging in tags listing. [#243](https://github.com/microsoft/vscode-docker-extensibility/issues/243)
