@@ -32,7 +32,6 @@ export const FILE_SEARCH_MAX_RESULT = 1000;
 export const dockerHubUrl: string = 'https://hub.docker.com/';
 
 export const extensionId: string = 'ms-azuretools.vscode-containers';
-export const legacyExtensionId: string = 'ms-azuretools.vscode-docker';
 
 export const extensionVersion = new Lazy<string | undefined>(() => {
     const extension = vscode.extensions.getExtension(extensionId);
