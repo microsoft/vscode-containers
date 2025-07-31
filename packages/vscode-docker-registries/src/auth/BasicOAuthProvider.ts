@@ -34,6 +34,8 @@ export class BasicOAuthProvider extends BasicAuthProvider implements Authenticat
                 scopes: scopes,
             };
         } else {
+            const scope = [...this.defaultScopes ?? [], ...scopes].join(' ');
+
             const request: RequestLike = {
                 method: 'GET',
                 headers: {
@@ -41,11 +43,17 @@ export class BasicOAuthProvider extends BasicAuthProvider implements Authenticat
                     // eslint-disable-next-line @typescript-eslint/naming-convention
                     'grant_type': 'password',
                     'service': this.oAuthService,
-                    'scope': [...this.defaultScopes ?? [], ...scopes].join(' '),
+                    'scope': scope,
                 },
             };
 
-            const oAuthResponse = await httpRequest<{ token: string }>(this.oAuthEndpoint.toString(), request);
+            const oAuthRequestQuery = new URLSearchParams({
+                service: this.oAuthService,
+                scope: scope
+            }).toString();
+            const requestUri = vscode.Uri.parse(this.oAuthEndpoint.toString()).with({ query: oAuthRequestQuery });
+
+            const oAuthResponse = await httpRequest<{ token: string }>(requestUri.toString(true), request);
 
             return {
                 id: 'oauth',
