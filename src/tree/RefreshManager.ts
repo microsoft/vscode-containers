@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AzExtTreeItem, callWithTelemetryAndErrorHandling, IActionContext, parseError, registerCommand } from '@microsoft/vscode-azext-utils';
-import { EventAction, EventType, isCancellationError } from '@microsoft/vscode-container-client';
+import { EventAction, EventType } from '@microsoft/vscode-container-client';
+import { isCancellationError } from '@microsoft/vscode-processutils';
 import * as os from 'os';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';

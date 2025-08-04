@@ -1,6 +1,6 @@
 {
     "name": "vscode-containers",
-    "version": "2.0.2-alpha",
+    "version": "2.1.5-alpha",
     "publisher": "ms-azuretools",
     "displayName": "Container Tools",
     "description": "Makes it easy to create, manage, and debug containerized applications.",
@@ -1489,7 +1489,7 @@
                                 "build": true
                             },
                             "files": [
-                                "${workspaceFolder}/docker-compose.yml"
+                                "${workspaceFolder}/compose.yaml"
                             ]
                         }
                     },
@@ -2371,11 +2371,13 @@
                     "scope": "machine-overridable",
                     "enum": [
                         "",
-                        "com.microsoft.visualstudio.orchestrators.dockercompose"
+                        "com.microsoft.visualstudio.orchestrators.dockercompose",
+                        "com.microsoft.visualstudio.orchestrators.podmancompose"
                     ],
                     "enumItemLabels": [
                         "Default",
-                        "Docker Compose"
+                        "Docker Compose",
+                        "Podman Compose"
                     ]
                 }
             }
@@ -2940,8 +2942,10 @@
                 "title": "%vscode-containers.walkthrough.containersStart.title%",
                 "featuredFor": [
                     "Dockerfile",
+                    "compose.yaml",
                     "docker-compose.yml",
-                    "docker-compose.yaml"
+                    "docker-compose.yaml",
+                    "compose.yml"
                 ],
                 "description": "%vscode-containers.walkthrough.containersStart.description%",
                 "steps": [
@@ -3151,10 +3155,11 @@
         "@microsoft/vscode-azext-azureauth": "^4.1.1",
         "@microsoft/vscode-azext-azureutils": "^3.0.1",
         "@microsoft/vscode-azext-utils": "^2.6.6",
-        "@microsoft/vscode-container-client": "^0.2.1",
-        "@microsoft/vscode-docker-registries": "^0.2.0",
+        "@microsoft/vscode-container-client": "^0.4.1",
+        "@microsoft/vscode-docker-registries": "^0.2.1",
+        "@microsoft/vscode-processutils": "^0.1.1",
         "dayjs": "^1.11.7",
-        "dockerfile-language-server-nodejs": "^0.14.0",
+        "dockerfile-language-server-nodejs": "^0.14.1",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
         "handlebars": "^4.7.7",

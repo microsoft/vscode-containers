@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, UserCancelledError } from "@microsoft/vscode-azext-utils";
-import { quoted } from "@microsoft/vscode-container-client";
+import { quoted } from "@microsoft/vscode-processutils";
 import * as path from "path";
 import * as vscode from "vscode";
 import { configPrefix } from "../../constants";

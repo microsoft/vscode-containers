@@ -21,11 +21,13 @@ To install the extension, open the Extensions view, search for `container tools`
 
 ### Editing Docker files
 
-You can get IntelliSense when editing your `Dockerfile` and `docker-compose.yml` files, with completions and syntax help for common commands.
+Container Tools provides basic IntelliSense when editing your `Dockerfile` and `compose.yaml` files including completions and syntax help for common commands.
+
+> Note: [Docker DX](https://marketplace.visualstudio.com/items?itemName=docker.docker) is the official language service from Docker that provides more advanced IntelliSense for Docker, Compose, and Bake configuration files. This extension is recommended to be installed alongside Container Tools for enhanced editing support.
 
 ![IntelliSense for Dockerfiles](resources/readme/dockerfile-intellisense.png)
 
-In addition, you can use the Problems panel (<kbd>Ctrl+Shift+M</kbd> on Windows/Linux, <kbd>Shift+Command+M</kbd> on Mac) to view common errors for `Dockerfile` and `docker-compose.yml` files.
+In addition, you can use the Problems panel (<kbd>Ctrl+Shift+M</kbd> on Windows/Linux, <kbd>Shift+Command+M</kbd> on Mac) to view common errors for `Dockerfile` and `compose.yaml` files.
 
 ### Generating Docker files
 
@@ -56,7 +58,7 @@ You can run container commands to manage [images](https://docs.docker.com/engine
 
 ### Docker Compose
 
-[Docker Compose](https://docs.docker.com/compose/) lets you define and run multi-container applications. Our [Compose Language Service](https://github.com/microsoft/compose-language-service) in the Container Tools extension gives you IntelliSense and tab completions when authoring `docker-compose.yml` files. Press `Ctrl+Space` to see a list of valid Compose directives.
+[Docker Compose](https://docs.docker.com/compose/) lets you define and run multi-container applications. Our [Compose Language Service](https://github.com/microsoft/compose-language-service) in the Container Tools extension gives you IntelliSense and tab completions when authoring `compose.yaml` files. Press `Ctrl+Space` to see a list of valid Compose directives.
 
  ![Compose IntelliSense](resources/readme/tab-completions.gif)
 
@@ -90,7 +92,7 @@ You can start Azure CLI (command-line interface) in a standalone, Linux-based co
 
 ### Alternative container runtimes
 
-The Container Tools extension supports multiple container runtime options, such as Docker or Podman. If you want to change runtimes, you can do so with the VS Code setting `containers.containerClient`. Changing requires a restart to take effect.
+The Container Tools extension supports multiple container runtime options, such as Docker or Podman. If you want to change runtimes, you can do so with the VS Code settings `containers.containerClient` and `containers.orchestratorClient`. Changing requires a restart to take effect.
 
 ## Contributing
 

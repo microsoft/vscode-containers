@@ -28,8 +28,8 @@ export async function scaffoldCompose(wizardContext: Partial<ScaffoldingWizardCo
     ];
 
     const executeSteps: AzureWizardExecuteStep<ScaffoldingWizardContext>[] = [
-        new ScaffoldFileStep('docker-compose.yml', 'ask', 300),
-        new ScaffoldFileStep('docker-compose.debug.yml', 'ask', 400),
+        new ScaffoldFileStep('compose.yaml', 'ask', 300),
+        new ScaffoldFileStep('compose.debug.yaml', 'ask', 400),
     ];
 
     const wizard = new AzureWizard<ScaffoldingWizardContext>(wizardContext as ScaffoldingWizardContext, {

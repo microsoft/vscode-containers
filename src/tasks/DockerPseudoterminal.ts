@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { PromiseCommandResponse, Shell, VoidCommandResponse } from '@microsoft/vscode-container-client';
-import { CancellationToken, CancellationTokenSource, Event, EventEmitter, Pseudoterminal, TaskScope, TerminalDimensions, workspace, WorkspaceFolder } from 'vscode';
+import { PromiseCommandResponse, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { CommandLineArgs } from '@microsoft/vscode-processutils';
+import { CancellationToken, CancellationTokenSource, Event, EventEmitter, Pseudoterminal, ShellQuotedString, TaskScope, TerminalDimensions, workspace, WorkspaceFolder } from 'vscode';
 import { execAsync, ExecAsyncOutput } from '../utils/execAsync';
 import { resolveVariables } from '../utils/resolveVariables';
 import { withDockerEnvSettings } from '../utils/withDockerEnvSettings';
@@ -95,24 +96,31 @@ export class DockerPseudoterminal implements Pseudoterminal {
     }
 
     private async executeCommandResponseInTerminal(options: ExecuteCommandResponseInTerminalOptions): Promise<ExecAsyncOutput> {
-        const quotedArgs = Shell.getShellOrDefault().quote(options.commandResponse.args);
-        const resolvedQuotedArgs = resolveVariables(quotedArgs, options.folder);
-        const commandLine = [options.commandResponse.command, ...resolvedQuotedArgs].join(' ');
-
-        return await this.execAsyncInTerminal(commandLine, options);
+        const resolvedArgs: CommandLineArgs = options.commandResponse.args.map(arg => {
+            if (typeof arg === 'string') {
+                return resolveVariables(arg, options.folder);
+            } else {
+                return {
+                    value: resolveVariables(arg.value, options.folder),
+                    quoting: arg.quoting,
+                } satisfies ShellQuotedString;
+            }
+        });
+        return await this.execAsyncInTerminal(options.commandResponse.command, resolvedArgs, options);
     }
 
-    public async execAsyncInTerminal(command: string, options?: ExecAsyncInTerminalOptions): Promise<ExecAsyncOutput> {
-
-        // Output what we're doing, same style as VSCode does for ShellExecution/ProcessExecution
-        this.write(`> ${command} <\r\n\r\n`, DEFAULTBOLD);
-
+    public async execAsyncInTerminal(command: string, args: CommandLineArgs, options?: ExecAsyncInTerminalOptions): Promise<ExecAsyncOutput> {
         return await execAsync(
             command,
+            args,
             {
                 cwd: this.resolvedDefinition.options?.cwd || options.cwd || options.folder.uri.fsPath,
                 env: withDockerEnvSettings({ ...process.env, ...this.resolvedDefinition.options?.env }),
                 cancellationToken: options.token,
+                onCommand: (commandLine: string) => {
+                    // Output what we're doing, same style as VSCode does for ShellExecution/ProcessExecution
+                    this.write(`> ${commandLine} <\r\n\r\n`, DEFAULTBOLD);
+                },
             },
             (output: string, err: boolean) => {
                 if (err) {

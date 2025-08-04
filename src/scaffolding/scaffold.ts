@@ -42,8 +42,8 @@ export async function scaffold(wizardContext: Partial<ScaffoldingWizardContext>,
     await wizard.prompt();
 
     if (wizardContext.scaffoldCompose) {
-        executeSteps.push(new ScaffoldFileStep('docker-compose.yml', 'ask', 300));
-        executeSteps.push(new ScaffoldFileStep('docker-compose.debug.yml', 'ask', 400));
+        executeSteps.push(new ScaffoldFileStep('compose.yaml', 'ask', 300));
+        executeSteps.push(new ScaffoldFileStep('compose.debug.yaml', 'ask', 400));
     }
 
     await wizard.execute();

@@ -5,7 +5,7 @@
 
 import { DockerComposeClient, IContainerOrchestratorClient } from '@microsoft/vscode-container-client';
 import { RuntimeManager } from './RuntimeManager';
-import { isAutoConfigurableDockerComposeClient } from './clients/AutoConfigurableDockerComposeClient';
+import { isSlowConfigurableOrchestratorClient } from './clients/AutoConfigurableDockerComposeClient';
 
 export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchestratorClient> {
     public readonly onOrchestratorRuntimeClientRegistered = this.runtimeClientRegisteredEmitter.event;
@@ -17,9 +17,8 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
     public override async getClient(): Promise<IContainerOrchestratorClient> {
         const orchestratorClient = await super.getClient();
 
-        if (isAutoConfigurableDockerComposeClient(orchestratorClient)) {
-            // If it's the default Docker Compose client, it requires some time-consuming
-            // configuration, so we'll do that now
+        if (isSlowConfigurableOrchestratorClient(orchestratorClient)) {
+            // If it requires some slow configuration, we will perform that now
             await orchestratorClient.slowConfigure();
         }
 
@@ -31,6 +30,6 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
     }
 }
 
-export function isDockerComposeClient(maybeComposeClient: IContainerOrchestratorClient): maybeComposeClient is DockerComposeClient {
+function isDockerComposeClient(maybeComposeClient: IContainerOrchestratorClient): maybeComposeClient is DockerComposeClient {
     return maybeComposeClient.id === DockerComposeClient.ClientId;
 }

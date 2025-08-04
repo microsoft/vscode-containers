@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem, IAzureQuickPickOptions, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { PortBinding, quoted, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { PortBinding, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { quoted } from '@microsoft/vscode-processutils';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
-import { isDockerComposeClient } from '../runtimes/OrchestratorRuntimeManager';
+import { isComposeV2ableOrchestratorClient } from '../runtimes/clients/AutoConfigurableDockerComposeClient';
 import { resolveVariables } from '../utils/resolveVariables';
 
 type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset';
@@ -96,12 +97,12 @@ export async function selectComposeCommand(context: IActionContext, folder: vsco
             break;
     }
 
-    // Docker Compose needs a little special handling, because the command can either be `docker-compose` (compose v1)
-    // or `docker` + first argument `compose` (compose v2)
+    // Compose needs a little special handling, because the command can either be e.g. `docker-compose` (compose v1)
+    // or e.g. `docker` + first argument `compose` (compose v2)
     // Command customization wants the answer to that as one string
     let fullComposeCommand: string;
     const orchestratorClient = await ext.orchestratorManager.getClient();
-    if (isDockerComposeClient(orchestratorClient) && orchestratorClient.composeV2) {
+    if (isComposeV2ableOrchestratorClient(orchestratorClient) && orchestratorClient.composeV2) {
         fullComposeCommand = `${orchestratorClient.commandName} compose`;
     } else {
         fullComposeCommand = orchestratorClient.commandName;
