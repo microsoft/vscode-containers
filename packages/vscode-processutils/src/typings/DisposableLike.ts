@@ -11,7 +11,9 @@ import type * as jsonrpc from 'vscode-jsonrpc';
  * (in the case of VSCode extensions), or `vscode-jsonrpc` (in the case of ServiceHub
  * workers in VS).
  */
-export type DisposableLike = vscode.Disposable | jsonrpc.Disposable;
+export interface DisposableLike {
+    dispose(): void;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DisposableLike {
@@ -22,5 +24,5 @@ export namespace DisposableLike {
         dispose: () => {
             // Noop, not a real registration
         }
-    });
+    }) satisfies vscode.Disposable & jsonrpc.Disposable; // The `satisfies` ensures that the type matches both vscode and vscode-jsonrpc `Disposable` interfaces
 }

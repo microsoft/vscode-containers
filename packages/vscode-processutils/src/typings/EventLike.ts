@@ -12,7 +12,10 @@ import { DisposableLike } from './DisposableLike';
  * (in the case of VSCode extensions), or `vscode-jsonrpc` (in the case of ServiceHub
  * workers in VS).
  */
-export type EventLike<T> = vscode.Event<T> | jsonrpc.Event<T>;
+export interface EventLike<T> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (listener: (e: T) => any, thisArgs?: any, disposables?: DisposableLike[]): DisposableLike;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace EventLike {
@@ -21,5 +24,5 @@ export namespace EventLike {
      */
     export const None: EventLike<void> = Object.freeze(() => {
         return DisposableLike.None;
-    });
+    }) satisfies vscode.Event<void> & jsonrpc.Event<void>; // The `satisfies` ensures that the type matches both vscode and vscode-jsonrpc `Event` interfaces
 }

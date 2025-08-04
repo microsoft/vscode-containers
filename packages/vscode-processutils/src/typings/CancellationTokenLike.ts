@@ -12,7 +12,10 @@ import { EventLike } from './EventLike';
  * (in the case of VSCode extensions), or `vscode-jsonrpc` (in the case of ServiceHub
  * workers in VS).
  */
-export type CancellationTokenLike = vscode.CancellationToken | jsonrpc.CancellationToken;
+export interface CancellationTokenLike {
+    isCancellationRequested: boolean;
+    onCancellationRequested: EventLike<void>;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CancellationTokenLike {
@@ -22,5 +25,5 @@ export namespace CancellationTokenLike {
     export const None: CancellationTokenLike = Object.freeze({
         isCancellationRequested: false,
         onCancellationRequested: EventLike.None,
-    });
+    }) satisfies vscode.CancellationToken & jsonrpc.CancellationToken; // The `satisfies` ensures that the type matches both vscode and vscode-jsonrpc `CancellationToken` interfaces
 }
