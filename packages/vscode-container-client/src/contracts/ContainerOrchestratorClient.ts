@@ -57,7 +57,8 @@ export type UpCommandOptions = CommonOrchestratorCommandOptions & {
      */
     build?: boolean;
     /**
-     * Whether to run in a detached session
+     * Whether to run in a detached session.
+     * Not compatible with `watch`.
      */
     detached?: boolean;
     /**
@@ -87,6 +88,11 @@ export type UpCommandOptions = CommonOrchestratorCommandOptions & {
      * If true, the containers will be created but not started
      */
     noStart?: boolean;
+    /**
+     * If true, the command will watch for changes in the files and automatically rebuild and restart services.
+     * Not compatible with `detached`.
+     */
+    watch?: boolean;
     /**
      * Additional custom options to pass
      */

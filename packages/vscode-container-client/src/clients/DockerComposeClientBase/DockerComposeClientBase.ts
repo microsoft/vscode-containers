@@ -104,6 +104,7 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
             withFlagArg('--no-recreate', options.recreate === 'no'),
             withFlagArg('--no-start', options.noStart),
             withFlagArg('--wait', options.wait),
+            withFlagArg('--watch', options.watch),
             withVerbatimArg(options.customOptions),
             withArg(...(options.services || [])),
         )();
