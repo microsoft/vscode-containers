@@ -27,7 +27,7 @@ export async function deleteAzureRegistry(context: IActionContext, node?: Unifie
     const deleting = l10n.t('Deleting registry "{0}"...', registryName);
     await window.withProgress({ location: ProgressLocation.Notification, title: deleting }, async () => {
         const azureRegistryDataProvider = node.provider as unknown as AzureRegistryDataProvider;
-        await azureRegistryDataProvider.deleteRegistry(node.wrappedItem, context);
+        await azureRegistryDataProvider.deleteRegistry(node.wrappedItem);
     });
 
     void ext.registriesTree.refresh();

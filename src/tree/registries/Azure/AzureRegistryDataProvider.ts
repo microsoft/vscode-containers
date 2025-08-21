@@ -5,7 +5,7 @@
 
 import type { Registry as AcrRegistry, RegistryListCredentialsResult } from '@azure/arm-containerregistry';
 import { VSCodeAzureSubscriptionProvider, type AzureSubscription } from '@microsoft/vscode-azext-azureauth';
-import { callWithTelemetryAndErrorHandling, createSubscriptionContext, IActionContext, type ISubscriptionActionContext } from '@microsoft/vscode-azext-utils';
+import { callWithTelemetryAndErrorHandling, createSubscriptionContext, type ISubscriptionActionContext } from '@microsoft/vscode-azext-utils';
 import { getContextValue, RegistryV2DataProvider, registryV2Request, V2Registry, V2RegistryItem, V2Repository, V2Tag } from '@microsoft/vscode-docker-registries';
 import { CommonRegistryItem, isRegistry, isRegistryRoot, isRepository, isTag } from '@microsoft/vscode-docker-registries/lib/clients/Common/models';
 import * as vscode from 'vscode';
@@ -105,13 +105,18 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
     }
 
     public override async getRegistries(subscriptionItem: AzureSubscriptionRegistryItem): Promise<AzureRegistry[]> {
-        // TODO: MFA: This might need to change
-        const acrClient = await createArmContainerRegistryClient(subscriptionItem.subscription);
         const registries: AcrRegistry[] = [];
 
-        for await (const registry of acrClient.registries.list()) {
-            registries.push(registry);
-        }
+        await callWithTelemetryAndErrorHandling('armListAzureRegistries', async (context) => {
+            // This gets called inside the get registries callback which will have its own error handling
+            context.errorHandling.rethrow = true;
+            context.errorHandling.suppressDisplay = true;
+
+            const acrClient = await createArmContainerRegistryClient([context, createSubscriptionContext(subscriptionItem.subscription)]);
+            for await (const registry of acrClient.registries.list()) {
+                registries.push(registry);
+            }
+        });
 
         return registries.map(registry => {
             return {
@@ -141,8 +146,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         }
     }
 
-    public async deleteRepository(item: AzureRepository, context: IActionContext): Promise<void> {
-        // TODO: MFA: This might need to change
+    public async deleteRepository(item: AzureRepository): Promise<void> {
         const authenticationProvider = this.getAuthenticationProvider(item.parent as unknown as AzureRegistryItem);
         const requestUrl = item.baseUrl.with({ path: `v2/_acr/${item.label}/repository` });
         const reponse = await registryV2Request({
@@ -157,15 +161,19 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         }
     }
 
-    public async deleteRegistry(item: AzureRegistry, context: IActionContext): Promise<void> {
-        // TODO: MFA: This might need to change
-        const client = await createArmContainerRegistryClient([context, createSubscriptionContext(item.subscription)]);
-        const resourceGroup = getResourceGroupFromId(item.id);
-        await client.registries.beginDeleteAndWait(resourceGroup, item.label);
+    public async deleteRegistry(item: AzureRegistry): Promise<void> {
+        await callWithTelemetryAndErrorHandling('armDeleteAzureRegistry', async (context) => {
+            // This gets called inside the delete registry command which will have its own error handling
+            context.errorHandling.rethrow = true;
+            context.errorHandling.suppressDisplay = true;
+
+            const client = await createArmContainerRegistryClient([context, createSubscriptionContext(item.subscription)]);
+            const resourceGroup = getResourceGroupFromId(item.id);
+            await client.registries.beginDeleteAndWait(resourceGroup, item.label);
+        });
     }
 
-    public async untagImage(item: AzureTag, context: IActionContext): Promise<void> {
-        // TODO: MFA: This might need to change
+    public async untagImage(item: AzureTag): Promise<void> {
         const authenticationProvider = this.getAuthenticationProvider(item.parent.parent as unknown as AzureRegistryItem);
         const requestUrl = item.baseUrl.with({ path: `v2/_acr/${item.parent.label}/tags/${item.label}` });
         const reponse = await registryV2Request({

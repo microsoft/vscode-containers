@@ -13,11 +13,6 @@ export async function getArmContainerRegistry(): Promise<typeof import('@azure/a
     return await import('@azure/arm-containerregistry');
 }
 
-// TODO: MFA: needed?
-// export async function getContainerRegistry(): Promise<typeof import('@azure/container-registry')> {
-//     return await import('@azure/container-registry');
-// }
-
 export async function getStorageBlob(): Promise<typeof import('@azure/storage-blob')> {
     return await import('@azure/storage-blob');
 }

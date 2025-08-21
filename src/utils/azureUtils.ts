@@ -33,10 +33,3 @@ export async function createArmContainerRegistryClient(context: AzureClientConte
     const armContainerRegistry = await getArmContainerRegistry();
     return azExtAzureUtils.createAzureClient(context, armContainerRegistry.ContainerRegistryManagementClient);
 }
-
-// TODO: MFA: needed?
-// export async function createContainerRegistryClient(context: ClientContext): Promise<ContainerRegistryClient> {
-//     const azExtAzureUtils = await getAzExtAzureUtils();
-//     const containerRegistry = await getContainerRegistry();
-//     return azExtAzureUtils.createAzureSubscriptionClient(context, containerRegistry.ContainerRegistryClient);
-// }
