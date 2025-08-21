@@ -6,7 +6,8 @@
 import type { ContainerRegistryManagementClient } from '@azure/arm-containerregistry'; // These are only dev-time imports so don't need to be lazy
 import { AzureNameStep } from '@microsoft/vscode-azext-utils';
 import { l10n } from 'vscode';
-import { getArmContainerRegistry, getAzExtAzureUtils } from '../../../../utils/lazyPackages';
+import { createArmContainerRegistryClient } from '../../../../utils/azureUtils';
+import { getAzExtAzureUtils } from '../../../../utils/lazyPackages';
 import { IAzureRegistryWizardContext } from './IAzureRegistryWizardContext';
 
 export class AzureRegistryNameStep extends AzureNameStep<IAzureRegistryWizardContext> {
@@ -17,8 +18,7 @@ export class AzureRegistryNameStep extends AzureNameStep<IAzureRegistryWizardCon
 
     public async prompt(context: IAzureRegistryWizardContext): Promise<void> {
         const azExtAzureUtils = await getAzExtAzureUtils();
-        const armContainerRegistry = await getArmContainerRegistry();
-        const client = azExtAzureUtils.createAzureClient(context, armContainerRegistry.ContainerRegistryManagementClient);
+        const client = await createArmContainerRegistryClient(context);
         context.newRegistryName = (await context.ui.showInputBox({
             placeHolder: l10n.t('Registry name'),
             prompt: l10n.t('Provide a registry name'),

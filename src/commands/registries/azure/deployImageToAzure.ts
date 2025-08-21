@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Site } from '@azure/arm-appservice'; // These are only dev-time imports so don't need to be lazy
 import type { IAppServiceWizardContext } from "@microsoft/vscode-azext-azureappservice"; // These are only dev-time imports so don't need to be lazy
 import { AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, IActionContext, createSubscriptionContext, nonNullProp } from "@microsoft/vscode-azext-utils";
 import { CommonTag } from '@microsoft/vscode-docker-registries';
@@ -57,7 +56,7 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
     await wizard.prompt();
     await wizard.execute();
 
-    const site: Site = nonNullProp(wizardContext, 'site');
+    const site = nonNullProp(wizardContext, 'site');
     const siteUri: string = `https://${site.defaultHostName}`;
     const createdNewWebApp: string = l10n.t('Successfully created web app "{0}": {1}', site.name, siteUri);
     ext.outputChannel.info(createdNewWebApp);

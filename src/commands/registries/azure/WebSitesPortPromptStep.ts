@@ -5,7 +5,7 @@
 
 import { AzureWizardPromptStep } from "@microsoft/vscode-azext-utils";
 import { l10n } from 'vscode';
-import { IAppServiceContainerWizardContext } from './deployImageToAzure';
+import { type IAppServiceContainerWizardContext } from './deployImageToAzure';
 
 export class WebSitesPortPromptStep extends AzureWizardPromptStep<IAppServiceContainerWizardContext> {
 

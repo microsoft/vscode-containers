@@ -5,7 +5,6 @@
 
 import type { Site } from '@azure/arm-appservice'; // These are only dev-time imports so don't need to be lazy
 import type { Webhook, WebhookCreateParameters } from '@azure/arm-containerregistry'; // These are only dev-time imports so don't need to be lazy
-import type { IAppServiceWizardContext } from "@microsoft/vscode-azext-azureappservice"; // These are only dev-time imports so don't need to be lazy
 import { AzureWizardExecuteStep, nonNullProp } from "@microsoft/vscode-azext-utils";
 import { CommonRepository, CommonTag, isDockerHubRepository } from '@microsoft/vscode-docker-registries';
 import * as vscode from "vscode";
@@ -13,23 +12,24 @@ import { ext } from "../../../extensionVariables";
 import { AzureRegistry, isAzureRepository } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
 import { getResourceGroupFromAzureRegistryItem } from '../../../tree/registries/registryTreeUtils';
+import { createArmContainerRegistryClient } from '../../../utils/azureUtils';
 import { cryptoUtils } from '../../../utils/cryptoUtils';
-import { getArmContainerRegistry, getAzExtAppService, getAzExtAzureUtils } from "../../../utils/lazyPackages";
+import { getAzExtAppService } from '../../../utils/lazyPackages';
+import { type IAppServiceContainerWizardContext } from './deployImageToAzure';
 
-export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceWizardContext> {
+export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceContainerWizardContext> {
     public priority: number = 142; // execute after DockerAssignAcrPullRoleStep
 
     public constructor(private readonly tagItem: UnifiedRegistryItem<CommonTag>) {
         super();
     }
 
-    public async execute(context: IAppServiceWizardContext, progress: vscode.Progress<{
+    public async execute(context: IAppServiceContainerWizardContext, progress: vscode.Progress<{
         message?: string;
         increment?: number;
     }>): Promise<void> {
         const vscAzureAppService = await getAzExtAppService();
-        vscAzureAppService.registerAppServiceExtensionVariables(ext);
-        const site: Site = nonNullProp(context, 'site');
+        const site = nonNullProp(context, 'site');
         const parsedSite = new vscAzureAppService.ParsedSite(site, context);
         const siteClient = await parsedSite.createClient(context);
         const appUri: string = (await siteClient.getWebAppPublishCredential()).scmUri;
@@ -64,11 +64,11 @@ export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceW
         }
     }
 
-    public shouldExecute(context: IAppServiceWizardContext): boolean {
+    public shouldExecute(context: IAppServiceContainerWizardContext): boolean {
         return !!context.site && (isAzureRepository(this.tagItem.parent.wrappedItem) || isDockerHubRepository(this.tagItem.parent.wrappedItem));
     }
 
-    private async createWebhookForApp(context: IAppServiceWizardContext, site: Site, appUri: string): Promise<Webhook | undefined> {
+    private async createWebhookForApp(context: IAppServiceContainerWizardContext, site: Site, appUri: string): Promise<Webhook | undefined> {
         const maxLength: number = 50;
         const numRandomChars: number = 6;
 
@@ -82,9 +82,7 @@ export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceW
 
         // variables derived from the container registry
         const registryTreeItem: UnifiedRegistryItem<AzureRegistry> = this.tagItem.parent.parent as unknown as UnifiedRegistryItem<AzureRegistry>;
-        const armContainerRegistry = await getArmContainerRegistry();
-        const azExtAzureUtils = await getAzExtAzureUtils();
-        const crmClient = azExtAzureUtils.createAzureClient(context, armContainerRegistry.ContainerRegistryManagementClient);
+        const crmClient = await createArmContainerRegistryClient(context);
         const webhookCreateParameters: WebhookCreateParameters = {
             location: registryTreeItem.wrappedItem.registryProperties.location,
             serviceUri: appUri,

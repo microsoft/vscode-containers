@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { DockerBuildRequest as AcrDockerBuildRequest, FileTaskRunRequest as AcrFileTaskRunRequest, OS as AcrOS, Run as AcrRun, ContainerRegistryManagementClient } from "@azure/arm-containerregistry"; // These are only dev-time imports so don't need to be lazy
-import { IActionContext, IAzureQuickPickItem, nonNullProp } from '@microsoft/vscode-azext-utils';
+import { createSubscriptionContext, IActionContext, IAzureQuickPickItem, nonNullProp } from '@microsoft/vscode-azext-utils';
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
@@ -14,7 +14,7 @@ import * as vscode from 'vscode';
 import { ext } from '../../../../extensionVariables';
 import { AzureRegistry, AzureRegistryItem } from "../../../../tree/registries/Azure/AzureRegistryDataProvider";
 import { UnifiedRegistryItem } from "../../../../tree/registries/UnifiedRegistryTreeDataProvider";
-import { createAzureContainerRegistryClient, getResourceGroupFromId } from "../../../../utils/azureUtils";
+import { createArmContainerRegistryClient, getResourceGroupFromId } from "../../../../utils/azureUtils";
 import { getStorageBlob } from '../../../../utils/lazyPackages';
 import { delay } from '../../../../utils/promiseUtils';
 import { Item, quickPickDockerFileItem, quickPickYamlFileItem } from '../../../../utils/quickPickFile';
@@ -70,7 +70,7 @@ export async function scheduleRunRequest(context: IActionContext, requestType: '
             rootUri = vscode.Uri.file(path.dirname(fileItem.absoluteFilePath));
         }
 
-        const azureRegistryClient = await createAzureContainerRegistryClient(registryItem.subscription);
+        const azureRegistryClient = await createArmContainerRegistryClient([context, createSubscriptionContext(registryItem.subscription)]);
         const uploadedSourceLocation: string = await uploadSourceCode(azureRegistryClient, registryItem.label, resourceGroup, rootUri, tarFilePath);
         ext.outputChannel.info(vscode.l10n.t('Uploaded source code from {0}', tarFilePath));
 
@@ -163,7 +163,7 @@ async function uploadSourceCode(client: ContainerRegistryManagementClient, regis
 const blobCheckInterval = 1000;
 const maxBlobChecks = 30;
 async function streamLogs(context: IActionContext, registryItem: AzureRegistryItem, run: AcrRun): Promise<void> {
-    const azureRegistryClient = await createAzureContainerRegistryClient(registryItem.subscription);
+    const azureRegistryClient = await createArmContainerRegistryClient([context, createSubscriptionContext(registryItem.subscription)]);
     const resourceGroup = getResourceGroupFromId(registryItem.id);
     const result = await azureRegistryClient.runs.getLogSasUrl(resourceGroup, registryItem.label, run.runId);
 
