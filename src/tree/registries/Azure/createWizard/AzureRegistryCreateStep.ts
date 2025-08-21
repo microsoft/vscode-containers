@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { AzExtLocation } from '@microsoft/vscode-azext-azureutils';
 import { AzureWizardExecuteStep, nonNullProp, parseError } from '@microsoft/vscode-azext-utils';
 import { Progress, l10n } from 'vscode';
 import { ext } from '../../../../extensionVariables';
@@ -24,7 +23,7 @@ export class AzureRegistryCreateStep extends AzureWizardExecuteStep<IAzureRegist
         ext.outputChannel.info(creating);
         progress.report({ message: creating });
 
-        const location: AzExtLocation = await azExtAzureUtils.LocationListStep.getLocation(context);
+        const location = await azExtAzureUtils.LocationListStep.getLocation(context);
         const locationName: string = nonNullProp(location, 'name');
         const resourceGroup = nonNullProp(context, 'resourceGroup');
         try {
