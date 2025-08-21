@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-docker-registries",
     "author": "Microsoft Corporation",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "Extensibility model for contributing registry providers to the Container Tools extension for Visual Studio Code",
     "license": "See LICENSE in the project root for license information.",
     "repository": {
@@ -30,7 +30,7 @@
         "@types/chai-as-promised": "^7.1.3",
         "@types/mocha": "^10.0.0",
         "@types/node": "18.x",
-        "@types/vscode": "1.75.0",
+        "@types/vscode": "1.96.0",
         "@typescript-eslint/eslint-plugin": "^5.3.1",
         "@typescript-eslint/parser": "^5.3.1",
         "chai": "^4.3.0",

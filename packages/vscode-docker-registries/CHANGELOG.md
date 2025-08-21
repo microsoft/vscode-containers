@@ -1,3 +1,7 @@
+## 0.2.2 - 22 August 2025
+### Fixed
+* Updated to support VSCode typings beyond 1.96.0. [#287](https://github.com/microsoft/vscode-docker-extensibility/pull/287)
+
 ## 0.2.1 - 31 July 2025
 ### Fixed
 * Fixed an issue where `service` and `scope` parameters for OAuth requests were being sent as headers, when they should have been sent as query parameters. [#279](https://github.com/microsoft/vscode-docker-extensibility/issues/279)

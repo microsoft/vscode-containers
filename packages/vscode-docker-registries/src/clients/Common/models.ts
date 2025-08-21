@@ -9,7 +9,7 @@ import { ContextValueRegistryItem, RegistryItem } from '../../contracts/Registry
 export interface CommonRegistryItem extends RegistryItem, ContextValueRegistryItem {
     readonly parent: CommonRegistryItem | undefined;
     readonly label: string;
-    readonly iconPath?: string | vscode.Uri | { light: string | vscode.Uri; dark: string | vscode.Uri } | vscode.ThemeIcon
+    readonly iconPath?: vscode.IconPath;
     readonly description?: string;
     readonly baseUrl?: vscode.Uri;
 }

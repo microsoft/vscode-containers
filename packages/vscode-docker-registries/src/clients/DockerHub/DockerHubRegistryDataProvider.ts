@@ -35,7 +35,7 @@ export class DockerHubRegistryDataProvider extends CommonRegistryDataProvider {
     public readonly id = 'vscode-docker.dockerHub';
     public readonly label = vscode.l10n.t('Docker Hub');
     public readonly description: undefined;
-    public readonly iconPath: { light: vscode.Uri, dark: vscode.Uri };
+    public readonly iconPath: vscode.IconPath;
 
     private readonly authenticationProvider: DockerHubAuthProvider;
 

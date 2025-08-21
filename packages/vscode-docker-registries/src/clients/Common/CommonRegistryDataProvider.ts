@@ -85,7 +85,7 @@ export abstract class CommonRegistryDataProvider implements RegistryDataProvider
     public abstract readonly id: string;
     public abstract readonly label: string;
     public abstract readonly description?: string;
-    public abstract readonly iconPath?: string | vscode.Uri | { light: string | vscode.Uri; dark: string | vscode.Uri } | vscode.ThemeIcon;
+    public abstract readonly iconPath?: vscode.IconPath;
 
     public abstract getRoot(): Promise<CommonRegistryRoot> | CommonRegistryRoot;
     public abstract getRegistries(root: CommonRegistryRoot | CommonRegistryItem): Promise<CommonRegistry[]> | CommonRegistry[];
