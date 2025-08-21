@@ -21,14 +21,14 @@ export function getResourceGroupFromId(id: string): string {
     return parseResourceId(id)[2];
 }
 
-type ClientContext = ISubscriptionActionContext | [IActionContext, ISubscriptionContext];
+type AzureClientContext = ISubscriptionActionContext | [IActionContext, ISubscriptionContext];
 
-export async function createAuthorizationManagementClient(context: ClientContext): Promise<AuthorizationManagementClient> {
+export async function createAuthorizationManagementClient(context: AzureClientContext): Promise<AuthorizationManagementClient> {
     const azExtAzureUtils = await getAzExtAzureUtils();
     return azExtAzureUtils.createAuthorizationManagementClient(context);
 }
 
-export async function createArmContainerRegistryClient(context: ClientContext): Promise<ContainerRegistryManagementClient> {
+export async function createArmContainerRegistryClient(context: AzureClientContext): Promise<ContainerRegistryManagementClient> {
     const azExtAzureUtils = await getAzExtAzureUtils();
     const armContainerRegistry = await getArmContainerRegistry();
     return azExtAzureUtils.createAzureClient(context, armContainerRegistry.ContainerRegistryManagementClient);
