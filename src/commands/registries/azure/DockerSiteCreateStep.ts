@@ -77,7 +77,7 @@ export class DockerSiteCreateStep extends AzureWizardExecuteStep<IAppServiceCont
         }
         // ACR -> Arc App Service. Use regular auth. Same as any V2 registry but different way of getting auth.
         else if (isAzureRegistry(registryTI.wrappedItem) && context.customLocation) {
-            const cred = await (registryTI.provider as unknown as AzureRegistryDataProvider).tryGetAdminCredentials(context, registryTI.wrappedItem);
+            const cred = await (registryTI.provider as unknown as AzureRegistryDataProvider).tryGetAdminCredentials(registryTI.wrappedItem, context);
             if (!cred?.username || !cred?.passwords?.[0]?.value) {
                 throw new Error(l10n.t('Azure App service deployment on Azure Arc only supports running images from Azure Container Registry with admin enabled'));
             }

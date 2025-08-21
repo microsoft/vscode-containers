@@ -9,7 +9,8 @@ import { IActionContext, callWithTelemetryAndErrorHandling } from '@microsoft/vs
 import { RegistryV2DataProvider, V2Registry, V2RegistryItem, V2Repository, V2Tag, getContextValue, registryV2Request } from '@microsoft/vscode-docker-registries';
 import { CommonRegistryItem, isRegistry, isRegistryRoot, isRepository, isTag } from '@microsoft/vscode-docker-registries/lib/clients/Common/models';
 import * as vscode from 'vscode';
-import { createAzureContainerRegistryClient, getResourceGroupFromId } from '../../../utils/azureUtils';
+import { ext } from '../../../extensionVariables';
+import { createArmContainerRegistryClient, getResourceGroupFromId } from '../../../utils/azureUtils';
 import { ACROAuthProvider } from './ACROAuthProvider';
 
 export interface AzureRegistryItem extends V2RegistryItem {
@@ -52,7 +53,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
     public readonly iconPath = new vscode.ThemeIcon('azure');
     public readonly description = vscode.l10n.t('Azure Container Registry');
 
-    private readonly subscriptionProvider = new VSCodeAzureSubscriptionProvider();
+    private readonly subscriptionProvider = new VSCodeAzureSubscriptionProvider(ext.outputChannel);
     private readonly authenticationProviders = new Map<string, ACROAuthProvider>(); // The tree items are too short-lived to store the associated auth provider so keep a cache
 
     public constructor(private readonly extensionContext: vscode.ExtensionContext) {
@@ -205,7 +206,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         this.hasSentSubscriptionTelemetry = true;
 
         // This event is relied upon by the DevDiv Analytics and Growth Team
-        void callWithTelemetryAndErrorHandling('updateSubscriptionsAndTenants', async (context: IActionContext) => {
+        void callWithTelemetryAndErrorHandling('updateSubscriptionsAndTenants', async (context) => {
             context.telemetry.properties.isActivationEvent = 'true';
             context.errorHandling.suppressDisplay = true;
 

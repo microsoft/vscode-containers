@@ -28,7 +28,7 @@ export async function untagAzureImage(context: IActionContext, node?: UnifiedReg
     const untagging = l10n.t('Untagging image "{0}"...', fullTag);
     await window.withProgress({ location: ProgressLocation.Notification, title: untagging }, async () => {
         const provider = node.provider as unknown as AzureRegistryDataProvider;
-        await provider.untagImage(node.wrappedItem);
+        await provider.untagImage(node.wrappedItem, context);
     });
 
     // don't wait

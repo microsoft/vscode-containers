@@ -25,7 +25,7 @@ export async function deleteAzureRepository(context: IActionContext, node?: Unif
     const deleting = l10n.t('Deleting repository "{0}"...', node.wrappedItem.label);
     await window.withProgress({ location: ProgressLocation.Notification, title: deleting }, async () => {
         const azureDataProvider = node.provider as unknown as AzureRegistryDataProvider;
-        await azureDataProvider.deleteRepository(node.wrappedItem);
+        await azureDataProvider.deleteRepository(node.wrappedItem, context);
     });
 
     void ext.registriesTree.refresh();
