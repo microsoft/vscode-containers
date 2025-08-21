@@ -3080,7 +3080,7 @@
         ]
     },
     "engines": {
-        "vscode": "^1.103.0"
+        "vscode": "^1.104.0"
     },
     "capabilities": {
         "virtualWorkspaces": false,
