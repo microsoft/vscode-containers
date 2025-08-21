@@ -5,8 +5,8 @@
 
 import type { Registry as AcrRegistry, RegistryListCredentialsResult } from '@azure/arm-containerregistry';
 import { VSCodeAzureSubscriptionProvider, type AzureSubscription } from '@microsoft/vscode-azext-azureauth';
-import { IActionContext, callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils';
-import { RegistryV2DataProvider, V2Registry, V2RegistryItem, V2Repository, V2Tag, getContextValue, registryV2Request } from '@microsoft/vscode-docker-registries';
+import { callWithTelemetryAndErrorHandling, createSubscriptionContext, IActionContext, type ISubscriptionActionContext } from '@microsoft/vscode-azext-utils';
+import { getContextValue, RegistryV2DataProvider, registryV2Request, V2Registry, V2RegistryItem, V2Repository, V2Tag } from '@microsoft/vscode-docker-registries';
 import { CommonRegistryItem, isRegistry, isRegistryRoot, isRepository, isTag } from '@microsoft/vscode-docker-registries/lib/clients/Common/models';
 import * as vscode from 'vscode';
 import { ext } from '../../../extensionVariables';
@@ -104,10 +104,9 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         this.subscriptionProvider.dispose();
     }
 
-    public override async getRegistries(subscriptionItem: CommonRegistryItem): Promise<AzureRegistry[]> {
-        subscriptionItem = subscriptionItem as AzureSubscriptionRegistryItem;
-
-        const acrClient = await createAzureContainerRegistryClient(subscriptionItem.subscription);
+    public override async getRegistries(subscriptionItem: AzureSubscriptionRegistryItem): Promise<AzureRegistry[]> {
+        // TODO: MFA: This might need to change
+        const acrClient = await createArmContainerRegistryClient(subscriptionItem.subscription);
         const registries: AcrRegistry[] = [];
 
         for await (const registry of acrClient.registries.list()) {
@@ -142,7 +141,8 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         }
     }
 
-    public async deleteRepository(item: AzureRepository): Promise<void> {
+    public async deleteRepository(item: AzureRepository, context: IActionContext): Promise<void> {
+        // TODO: MFA: This might need to change
         const authenticationProvider = this.getAuthenticationProvider(item.parent as unknown as AzureRegistryItem);
         const requestUrl = item.baseUrl.with({ path: `v2/_acr/${item.label}/repository` });
         const reponse = await registryV2Request({
@@ -157,13 +157,15 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         }
     }
 
-    public async deleteRegistry(item: AzureRegistry): Promise<void> {
-        const client = await createAzureContainerRegistryClient(item.subscription);
+    public async deleteRegistry(item: AzureRegistry, context: IActionContext): Promise<void> {
+        // TODO: MFA: This might need to change
+        const client = await createArmContainerRegistryClient([context, createSubscriptionContext(item.subscription)]);
         const resourceGroup = getResourceGroupFromId(item.id);
         await client.registries.beginDeleteAndWait(resourceGroup, item.label);
     }
 
-    public async untagImage(item: AzureTag): Promise<void> {
+    public async untagImage(item: AzureTag, context: IActionContext): Promise<void> {
+        // TODO: MFA: This might need to change
         const authenticationProvider = this.getAuthenticationProvider(item.parent.parent as unknown as AzureRegistryItem);
         const requestUrl = item.baseUrl.with({ path: `v2/_acr/${item.parent.label}/tags/${item.label}` });
         const reponse = await registryV2Request({
@@ -178,9 +180,9 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         }
     }
 
-    public async tryGetAdminCredentials(azureRegistry: AzureRegistry): Promise<RegistryListCredentialsResult | undefined> {
+    public async tryGetAdminCredentials(azureRegistry: AzureRegistry, context: ISubscriptionActionContext): Promise<RegistryListCredentialsResult | undefined> {
         if (azureRegistry.registryProperties.adminUserEnabled) {
-            const client = await createAzureContainerRegistryClient(azureRegistry.subscription);
+            const client = await createArmContainerRegistryClient(context);
             return await client.registries.listCredentials(getResourceGroupFromId(azureRegistry.id), azureRegistry.label);
         } else {
             return undefined;
