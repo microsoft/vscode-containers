@@ -3080,7 +3080,7 @@
         ]
     },
     "engines": {
-        "vscode": "^1.95.0"
+        "vscode": "^1.103.0"
     },
     "capabilities": {
         "virtualWorkspaces": false,
@@ -3120,6 +3120,10 @@
         "vscode.docker",
         "vscode.yaml"
     ],
+    "enabledApiProposals": [
+        "authenticationChallenges",
+        "authLearnMore"
+    ],
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
         "@types/fs-extra": "^11.0.1",
@@ -3127,7 +3131,7 @@
         "@types/mocha": "^10.0.1",
         "@types/node": "20.x",
         "@types/semver": "^7.3.13",
-        "@types/vscode": "1.95.0",
+        "@types/vscode": "1.103.0",
         "@types/xml2js": "^0.4.11",
         "@typescript-eslint/eslint-plugin": "^8.26.1",
         "@typescript-eslint/parser": "^8.26.1",
