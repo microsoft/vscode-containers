@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { AuthorizationManagementClient } from '@azure/arm-authorization';
 import type { ContainerRegistryManagementClient } from '@azure/arm-containerregistry';
-import type { AzureSubscription } from '@microsoft/vscode-azext-azureauth';
+import { IActionContext, ISubscriptionActionContext, ISubscriptionContext } from '@microsoft/vscode-azext-utils';
 import { l10n } from 'vscode';
-import { getArmContainerRegistry } from './lazyPackages';
+import { getArmContainerRegistry, getAzExtAzureUtils } from './lazyPackages';
 
 function parseResourceId(id: string): RegExpMatchArray {
     const matches: RegExpMatchArray | null = id.match(/\/subscriptions\/(.*)\/resourceGroups\/(.*)\/providers\/(.*)\/(.*)/i);
@@ -20,13 +21,15 @@ export function getResourceGroupFromId(id: string): string {
     return parseResourceId(id)[2];
 }
 
-export async function createAzureContainerRegistryClient(subscriptionItem: AzureSubscription): Promise<ContainerRegistryManagementClient> {
+type AzureClientContext = ISubscriptionActionContext | [IActionContext, ISubscriptionContext];
+
+export async function createAuthorizationManagementClient(context: AzureClientContext): Promise<AuthorizationManagementClient> {
+    const azExtAzureUtils = await getAzExtAzureUtils();
+    return azExtAzureUtils.createAuthorizationManagementClient(context);
+}
+
+export async function createArmContainerRegistryClient(context: AzureClientContext): Promise<ContainerRegistryManagementClient> {
+    const azExtAzureUtils = await getAzExtAzureUtils();
     const armContainerRegistry = await getArmContainerRegistry();
-    return new armContainerRegistry.ContainerRegistryManagementClient(
-        subscriptionItem.credential,
-        subscriptionItem.subscriptionId,
-        {
-            endpoint: subscriptionItem.environment.resourceManagerEndpointUrl
-        }
-    );
+    return azExtAzureUtils.createAzureClient(context, armContainerRegistry.ContainerRegistryManagementClient);
 }

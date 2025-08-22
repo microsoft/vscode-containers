@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type * as Handlebars from 'handlebars'; // These are only dev-time imports so don't need to be lazy
 import * as path from 'path';
 import * as vscode from 'vscode';
-import type * as Handlebars from 'handlebars'; // These are only dev-time imports so don't need to be lazy
 import { ScaffoldingWizardContext } from '../scaffolding/wizard/ScaffoldingWizardContext';
 import { DockerExtensionKind, getVSCodeRemoteInfo } from './getVSCodeRemoteInfo';
+import { getHandlebars } from './lazyPackages';
 import { isWindows } from './osUtils';
 import { pathNormalize } from './pathNormalize';
 import { PlatformOS } from './platform';
-import { getHandlebars } from './lazyPackages';
 
-let handlebars: typeof import('handlebars') | undefined;
+let handlebars: (typeof Handlebars) | undefined;
 export async function getHandlebarsWithHelpers(): Promise<typeof Handlebars> {
     if (!handlebars) {
         handlebars = await getHandlebars();

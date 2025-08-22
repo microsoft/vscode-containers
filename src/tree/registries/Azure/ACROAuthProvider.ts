@@ -4,8 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { AzureSubscription } from '@microsoft/vscode-azext-azureauth';
-import { LoginInformation, httpRequest } from '@microsoft/vscode-docker-registries';
-import { AuthenticationProvider } from "@microsoft/vscode-docker-registries/";
+import { AuthenticationProvider, LoginInformation, httpRequest } from '@microsoft/vscode-docker-registries';
 import * as vscode from 'vscode';
 import { NULL_GUID } from '../../../constants';
 

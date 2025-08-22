@@ -5,11 +5,12 @@
 
 import type { Registry as AcrRegistry, RegistryListCredentialsResult } from '@azure/arm-containerregistry';
 import { VSCodeAzureSubscriptionProvider, type AzureSubscription } from '@microsoft/vscode-azext-azureauth';
-import { IActionContext, callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils';
-import { RegistryV2DataProvider, V2Registry, V2RegistryItem, V2Repository, V2Tag, getContextValue, registryV2Request } from '@microsoft/vscode-docker-registries';
+import { callWithTelemetryAndErrorHandling, createSubscriptionContext, type ISubscriptionActionContext } from '@microsoft/vscode-azext-utils';
+import { getContextValue, RegistryV2DataProvider, registryV2Request, V2Registry, V2RegistryItem, V2Repository, V2Tag } from '@microsoft/vscode-docker-registries';
 import { CommonRegistryItem, isRegistry, isRegistryRoot, isRepository, isTag } from '@microsoft/vscode-docker-registries/lib/clients/Common/models';
 import * as vscode from 'vscode';
-import { createAzureContainerRegistryClient, getResourceGroupFromId } from '../../../utils/azureUtils';
+import { ext } from '../../../extensionVariables';
+import { createArmContainerRegistryClient, getResourceGroupFromId } from '../../../utils/azureUtils';
 import { ACROAuthProvider } from './ACROAuthProvider';
 
 export interface AzureRegistryItem extends V2RegistryItem {
@@ -52,7 +53,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
     public readonly iconPath = new vscode.ThemeIcon('azure');
     public readonly description = vscode.l10n.t('Azure Container Registry');
 
-    private readonly subscriptionProvider = new VSCodeAzureSubscriptionProvider();
+    private readonly subscriptionProvider = new VSCodeAzureSubscriptionProvider(ext.outputChannel);
     private readonly authenticationProviders = new Map<string, ACROAuthProvider>(); // The tree items are too short-lived to store the associated auth provider so keep a cache
 
     public constructor(private readonly extensionContext: vscode.ExtensionContext) {
@@ -103,15 +104,19 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         this.subscriptionProvider.dispose();
     }
 
-    public override async getRegistries(subscriptionItem: CommonRegistryItem): Promise<AzureRegistry[]> {
-        subscriptionItem = subscriptionItem as AzureSubscriptionRegistryItem;
-
-        const acrClient = await createAzureContainerRegistryClient(subscriptionItem.subscription);
+    public override async getRegistries(subscriptionItem: AzureSubscriptionRegistryItem): Promise<AzureRegistry[]> {
         const registries: AcrRegistry[] = [];
 
-        for await (const registry of acrClient.registries.list()) {
-            registries.push(registry);
-        }
+        await callWithTelemetryAndErrorHandling('armListAzureRegistries', async (context) => {
+            // This gets called inside the get registries callback which will have its own error handling
+            context.errorHandling.rethrow = true;
+            context.errorHandling.suppressDisplay = true;
+
+            const acrClient = await createArmContainerRegistryClient([context, createSubscriptionContext(subscriptionItem.subscription)]);
+            for await (const registry of acrClient.registries.list()) {
+                registries.push(registry);
+            }
+        });
 
         return registries.map(registry => {
             return {
@@ -157,9 +162,15 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
     }
 
     public async deleteRegistry(item: AzureRegistry): Promise<void> {
-        const client = await createAzureContainerRegistryClient(item.subscription);
-        const resourceGroup = getResourceGroupFromId(item.id);
-        await client.registries.beginDeleteAndWait(resourceGroup, item.label);
+        await callWithTelemetryAndErrorHandling('armDeleteAzureRegistry', async (context) => {
+            // This gets called inside the delete registry command which will have its own error handling
+            context.errorHandling.rethrow = true;
+            context.errorHandling.suppressDisplay = true;
+
+            const client = await createArmContainerRegistryClient([context, createSubscriptionContext(item.subscription)]);
+            const resourceGroup = getResourceGroupFromId(item.id);
+            await client.registries.beginDeleteAndWait(resourceGroup, item.label);
+        });
     }
 
     public async untagImage(item: AzureTag): Promise<void> {
@@ -177,9 +188,9 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         }
     }
 
-    public async tryGetAdminCredentials(azureRegistry: AzureRegistry): Promise<RegistryListCredentialsResult | undefined> {
+    public async tryGetAdminCredentials(azureRegistry: AzureRegistry, context: ISubscriptionActionContext): Promise<RegistryListCredentialsResult | undefined> {
         if (azureRegistry.registryProperties.adminUserEnabled) {
-            const client = await createAzureContainerRegistryClient(azureRegistry.subscription);
+            const client = await createArmContainerRegistryClient(context);
             return await client.registries.listCredentials(getResourceGroupFromId(azureRegistry.id), azureRegistry.label);
         } else {
             return undefined;
@@ -205,7 +216,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         this.hasSentSubscriptionTelemetry = true;
 
         // This event is relied upon by the DevDiv Analytics and Growth Team
-        void callWithTelemetryAndErrorHandling('updateSubscriptionsAndTenants', async (context: IActionContext) => {
+        void callWithTelemetryAndErrorHandling('updateSubscriptionsAndTenants', async (context) => {
             context.telemetry.properties.isActivationEvent = 'true';
             context.errorHandling.suppressDisplay = true;
 

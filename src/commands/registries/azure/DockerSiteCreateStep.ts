@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { NameValuePair, Site, SiteConfig, WebSiteManagementClient } from '@azure/arm-appservice'; // These are only dev-time imports so don't need to be lazy
+import type { NameValuePair, Site, SiteConfig } from '@azure/arm-appservice'; // These are only dev-time imports so don't need to be lazy
 import type { CustomLocation } from "@microsoft/vscode-azext-azureappservice"; // These are only dev-time imports so don't need to be lazy
-import type { AzExtLocation } from '@microsoft/vscode-azext-azureutils'; // These are only dev-time imports so don't need to be lazy
 import { AzureWizardExecuteStep, nonNullProp, nonNullValueAndProp } from "@microsoft/vscode-azext-utils";
 import { CommonRegistry, CommonTag } from '@microsoft/vscode-docker-registries';
 import { Progress, l10n } from "vscode";
@@ -14,7 +13,7 @@ import { AzureRegistryDataProvider, isAzureRegistry } from '../../../tree/regist
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
 import { getFullImageNameFromRegistryTagItem } from '../../../tree/registries/registryTreeUtils';
 import { getAzExtAppService, getAzExtAzureUtils } from '../../../utils/lazyPackages';
-import { IAppServiceContainerWizardContext } from './deployImageToAzure';
+import { type IAppServiceContainerWizardContext } from './deployImageToAzure';
 
 export class DockerSiteCreateStep extends AzureWizardExecuteStep<IAppServiceContainerWizardContext> {
     public priority: number = 140;
@@ -32,10 +31,10 @@ export class DockerSiteCreateStep extends AzureWizardExecuteStep<IAppServiceCont
         const azExtAzureUtils = await getAzExtAzureUtils();
         const vscAzureAppService = await getAzExtAppService();
 
-        const location: AzExtLocation = await azExtAzureUtils.LocationListStep.getLocation(context);
+        const location = await azExtAzureUtils.LocationListStep.getLocation(context);
         const locationName: string = nonNullProp(location, 'name');
 
-        const client: WebSiteManagementClient = await vscAzureAppService.createWebSiteClient(context);
+        const client = await vscAzureAppService.createWebSiteClient(context);
         const siteEnvelope: Site = {
             name: context.newSiteName,
             location: locationName,
@@ -78,7 +77,7 @@ export class DockerSiteCreateStep extends AzureWizardExecuteStep<IAppServiceCont
         }
         // ACR -> Arc App Service. Use regular auth. Same as any V2 registry but different way of getting auth.
         else if (isAzureRegistry(registryTI.wrappedItem) && context.customLocation) {
-            const cred = await (registryTI.provider as unknown as AzureRegistryDataProvider).tryGetAdminCredentials(registryTI.wrappedItem);
+            const cred = await (registryTI.provider as unknown as AzureRegistryDataProvider).tryGetAdminCredentials(registryTI.wrappedItem, context);
             if (!cred?.username || !cred?.passwords?.[0]?.value) {
                 throw new Error(l10n.t('Azure App service deployment on Azure Arc only supports running images from Azure Container Registry with admin enabled'));
             }

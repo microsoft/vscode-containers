@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IAppServiceWizardContext } from "@microsoft/vscode-azext-azureappservice"; // These are only dev-time imports so don't need to be lazy
 import { AzureWizardExecuteStep } from "@microsoft/vscode-azext-utils";
 import { CommonTag } from "@microsoft/vscode-docker-registries";
 import { randomUUID } from "crypto";
@@ -12,26 +11,26 @@ import { ext } from "../../../extensionVariables";
 import { AzureRegistry, isAzureTag } from "../../../tree/registries/Azure/AzureRegistryDataProvider";
 import { UnifiedRegistryItem } from "../../../tree/registries/UnifiedRegistryTreeDataProvider";
 import { getFullImageNameFromRegistryTagItem, getResourceGroupFromAzureRegistryItem } from "../../../tree/registries/registryTreeUtils";
-import { getArmAuth, getArmContainerRegistry, getAzExtAppService, getAzExtAzureUtils } from "../../../utils/lazyPackages";
+import { createArmContainerRegistryClient, createAuthorizationManagementClient } from "../../../utils/azureUtils";
+import { getAzExtAppService, getAzExtAzureUtils } from "../../../utils/lazyPackages";
+import { type IAppServiceContainerWizardContext } from "./deployImageToAzure";
 
-export class DockerAssignAcrPullRoleStep extends AzureWizardExecuteStep<IAppServiceWizardContext> {
+export class DockerAssignAcrPullRoleStep extends AzureWizardExecuteStep<IAppServiceContainerWizardContext> {
     public priority: number = 141; // execute after DockerSiteCreateStep
 
     public constructor(private readonly tagTreeItem: UnifiedRegistryItem<CommonTag>) {
         super();
     }
 
-    public async execute(context: IAppServiceWizardContext, progress: Progress<{ message?: string; increment?: number }>): Promise<void> {
+    public async execute(context: IAppServiceContainerWizardContext, progress: Progress<{ message?: string; increment?: number }>): Promise<void> {
         const message: string = l10n.t('Granting permission for App Service to pull image from ACR...');
         ext.outputChannel.info(message);
         progress.report({ message: message });
 
         const azExtAzureUtils = await getAzExtAzureUtils();
         const vscAzureAppService = await getAzExtAppService();
-        const armAuth = await getArmAuth();
-        const armContainerRegistry = await getArmContainerRegistry();
-        const authClient = azExtAzureUtils.createAzureClient(context, armAuth.AuthorizationManagementClient);
-        const crmClient = azExtAzureUtils.createAzureClient(context, armContainerRegistry.ContainerRegistryManagementClient);
+        const authClient = await createAuthorizationManagementClient(context);
+        const crmClient = await createArmContainerRegistryClient(context);
         const appSvcClient = await vscAzureAppService.createWebSiteClient(context);
 
         // If we're in `execute`, then `shouldExecute` passed and `this.tagTreeItem.parent.parent` is guaranteed to be an AzureRegistryTreeItem
@@ -85,7 +84,7 @@ export class DockerAssignAcrPullRoleStep extends AzureWizardExecuteStep<IAppServ
         await appSvcClient.webApps.updateConfiguration(context.site.resourceGroup, context.site.name, config);
     }
 
-    public shouldExecute(context: IAppServiceWizardContext): boolean {
+    public shouldExecute(context: IAppServiceContainerWizardContext): boolean {
         return !!(context.site) && isAzureTag(this.tagTreeItem.wrappedItem) && !context.customLocation;
     }
 }
