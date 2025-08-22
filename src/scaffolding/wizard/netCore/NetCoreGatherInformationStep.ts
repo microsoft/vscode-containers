@@ -135,7 +135,11 @@ export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreS
             // It's potentially been a while since we've checked--e.g. the whole activation of the C# extension and Omnisharp--so check again for assets before force-creating them
             if (!hasTask('build', wizardContext.workspaceFolder)) {
                 // Generate .NET assets
-                await vscode.commands.executeCommand('dotnet.generateAssets');
+                await vscode.commands.executeCommand(
+                    'dotnet.generateAssets',
+                    undefined, // First argument is "selectedIndex", https://github.com/dotnet/vscode-csharp/blob/4ca4cf4663480eb42a0e20e8e8a922711d6f8e95/src/lsptoolshost/debugger/debugger.ts#L58
+                    { skipPrompt: true }, // Skips the prompt suggesting C# Dev Kit's dynamic tasks
+                );
             }
         } finally {
             // Restore the settings for the C# asset generation prompt to their previous value
