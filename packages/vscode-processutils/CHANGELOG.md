@@ -1,3 +1,7 @@
+## 0.1.2 - 25 August 2025
+### Added
+* Added a helper method to convert a Node.js `AbortSignal` into a `CancellationTokenLike`. [#288](https://github.com/microsoft/vscode-docker-extensibility/pull/288)
+
 ## 0.1.1 - 22 July 2025
 ### Fixed
 * Fixed an issue involving non-shell execution on Windows. [#280](https://github.com/microsoft/vscode-docker-extensibility/issues/280)
