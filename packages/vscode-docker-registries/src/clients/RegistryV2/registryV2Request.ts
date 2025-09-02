@@ -48,7 +48,7 @@ async function registryV2RequestInternal<T>(options: RegistryV2RequestOptions): 
 
     const request: RequestLike = {
         headers: {
-            accept: 'application/json,application/vnd.oci.image.index.v1+json',
+            accept: 'application/json',
             Authorization: `${auth.type} ${auth.accessToken}`,
             ...options.headers
         },

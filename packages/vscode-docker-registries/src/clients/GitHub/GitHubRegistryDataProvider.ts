@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import { BasicOAuthProvider } from '../../auth/BasicOAuthProvider';
-import { RegistryV2DataProvider, V2Registry, V2RegistryItem, V2RegistryRoot, V2Repository, V2Tag } from '../RegistryV2/RegistryV2DataProvider';
+import { RegistryV2DataProvider, V2Registry, V2RegistryItem, V2RegistryRoot, V2Repository } from '../RegistryV2/RegistryV2DataProvider';
 import { registryV2Request } from '../RegistryV2/registryV2Request';
 import { AuthenticationProvider } from '../../contracts/AuthenticationProvider';
 import { httpRequest } from '../../utils/httpRequest';
@@ -127,33 +127,6 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
         return this.authenticationProvider;
     }
 
-    protected override async getTagCreatedDate(item: V2Tag): Promise<Date | undefined> {
-        const repository = item.parent as V2Repository;
-        const tagRequestUrl = repository.baseUrl.with({ path: `v2/${repository.label}/manifests/${item.label}` });
-
-        const tagDetailResponse = await registryV2Request<Blob>({
-            authenticationProvider: this.getAuthenticationProvider(repository),
-            method: 'GET',
-            requestUri: tagRequestUrl,
-            scopes: [`repository:${repository.label}:pull`]
-        });
-
-        const digest = tagDetailResponse.body?.config?.digest || '';
-        const digestRequestUrl = repository.baseUrl.with({ path: `v2/${repository.label}/blobs/${digest}` });
-        if (digest) {
-            const configFile = await registryV2Request<{ created: string }>({
-                authenticationProvider: this.getAuthenticationProvider(repository),
-                method: 'GET',
-                requestUri: digestRequestUrl,
-                scopes: [`repository:${repository.label}:pull`]
-            });
-
-            return configFile.body?.created ? new Date(configFile.body.created) : undefined;
-        }
-
-        return undefined;
-    }
-
     private async getOrganizations(): Promise<string[]> {
         const results: string[] = [];
 
@@ -176,12 +149,4 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
 
         return results;
     }
-}
-
-interface Config {
-    digest: string;
-}
-
-interface Blob {
-    config: Config;
 }
