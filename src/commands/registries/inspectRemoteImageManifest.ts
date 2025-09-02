@@ -18,7 +18,7 @@ export async function inspectRemoteImageManifest(context: IActionContext, node?:
     }
 
     const v2DataProvider = node.provider as unknown as RegistryV2DataProvider;
-    const manifest = await v2DataProvider.getManifestV1(node.wrappedItem);
+    const manifest = await v2DataProvider.getManifest(node.wrappedItem);
 
     await openReadOnlyJson({ label: node.wrappedItem.label, fullId: node.wrappedItem.id || node.wrappedItem.label }, manifest);
 }
