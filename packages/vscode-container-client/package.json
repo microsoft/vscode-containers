@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-container-client",
     "author": "Microsoft Corporation",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
     "license": "See LICENSE in the project root for license information.",
     "repository": {

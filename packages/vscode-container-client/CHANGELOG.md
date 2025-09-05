@@ -1,3 +1,7 @@
+## 0.4.2 - 8 September 2025
+### Fixed
+* Fixed an issue where inspection could fail if a container had unmapped ports. [#292](https://github.com/microsoft/vscode-docker-extensibility/issues/292)
+
 ## 0.4.1 - 22 July 2025
 ### Fixed
 * Now depends on `@microsoft/vscode-container-client` v0.1.1, in order to get a fix. [#280](https://github.com/microsoft/vscode-docker-extensibility/issues/280)
