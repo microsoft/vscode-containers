@@ -1,15 +1,17 @@
-## 2.2.0 - 18 August 2025
+## 2.2.0 - 15 September 2025
 ### Added
 * Added a "Compose Down - Select Services" command. This allows you to take down a subset of services in your compose project. [#82](https://github.com/microsoft/vscode-containers/pull/82)
 
 ### Changed
 * Minor changes to the Dockerfiles created by the Go, Java, and Other templates. [#86](https://github.com/microsoft/vscode-containers/issues/86), [#158](https://github.com/microsoft/vscode-containers/issues/158)
+* Changes were made to support the upcoming multi-factor authentication requirements for Azure. [#200](https://github.com/microsoft/vscode-containers/issues/200)
 
 ### Fixed
 * Fixed a crash in the Dockerfile language service. [#139](https://github.com/microsoft/vscode-containers/issues/139)
 * Fixed an issue where the Compose formatter would not work, if either RedHat's YAML extension or the Docker DX extension were present. [#151](https://github.com/microsoft/vscode-containers/issues/151)
 * Fixed an issue where .NET apps with spaces in the project name would fail to debug on Linux. [#169](https://github.com/microsoft/vscode-containers/issues/169)
 * Fixed an issue that could cause OAuth to fail when connecting to certain generic v2 registries. [#190](https://github.com/microsoft/vscode-containers/pull/190)
+* Fixed an issue that could cause registry image manifest inspection and deletion to fail with a 404 error. [#209](https://github.com/microsoft/vscode-containers/issues/209)
 
 ## 2.1.0 - 21 July 2025
 ### Added
