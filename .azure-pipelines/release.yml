@@ -32,3 +32,5 @@ extends:
     publishVersion: ${{ parameters.publishVersion }}
     dryRun: ${{ parameters.dryRun }}
     environmentName: VSCodeDockerExtensionPublish
+    publishCommands: # Temporary for Authentication Challenges proposed API
+      - "vsce publish --azure-credential --packagePath vscode-containers-${{ parameters.publishVersion }}.vsix --manifestPath extension.manifest --signaturePath extension.signature.p7s --allow-proposed-apis authenticationChallenges"
