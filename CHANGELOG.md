@@ -1,4 +1,4 @@
-## 2.2.0 - 15 September 2025
+## 2.2.0 - 22 September 2025
 ### Added
 * Added a "Compose Down - Select Services" command. This allows you to take down a subset of services in your compose project. [#82](https://github.com/microsoft/vscode-containers/pull/82)
 
