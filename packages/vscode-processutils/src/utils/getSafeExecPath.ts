@@ -15,9 +15,10 @@ const pathCache = new Map<string, string>();
  * will never be searched for the command, unless the command explicitly specifies a relative path,
  * for example `./command` or `../command`.
  * @param command The command to get a safe execution path for
+ * @param alternatePath An alternate PATH environment variable to use instead of the system PATH
  * @returns The safe execution path for the command
  */
-export function getSafeExecPath(command: string): string {
+export function getSafeExecPath(command: string, alternatePath?: string): string {
     if (os.platform() !== 'win32') {
         // On non-Windows platforms, `child_process.spawn()` will not look for the executable in the CWD--only in the PATH.
         // So we can just return the command as is.
@@ -30,7 +31,7 @@ export function getSafeExecPath(command: string): string {
         // For Windows, we need to resolve the command to an absolute path using `which`.
         if (!pathCache.has(command)) {
             // We'd use the async, but it's significantly slower
-            const resolvedPath = which.sync(command, { all: false, nothrow: false });
+            const resolvedPath = which.sync(command, { all: false, nothrow: false, path: alternatePath });
             pathCache.set(command, resolvedPath);
         }
 

@@ -1,3 +1,7 @@
+## 0.1.3 - 17 September 2025
+### Added
+* Added a new `alternatePath` parameter to `getSafeExecPath`, to allow passing in an alternative `PATH` to search. [#294](https://github.com/microsoft/vscode-docker-extensibility/pull/294)
+
 ## 0.1.2 - 25 August 2025
 ### Added
 * Added a helper method to convert a Node.js `AbortSignal` into a `CancellationTokenLike`. [#288](https://github.com/microsoft/vscode-docker-extensibility/pull/288)

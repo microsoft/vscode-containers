@@ -90,7 +90,7 @@ export async function spawnStreamAsync(
         finalCommand = command;
     } else {
         // Otherwise, we do some checks and quoting.
-        const safeCommand = getSafeExecPath(command);
+        const safeCommand = getSafeExecPath(command, options.env?.PATH);
         const quotedSafeCommand = quoteExecutableCommandIfNeeded(safeCommand);
         finalCommand = !!shell ? quotedSafeCommand : safeCommand;
 
