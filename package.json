@@ -3126,7 +3126,6 @@
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
         "@types/fs-extra": "^11.0.1",
-        "@types/glob": "^8.1.0",
         "@types/mocha": "^10.0.1",
         "@types/node": "20.x",
         "@types/semver": "^7.3.13",

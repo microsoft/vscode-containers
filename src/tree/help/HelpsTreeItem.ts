@@ -16,7 +16,6 @@ export class HelpsTreeItem extends AzExtParentTreeItem {
     public async loadMoreChildrenImpl(clearCache: boolean, context: IActionContext): Promise<AzExtTreeItem[]> {
         return this.values ?? (this.values = [
             this.readDocumentationTreeItem,
-            this.watchVideosTreeItem,
             this.getStartedTreeItem,
             this.openWalkthroughTreeItem,
             this.openDockerDxTreeItem,
@@ -44,18 +43,6 @@ export class HelpsTreeItem extends AzExtParentTreeItem {
             new vscode.ThemeIcon('book')
         );
         node.id = '0';
-
-        return node;
-    }
-
-    private get watchVideosTreeItem(): AzExtTreeItem {
-        const node = new OpenUrlTreeItem(
-            this,
-            vscode.l10n.t('Watch Extension Tutorial Videos'),
-            'https://aka.ms/helppanel_videos',
-            new vscode.ThemeIcon('play-circle')
-        );
-        node.id = '10';
 
         return node;
     }
