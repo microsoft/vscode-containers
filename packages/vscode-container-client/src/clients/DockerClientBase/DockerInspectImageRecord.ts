@@ -28,7 +28,7 @@ export const DockerInspectImageRecordSchema = z.object({
     RepoDigests: z.array(z.string()),
     Architecture: z.string(),
     Os: z.string(),
-    Created: z.string(),
+    Created: z.string().nullable().optional(),
     User: z.string().optional(),
 });
 

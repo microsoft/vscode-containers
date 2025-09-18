@@ -1,3 +1,7 @@
+## 0.4.3 - 18 September 2025
+### Fixed
+* Fixed an issue where images could not be inspected if they were built in Azure Container Registry. [#295](https://github.com/microsoft/vscode-docker-extensibility/issues/295)
+
 ## 0.4.2 - 8 September 2025
 ### Fixed
 * Fixed an issue where inspection could fail if a container had unmapped ports. [#292](https://github.com/microsoft/vscode-docker-extensibility/issues/292)

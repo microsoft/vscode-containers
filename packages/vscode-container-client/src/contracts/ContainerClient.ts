@@ -572,7 +572,7 @@ export type InspectImagesItem = {
     /**
      * The date the image was created
      */
-    createdAt: Date;
+    createdAt?: Date;
     /**
      * The default user in the container
      */
