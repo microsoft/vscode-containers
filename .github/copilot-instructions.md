@@ -8,7 +8,7 @@ Always reference these instructions first and fallback to search or bash command
 
 ### Bootstrap and Build
 - Install dependencies: `npm install` -- takes 6 seconds (30 seconds on first install)
-- Build extension: `npm run build` -- takes 42 seconds. NEVER CANCEL. Set timeout to 60+ minutes.
+- Build extension: `npm run build` -- takes 42 seconds. Set timeout to 5 minutes for slow environments.
 - Lint code: `npm run lint` -- takes 5 seconds
 - TypeScript compile: `npm run pretest` -- takes 6 seconds
 - Watch mode (development): `npm run watch` -- runs continuously for development
@@ -17,7 +17,7 @@ Always reference these instructions first and fallback to search or bash command
 - Run tests: `npm test` -- requires VS Code environment, will fail in headless mode. This is EXPECTED behavior.
 - Test compilation: `npm run pretest` -- takes 6 seconds. Always run this to validate TypeScript compilation.
 - Package extension: `npm run package` -- creates .vsix file for distribution
-- NEVER CANCEL builds or long-running operations. Build commands may take up to 45 seconds.
+- Build commands may take up to 45 seconds on typical hardware.
 
 ### Development Workflow
 - Start development: `npm run watch` to enable continuous compilation during development
@@ -30,7 +30,7 @@ Always reference these instructions first and fallback to search or bash command
 After making changes, ALWAYS validate by running through these scenarios:
 
 ### Basic Extension Validation
-1. Build successfully: `npm run build` (timeout: 60+ minutes)
+1. Build successfully: `npm run build` (timeout: 5 minutes for slow environments)
 2. Lint passes: `npm run lint`
 3. TypeScript compiles: `npm run pretest`
 4. Extension packages: `npm run package`
@@ -51,7 +51,7 @@ Since automated tests require VS Code environment, manually verify:
 
 ## Build and Test Timing
 - npm install: ~6 seconds (30 seconds on first install)
-- npm run build: ~42 seconds (NEVER CANCEL - set 60+ minute timeout)
+- npm run build: ~42 seconds (set 5 minute timeout for slow environments)
 - npm run lint: ~5 seconds
 - npm run pretest: ~6 seconds
 - npm run package: ~3 seconds
@@ -103,7 +103,7 @@ resources/
 ```
 
 ### Extension Dependencies
-- Requires VS Code 1.95.0+
+- Requires current VS Code version (check engines field in package.json)
 - Extension dependencies: vscode.docker, vscode.yaml
 - Runtime requirements: Docker or Podman installed on system
 - Node.js 20.x for development
@@ -131,7 +131,7 @@ npm install                    # Takes ~6 seconds
 npm run lint                   # Takes ~5 seconds - MUST PASS for CI
 
 # 3. Build the extension
-npm run build                  # Takes ~42 seconds - NEVER CANCEL
+npm run build                  # Takes ~42 seconds
 
 # 4. Package the extension (optional)
 npm run package               # Takes ~3 seconds
@@ -153,10 +153,10 @@ npm run pretest              # Validate TypeScript compilation
 ```
 
 ## CRITICAL Reminders
-- NEVER CANCEL build operations - they take 42+ seconds normally
+- Build operations take ~42 seconds on typical hardware
 - Always run `npm run lint` before committing - CI will fail otherwise
 - Always run `npm run pretest` to validate TypeScript compilation
-- Set timeouts to 60+ minutes for build commands to avoid premature cancellation
+- Set timeouts to 5 minutes for build commands in slow environments
 - Extension tests require VS Code environment - headless failures are expected
 - Docker/Podman must be available on system for full functionality testing
 - Watch mode (`npm run watch`) is useful for development but must be stopped manually
