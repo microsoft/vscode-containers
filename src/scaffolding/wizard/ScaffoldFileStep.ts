@@ -115,8 +115,10 @@ export class ScaffoldFileStep<TWizardContext extends ScaffoldingWizardContext> e
     private async getOutputPath(wizardContext: TWizardContext): Promise<string> {
         switch (this.fileType) {
             case 'Dockerfile':
+            case 'Containerfile':
                 return path.join(wizardContext.dockerfileDirectory, this.fileType);
             case '.dockerignore':
+            case '.containerignore':
                 return path.join(wizardContext.dockerBuildContext, this.fileType);
             default:
                 // All other files go to the root
