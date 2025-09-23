@@ -7,7 +7,7 @@ import { IActionContext } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { Platform } from '../../utils/platform';
 
-export type ScaffoldedFileType = '.dockerignore' | '.containerignore' | 'Dockerfile' | 'Containerfile' | 'compose.yaml' | 'compose.debug.yaml' | 'requirements.txt';
+export type ScaffoldedFileType = '.dockerignore' | 'Dockerfile' | 'compose.yaml' | 'compose.debug.yaml' | 'requirements.txt';
 
 export interface ScaffoldingWizardContext extends IActionContext {
     // These are set at the beginning
