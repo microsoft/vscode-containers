@@ -49,6 +49,18 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
         }
     }
 
+    const scopedWorkspaceFolder = /^\$\{workspace(?:Folder|Root):([^}]+)\}$/i.exec(variable);
+    if (scopedWorkspaceFolder) {
+        const folderName = scopedWorkspaceFolder[1].trim();
+        const targetFolder = workspace.workspaceFolders?.find(f => f.name === folderName);
+
+        if (targetFolder) {
+            return path.normalize(targetFolder.uri.fsPath);
+        }
+
+        return variable;
+    }
+
     // Replace additional variables as specified by the caller
     const variableNameOnly = variable.replace(/[${}]/ig, '');
     const replacement = additionalVariables?.[variable] ?? additionalVariables?.[variableNameOnly];
