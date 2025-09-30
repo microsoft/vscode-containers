@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { registerMcpTool } from '@microsoft/vscode-inproc-mcp';
+import { CopilotTool, registerMcpTool as registerMcpToolInternal, ToolIOSchema } from '@microsoft/vscode-inproc-mcp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
+import { McpToolWithTelemetry } from './McpToolWithTelemetry';
 import { actContainerTool } from './tools/actContainer';
 import { inspectContainerTool } from './tools/inspectContainer';
 import { listContainersTool } from './tools/listContainers';
@@ -24,4 +25,8 @@ export function getContainersMcpServer(): McpServer {
     registerMcpTool(mcpServer, inspectContainerTool);
 
     return mcpServer;
+}
+
+function registerMcpTool<TInSchema extends ToolIOSchema, TOutSchema extends ToolIOSchema>(mcpServer: McpServer, tool: CopilotTool<TInSchema, TOutSchema>) {
+    registerMcpToolInternal(mcpServer, tool, McpToolWithTelemetry);
 }
