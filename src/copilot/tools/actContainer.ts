@@ -7,20 +7,20 @@ import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
 import { ext } from '../../extensionVariables';
 
-const ActInSchema = z.object({
+const ActContainerInputSchema = z.object({
     action: z.enum(['start', 'stop', 'restart', 'remove']),
     containerNameOrId: z.string(),
 });
 
-export const actContainerTool: CopilotTool<typeof ActInSchema, z.ZodVoid> = {
+export const actContainerTool: CopilotTool<typeof ActContainerInputSchema, z.ZodVoid> = {
     name: 'act_container',
-    inputSchema: ActInSchema,
-    description: 'Start, stop, restart or remove a container by name or ID.',
+    inputSchema: ActContainerInputSchema,
+    description: 'Start, stop, restart or remove a container by name or ID',
     annotations: {
         destructiveHint: true, // Container stop could result in removal, so mark as destructive
         idempotentHint: true,
     },
-    execute: async (input: z.infer<typeof ActInSchema>) => {
+    execute: async (input) => {
         switch (input.action) {
             case 'start':
                 await ext.runWithDefaults(client =>
