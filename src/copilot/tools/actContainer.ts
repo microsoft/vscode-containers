@@ -8,17 +8,14 @@ import { z } from 'zod';
 import { ext } from '../../extensionVariables';
 
 const ActInSchema = z.object({
-    action: z.enum(['start', 'stop', 'restart']),
-    containerNameOrId: z.string().min(1),
+    action: z.enum(['start', 'stop', 'restart', 'remove']),
+    containerNameOrId: z.string(),
 });
 
-const ActOutSchema = z.void();
-
-export const actContainerTool: CopilotTool<typeof ActInSchema, typeof ActOutSchema> = {
+export const actContainerTool: CopilotTool<typeof ActInSchema, z.ZodVoid> = {
     name: 'act_container',
     inputSchema: ActInSchema,
-    outputSchema: ActOutSchema,
-    description: 'Start, stop, or restart a container by name or ID.',
+    description: 'Start, stop, restart or remove a container by name or ID.',
     annotations: {
         destructiveHint: true, // Container stop could result in removal, so mark as destructive
         idempotentHint: true,
@@ -38,6 +35,11 @@ export const actContainerTool: CopilotTool<typeof ActInSchema, typeof ActOutSche
             case 'restart':
                 await ext.runWithDefaults(client =>
                     client.restartContainers({ container: [input.containerNameOrId] })
+                );
+                return;
+            case 'remove':
+                await ext.runWithDefaults(client =>
+                    client.removeContainers({ containers: [input.containerNameOrId], force: true })
                 );
                 return;
             default:
