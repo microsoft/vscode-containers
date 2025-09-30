@@ -33,7 +33,7 @@ export const listContainersTool: CopilotTool<z.ZodVoid, typeof ListContainersOut
     },
     execute: async () => {
         const containers = await ext.runWithDefaults(client =>
-            client.listContainers({})
+            client.listContainers({ all: true })
         );
 
         return {
