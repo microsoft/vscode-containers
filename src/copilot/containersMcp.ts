@@ -7,6 +7,7 @@ import { registerTool } from '@microsoft/vscode-inproc-mcp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
 import { actContainerTool } from './tools/actContainer';
+import { inspectContainerTool } from './tools/inspectContainer';
 import { listContainersTool } from './tools/listContainers';
 
 export function getContainersMcpServer(): McpServer {
@@ -20,6 +21,7 @@ export function getContainersMcpServer(): McpServer {
 
     registerTool(mcpServer, actContainerTool);
     registerTool(mcpServer, listContainersTool);
+    registerTool(mcpServer, inspectContainerTool);
 
     return mcpServer;
 }
