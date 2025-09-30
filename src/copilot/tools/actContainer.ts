@@ -17,7 +17,7 @@ export const actContainerTool: CopilotTool<typeof ActContainerInputSchema, z.Zod
     inputSchema: ActContainerInputSchema,
     description: 'Start, stop, restart or remove a container by name or ID',
     annotations: {
-        destructiveHint: true, // Container stop could result in removal, so mark as destructive
+        destructiveHint: true, // Container stop can also result in removal, so mark as destructive
         idempotentHint: true,
     },
     execute: async (input) => {
