@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { registerTool } from '@microsoft/vscode-inproc-mcp';
+import { registerMcpTool } from '@microsoft/vscode-inproc-mcp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
 import { actContainerTool } from './tools/actContainer';
@@ -19,9 +19,9 @@ export function getContainersMcpServer(): McpServer {
         }
     );
 
-    registerTool(mcpServer, actContainerTool);
-    registerTool(mcpServer, listContainersTool);
-    registerTool(mcpServer, inspectContainerTool);
+    registerMcpTool(mcpServer, actContainerTool);
+    registerMcpTool(mcpServer, listContainersTool);
+    registerMcpTool(mcpServer, inspectContainerTool);
 
     return mcpServer;
 }
