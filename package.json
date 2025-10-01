@@ -3162,7 +3162,7 @@
         "@microsoft/vscode-azext-azureappservice": "^3.6.7",
         "@microsoft/vscode-azext-azureauth": "^4.2.2",
         "@microsoft/vscode-azext-azureutils": "^3.5.2",
-        "@microsoft/vscode-azext-utils": "^3.4.2",
+        "@microsoft/vscode-azext-utils": "file:../vscode-azuretools/utils/microsoft-vscode-azext-utils-3.5.1.tgz",
         "@microsoft/vscode-container-client": "^0.4.3",
         "@microsoft/vscode-docker-registries": "^0.3.0",
         "@microsoft/vscode-inproc-mcp": "file:../vscode-docker-extensibility/packages/vscode-inproc-mcp/microsoft-vscode-inproc-mcp-0.1.0.tgz",
