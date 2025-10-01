@@ -18,7 +18,7 @@ const perfStats = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const extension = require("./dist/extension.bundle");
 
 async function activate(ctx) {
