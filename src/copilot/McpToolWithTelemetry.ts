@@ -13,6 +13,7 @@ export class McpToolWithTelemetry<TInSchema extends ToolIOSchema, TOutSchema ext
             // Copilot will display the error messages, we don't need to also display them
             context.errorHandling.suppressDisplay = true;
 
+            // TODO: cancellation token instead of abort signal? Easier to use in our lower libraries
             const result = await super.executeMcp(input, extra);
 
             if (!result) {
