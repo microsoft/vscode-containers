@@ -4,14 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CopilotTool, registerMcpTool as registerMcpToolInternal, ToolIOSchema } from '@microsoft/vscode-inproc-mcp';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
+import { getMcpServer } from '../utils/lazyPackages';
 import { McpToolWithTelemetry } from './McpToolWithTelemetry';
 import { actContainerTool } from './tools/actContainer';
 import { inspectContainerTool } from './tools/inspectContainer';
 import { listContainersTool } from './tools/listContainers';
 
-export function getContainersMcpServer(): McpServer {
+export async function getContainersMcpServer(): Promise<McpServer> {
+    const { McpServer } = await getMcpServer();
     const mcpServer = new McpServer(
         {
             name: McpServerId,
