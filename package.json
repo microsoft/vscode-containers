@@ -3167,7 +3167,7 @@
         "@microsoft/vscode-docker-registries": "file:../vscode-docker-extensibility/packages/vscode-docker-registries/microsoft-vscode-docker-registries-0.3.0.tgz",
         "@microsoft/vscode-inproc-mcp": "file:../vscode-docker-extensibility/packages/vscode-inproc-mcp/microsoft-vscode-inproc-mcp-0.2.0.tgz",
         "@microsoft/vscode-processutils": "file:../vscode-docker-extensibility/packages/vscode-processutils/microsoft-vscode-processutils-0.2.0.tgz",
-        "@modelcontextprotocol/sdk": "^1.18.2",
+        "@modelcontextprotocol/sdk": "~1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.14.1",
         "fs-extra": "^11.1.1",
