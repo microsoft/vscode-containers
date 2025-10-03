@@ -2,10 +2,10 @@
     "compilerOptions": {
         "module": "nodenext",
         "moduleResolution": "nodenext",
-        "target": "es2018",
+        "target": "es2022",
         "outDir": "out",
         "lib": [
-            "es2018"
+            "es2022"
         ],
         "sourceMap": true,
         "rootDir": "src",
