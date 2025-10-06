@@ -238,6 +238,11 @@
                     "group": "navigation@7"
                 },
                 {
+                    "command": "vscode-containers.containers.filter",
+                    "when": "view == vscode-containers.views.containers",
+                    "group": "navigation@7.5"
+                },
+                {
                     "command": "vscode-containers.containers.configureExplorer",
                     "when": "view == vscode-containers.views.containers",
                     "group": "navigation@8"
@@ -246,6 +251,11 @@
                     "command": "vscode-containers.networks.configureExplorer",
                     "when": "view == vscode-containers.views.networks",
                     "group": "navigation@8"
+                },
+                {
+                    "command": "vscode-containers.networks.filter",
+                    "when": "view == vscode-containers.views.networks",
+                    "group": "navigation@7.5"
                 },
                 {
                     "command": "vscode-containers.containers.refresh",
@@ -288,6 +298,11 @@
                     "group": "navigation@8"
                 },
                 {
+                    "command": "vscode-containers.images.filter",
+                    "when": "view == vscode-containers.views.images",
+                    "group": "navigation@7.5"
+                },
+                {
                     "command": "vscode-containers.images.refresh",
                     "when": "view == vscode-containers.views.images",
                     "group": "navigation@9"
@@ -301,6 +316,11 @@
                     "command": "vscode-containers.registries.connectRegistry",
                     "when": "view == vscode-containers.views.registries",
                     "group": "navigation@1"
+                },
+                {
+                    "command": "vscode-containers.registries.filter",
+                    "when": "view == vscode-containers.views.registries",
+                    "group": "navigation@7.5"
                 },
                 {
                     "command": "vscode-containers.registries.help",
@@ -318,6 +338,11 @@
                     "group": "navigation@8"
                 },
                 {
+                    "command": "vscode-containers.volumes.filter",
+                    "when": "view == vscode-containers.views.volumes",
+                    "group": "navigation@7.5"
+                },
+                {
                     "command": "vscode-containers.volumes.refresh",
                     "when": "view == vscode-containers.views.volumes",
                     "group": "navigation@9"
@@ -326,6 +351,11 @@
                     "command": "vscode-containers.contexts.configureExplorer",
                     "when": "view == vscode-containers.views.dockerContexts",
                     "group": "navigation@8"
+                },
+                {
+                    "command": "vscode-containers.contexts.filter",
+                    "when": "view == vscode-containers.views.dockerContexts",
+                    "group": "navigation@7.5"
                 },
                 {
                     "command": "vscode-containers.contexts.refresh",
@@ -2440,6 +2470,12 @@
                 "icon": "$(settings-gear)"
             },
             {
+                "command": "vscode-containers.containers.filter",
+                "title": "%vscode-containers.commands.containers.filter%",
+                "category": "%vscode-containers.commands.category.containers%",
+                "icon": "$(search)"
+            },
+            {
                 "command": "vscode-containers.containers.downloadFile",
                 "title": "%vscode-containers.commands.containers.downloadFile%",
                 "category": "%vscode-containers.commands.category.containers%",
@@ -2550,6 +2586,12 @@
                 "icon": "$(settings-gear)"
             },
             {
+                "command": "vscode-containers.images.filter",
+                "title": "%vscode-containers.commands.images.filter%",
+                "category": "%vscode-containers.commands.category.images%",
+                "icon": "$(search)"
+            },
+            {
                 "command": "vscode-containers.images.inspect",
                 "title": "%vscode-containers.commands.images.inspect%",
                 "category": "%vscode-containers.commands.category.images%"
@@ -2628,6 +2670,12 @@
                 "title": "%vscode-containers.commands.networks.configureExplorer%",
                 "category": "%vscode-containers.commands.category.networks%",
                 "icon": "$(settings-gear)"
+            },
+            {
+                "command": "vscode-containers.networks.filter",
+                "title": "%vscode-containers.commands.networks.filter%",
+                "category": "%vscode-containers.commands.category.networks%",
+                "icon": "$(search)"
             },
             {
                 "command": "vscode-containers.networks.create",
@@ -2739,6 +2787,12 @@
                 "category": "%vscode-containers.commands.category.registries%"
             },
             {
+                "command": "vscode-containers.registries.filter",
+                "title": "%vscode-containers.commands.registries.filter%",
+                "category": "%vscode-containers.commands.category.registries%",
+                "icon": "$(search)"
+            },
+            {
                 "command": "vscode-containers.registries.genericV2.removeTrackedRegistry",
                 "title": "%vscode-containers.commands.registries.genericV2.removeTrackedRegistry%",
                 "category": "%vscode-containers.commands.category.registries%"
@@ -2795,6 +2849,12 @@
                 "title": "%vscode-containers.commands.volumes.configureExplorer%",
                 "category": "%vscode-containers.commands.category.volumes%",
                 "icon": "$(settings-gear)"
+            },
+            {
+                "command": "vscode-containers.volumes.filter",
+                "title": "%vscode-containers.commands.volumes.filter%",
+                "category": "%vscode-containers.commands.category.volumes%",
+                "icon": "$(search)"
             },
             {
                 "command": "vscode-containers.volumes.inspect",
@@ -2861,6 +2921,12 @@
                 "title": "%vscode-containers.commands.contexts.configureExplorer%",
                 "category": "%vscode-containers.commands.category.contexts%",
                 "icon": "$(settings-gear)"
+            },
+            {
+                "command": "vscode-containers.contexts.filter",
+                "title": "%vscode-containers.commands.contexts.filter%",
+                "category": "%vscode-containers.commands.category.contexts%",
+                "icon": "$(search)"
             },
             {
                 "command": "vscode-containers.contexts.refresh",
