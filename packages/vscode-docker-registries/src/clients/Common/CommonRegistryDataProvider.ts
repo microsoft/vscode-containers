@@ -8,8 +8,8 @@ import { RegistryDataProvider } from '../../contracts/RegistryDataProvider';
 import { CommonRegistry, CommonRegistryItem, CommonRegistryRoot, CommonRepository, CommonTag, isRegistry, isRegistryRoot, isRepository, isTag, isError } from './models';
 import { getContextValue } from '../../utils/contextValues';
 import { LoginInformation } from '../../contracts/BasicCredentials';
-import * as dayjs from 'dayjs';
-import * as relativeTime from 'dayjs/plugin/relativeTime';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { getErrorTreeItem } from './ErrorTreeItem';
 
 dayjs.extend(relativeTime);

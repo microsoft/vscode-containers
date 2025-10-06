@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
+import chaiAsPromised from 'chai-as-promised';
 
 before('Global setup', function () {
     console.log('Global setup');

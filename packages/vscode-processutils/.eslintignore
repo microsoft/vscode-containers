@@ -1,4 +1,4 @@
 /**/*.js
 vscode.ts
-lib
+dist
 node_modules

@@ -5,7 +5,7 @@
 
 import { spawn, SpawnOptions } from 'child_process';
 import * as os from 'os';
-import * as treeKill from 'tree-kill';
+import treeKill from 'tree-kill';
 
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 import { CancellationError } from './CancellationError';

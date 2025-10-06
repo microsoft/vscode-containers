@@ -5,7 +5,7 @@
 
 import * as os from 'os';
 import * as path from 'path';
-import * as which from 'which';
+import which from 'which';
 
 const pathCache = new Map<string, string>();
 

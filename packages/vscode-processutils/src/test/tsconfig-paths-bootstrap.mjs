@@ -6,11 +6,11 @@
 // Helper to ensure vscode type placeholders can be loaded for tests
 
 /* eslint-disable no-undef @typescript-eslint/no-var-requires */
-const tsConfig = require("../../tsconfig.json");
-const tsConfigPaths = require("tsconfig-paths");
+const tsConfig = await import("../../tsconfig.json");
+const tsConfigPaths = await import("tsconfig-paths");
 
 tsConfigPaths.register({
-  baseUrl: tsConfig['ts-node'].compilerOptions.baseUrl,
-  paths: tsConfig['ts-node'].compilerOptions.paths,
+  baseUrl: tsConfig['tsx'].compilerOptions.baseUrl,
+  paths: tsConfig['tsx'].compilerOptions.paths,
 });
 /* eslint-enable no-undef @typescript-eslint/no-var-requires */
