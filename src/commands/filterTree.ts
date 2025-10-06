@@ -107,7 +107,7 @@ export function updateTreeViewTitle(treePrefix: TreePrefix): void {
   }
 
   if (filter.isActive) {
-    treeView.description = `$(search) Filtered: "${filter.filterText}"`;
+    treeView.description = `Filtered: "${filter.filterText}"`;
   } else {
     treeView.description = undefined;
   }
