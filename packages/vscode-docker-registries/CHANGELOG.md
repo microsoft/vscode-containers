@@ -1,3 +1,10 @@
+## 0.4.0 - 6 October 2025
+### Added
+* Package is now a combined CJS+ESM package, instead of just CJS. [#297](https://github.com/microsoft/vscode-docker-extensibility/pull/297)
+
+### Breaking Changes
+* Now depends on Node 22, and VS Code 1.105.0 or higher.
+
 ## 0.3.0 - 2 September 2025
 ### Fixed
 * Fixed several 404 errors for certain images in V2 registries, and made the created date lookup more robust. [#290](https://github.com/microsoft/vscode-docker-extensibility/pull/290)

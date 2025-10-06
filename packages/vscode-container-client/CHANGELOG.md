@@ -1,3 +1,10 @@
+## 0.5.0 - 6 October 2025
+### Added
+* Package is now a combined CJS+ESM package, instead of just CJS. [#297](https://github.com/microsoft/vscode-docker-extensibility/pull/297)
+
+### Breaking Changes
+* Now depends on Node 22, and VS Code 1.105.0 or higher.
+
 ## 0.4.3 - 18 September 2025
 ### Fixed
 * Fixed an issue where images could not be inspected if they were built in Azure Container Registry. [#295](https://github.com/microsoft/vscode-docker-extensibility/issues/295)

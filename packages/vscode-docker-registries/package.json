@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-docker-registries",
     "author": "Microsoft Corporation",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "description": "Extensibility model for contributing registry providers to the Container Tools extension for Visual Studio Code",
     "license": "See LICENSE in the project root for license information.",
     "repository": {

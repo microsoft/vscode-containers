@@ -1,3 +1,10 @@
+## 0.2.0 - 6 October 2025
+### Added
+* Package is now a combined CJS+ESM package, instead of just CJS. [#297](https://github.com/microsoft/vscode-docker-extensibility/pull/297)
+
+### Breaking Changes
+* Now depends on Node 22, and VS Code 1.105.0 or higher.
+
 ## 0.1.3 - 17 September 2025
 ### Added
 * Added a new `alternatePath` parameter to `getSafeExecPath`, to allow passing in an alternative `PATH` to search. [#294](https://github.com/microsoft/vscode-docker-extensibility/pull/294)
