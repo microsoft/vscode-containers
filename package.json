@@ -3179,5 +3179,8 @@
         "vscode-tas-client": "^0.1.75",
         "xml2js": "^0.6.0",
         "zod": "~3"
+    },
+    "overrides": {
+        "raw-body": "3.0.0"
     }
 }
