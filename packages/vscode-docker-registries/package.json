@@ -21,7 +21,7 @@
     "types": "dist/esm/index.d.ts",
     "scripts": {
         "build": "npm run build:esm && npm run build:cjs",
-        "build:esm": "tsc --outDir dist/esm",
+        "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext",
         "lint": "eslint --max-warnings 0 . --ext ts",
         "test": "mocha",
