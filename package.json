@@ -3181,6 +3181,7 @@
         "zod": "~3"
     },
     "overrides": {
-        "raw-body": "3.0.0"
+        "raw-body": "3.0.0",
+        "mime-types": "3.0.0"
     }
 }
