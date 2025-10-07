@@ -3126,9 +3126,6 @@
         "vscode.docker",
         "vscode.yaml"
     ],
-    "enabledApiProposals": [
-        "authenticationChallenges"
-    ],
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
         "@types/fs-extra": "^11.0.1",
