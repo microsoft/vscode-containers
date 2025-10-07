@@ -61,10 +61,6 @@ const config = {
                 test: /dockerfile-language-service|vscode-languageserver-types/,
                 use: { loader: 'umd-compat-loader' }
             },
-            {
-                test: /\.node$/,
-                loader: 'node-loader',
-            },
         ]
     },
     plugins: [

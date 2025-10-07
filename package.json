@@ -3146,7 +3146,6 @@
         "eslint": "^9.36.0",
         "glob": "^11.0.1",
         "mocha": "^11.1.0",
-        "node-loader": "^2.0.0",
         "ts-loader": "^9.4.2",
         "typescript": "^5.9.3",
         "umd-compat-loader": "^2.1.2",
