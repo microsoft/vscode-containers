@@ -3106,7 +3106,7 @@
         }
     },
     "scripts": {
-        "watch": "webpack --watch",
+        "watch": "node esbuild.mjs",
         "build": "webpack",
         "esbuild": "node esbuild.mjs",
         "ci-build": "npm test",
