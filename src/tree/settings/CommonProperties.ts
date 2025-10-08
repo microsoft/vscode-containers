@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dayjs from 'dayjs';
-import * as relativeTime from 'dayjs/plugin/relativeTime';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { l10n, ThemeIcon } from 'vscode';
 import { convertToMB } from '../../utils/convertToMB';
 import { ITreePropertyInfo } from './ITreeSettingInfo';
