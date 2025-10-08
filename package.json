@@ -3111,7 +3111,7 @@
         "ci-build": "npm test",
         "package": "vsce package",
         "ci-package": "npm test && vsce package",
-        "lint": "eslint --max-warnings 0 src --ext ts",
+        "lint": "eslint --max-warnings 0",
         "test": "node ./out/test/runTest.js",
         "pretest": "tsc -p ./",
         "test-watch": "tsc -watch -p ./"
