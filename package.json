@@ -3113,9 +3113,7 @@
         "package": "vsce package",
         "ci-package": "npm test && vsce package",
         "lint": "eslint --max-warnings 0",
-        "test": "node ./out/test/runTest.js",
-        "pretest": "tsc -p ./",
-        "test-watch": "tsc -watch -p ./"
+        "test": "vscode-test"
     },
     "extensionDependencies": [
         "vscode.docker",

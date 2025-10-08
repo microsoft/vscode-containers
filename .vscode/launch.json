@@ -21,21 +21,16 @@
             "preLaunchTask": "${defaultBuildTask}"
         },
         {
-            // TODO: Running this requires running the webpack build manually first (background tasks can't be used as dependsOn at this time, https://github.com/microsoft/vscode/issues/70283)
-            "name": "Extension Tests",
             "type": "extensionHost",
             "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}",
-                "--extensionTestsPath=${workspaceFolder}/out/test/index"
-            ],
+            "name": "My extension tests",
+            "testConfiguration": "${workspaceFolder}/.vscode-test.mjs",
             "env": {
-                "DEBUGTELEMETRY": "1"
+                "DEBUGTELEMETRY": "1",
             },
-            "outFiles": [
-                "${workspaceFolder}/out/test/**/*.js"
+            "outFiles": [ // We are using TSX so out files *are* the source files
+                "${workspaceFolder}/src/**/*.{ts,mts,cts}"
             ],
-            "preLaunchTask": "npm: test-watch"
-        }
+        },
     ]
 }
