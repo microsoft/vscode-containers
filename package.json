@@ -3130,7 +3130,6 @@
         "@types/semver": "^7.3.13",
         "@types/vscode": "1.104.0",
         "@types/xml2js": "^0.4.11",
-        "typescript": "^5.0.4",
         "umd-compat-loader": "^2.1.2"
     },
     "dependencies": {
