@@ -8,7 +8,7 @@ const config = {
     entryPoints: [
         ...azExtEsbuildConfigProd.entryPoints,
         {
-            in: './node_modules/dockerfile-language-server-nodejs/lib/server.js', // TODO busted because UMD?
+            in: './node_modules/dockerfile-language-server-nodejs/lib/server.js',
             out: 'dockerfile-language-server-nodejs/lib/server',
         },
         {
