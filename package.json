@@ -3108,6 +3108,7 @@
     "scripts": {
         "watch": "webpack --watch",
         "build": "webpack",
+        "esbuild": "node esbuild.mjs",
         "ci-build": "npm test",
         "package": "vsce package",
         "ci-package": "npm test && vsce package",
