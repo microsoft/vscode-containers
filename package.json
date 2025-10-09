@@ -3109,9 +3109,7 @@
         "watch": "node esbuild.mjs",
         "build": "webpack",
         "esbuild": "node esbuild.mjs",
-        "ci-build": "npm test",
         "package": "vsce package",
-        "ci-package": "npm test && vsce package",
         "lint": "eslint --max-warnings 0",
         "test": "vscode-test"
     },
