@@ -1,12 +1,16 @@
 // Many other configurations exist
-import { azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild';
-import { build } from 'esbuild';
+import { azExtEsbuildConfigDev, azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild';
+import * as esbuild from 'esbuild';
+import * as process from 'process';
+
+const isWatch = process.argv.includes('--watch');
+const baseConfig = isWatch ? azExtEsbuildConfigDev : azExtEsbuildConfigProd;
 
 /** @type {import('esbuild').BuildOptions} */
 const config = {
-    ...azExtEsbuildConfigProd,
+    ...baseConfig,
     entryPoints: [
-        ...azExtEsbuildConfigProd.entryPoints,
+        ...baseConfig.entryPoints,
         {
             in: './node_modules/dockerfile-language-server-nodejs/lib/server.js',
             out: 'dockerfile-language-server-nodejs/lib/server',
@@ -18,4 +22,9 @@ const config = {
     ],
 };
 
-await build(config);
+if (isWatch) {
+    const ctx = await esbuild.context(config);
+    process.on('SIGTERM', () => ctx.dispose());
+} else {
+    await esbuild.build(config);
+}
