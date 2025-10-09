@@ -3106,7 +3106,6 @@
         }
     },
     "scripts": {
-        "watch": "node esbuild.mjs",
         "build": "webpack",
         "esbuild": "node esbuild.mjs",
         "package": "vsce package",
