@@ -1,5 +1,9 @@
-// Many other configurations exist
-import { azExtWebpackConfigDev, azExtWebpackConfigProd } from '@microsoft/vscode-azext-eng/webpack';
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import { azExtWebpackConfigDev, azExtWebpackConfigProd } from '@microsoft/vscode-azext-eng/webpack'; // Many other configurations exist
 
 const isWatch = process.argv.includes('--watch');
 const baseConfig = isWatch ? azExtWebpackConfigDev : azExtWebpackConfigProd;
