@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
+import type { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import * as path from 'path';
 import * as semver from 'semver';
