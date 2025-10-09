@@ -3106,8 +3106,10 @@
         }
     },
     "scripts": {
-        "build": "webpack",
-        "esbuild": "node esbuild.mjs",
+        "build": "npm run build:esbuild & npm run build:check",
+        "build:esbuild": "node esbuild.mjs",
+        "build:check": "tsc --noEmit",
+        "build:webpack": "webpack",
         "package": "vsce package",
         "lint": "eslint --max-warnings 0",
         "test": "vscode-test"
