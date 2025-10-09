@@ -3,4 +3,4 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export { azExtEslintRecommended as default } from '@microsoft/vscode-azext-eng/eslint'; // Many other configurations exist
+export { azExtEslintRecommended as default } from '@microsoft/vscode-azext-eng/eslint'; // Other configurations exist

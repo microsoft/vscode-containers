@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { azExtEsbuildConfigDev, azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild'; // Many other configurations exist
+import { azExtEsbuildConfigDev, azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild'; // Other configurations exist
 import * as esbuild from 'esbuild';
 
 const isWatch = process.argv.includes('--watch');
