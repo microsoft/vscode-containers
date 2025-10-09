@@ -16,7 +16,7 @@
                 "DEBUGTELEMETRY": "1",
             },
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.js",
+                "${workspaceFolder}/dist/**/*.{js,mjs,cjs}",
             ],
             "preLaunchTask": "Watch: ESBuild",
         },
@@ -29,7 +29,7 @@
                 "DEBUGTELEMETRY": "1",
             },
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.js",
+                "${workspaceFolder}/dist/**/*.{js,mjs,cjs}",
                 "${workspaceFolder}/src/**/*.{ts,mts,cts}", // We are using TSX so out files *are* the source files
             ],
             "preLaunchTask": "Watch: ESBuild",
