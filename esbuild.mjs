@@ -1,7 +1,6 @@
 // Many other configurations exist
 import { azExtEsbuildConfigDev, azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild';
 import * as esbuild from 'esbuild';
-import * as process from 'process';
 
 const isWatch = process.argv.includes('--watch');
 const baseConfig = isWatch ? azExtEsbuildConfigDev : azExtEsbuildConfigProd;
@@ -24,7 +23,11 @@ const config = {
 
 if (isWatch) {
     const ctx = await esbuild.context(config);
-    process.on('SIGTERM', () => ctx.dispose());
+    process.on('SIGINT', () => {
+        console.log('Stopping esbuild watch');
+        ctx.dispose();
+    });
+    await ctx.watch();
 } else {
     await esbuild.build(config);
 }
