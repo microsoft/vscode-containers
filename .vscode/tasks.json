@@ -4,12 +4,12 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "ESBuild",
+            "label": "Watch: ESBuild",
             "type": "npm",
             "script": "build:esbuild -- --watch",
             "problemMatcher": "$esbuild-watch",
             "presentation": {
-                "revealProblems": "onProblem",
+                "reveal": "silent",
             },
             "group": {
                 "kind": "build",
@@ -17,7 +17,7 @@
             "isBackground": true,
         },
         {
-            "label": "Check Types",
+            "label": "Watch: Check Types",
             "type": "npm",
             "script": "build:check -- --watch",
             "problemMatcher": "$tsc-watch",
@@ -27,6 +27,19 @@
             "group": {
                 "kind": "build",
                 "isDefault": true,
+            },
+            "isBackground": true,
+        },
+        {
+            "label": "Watch: Webpack",
+            "type": "npm",
+            "script": "build:webpack -- --watch",
+            "problemMatcher": "$ts-webpack-watch",
+            "presentation": {
+                "revealProblems": "onProblem",
+            },
+            "group": {
+                "kind": "build",
             },
             "isBackground": true,
         },

@@ -18,7 +18,7 @@
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js",
             ],
-            "preLaunchTask": "ESBuild",
+            "preLaunchTask": "Watch: ESBuild",
         },
         {
             "name": "Run Tests",
@@ -32,7 +32,7 @@
                 "${workspaceFolder}/dist/**/*.js",
                 "${workspaceFolder}/src/**/*.{ts,mts,cts}", // We are using TSX so out files *are* the source files
             ],
-            "preLaunchTask": "ESBuild",
+            "preLaunchTask": "Watch: ESBuild",
         },
     ],
 }

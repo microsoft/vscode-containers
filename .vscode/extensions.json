@@ -2,5 +2,6 @@
     "recommendations": [
         "dbaeumer.vscode-eslint",
         "connor4312.esbuild-problem-matchers",
+        "amodio.tsl-problem-matcher", // If using Webpack instead of esbuild
     ],
 }
