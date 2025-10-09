@@ -4,29 +4,31 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "ESBuild",
             "type": "npm",
-            "script": "watch",
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ],
+            "script": "build:esbuild -- --watch",
+            "problemMatcher": "$esbuild-watch",
             "presentation": {
-                "reveal": "never"
+                "revealProblems": "onProblem",
             },
             "group": {
                 "kind": "build",
-                "isDefault": true
-            }
+            },
+            "isBackground": true,
         },
         {
+            "label": "Check Types",
             "type": "npm",
-            "script": "test-watch",
+            "script": "build:check -- --watch",
             "problemMatcher": "$tsc-watch",
-            "isBackground": true,
             "presentation": {
-                "reveal": "never"
+                "revealProblems": "onProblem",
             },
-            "group": "build"
-        }
-    ]
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "isBackground": true,
+        },
+    ],
 }

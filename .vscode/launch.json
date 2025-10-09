@@ -10,27 +10,29 @@
             "type": "extensionHost",
             "request": "launch",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
+                "--extensionDevelopmentPath=${workspaceFolder}",
             ],
             "env": {
-                "DEBUGTELEMETRY": "1"
+                "DEBUGTELEMETRY": "1",
             },
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
+                "${workspaceFolder}/dist/**/*.js",
             ],
-            "preLaunchTask": "${defaultBuildTask}"
+            "preLaunchTask": "ESBuild",
         },
         {
+            "name": "Run Tests",
             "type": "extensionHost",
             "request": "launch",
-            "name": "My extension tests",
             "testConfiguration": "${workspaceFolder}/.vscode-test.mjs",
             "env": {
                 "DEBUGTELEMETRY": "1",
             },
-            "outFiles": [ // We are using TSX so out files *are* the source files
-                "${workspaceFolder}/src/**/*.{ts,mts,cts}"
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js",
+                "${workspaceFolder}/src/**/*.{ts,mts,cts}", // We are using TSX so out files *are* the source files
             ],
+            "preLaunchTask": "ESBuild",
         },
-    ]
+    ],
 }
