@@ -8,7 +8,7 @@ import { AnyContainerObject, LocalRootTreeItemBase } from "./LocalRootTreeItemBa
 import { CommonProperty } from "./settings/CommonProperties";
 
 export abstract class LocalGroupTreeItemBase<TItem extends AnyContainerObject, TProperty extends string | CommonProperty> extends AzExtParentTreeItem {
-    public readonly parent: LocalRootTreeItemBase<TItem, TProperty>;
+    public declare readonly parent: LocalRootTreeItemBase<TItem, TProperty>;
     public readonly group: string;
     private _items: TItem[];
     private _childTreeItems: AzExtTreeItem[];
