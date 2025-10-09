@@ -35,21 +35,12 @@ import { DocumentSettingsClientFeature } from './utils/DocumentSettingsClientFea
 import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
 
-export type KeyInfo = { [keyName: string]: string };
-
-export interface ComposeVersionKeys {
-    all: KeyInfo;
-    v1: KeyInfo;
-    v2: KeyInfo;
-}
-
 let dockerfileLanguageClient: LanguageClient;
 let composeLanguageClient: LanguageClient;
 
 const DOCUMENT_SELECTOR: DocumentSelector = [
     { language: 'dockerfile', scheme: 'file' }
 ];
-
 
 function initializeExtensionVariables(ctx: vscode.ExtensionContext): void {
     ext.context = ctx;
