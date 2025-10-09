@@ -1,7 +1,8 @@
 // Many other configurations exist
-import { azExtWebpackConfigProd } from '@microsoft/vscode-azext-eng/webpack';
+import { azExtWebpackConfigDev, azExtWebpackConfigProd } from '@microsoft/vscode-azext-eng/webpack';
 
-const baseConfig = azExtWebpackConfigProd;
+const isWatch = process.argv.includes('--watch');
+const baseConfig = isWatch ? azExtWebpackConfigDev : azExtWebpackConfigProd;
 
 /** @type {import('webpack').Configuration} */
 export default {
