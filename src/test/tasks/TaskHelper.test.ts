@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { recursiveFindTaskByType } from '../../tasks/TaskHelper';
-import { TaskDefinitionBase } from '../../tasks/TaskDefinitionBase';
+import assert from 'assert';
 import { DebugConfigurationBase } from '../../debugging/DockerDebugConfigurationBase';
+import { TaskDefinitionBase } from '../../tasks/TaskDefinitionBase';
+import { recursiveFindTaskByType } from '../../tasks/TaskHelper';
 
 suite('(unit) tasks/TaskHelper/recursiveFindTaskByType', async () => {
 

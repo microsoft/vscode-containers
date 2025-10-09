@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ImageNameInfo } from '@microsoft/vscode-container-client';
-import * as assert from 'assert';
+import assert from 'assert';
 import { NormalizedImageNameInfo } from '../../../tree/images/NormalizedImageNameInfo';
 
 // The expected values for each of these test cases are in the methods below

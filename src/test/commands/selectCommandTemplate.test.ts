@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
+import assert from 'assert';
 import { CommandTemplate, selectCommandTemplate } from '../../commands/selectCommandTemplate';
 
 const DefaultPickIndex = 0;

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
+import assert from 'assert';
 import { InspectMode, NodePackage, inferCommand, inferPackageName } from '../../utils/nodeUtils';
 
 suite('(unit) utils/nodeUtils', () => {
