@@ -1,5 +1,5 @@
 // Many other configurations exist
-import { azExtWebpackConfigProd } from '@microsoft/vscode-azext-eng';
+import { azExtWebpackConfigProd } from '@microsoft/vscode-azext-eng/webpack';
 
 const baseConfig = azExtWebpackConfigProd;
 
