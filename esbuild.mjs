@@ -3,11 +3,18 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { azExtEsbuildConfigDev, azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild'; // Other configurations exist
+import { azExtEsbuildConfigDebug, azExtEsbuildConfigDev, azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild'; // Other configurations exist
 import * as esbuild from 'esbuild';
+import * as fs from 'fs/promises';
 
-const isWatch = process.argv.includes('--watch');
-const baseConfig = isWatch ? azExtEsbuildConfigDev : azExtEsbuildConfigProd;
+let baseConfig;
+if (process.env.DEBUG_ESBUILD) {
+    baseConfig = azExtEsbuildConfigDebug;
+} else if (process.argv.includes('--watch')) {
+    baseConfig = azExtEsbuildConfigDev;
+} else {
+    baseConfig = azExtEsbuildConfigProd;
+}
 
 /** @type {import('esbuild').BuildOptions} */
 const config = {
@@ -25,7 +32,7 @@ const config = {
     ],
 };
 
-if (isWatch) {
+if (process.argv.includes('--watch')) {
     const ctx = await esbuild.context(config);
     process.on('SIGINT', () => {
         console.log('Stopping esbuild watch');
@@ -33,5 +40,9 @@ if (isWatch) {
     });
     await ctx.watch();
 } else {
-    await esbuild.build(config);
+    const result = await esbuild.build(config);
+
+    if (process.env.DEBUG_ESBUILD) {
+        await fs.writeFile('esbuild.meta.json', JSON.stringify(result.metafile));
+    }
 }
