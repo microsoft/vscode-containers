@@ -1,5 +1,5 @@
 // Many other configurations exist
-import { azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng';
+import { azExtEsbuildConfigProd } from '@microsoft/vscode-azext-eng/esbuild';
 import { build } from 'esbuild';
 
 /** @type {import('esbuild').BuildOptions} */
