@@ -11,7 +11,7 @@ import { UnspecifiedOutputSchema } from '../common';
 export const listContainersTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
     name: 'list_containers',
     outputSchema: UnspecifiedOutputSchema,
-    description: 'List containers',
+    description: 'List containers, including stopped ones',
     annotations: {
         readOnlyHint: true,
     },

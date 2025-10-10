@@ -11,7 +11,7 @@ import { UnspecifiedOutputSchema } from '../common';
 export const listImagesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
     name: 'list_images',
     outputSchema: UnspecifiedOutputSchema,
-    description: 'List container images',
+    description: 'List container images, including untagged and orphaned ones',
     annotations: {
         readOnlyHint: true,
     },
