@@ -8,17 +8,14 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
 import { getMcpServer } from '../utils/lazyPackages';
 import { McpToolWithTelemetry } from './McpToolWithTelemetry';
-
 import { actContainerTool } from './tools/containers/actContainer';
 import { inspectContainerTool } from './tools/containers/inspectContainer';
 import { listContainersTool } from './tools/containers/listContainers';
 import { logsContainerTool } from './tools/containers/logsContainer';
-
+import { runContainerTool } from './tools/containers/runContainer';
 import { inspectImageTool } from './tools/images/inspectImage';
 import { listImagesTool } from './tools/images/listImages';
-
 import { listNetworksTool } from './tools/networks/listNetworks';
-
 import { listVolumesTool } from './tools/volumes/listVolumes';
 
 export async function getContainersMcpServer(): Promise<McpServer> {
@@ -35,6 +32,7 @@ export async function getContainersMcpServer(): Promise<McpServer> {
     registerMcpTool(mcpServer, inspectContainerTool);
     registerMcpTool(mcpServer, listContainersTool);
     registerMcpTool(mcpServer, logsContainerTool);
+    registerMcpTool(mcpServer, runContainerTool);
 
     registerMcpTool(mcpServer, inspectImageTool);
     registerMcpTool(mcpServer, listImagesTool);
