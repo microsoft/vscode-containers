@@ -14,6 +14,7 @@ export class McpToolWithTelemetry<TInSchema extends ToolIOSchema, TOutSchema ext
             context.errorHandling.suppressDisplay = true;
 
             // TODO: cancellation token instead of abort signal? Easier to use in our lower libraries
+            // TODO: or maybe even combine them into one object implementing both interfaces?
             const result = await super.executeMcp(input, extra);
 
             if (!result) {
