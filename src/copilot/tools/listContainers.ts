@@ -6,27 +6,11 @@
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
 import { ext } from '../../extensionVariables';
-import { ImageInfoSchema, PortBindingSchema } from './common';
+import { UnspecifiedOutputSchema } from './common';
 
-const ListContainersOutputSchema = z.object({
-    containers: z.array(
-        z.object({
-            id: z.string(),
-            name: z.string(),
-            labels: z.record(z.string()).nullish(),
-            image: ImageInfoSchema,
-            ports: z.array(PortBindingSchema).nullish(),
-            networks: z.array(z.string()).nullish(),
-            createdAt: z.string(),
-            state: z.string(),
-            status: z.string().nullish(),
-        }).passthrough()
-    ),
-});
-
-export const listContainersTool: CopilotTool<z.ZodVoid, typeof ListContainersOutputSchema> = {
+export const listContainersTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
     name: 'list_containers',
-    outputSchema: ListContainersOutputSchema,
+    outputSchema: UnspecifiedOutputSchema,
     description: 'List containers',
     annotations: {
         readOnlyHint: true,
@@ -39,7 +23,7 @@ export const listContainersTool: CopilotTool<z.ZodVoid, typeof ListContainersOut
         return {
             containers: containers.map(container => ({
                 ...container,
-                createdAt: new Date(container.createdAt).toISOString(),
+                createdAt: container.createdAt.toISOString(),
             })),
         };
     },

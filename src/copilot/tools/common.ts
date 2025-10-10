@@ -5,17 +5,13 @@
 
 import { z } from 'zod';
 
-export const ImageInfoSchema = z.object({
-    originalName: z.string().nullish(),
-    image: z.string().nullish(),
-    registry: z.string().nullish(),
-    tag: z.string().nullish(),
-    digest: z.string().nullish(),
-});
-
-export const PortBindingSchema = z.object({
-    containerPort: z.number(),
-    hostPort: z.number().nullish(),
-    hostIp: z.string().nullish(),
-    protocol: z.enum(['tcp', 'udp']).nullish(),
-});
+/**
+ * A schema that allows any {}-ish object, i.e. an object with any keys and values.
+ * The passthrough() allows additional properties beyond those specified in the schema.
+ * This is useful for tools that don't have a fixed output schema, or where it's not worth
+ * specifying the full schema because the LLM can figure it out on its own.
+ *
+ * The `registerMcpTool` function we use will turn this into an `undefined` output
+ * schema in the MCP tool registration.
+ */
+export const UnspecifiedOutputSchema = z.object({}).passthrough();
