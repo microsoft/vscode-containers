@@ -3124,7 +3124,7 @@
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
-        "@types/vscode": "1.104.0",
+        "@types/vscode": "1.105.0",
         "@types/xml2js": "^0.4.11",
         "umd-compat-loader": "^2.1.2"
     },
