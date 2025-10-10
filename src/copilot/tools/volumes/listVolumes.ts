@@ -5,25 +5,25 @@
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
-import { ext } from '../../extensionVariables';
-import { UnspecifiedOutputSchema } from './common';
+import { ext } from '../../../extensionVariables';
+import { UnspecifiedOutputSchema } from '../common';
 
-export const listContainersTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
-    name: 'list_containers',
+export const listVolumesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
+    name: 'list_volumes',
     outputSchema: UnspecifiedOutputSchema,
-    description: 'List containers',
+    description: 'List container volumes',
     annotations: {
         readOnlyHint: true,
     },
     execute: async () => {
-        const containers = await ext.runWithDefaults(client =>
-            client.listContainers({ all: true })
+        const volumes = await ext.runWithDefaults(client =>
+            client.listVolumes({})
         );
 
         return {
-            containers: containers.map(container => ({
-                ...container,
-                createdAt: container.createdAt.toISOString(),
+            volumes: volumes.map(volume => ({
+                ...volume,
+                createdAt: volume.createdAt?.toISOString(),
             })),
         };
     },

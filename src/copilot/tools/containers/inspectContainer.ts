@@ -1,0 +1,33 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
+import { ext } from '../../../extensionVariables';
+import { ContainerRefSchema, UnspecifiedOutputSchema } from '../common';
+
+const InspectContainersInputSchema = ContainerRefSchema;
+
+export const inspectContainerTool: CopilotTool<typeof InspectContainersInputSchema, typeof UnspecifiedOutputSchema> = {
+    name: 'inspect_container',
+    inputSchema: InspectContainersInputSchema,
+    outputSchema: UnspecifiedOutputSchema,
+    description: 'Inspect a container by name or ID',
+    annotations: {
+        readOnlyHint: true,
+    },
+    execute: async (input) => {
+        const containers = await ext.runWithDefaults(client =>
+            client.inspectContainers({ containers: [input.containerNameOrId] })
+        );
+
+        return {
+            containers: containers.map(container => ({
+                ...container,
+                createdAt: container.createdAt?.toISOString(),
+            })),
+        };
+    },
+};
+

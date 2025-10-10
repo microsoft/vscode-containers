@@ -8,9 +8,18 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
 import { getMcpServer } from '../utils/lazyPackages';
 import { McpToolWithTelemetry } from './McpToolWithTelemetry';
-import { actContainerTool } from './tools/actContainer';
-import { inspectContainerTool } from './tools/inspectContainer';
-import { listContainersTool } from './tools/listContainers';
+
+import { actContainerTool } from './tools/containers/actContainer';
+import { inspectContainerTool } from './tools/containers/inspectContainer';
+import { listContainersTool } from './tools/containers/listContainers';
+import { logsContainerTool } from './tools/containers/logsContainer';
+
+import { inspectImageTool } from './tools/images/inspectImage';
+import { listImagesTool } from './tools/images/listImages';
+
+import { listNetworksTool } from './tools/networks/listNetworks';
+
+import { listVolumesTool } from './tools/volumes/listVolumes';
 
 export async function getContainersMcpServer(): Promise<McpServer> {
     const { McpServer } = await getMcpServer();
@@ -23,8 +32,16 @@ export async function getContainersMcpServer(): Promise<McpServer> {
     );
 
     registerMcpTool(mcpServer, actContainerTool);
-    registerMcpTool(mcpServer, listContainersTool);
     registerMcpTool(mcpServer, inspectContainerTool);
+    registerMcpTool(mcpServer, listContainersTool);
+    registerMcpTool(mcpServer, logsContainerTool);
+
+    registerMcpTool(mcpServer, inspectImageTool);
+    registerMcpTool(mcpServer, listImagesTool);
+
+    registerMcpTool(mcpServer, listNetworksTool);
+
+    registerMcpTool(mcpServer, listVolumesTool);
 
     return mcpServer;
 }

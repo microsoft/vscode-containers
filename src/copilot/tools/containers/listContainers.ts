@@ -5,30 +5,25 @@
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
-import { ext } from '../../extensionVariables';
-import { UnspecifiedOutputSchema } from './common';
+import { ext } from '../../../extensionVariables';
+import { UnspecifiedOutputSchema } from '../common';
 
-const InspectContainersInputSchema = z.object({
-    containerNameOrId: z.string(),
-});
-
-export const inspectContainerTool: CopilotTool<typeof InspectContainersInputSchema, typeof UnspecifiedOutputSchema> = {
-    name: 'inspect_container',
-    inputSchema: InspectContainersInputSchema,
+export const listContainersTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
+    name: 'list_containers',
     outputSchema: UnspecifiedOutputSchema,
-    description: 'Inspect a container by name or ID',
+    description: 'List containers',
     annotations: {
         readOnlyHint: true,
     },
-    execute: async (input) => {
+    execute: async () => {
         const containers = await ext.runWithDefaults(client =>
-            client.inspectContainers({ containers: [input.containerNameOrId] })
+            client.listContainers({ all: true })
         );
 
         return {
             containers: containers.map(container => ({
                 ...container,
-                createdAt: container.createdAt.toISOString(),
+                createdAt: container.createdAt?.toISOString(),
             })),
         };
     },

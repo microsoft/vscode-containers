@@ -5,11 +5,11 @@
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
-import { ext } from '../../extensionVariables';
+import { ext } from '../../../extensionVariables';
+import { ContainerRefSchema } from '../common';
 
-const ActContainerInputSchema = z.object({
-    action: z.enum(['start', 'stop', 'restart', 'remove']),
-    containerNameOrId: z.string(),
+const ActContainerInputSchema = ContainerRefSchema.extend({
+    action: z.enum(['start', 'stop', 'restart', 'remove']).describe('The action to perform on the container'),
 });
 
 export const actContainerTool: CopilotTool<typeof ActContainerInputSchema, z.ZodVoid> = {

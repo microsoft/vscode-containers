@@ -15,3 +15,11 @@ import { z } from 'zod';
  * schema in the MCP tool registration.
  */
 export const UnspecifiedOutputSchema = z.object({}).passthrough();
+
+export const ContainerRefSchema = z.object({
+    containerNameOrId: z.string().describe('The container name or ID.'),
+});
+
+export const ImageRefSchema = z.object({
+    imageNameOrId: z.string().describe('The container image name or ID.'),
+});
