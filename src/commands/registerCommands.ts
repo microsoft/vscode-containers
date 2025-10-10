@@ -31,6 +31,7 @@ import { configureDockerContextsExplorer, dockerContextsHelp } from "./context/D
 import { inspectDockerContext } from "./context/inspectDockerContext";
 import { removeDockerContext } from "./context/removeDockerContext";
 import { useDockerContext } from "./context/useDockerContext";
+import { filterContainersTree, filterContextsTree, filterImagesTree, filterNetworksTree, filterRegistriesTree, filterVolumesTree } from "./filterTree";
 import { help, reportIssue } from "./help";
 import { buildImage } from "./images/buildImage";
 import { configureImagesExplorer } from "./images/configureImagesExplorer";
@@ -129,6 +130,7 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.containers.downloadFile', downloadContainerFile);
     registerCommand('vscode-containers.containers.inspect', inspectContainer);
     registerCommand('vscode-containers.containers.configureExplorer', configureContainersExplorer);
+    registerCommand('vscode-containers.containers.filter', filterContainersTree);
     registerCommand('vscode-containers.containers.openFile', openContainerFile);
     registerCommand('vscode-containers.containers.prune', pruneContainers);
     registerCommand('vscode-containers.containers.remove', removeContainer);
@@ -147,6 +149,7 @@ export function registerCommands(): void {
 
     registerWorkspaceCommand('vscode-containers.images.build', buildImage);
     registerCommand('vscode-containers.images.configureExplorer', configureImagesExplorer);
+    registerCommand('vscode-containers.images.filter', filterImagesTree);
     registerCommand('vscode-containers.images.inspect', inspectImage);
     registerCommand('vscode-containers.images.prune', pruneImages);
     registerCommand('vscode-containers.images.showDangling', showDanglingImages);
@@ -163,12 +166,14 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.images.copyFullTag', copyFullTag);
 
     registerCommand('vscode-containers.networks.configureExplorer', configureNetworksExplorer);
+    registerCommand('vscode-containers.networks.filter', filterNetworksTree);
     registerCommand('vscode-containers.networks.create', createNetwork);
     registerCommand('vscode-containers.networks.inspect', inspectNetwork);
     registerCommand('vscode-containers.networks.remove', removeNetwork);
     registerCommand('vscode-containers.networks.prune', pruneNetworks);
 
     registerCommand('vscode-containers.registries.connectRegistry', connectRegistry);
+    registerCommand('vscode-containers.registries.filter', filterRegistriesTree);
     registerCommand('vscode-containers.registries.copyImageDigest', copyRemoteImageDigest);
     registerCommand('vscode-containers.registries.inspectRemoteImageManifest', inspectRemoteImageManifest);
     registerCommand('vscode-containers.registries.copyRemoteFullTag', copyRemoteFullTag);
@@ -197,11 +202,13 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.registries.azure.viewProperties', viewAzureProperties);
 
     registerCommand('vscode-containers.volumes.configureExplorer', configureVolumesExplorer);
+    registerCommand('vscode-containers.volumes.filter', filterVolumesTree);
     registerCommand('vscode-containers.volumes.inspect', inspectVolume);
     registerCommand('vscode-containers.volumes.prune', pruneVolumes);
     registerCommand('vscode-containers.volumes.remove', removeVolume);
 
     registerCommand('vscode-containers.contexts.configureExplorer', configureDockerContextsExplorer);
+    registerCommand('vscode-containers.contexts.filter', filterContextsTree);
     registerCommand('vscode-containers.contexts.help', dockerContextsHelp);
     registerCommand('vscode-containers.contexts.inspect', inspectDockerContext);
     registerCommand('vscode-containers.contexts.remove', removeDockerContext);
