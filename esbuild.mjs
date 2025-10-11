@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { autoBuildOrWatch, autoSelectConfig } from '@microsoft/vscode-azext-eng/esbuild';
+import { autoEsbuildOrWatch, autoSelectEsbuildConfig } from '@microsoft/vscode-azext-eng/esbuild';
 
-const baseConfig = autoSelectConfig(false);
+const baseConfig = autoSelectEsbuildConfig(false);
 
 /** @type {import('esbuild').BuildOptions} */
 const finalConfig = {
@@ -23,4 +23,4 @@ const finalConfig = {
     ],
 };
 
-await autoBuildOrWatch(finalConfig);
+await autoEsbuildOrWatch(finalConfig);
