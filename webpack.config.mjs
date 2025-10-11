@@ -3,16 +3,9 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { azExtWebpackConfigDebug, azExtWebpackConfigDev, azExtWebpackConfigProd } from '@microsoft/vscode-azext-eng/webpack'; // Other configurations exist
+import { autoSelectWebpackConfig } from '@microsoft/vscode-azext-eng/webpack';
 
-let baseConfig;
-if (process.env.DEBUG_WEBPACK) {
-    baseConfig = azExtWebpackConfigDebug;
-} else if (process.argv.includes('--watch')) {
-    baseConfig = azExtWebpackConfigDev;
-} else {
-    baseConfig = azExtWebpackConfigProd;
-}
+const baseConfig = autoSelectWebpackConfig();
 
 /** @type {import('webpack').Configuration} */
 export default {
