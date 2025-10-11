@@ -16,15 +16,15 @@ const PortBindingSchema = z.object({
 });
 
 const BindMountSchema = z.object({
-    type: z.literal('bind').describe('The type of mount. Must be "bind" for bind mounts'),
+    type: z.literal('bind').describe('Must be "bind" for bind mounts'),
     source: z.string().describe('The path on the host machine to bind mount'),
     destination: z.string().describe('The path inside the container to mount to'),
     readOnly: z.boolean().optional().describe('Whether the bind mount should be read-only').default(false),
 });
 
 const VolumeMountSchema = z.object({
-    type: z.literal('volume').describe('The type of mount. Must be "volume" for volume mounts'),
-    source: z.string().optional().describe('The name of the volume to mount. If it does not exist, a new volume will be created'),
+    type: z.literal('volume').describe('Must be "volume" for volume mounts'),
+    source: z.string().describe('The name of the volume to mount. If it does not exist, a new volume will be created'),
     destination: z.string().describe('The path inside the container to mount to'),
     readOnly: z.boolean().optional().describe('Whether the volume mount should be read-only').default(false),
 });
@@ -36,7 +36,7 @@ const LogsContainerInputSchema = z.object({
     name: z.string().optional().describe('Container name'),
     environmentVariables: z.record(z.string(), z.string()).optional().describe('Environment variables to set in the container'),
     publishAllPorts: z.boolean().optional().describe('Publish all exposed ports to random ports on the host interfaces. For containers that host a web service, this should usually be true.'),
-    interactive: z.boolean().optional().describe('Whether to run the container in interactively. If true, the container will be removed when it exits.').default(false),
+    interactive: z.boolean().optional().describe('Whether to run the container in interactively.').default(false),
     ports: z.array(PortBindingSchema).optional().describe('Port bindings for the container. Can be used alongside publishAllPorts, but often isn\'t necessary if publishAllPorts is true.'),
     mounts: z.array(MountSchema).optional().describe('Bind and volume mounts for the container.'),
     network: z.string().optional().describe('The name of the container network to connect the container to.'),
