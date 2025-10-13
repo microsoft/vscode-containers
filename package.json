@@ -3180,8 +3180,6 @@
         "@modelcontextprotocol/sdk": {
             "raw-body": "3.0.0"
         },
-        "express": {
-            "mime-types": "3.0.0"
-        }
+        "mime-types": "3.0.0"
     }
 }
