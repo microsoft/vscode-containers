@@ -13,6 +13,7 @@ import { inspectContainerTool } from './tools/containers/inspectContainer';
 import { listContainersTool } from './tools/containers/listContainers';
 import { logsContainerTool } from './tools/containers/logsContainer';
 import { runContainerTool } from './tools/containers/runContainer';
+import { actImageTool } from './tools/images/actImage';
 import { inspectImageTool } from './tools/images/inspectImage';
 import { listImagesTool } from './tools/images/listImages';
 import { listNetworksTool } from './tools/networks/listNetworks';
@@ -34,6 +35,7 @@ export async function getContainersMcpServer(): Promise<McpServer> {
     registerMcpTool(mcpServer, logsContainerTool);
     registerMcpTool(mcpServer, runContainerTool);
 
+    registerMcpTool(mcpServer, actImageTool);
     registerMcpTool(mcpServer, inspectImageTool);
     registerMcpTool(mcpServer, listImagesTool);
 
