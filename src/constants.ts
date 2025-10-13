@@ -45,4 +45,4 @@ export const builtInNetworks: string[] = ['bridge', 'host', 'none', 'podman'];
 export const ociClientId = 'tools/microsoft/vscode/docker';
 
 export const McpServerId = 'vscode-containers.mcp';
-export const McpServerLabel = vscode.l10n.t('Containers MCP');
+export const McpServerLabel = vscode.l10n.t('Copilot Container Tools');
