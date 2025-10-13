@@ -50,7 +50,7 @@ export const runContainerTool: CopilotTool<typeof LogsContainerInputSchema, z.Zo
         destructiveHint: true, // Running a container is not necessarily destructive, but it might be
         idempotentHint: false,
     },
-    execute: async (input) => {
+    execute: async (input, extras) => {
         const runOptions: RunContainerCommandOptions = {
             imageRef: input.image,
             name: input.name,
@@ -75,11 +75,13 @@ export const runContainerTool: CopilotTool<typeof LogsContainerInputSchema, z.Zo
             // Don't wait--the task will run interactively but we don't want to block the agent forever
             void taskCRF.getCommandRunner()(
                 client.runContainer(runOptions)
+                // Cancellation is intentionally ignored--cancelling the Copilot task shouldn't stop the container
             );
         } else {
             // Await--this will be detached anyway
             await ext.runWithDefaults(client =>
-                client.runContainer(runOptions)
+                client.runContainer(runOptions),
+                { cancellationToken: extras.token }
             );
         }
     },

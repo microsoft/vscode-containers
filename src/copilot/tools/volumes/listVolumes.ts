@@ -15,9 +15,10 @@ export const listVolumesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSch
     annotations: {
         readOnlyHint: true,
     },
-    execute: async () => {
+    execute: async (input, extras) => {
         const volumes = await ext.runWithDefaults(client =>
-            client.listVolumes({})
+            client.listVolumes({}),
+            { cancellationToken: extras.token }
         );
 
         return {

@@ -17,9 +17,10 @@ export const inspectImageTool: CopilotTool<typeof InspectImagesInputSchema, type
     annotations: {
         readOnlyHint: true,
     },
-    execute: async (input) => {
+    execute: async (input, extras) => {
         const images = await ext.runWithDefaults(client =>
-            client.inspectImages({ imageRefs: [input.imageNameOrId] })
+            client.inspectImages({ imageRefs: [input.imageNameOrId] }),
+            { cancellationToken: extras.token }
         );
 
         return {

@@ -15,9 +15,10 @@ export const listContainersTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutput
     annotations: {
         readOnlyHint: true,
     },
-    execute: async () => {
+    execute: async (input, extras) => {
         const containers = await ext.runWithDefaults(client =>
-            client.listContainers({ all: true })
+            client.listContainers({ all: true }),
+            { cancellationToken: extras.token }
         );
 
         return {

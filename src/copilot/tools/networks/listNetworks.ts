@@ -15,9 +15,10 @@ export const listNetworksTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSc
     annotations: {
         readOnlyHint: true,
     },
-    execute: async () => {
+    execute: async (input, extras) => {
         const networks = await ext.runWithDefaults(client =>
-            client.listNetworks({})
+            client.listNetworks({}),
+            { cancellationToken: extras.token }
         );
 
         return {

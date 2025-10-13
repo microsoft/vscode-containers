@@ -15,9 +15,10 @@ export const listImagesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSche
     annotations: {
         readOnlyHint: true,
     },
-    execute: async () => {
+    execute: async (input, extras) => {
         const images = await ext.runWithDefaults(client =>
-            client.listImages({ all: true })
+            client.listImages({ all: true }),
+            { cancellationToken: extras.token }
         );
 
         return {

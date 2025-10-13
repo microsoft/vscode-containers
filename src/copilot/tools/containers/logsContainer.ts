@@ -17,9 +17,10 @@ export const logsContainerTool: CopilotTool<typeof LogsContainerInputSchema, typ
     annotations: {
         readOnlyHint: true,
     },
-    execute: async (input) => {
+    execute: async (input, extras) => {
         const logGen = ext.streamWithDefaults(client =>
-            client.logsForContainer({ container: input.containerNameOrId, follow: false, tail: 500 }) // TODO: it'd be nice if we could adjust the tail length by user preference or model capacity
+            client.logsForContainer({ container: input.containerNameOrId, follow: false, tail: 500 }), // TODO: it'd be nice if we could adjust the tail length by user preference or model capacity
+            { cancellationToken: extras.token }
         );
 
         const logs: string[] = [];

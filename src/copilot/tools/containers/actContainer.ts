@@ -20,26 +20,30 @@ export const actContainerTool: CopilotTool<typeof ActContainerInputSchema, z.Zod
         destructiveHint: true, // Container stop can also result in removal, so mark as destructive
         idempotentHint: true,
     },
-    execute: async (input) => {
+    execute: async (input, extras) => {
         switch (input.action) {
             case 'start':
                 await ext.runWithDefaults(client =>
-                    client.startContainers({ container: [input.containerNameOrId] })
+                    client.startContainers({ container: [input.containerNameOrId] }),
+                    { cancellationToken: extras.token }
                 );
                 return;
             case 'stop':
                 await ext.runWithDefaults(client =>
-                    client.stopContainers({ container: [input.containerNameOrId] })
+                    client.stopContainers({ container: [input.containerNameOrId] }),
+                    { cancellationToken: extras.token }
                 );
                 return;
             case 'restart':
                 await ext.runWithDefaults(client =>
-                    client.restartContainers({ container: [input.containerNameOrId] })
+                    client.restartContainers({ container: [input.containerNameOrId] }),
+                    { cancellationToken: extras.token }
                 );
                 return;
             case 'remove':
                 await ext.runWithDefaults(client =>
-                    client.removeContainers({ containers: [input.containerNameOrId], force: true })
+                    client.removeContainers({ containers: [input.containerNameOrId], force: true }),
+                    { cancellationToken: extras.token }
                 );
                 return;
             default:

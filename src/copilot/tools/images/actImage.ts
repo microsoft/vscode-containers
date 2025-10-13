@@ -20,16 +20,18 @@ export const actImageTool: CopilotTool<typeof ActImageInputSchema, z.ZodVoid> = 
         destructiveHint: true,
         idempotentHint: true,
     },
-    execute: async (input) => {
+    execute: async (input, extras) => {
         switch (input.action) {
             case 'pull':
                 await ext.runWithDefaults(client =>
-                    client.pullImage({ imageRef: input.imageNameOrId })
+                    client.pullImage({ imageRef: input.imageNameOrId }),
+                    { cancellationToken: extras.token }
                 );
                 return;
             case 'remove':
                 await ext.runWithDefaults(client =>
-                    client.removeImages({ imageRefs: [input.imageNameOrId], force: true })
+                    client.removeImages({ imageRefs: [input.imageNameOrId], force: true }),
+                    { cancellationToken: extras.token }
                 );
                 return;
             default:

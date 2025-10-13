@@ -17,9 +17,10 @@ export const inspectContainerTool: CopilotTool<typeof InspectContainersInputSche
     annotations: {
         readOnlyHint: true,
     },
-    execute: async (input) => {
+    execute: async (input, extras) => {
         const containers = await ext.runWithDefaults(client =>
-            client.inspectContainers({ containers: [input.containerNameOrId] })
+            client.inspectContainers({ containers: [input.containerNameOrId] }),
+            { cancellationToken: extras.token }
         );
 
         return {
