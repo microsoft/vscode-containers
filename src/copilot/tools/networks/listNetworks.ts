@@ -6,7 +6,7 @@
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
 import { ext } from '../../../extensionVariables';
-import { UnspecifiedOutputSchema } from '../common';
+import { isoTheCreatedAt, UnspecifiedOutputSchema } from '../common';
 
 export const listNetworksTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
     name: 'list_networks',
@@ -22,10 +22,7 @@ export const listNetworksTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSc
         );
 
         return {
-            networks: networks.map(network => ({
-                ...network,
-                createdAt: network.createdAt?.toISOString(),
-            })),
+            networks: isoTheCreatedAt(networks),
         };
     },
 };

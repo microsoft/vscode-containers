@@ -6,7 +6,7 @@
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
 import { ext } from '../../../extensionVariables';
-import { UnspecifiedOutputSchema } from '../common';
+import { isoTheCreatedAt, UnspecifiedOutputSchema } from '../common';
 
 export const listImagesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
     name: 'list_images',
@@ -22,10 +22,7 @@ export const listImagesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSche
         );
 
         return {
-            images: images.map(image => ({
-                ...image,
-                createdAt: image.createdAt?.toISOString(),
-            })),
+            images: isoTheCreatedAt(images),
         };
     },
 };

@@ -5,7 +5,7 @@
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { ext } from '../../../extensionVariables';
-import { ImageRefSchema, UnspecifiedOutputSchema } from '../common';
+import { ImageRefSchema, isoTheCreatedAt, UnspecifiedOutputSchema } from '../common';
 
 const InspectImagesInputSchema = ImageRefSchema;
 
@@ -24,10 +24,7 @@ export const inspectImageTool: CopilotTool<typeof InspectImagesInputSchema, type
         );
 
         return {
-            images: images.map(image => ({
-                ...image,
-                createdAt: image.createdAt?.toISOString(),
-            })),
+            images: isoTheCreatedAt(images),
         };
     },
 };

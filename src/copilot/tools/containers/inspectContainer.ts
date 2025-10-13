@@ -5,7 +5,7 @@
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { ext } from '../../../extensionVariables';
-import { ContainerRefSchema, UnspecifiedOutputSchema } from '../common';
+import { ContainerRefSchema, isoTheCreatedAt, UnspecifiedOutputSchema } from '../common';
 
 const InspectContainersInputSchema = ContainerRefSchema;
 
@@ -24,10 +24,7 @@ export const inspectContainerTool: CopilotTool<typeof InspectContainersInputSche
         );
 
         return {
-            containers: containers.map(container => ({
-                ...container,
-                createdAt: container.createdAt?.toISOString(),
-            })),
+            containers: isoTheCreatedAt(containers),
         };
     },
 };

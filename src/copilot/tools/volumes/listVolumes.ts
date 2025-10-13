@@ -6,7 +6,7 @@
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
 import { ext } from '../../../extensionVariables';
-import { UnspecifiedOutputSchema } from '../common';
+import { isoTheCreatedAt, UnspecifiedOutputSchema } from '../common';
 
 export const listVolumesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
     name: 'list_volumes',
@@ -22,10 +22,7 @@ export const listVolumesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSch
         );
 
         return {
-            volumes: volumes.map(volume => ({
-                ...volume,
-                createdAt: volume.createdAt?.toISOString(),
-            })),
+            volumes: isoTheCreatedAt(volumes),
         };
     },
 };

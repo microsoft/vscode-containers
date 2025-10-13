@@ -23,3 +23,10 @@ export const ContainerRefSchema = z.object({
 export const ImageRefSchema = z.object({
     imageNameOrId: z.string().describe('The container image name or ID.'),
 });
+
+export function isoTheCreatedAt<T extends { createdAt?: Date }>(items: T[]) {
+    return items.map(item => ({
+        ...item,
+        createdAt: item.createdAt?.toISOString(),
+    }));
+}
