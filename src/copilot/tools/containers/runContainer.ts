@@ -31,7 +31,7 @@ const VolumeMountSchema = z.object({
 
 const MountSchema = z.union([BindMountSchema, VolumeMountSchema]);
 
-const LogsContainerInputSchema = z.object({
+const RunContainerInputSchema = z.object({
     image: z.string().describe('The image to start the container from'),
     name: z.string().optional().describe('Container name'),
     environmentVariables: z.record(z.string(), z.string()).optional().describe('Environment variables to set in the container'),
@@ -42,9 +42,9 @@ const LogsContainerInputSchema = z.object({
     network: z.string().optional().describe('The name of the container network to connect the container to.'),
 });
 
-export const runContainerTool: CopilotTool<typeof LogsContainerInputSchema, z.ZodVoid> = {
+export const runContainerTool: CopilotTool<typeof RunContainerInputSchema, z.ZodVoid> = {
     name: 'run_container',
-    inputSchema: LogsContainerInputSchema,
+    inputSchema: RunContainerInputSchema,
     description: 'Run a new container',
     annotations: {
         destructiveHint: true, // Running a container is not necessarily destructive, but it might be
