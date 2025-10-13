@@ -34,9 +34,6 @@
         "zod": "^3.25.56"
     },
     "mocha": {
-        "extension": [
-            "ts"
-        ],
         "require": [
             "./src/test/tsconfig-paths-bootstrap.mjs"
         ],
@@ -48,9 +45,6 @@
         ],
         "grep": [
             "(unit)"
-        ],
-        "watch-files": [
-            "src/**/*.ts"
         ]
     }
 }

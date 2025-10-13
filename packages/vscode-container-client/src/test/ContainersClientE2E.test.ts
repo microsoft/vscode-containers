@@ -22,13 +22,9 @@ import { wslifyPath } from '../utils/wslifyPath';
  * WARNING: This test suite will prune unused images, containers, networks, and volumes.
  */
 
-// Modify the below options to configure the tests
+// Modify the below options to configure the tests, or pick at F5 time
 const clientTypeToTest: ClientType = (process.env.CONTAINER_CLIENT_TYPE || 'docker') as ClientType;
 const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_WSL === 'true') || false; // Set to true if running in WSL
-
-// Supply to run the login/logout tests
-const dockerHubUsername = process.env.DOCKER_HUB_USERNAME || ''; // Set your Docker Hub username in an environment variable or here
-const dockerHubPAT = process.env.DOCKER_HUB_PAT || ''; // Never commit this value!!
 
 // No need to modify below this
 
@@ -807,6 +803,10 @@ describe('(integration) ContainersClientE2E', function () {
     // #region Login/Logout
 
     describe('Login/Logout', function () {
+        // Supply at F5 to run the login/logout tests
+        const dockerHubUsername = process.env.DOCKER_HUB_USERNAME;
+        const dockerHubPAT = process.env.DOCKER_HUB_PAT;
+
         it('LoginCommand', async function () {
             if (!dockerHubUsername || !dockerHubPAT) {
                 this.skip();

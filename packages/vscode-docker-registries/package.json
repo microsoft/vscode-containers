@@ -34,17 +34,11 @@
         "dayjs": "^1.11.7"
     },
     "mocha": {
-        "extension": [
-            "ts"
-        ],
         "node-option": [
             "import=tsx"
         ],
         "spec": [
             "src/test/**/*.test.ts"
-        ],
-        "watch-files": [
-            "src/**/*.ts"
         ]
     }
 }

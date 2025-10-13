@@ -36,9 +36,6 @@
         "vscode-jsonrpc": "^8.0.1"
     },
     "mocha": {
-        "extension": [
-            "ts"
-        ],
         "require": [
             "./src/test/tsconfig-paths-bootstrap.mjs"
         ],
@@ -50,9 +47,6 @@
         ],
         "grep": [
             "(unit)"
-        ],
-        "watch-files": [
-            "src/**/*.ts"
         ]
     }
 }
