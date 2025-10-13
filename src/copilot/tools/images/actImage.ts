@@ -19,6 +19,7 @@ export const actImageTool: CopilotTool<typeof ActImageInputSchema, z.ZodVoid> = 
     annotations: {
         destructiveHint: true,
         idempotentHint: true,
+        openWorldHint: true,
     },
     execute: async (input, extras) => {
         switch (input.action) {
