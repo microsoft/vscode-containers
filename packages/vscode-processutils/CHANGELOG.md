@@ -1,3 +1,13 @@
+## 0.2.1 - 13 October 2025
+### Added
+* Added a `CancellationTokenLike.toAbortSignal()` helper method.
+
+### Changed
+* Cancellation is handled a little better.
+
+### Removed
+* The `signal` option to `StreamSpawnOptions` is removed for clarity.
+
 ## 0.2.0 - 6 October 2025
 ### Added
 * Package is now a combined CJS+ESM package, instead of just CJS. [#297](https://github.com/microsoft/vscode-docker-extensibility/pull/297)

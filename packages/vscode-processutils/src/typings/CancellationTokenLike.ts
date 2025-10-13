@@ -5,7 +5,7 @@
 
 import type * as vscode from 'vscode';
 import type * as jsonrpc from 'vscode-jsonrpc';
-import { DisposableLike } from './DisposableLike';
+import type { DisposableLike } from './DisposableLike';
 import { EventLike } from './EventLike';
 
 /**
@@ -32,6 +32,8 @@ export namespace CancellationTokenLike {
      * Turns an {@link AbortSignal} into a {@link CancellationTokenLike}
      * @param abortSignal The signal to convert
      * @returns A {@link CancellationTokenLike} that reflects the state of the {@link AbortSignal}
+     * @note If a listener is added to the {@link CancellationTokenLike} after the source {@link AbortSignal}
+     * is already aborted, that listener *will* be invoked! This matches VSCode's `CancellationToken` behavior.
      */
     export function fromAbortSignal(abortSignal: AbortSignal): CancellationTokenLike {
         return {
@@ -39,7 +41,7 @@ export namespace CancellationTokenLike {
                 return abortSignal.aborted;
             },
 
-            onCancellationRequested: (listener, thisArgs, disposables) => {
+            onCancellationRequested: (listener, thisArgs, disposables): DisposableLike => {
                 if (abortSignal.aborted) {
                     // If already aborted, invoke listener asynchronously and return a disposable that cancels the scheduled call
                     const handle = setTimeout(() => {
@@ -67,7 +69,26 @@ export namespace CancellationTokenLike {
                     disposables?.push(d);
                     return d;
                 }
-            }
+            },
         };
+    }
+
+    /**
+     * Turns a {@link CancellationTokenLike} into an {@link AbortSignal}
+     * @param token The token to convert
+     * @returns An {@link AbortSignal} that reflects the state of the {@link CancellationTokenLike}
+     * @note If a listener is added to the {@link AbortSignal} after the source {@link CancellationTokenLike}
+     * is already cancelled, that listener *will not* be invoked! This matches the behavior of the standard `AbortSignal`.
+     */
+    export function toAbortSignal(token: CancellationTokenLike): AbortSignal {
+        const controller = new AbortController();
+
+        if (token.isCancellationRequested) {
+            controller.abort();
+        } else {
+            token.onCancellationRequested(() => controller.abort());
+        }
+
+        return controller.signal;
     }
 }
