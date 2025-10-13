@@ -5,7 +5,7 @@
 
 import { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { registerMcpHttpProvider } from '@microsoft/vscode-inproc-mcp';
+import { registerMcpHttpProvider } from '@microsoft/vscode-inproc-mcp/vscode';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';

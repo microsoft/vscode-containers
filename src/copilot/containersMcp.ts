@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CopilotTool, registerMcpTool as registerMcpToolInternal, ToolIOSchema } from '@microsoft/vscode-inproc-mcp';
+import { registerMcpToolWithTelemetry } from '@microsoft/vscode-inproc-mcp/vscode';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
 import { getMcpServer } from '../utils/lazyPackages';
-import { McpToolWithTelemetry } from './McpToolWithTelemetry';
 import { actContainerTool } from './tools/containers/actContainer';
 import { inspectContainerTool } from './tools/containers/inspectContainer';
 import { listContainersTool } from './tools/containers/listContainers';
@@ -29,23 +28,19 @@ export async function getContainersMcpServer(): Promise<McpServer> {
         }
     );
 
-    registerMcpTool(mcpServer, actContainerTool);
-    registerMcpTool(mcpServer, inspectContainerTool);
-    registerMcpTool(mcpServer, listContainersTool);
-    registerMcpTool(mcpServer, logsContainerTool);
-    registerMcpTool(mcpServer, runContainerTool);
+    registerMcpToolWithTelemetry(mcpServer, actContainerTool);
+    registerMcpToolWithTelemetry(mcpServer, inspectContainerTool);
+    registerMcpToolWithTelemetry(mcpServer, listContainersTool);
+    registerMcpToolWithTelemetry(mcpServer, logsContainerTool);
+    registerMcpToolWithTelemetry(mcpServer, runContainerTool);
 
-    registerMcpTool(mcpServer, actImageTool);
-    registerMcpTool(mcpServer, inspectImageTool);
-    registerMcpTool(mcpServer, listImagesTool);
+    registerMcpToolWithTelemetry(mcpServer, actImageTool);
+    registerMcpToolWithTelemetry(mcpServer, inspectImageTool);
+    registerMcpToolWithTelemetry(mcpServer, listImagesTool);
 
-    registerMcpTool(mcpServer, listNetworksTool);
+    registerMcpToolWithTelemetry(mcpServer, listNetworksTool);
 
-    registerMcpTool(mcpServer, listVolumesTool);
+    registerMcpToolWithTelemetry(mcpServer, listVolumesTool);
 
     return mcpServer;
-}
-
-function registerMcpTool<TInSchema extends ToolIOSchema, TOutSchema extends ToolIOSchema>(mcpServer: McpServer, tool: CopilotTool<TInSchema, TOutSchema>) {
-    registerMcpToolInternal(mcpServer, tool, McpToolWithTelemetry);
 }
