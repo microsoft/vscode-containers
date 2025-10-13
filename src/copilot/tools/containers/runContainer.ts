@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { PortBinding, RunContainerCommandOptions, RunContainerMount } from '@microsoft/vscode-container-client';
+import type { PortBinding, RunContainerCommandOptions, RunContainerMount } from '@microsoft/vscode-container-client';
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
 import { z } from 'zod';
 import { ext } from '../../../extensionVariables';
