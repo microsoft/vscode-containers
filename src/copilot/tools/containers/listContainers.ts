@@ -26,4 +26,3 @@ export const listContainersTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutput
         };
     },
 };
-

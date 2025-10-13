@@ -33,4 +33,3 @@ export const logsContainerTool: CopilotTool<typeof LogsContainerInputSchema, typ
         };
     },
 };
-

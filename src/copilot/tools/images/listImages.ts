@@ -26,4 +26,3 @@ export const listImagesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSche
         };
     },
 };
-

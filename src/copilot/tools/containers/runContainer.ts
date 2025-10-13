@@ -86,4 +86,3 @@ export const runContainerTool: CopilotTool<typeof LogsContainerInputSchema, z.Zo
         }
     },
 };
-

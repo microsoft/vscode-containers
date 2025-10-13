@@ -26,4 +26,3 @@ export const listVolumesTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSch
         };
     },
 };
-

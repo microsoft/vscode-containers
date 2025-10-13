@@ -26,4 +26,3 @@ export const listNetworksTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSc
         };
     },
 };
-

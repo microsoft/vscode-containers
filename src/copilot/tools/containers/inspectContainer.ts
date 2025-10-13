@@ -28,4 +28,3 @@ export const inspectContainerTool: CopilotTool<typeof InspectContainersInputSche
         };
     },
 };
-

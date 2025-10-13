@@ -28,4 +28,3 @@ export const inspectImageTool: CopilotTool<typeof InspectImagesInputSchema, type
         };
     },
 };
-
