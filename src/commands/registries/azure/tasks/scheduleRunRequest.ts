@@ -216,7 +216,7 @@ async function streamLogs(context: IActionContext, registryItem: AzureRegistryIt
 }
 
 function getTempSourceArchivePath(): string {
-    const archive = `sourceArchive${randomUtils.getRandomHexString(6)}.tar.gz`;
+    const archive = `sourceArchive${randomUtils.getRandomHexString(8)}.tar.gz`;
     ext.outputChannel.info(vscode.l10n.t('Setting up temp file with \'{0}\'', archive));
     const tarFilePath: string = path.join(os.tmpdir(), archive);
     return tarFilePath;
