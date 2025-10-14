@@ -24,10 +24,21 @@ export function getErrorTreeItem(error: unknown, parent: CommonRegistryItem | un
         } as RegistryConnectError];
     }
 
+    let message: string | undefined;
+    if (typeof error === 'string') {
+        message = error;
+    } else if (error instanceof Error && !!error.message) {
+        if (!!error.cause && error.cause instanceof Error && !!error.cause.message) {
+            message = `${error.message}: ${error.cause.message}`;
+        } else {
+            message = error.message;
+        }
+    }
+
     // Otherwise, return a generic error
     return [{
         parent: parent,
-        label: error instanceof Error ? error.message : vscode.l10n.t('Unknown error'),
+        label: message ?? vscode.l10n.t('Unknown error'),
         type: 'commonerror',
     }];
 }

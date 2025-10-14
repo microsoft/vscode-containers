@@ -1,3 +1,7 @@
+## 0.4.1 - 14 October 2025
+### Fixed
+* Better error messages in the tree when errors occur. [#310](https://github.com/microsoft/vscode-docker-extensibility/pull/310)
+
 ## 0.4.0 - 6 October 2025
 ### Added
 * Package is now a combined CJS+ESM package, instead of just CJS. [#297](https://github.com/microsoft/vscode-docker-extensibility/pull/297)
