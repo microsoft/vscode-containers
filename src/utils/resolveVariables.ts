@@ -11,6 +11,7 @@ import { cloneObject } from '../utils/cloneObject';
 const variableMatcher: RegExp = /\$\{[a-z.\-_:]+\}/ig;
 const configVariableMatcher: RegExp = /\$\{config:([a-z.\-_]+)\}/i;
 const envVariableMatcher: RegExp = /\$\{env:([\w\d]+)\}/i;
+const scopedWorkspaceFolderMatcher: RegExp = /^\$\{workspace(?:Folder|Root):([^}]+)\}$/i;
 
 export function resolveVariables<T>(target: T, folder?: WorkspaceFolder, additionalVariables?: { [key: string]: string }): T {
     if (!target) {
