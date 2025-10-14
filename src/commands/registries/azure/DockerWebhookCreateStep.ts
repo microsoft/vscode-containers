@@ -75,7 +75,7 @@ export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceC
         // remove disallowed characters
         webhookName = webhookName.replace(/[^a-zA-Z0-9]/g, '');
         // trim to max length
-        webhookName = webhookName.substring(0, maxLength - numRandomChars);
+        webhookName = webhookName.substr(0, maxLength - numRandomChars);
         // add random chars for uniqueness and to ensure min length is met
         webhookName += randomUtils.getRandomHexString(numRandomChars);
 
