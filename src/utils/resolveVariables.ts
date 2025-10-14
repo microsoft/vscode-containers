@@ -49,16 +49,15 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
         }
     }
 
-    const scopedWorkspaceFolder = /^\$\{workspace(?:Folder|Root):([^}]+)\}$/i.exec(variable);
-    if (scopedWorkspaceFolder) {
-        const folderName = scopedWorkspaceFolder[1].trim();
+    // Replace multi-workspace folders, e.g. ${workspaceFolder:foo}
+    const scopedWorkspaceFolderMatch = /^\$\{workspace(?:Folder|Root):([^}]+)\}$/i.exec(variable);
+    if (scopedWorkspaceFolderMatch && scopedWorkspaceFolderMatch.length > 1) {
+        const folderName = scopedWorkspaceFolderMatch[1].trim(); // Index 1 is the "foo" group of "${workspaceFolder:foo}"
         const targetFolder = workspace.workspaceFolders?.find(f => f.name === folderName);
 
         if (targetFolder) {
             return path.normalize(targetFolder.uri.fsPath);
         }
-
-        return variable;
     }
 
     // Replace additional variables as specified by the caller
