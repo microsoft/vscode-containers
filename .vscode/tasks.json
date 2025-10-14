@@ -4,30 +4,44 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Watch: ESBuild",
             "type": "npm",
-            "script": "watch",
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ],
-            "isBackground": true,
+            "script": "build:esbuild -- --watch",
+            "problemMatcher": "$esbuild-watch",
             "presentation": {
-                "reveal": "never"
+                "reveal": "silent",
             },
             "group": {
                 "kind": "build",
-                "isDefault": true
-            }
+            },
+            "isBackground": true,
         },
         {
+            "label": "Watch: Check Types",
             "type": "npm",
-            "script": "test-watch",
+            "script": "build:check -- --watch",
             "problemMatcher": "$tsc-watch",
-            "isBackground": true,
             "presentation": {
-                "reveal": "never"
+                "revealProblems": "onProblem",
             },
-            "group": "build"
-        }
-    ]
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "isBackground": true,
+        },
+        // {
+        //     "label": "Watch: Webpack",
+        //     "type": "npm",
+        //     "script": "build:webpack -- --watch",
+        //     "problemMatcher": "$ts-webpack-watch",
+        //     "presentation": {
+        //         "revealProblems": "onProblem",
+        //     },
+        //     "group": {
+        //         "kind": "build",
+        //     },
+        //     "isBackground": true,
+        // },
+    ],
 }
