@@ -51,7 +51,7 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
     }
 
     // Replace multi-workspace folders, e.g. ${workspaceFolder:foo}
-    const scopedWorkspaceFolderMatch = /^\$\{workspace(?:Folder|Root):([^}]+)\}$/i.exec(variable);
+    const scopedWorkspaceFolderMatch = scopedWorkspaceFolderMatcher.exec(variable);
     if (scopedWorkspaceFolderMatch && scopedWorkspaceFolderMatch.length > 1) {
         const folderName = scopedWorkspaceFolderMatch[1].trim(); // Index 1 is the "foo" group of "${workspaceFolder:foo}"
         const targetFolder = workspace.workspaceFolders?.find(f => f.name === folderName);
