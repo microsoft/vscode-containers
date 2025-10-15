@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
+import { UnspecifiedOutputSchema } from '@microsoft/vscode-inproc-mcp/mcp';
 import { ext } from '../../../extensionVariables';
-import { ImageRefSchema, isoTheCreatedAt, UnspecifiedOutputSchema } from '../common';
+import { ImageRefSchema, isoTheCreatedAt } from '../common';
 
 const InspectImagesInputSchema = ImageRefSchema;
 

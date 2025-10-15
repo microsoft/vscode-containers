@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
+import { UnspecifiedOutputSchema } from '@microsoft/vscode-inproc-mcp/mcp';
 import { z } from 'zod';
 import { ext } from '../../../extensionVariables';
-import { isoTheCreatedAt, UnspecifiedOutputSchema } from '../common';
+import { isoTheCreatedAt } from '../common';
 
 export const listNetworksTool: CopilotTool<z.ZodVoid, typeof UnspecifiedOutputSchema> = {
     name: 'list_networks',

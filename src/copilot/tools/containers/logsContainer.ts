@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
+import { UnspecifiedOutputSchema } from '@microsoft/vscode-inproc-mcp/mcp';
 import { ext } from '../../../extensionVariables';
-import { ContainerRefSchema, UnspecifiedOutputSchema } from '../common';
+import { ContainerRefSchema } from '../common';
 
 const LogsContainerInputSchema = ContainerRefSchema;
 
