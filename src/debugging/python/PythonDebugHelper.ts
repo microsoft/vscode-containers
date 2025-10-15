@@ -77,7 +77,7 @@ export class PythonDebugHelper implements DebugHelper {
                 },
                 true);
 
-        const args = [...(debugConfiguration.python.args || pythonRunTaskOptions.args || []), await ext.runtimeManager.getCommand(), containerName];
+        const args = [...(debugConfiguration.python.args || pythonRunTaskOptions.args || []), await this.getHostInternalName(), await ext.runtimeManager.getCommand(), containerName];
         const launcherPath = path.join(ext.context.asAbsolutePath('resources'), 'python', 'launcher.py');
 
         return {
@@ -135,7 +135,7 @@ export class PythonDebugHelper implements DebugHelper {
 
     private async tryGetDebugAdapterHost(context: DockerDebugContext): Promise<string | undefined> {
         // For Windows and Mac we ask debugpy to listen on localhost:{randomPort} and then
-        // we use 'host.docker.internal' in the launcher to get the host's ip address.
+        // we use 'host.docker.internal'/'host.containers.internal' in the launcher to get the host's ip address.
         if (!isLinux()) {
             return 'localhost';
         }
@@ -149,13 +149,20 @@ export class PythonDebugHelper implements DebugHelper {
             return 'localhost';
         }
 
-        // For other Docker setups on WSL or Linux, 'host.docker.internal' doesn't work, so we ask debugpy to listen
+        // For other Docker setups on WSL or Linux, 'host.docker.internal'/'host.containers.internal' doesn't work, so we ask debugpy to listen
         // on the bridge network's ip address (predefined network).
         const networkInspection = (await ext.runWithDefaults(client =>
             client.inspectNetworks({ networks: ['bridge'] })
         ))?.[0];
 
         return networkInspection?.ipam?.config?.[0].gateway;
+    }
+
+    private async getHostInternalName(): Promise<string> {
+        const client = await ext.runtimeManager.getClient();
+
+        // Since not all clients may have implemented `hostInternalDnsName`, we default to 'host.docker.internal' if it's not defined
+        return client.hostInternalDnsName ?? 'host.docker.internal';
     }
 }
 
