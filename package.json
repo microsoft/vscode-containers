@@ -191,7 +191,7 @@
             ],
             "explorer/context": [
                 {
-                    "when": "isWorkspaceTrusted && resourceFilename =~ /dockerfile/i",
+                    "when": "isWorkspaceTrusted && resourceLangId == dockerfile",
                     "command": "vscode-containers.registries.azure.buildImage",
                     "group": "containers"
                 },
@@ -1553,16 +1553,21 @@
                 "filenamePatterns": [
                     "*.dockerfile",
                     "Dockerfile",
-                    "Dockerfile.*"
+                    "Dockerfile.*",
+                    "*.containerfile",
+                    "Containerfile",
+                    "Containerfile.*"
                 ]
             },
             {
                 "id": "ignore",
                 "filenames": [
-                    ".dockerignore"
+                    ".dockerignore",
+                    ".containerignore"
                 ],
                 "filenamePatterns": [
-                    "*.dockerignore"
+                    "*.dockerignore",
+                    "*.containerignore"
                 ]
             }
         ],
@@ -2942,6 +2947,7 @@
                 "title": "%vscode-containers.walkthrough.containersStart.title%",
                 "featuredFor": [
                     "Dockerfile",
+                    "Containerfile",
                     "compose.yaml",
                     "docker-compose.yml",
                     "docker-compose.yaml",
@@ -3138,7 +3144,7 @@
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.0",
-        "@microsoft/vscode-docker-registries": "^0.4.0",
+        "@microsoft/vscode-docker-registries": "^0.4.1",
         "@microsoft/vscode-processutils": "^0.2.0",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",

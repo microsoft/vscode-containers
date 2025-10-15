@@ -5,7 +5,7 @@
 
 import type { Site } from '@azure/arm-appservice'; // These are only dev-time imports so don't need to be lazy
 import type { Webhook, WebhookCreateParameters } from '@azure/arm-containerregistry'; // These are only dev-time imports so don't need to be lazy
-import { AzureWizardExecuteStep, nonNullProp } from "@microsoft/vscode-azext-utils";
+import { AzureWizardExecuteStep, nonNullProp, randomUtils } from "@microsoft/vscode-azext-utils";
 import { CommonRepository, CommonTag, isDockerHubRepository } from '@microsoft/vscode-docker-registries';
 import * as vscode from "vscode";
 import { ext } from "../../../extensionVariables";
@@ -13,7 +13,6 @@ import { AzureRegistry, isAzureRepository } from '../../../tree/registries/Azure
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
 import { getResourceGroupFromAzureRegistryItem } from '../../../tree/registries/registryTreeUtils';
 import { createArmContainerRegistryClient } from '../../../utils/azureUtils';
-import { cryptoUtils } from '../../../utils/cryptoUtils';
 import { getAzExtAppService } from '../../../utils/lazyPackages';
 import { type IAppServiceContainerWizardContext } from './deployImageToAzure';
 
@@ -78,7 +77,7 @@ export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceC
         // trim to max length
         webhookName = webhookName.substr(0, maxLength - numRandomChars);
         // add random chars for uniqueness and to ensure min length is met
-        webhookName += cryptoUtils.getRandomHexString(numRandomChars);
+        webhookName += randomUtils.getRandomHexString(numRandomChars);
 
         // variables derived from the container registry
         const registryTreeItem: UnifiedRegistryItem<AzureRegistry> = this.tagItem.parent.parent as unknown as UnifiedRegistryItem<AzureRegistry>;

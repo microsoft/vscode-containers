@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { DockerBuildRequest as AcrDockerBuildRequest, FileTaskRunRequest as AcrFileTaskRunRequest, OS as AcrOS, Run as AcrRun, ContainerRegistryManagementClient } from "@azure/arm-containerregistry"; // These are only dev-time imports so don't need to be lazy
-import { createSubscriptionContext, IActionContext, IAzureQuickPickItem, nonNullProp } from '@microsoft/vscode-azext-utils';
+import { createSubscriptionContext, IActionContext, IAzureQuickPickItem, nonNullProp, randomUtils } from '@microsoft/vscode-azext-utils';
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
@@ -22,7 +22,6 @@ import { quickPickWorkspaceFolder } from '../../../../utils/quickPickWorkspaceFo
 import { registryExperience } from "../../../../utils/registryExperience";
 import { addImageTaggingTelemetry, getTagFromUserInput } from '../../../images/tagImage';
 
-const idPrecision = 6;
 const vcsIgnoreList = ['.git', '.gitignore', '.bzr', 'bzrignore', '.hg', '.hgignore', '.svn'];
 
 // this is used by the ms-kubernetes-tools.aks-devx-tools extension (https://github.com/Azure/aks-devx-tools)
@@ -217,9 +216,7 @@ async function streamLogs(context: IActionContext, registryItem: AzureRegistryIt
 }
 
 function getTempSourceArchivePath(): string {
-    /* tslint:disable-next-line:insecure-random */
-    const id: number = Math.floor(Math.random() * Math.pow(10, idPrecision));
-    const archive = `sourceArchive${id}.tar.gz`;
+    const archive = `sourceArchive${randomUtils.getRandomHexString(8)}.tar.gz`;
     ext.outputChannel.info(vscode.l10n.t('Setting up temp file with \'{0}\'', archive));
     const tarFilePath: string = path.join(os.tmpdir(), archive);
     return tarFilePath;
