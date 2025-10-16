@@ -4,33 +4,43 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ext } from '../extensionVariables';
+import { Lazy } from './lazy';
 
-export async function getArmAuth(): Promise<typeof import('@azure/arm-authorization')> {
-    return await import('@azure/arm-authorization');
+const armAuthLazy = new Lazy(async () => await import('@azure/arm-authorization'));
+export async function getArmAuth() {
+    return await armAuthLazy.value;
 }
 
-export async function getArmContainerRegistry(): Promise<typeof import('@azure/arm-containerregistry')> {
-    return await import('@azure/arm-containerregistry');
+const armContainerRegistryLazy = new Lazy(async () => await import('@azure/arm-containerregistry'));
+export async function getArmContainerRegistry() {
+    return await armContainerRegistryLazy.value;
 }
 
-export async function getStorageBlob(): Promise<typeof import('@azure/storage-blob')> {
-    return await import('@azure/storage-blob');
+const storageBlobLazy = new Lazy(async () => await import('@azure/storage-blob'));
+export async function getStorageBlob() {
+    return await storageBlobLazy.value;
 }
 
-export async function getHandlebars(): Promise<typeof import('handlebars')> {
-    return await import('handlebars');
+const handlebarsLazy = new Lazy(async () => await import('handlebars'));
+export async function getHandlebars() {
+    return await handlebarsLazy.value;
 }
 
 // This file is really most important for these next two functions, which ensure that the extension variables are registered before the package is used
-
-export async function getAzExtAzureUtils(): Promise<typeof import('@microsoft/vscode-azext-azureutils')> {
+const azExtAzureUtilsLazy = new Lazy(async () => {
     const azExtAzureUtils = await import('@microsoft/vscode-azext-azureutils');
     azExtAzureUtils.registerAzureUtilsExtensionVariables(ext);
     return azExtAzureUtils;
+});
+export async function getAzExtAzureUtils() {
+    return await azExtAzureUtilsLazy.value;
 }
 
-export async function getAzExtAppService(): Promise<typeof import('@microsoft/vscode-azext-azureappservice')> {
+const azExtAppServiceLazy = new Lazy(async () => {
     const appSvc = await import('@microsoft/vscode-azext-azureappservice');
     appSvc.registerAppServiceExtensionVariables(ext);
     return appSvc;
+});
+export async function getAzExtAppService() {
+    return await azExtAppServiceLazy.value;
 }

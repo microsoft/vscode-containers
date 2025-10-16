@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as fse from "fs-extra";
-import * as mocha from 'mocha';
+import mocha from 'mocha';
 import * as path from "path";
 import * as vscode from "vscode";
 
