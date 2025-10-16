@@ -70,6 +70,23 @@ export default defineConfig([{
         "no-extra-boolean-cast": "off", // We !!flatten a lot of things into booleans this way
         "no-throw-literal": "warn", // Elevate this from suggestion to warning
         semi: "warn",
+        "@typescript-eslint/no-restricted-imports": [
+            "error",
+            {
+                "patterns": [
+                    {
+                        "group": [
+                            "@azure/*",
+                            "handlebars",
+                            "@microsoft/vscode-azext-azure*",
+                            "!@microsoft/vscode-azext-azureauth",
+                        ],
+                        "message": "Please lazily import this package within the function that uses it to reduce extension activation time.",
+                        "allowTypeImports": true
+                    }
+                ]
+            }
+        ],
     },
 }]);
 /* eslint-enable @typescript-eslint/naming-convention */

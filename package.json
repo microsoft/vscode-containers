@@ -3160,7 +3160,7 @@
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.0",
         "@microsoft/vscode-docker-registries": "^0.4.1",
-        "@microsoft/vscode-processutils": "^0.2.0",
+        "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
         "fs-extra": "^11.1.1",

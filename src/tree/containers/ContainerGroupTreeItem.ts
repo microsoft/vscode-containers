@@ -13,7 +13,7 @@ import { DockerContainerInfo } from "./ContainersTreeItem";
 
 export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContainerInfo, ContainerProperty> {
     public childTypeLabel: string = 'container';
-    public override readonly initialCollapsibleState: TreeItemCollapsibleState | undefined; // TypeScript gets mad if we don't re-declare this here
+    public declare readonly initialCollapsibleState: TreeItemCollapsibleState | undefined; // TypeScript gets mad if we don't re-declare this here
     public readonly canMultiSelect: boolean = true;
 
     public constructor(parent: LocalRootTreeItemBase<DockerContainerInfo, ContainerProperty>, group: string, items: DockerContainerInfo[]) {
