@@ -56,11 +56,6 @@ const config = {
                     }
                 ]
             },
-            {
-                // Unpack UMD module headers used in some modules since webpack doesn't handle them.
-                test: /dockerfile-language-service|vscode-languageserver-types/,
-                use: { loader: 'umd-compat-loader' }
-            },
         ]
     },
     plugins: [
@@ -100,6 +95,11 @@ const config = {
             // Ignore another warning for a missing optional dependency of `ws` via `@microsoft/vscode-azext-azureappservice`
             module: /node_modules\/ws/,
             message: /Can't resolve 'utf-8-validate'/
+        },
+        {
+            // Ignore a warning from vscode-languageclient about umd dependencies
+            module: /node_modules\/vscode-languageclient\/node_modules\/vscode-languageserver-types\/lib\/umd\/main.js/,
+            message: /Critical dependency: require function/
         },
         {
             // Ignore a warning from express

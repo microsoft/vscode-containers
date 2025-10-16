@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
+import type { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { registerMcpHttpProvider } from '@microsoft/vscode-inproc-mcp/vscode';
 import * as path from 'path';
@@ -37,21 +37,12 @@ import { DocumentSettingsClientFeature } from './utils/DocumentSettingsClientFea
 import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
 
-export type KeyInfo = { [keyName: string]: string };
-
-export interface ComposeVersionKeys {
-    all: KeyInfo;
-    v1: KeyInfo;
-    v2: KeyInfo;
-}
-
 let dockerfileLanguageClient: LanguageClient;
 let composeLanguageClient: LanguageClient;
 
 const DOCUMENT_SELECTOR: DocumentSelector = [
     { language: 'dockerfile', scheme: 'file' }
 ];
-
 
 function initializeExtensionVariables(ctx: vscode.ExtensionContext): void {
     ext.context = ctx;
@@ -349,7 +340,7 @@ function activateComposeLanguageClient(ctx: vscode.ExtensionContext): void {
             )
         );
 
-        const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+        const debugOptions = { execArgv: ["--nolazy", "--inspect=6010"] };
 
         const serverOptions: ServerOptions = {
             run: {
