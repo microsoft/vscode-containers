@@ -8,5 +8,5 @@ import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
     azExtEslintRecommended,
-    lazyImportRuleConfig(['@azure/*', 'handlebars', '@microsoft/vscode-azext-azureutils', '@microsoft/vscode-azext-azureappservice']),
+    lazyImportRuleConfig(['@azure/*', 'handlebars', '@microsoft/vscode-azext-azure*', '!@microsoft/vscode-azext-azureauth']),
 ]);

@@ -16,9 +16,9 @@
         "noImplicitThis": true,
         "noUnusedLocals": false, // ESLint takes care of this for us
         "noUnusedParameters": false, // ESLint takes care of this for us
-        "noImplicitAny": false, // TODO
-        "noImplicitOverride": false, // TODO
-        "strictNullChecks": false, // TODO
+        "noImplicitAny": false, // TODO ~14 errors
+        "noImplicitOverride": false, // TODO ~78 errors
+        "strictNullChecks": false, // TODO ~425 errors
     },
     "exclude": [
         "node_modules",

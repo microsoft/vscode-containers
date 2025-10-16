@@ -3131,8 +3131,7 @@
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
         "@types/vscode": "1.105.0",
-        "@types/xml2js": "^0.4.11",
-        "umd-compat-loader": "^2.1.2"
+        "@types/xml2js": "^0.4.11"
     },
     "dependencies": {
         "@azure/arm-authorization": "^9.0.0",
@@ -3145,7 +3144,7 @@
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.0",
         "@microsoft/vscode-docker-registries": "^0.4.1",
-        "@microsoft/vscode-processutils": "^0.2.0",
+        "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
         "fs-extra": "^11.1.1",
