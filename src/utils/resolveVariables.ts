@@ -8,8 +8,8 @@ import * as path from 'path';
 import { WorkspaceFolder, window, workspace } from 'vscode';
 import { cloneObject } from '../utils/cloneObject';
 
-const variableMatcher: RegExp = /\$\{[a-z.\-_:]+\}/ig;
-const configVariableMatcher: RegExp = /\$\{config:([a-z.\-_]+)\}/i;
+const variableMatcher: RegExp = /\$\{[a-z0-9.\-_:]+\}/ig;
+const configVariableMatcher: RegExp = /\$\{config:([a-z0-9.\-_]+)\}/i;
 const envVariableMatcher: RegExp = /\$\{env:([\w\d]+)\}/i;
 const scopedWorkspaceFolderMatcher: RegExp = /^\$\{workspace(?:Folder|Root):([^}]+)\}$/i;
 
