@@ -15,21 +15,21 @@ export default {
         './dockerfile-language-server-nodejs/lib/server': './node_modules/dockerfile-language-server-nodejs/lib/server.js',
         './compose-language-service/lib/server': './node_modules/@microsoft/compose-language-service/lib/server.js',
     },
-    module: {
-        rules: [
-            ...baseConfig.module.rules,
-            {
-                // Unpack UMD module headers used in some modules since webpack doesn't handle them.
-                test: /dockerfile-language-service|vscode-languageserver-types/,
-                use: { loader: 'umd-compat-loader' },
-            },
-        ],
-    },
     ignoreWarnings: [
         {
             // Ignore some warnings from handlebars in code that doesn't get used anyway
             module: /node_modules\/handlebars\/lib\/index\.js/,
             message: /require\.extensions/,
+        },
+        {
+            // Ignore a warning from vscode-languageclient about umd dependencies
+            module: /node_modules\/vscode-languageclient\/node_modules\/vscode-languageserver-types\/lib\/umd\/main.js/,
+            message: /Critical dependency: require function/
+        },
+        {
+            // Ignore a warning from express
+            module: /node_modules\/express\/lib\/view\.js/,
+            message: /Critical dependency: the request of a dependency is an expression/
         },
         ...baseConfig.ignoreWarnings,
     ],
