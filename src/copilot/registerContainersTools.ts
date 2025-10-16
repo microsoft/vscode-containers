@@ -4,9 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { registerMcpToolWithTelemetry } from '@microsoft/vscode-inproc-mcp/vscode';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { extensionVersion, McpServerId, McpServerLabel } from '../constants';
-import { getMcpServer } from '../utils/lazyPackages';
 import { actContainerTool } from './tools/containers/actContainer';
 import { inspectContainerTool } from './tools/containers/inspectContainer';
 import { listContainersTool } from './tools/containers/listContainers';
@@ -20,16 +17,7 @@ import { listNetworksTool } from './tools/networks/listNetworks';
 import { pruneTool } from './tools/system/prune';
 import { listVolumesTool } from './tools/volumes/listVolumes';
 
-export async function getContainersMcpServer(): Promise<McpServer> {
-    const { McpServer } = await getMcpServer();
-    const mcpServer = new McpServer(
-        {
-            name: McpServerId,
-            title: McpServerLabel,
-            version: extensionVersion.value,
-        }
-    );
-
+export function registerContainersTools(mcpServer: never): void {
     // Container tools
     registerMcpToolWithTelemetry(mcpServer, actContainerTool);
     registerMcpToolWithTelemetry(mcpServer, inspectContainerTool);
@@ -51,6 +39,4 @@ export async function getContainersMcpServer(): Promise<McpServer> {
 
     // Volume tools
     registerMcpToolWithTelemetry(mcpServer, listVolumesTool);
-
-    return mcpServer;
 }

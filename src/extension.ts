@@ -13,7 +13,7 @@ import { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelect
 import * as tas from 'vscode-tas-client';
 import { registerCommands } from './commands/registerCommands';
 import { configPrefix, extensionVersion, McpServerId, McpServerLabel } from './constants';
-import { getContainersMcpServer } from './copilot/containersMcp';
+import { registerContainersTools } from './copilot/registerContainersTools';
 import { registerDebugProvider } from './debugging/DebugHelper';
 import { DockerExtensionApi } from './DockerExtensionApi';
 import { DockerfileCompletionItemProvider } from './dockerfileCompletionItemProvider';
@@ -141,7 +141,7 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
             id: McpServerId,
             serverLabel: McpServerLabel,
             serverVersion: extensionVersion.value,
-            getNewMcpServer: getContainersMcpServer,
+            registerTools: (server) => registerContainersTools(server as never),
         });
     });
 
