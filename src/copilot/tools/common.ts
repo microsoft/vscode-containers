@@ -6,11 +6,11 @@
 import { z } from 'zod';
 
 export const ContainerRefSchema = z.object({
-    containerNameOrId: z.string().describe('The container name or ID.'),
+    containerNameOrId: z.string().describe('The container name or ID'),
 });
 
 export const ImageRefSchema = z.object({
-    imageNameOrId: z.string().describe('The container image name or ID.'),
+    imageNameOrId: z.string().describe('The container image name or ID'),
 });
 
 export function isoTheCreatedAt<T extends { createdAt?: Date }>(items: T[]) {

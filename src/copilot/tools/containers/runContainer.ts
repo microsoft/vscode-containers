@@ -36,10 +36,10 @@ const RunContainerInputSchema = z.object({
     name: z.string().optional().describe('Container name'),
     environmentVariables: z.record(z.string(), z.string()).optional().describe('Environment variables to set in the container'),
     publishAllPorts: z.boolean().optional().describe('Publish all exposed ports to random ports on the host interfaces. For containers that host a web service, this should usually be true.'),
-    interactive: z.boolean().optional().describe('Whether to run the container in interactively.').default(false),
+    interactive: z.boolean().optional().describe('Whether to run the container in interactively').default(false),
     ports: z.array(PortBindingSchema).optional().describe('Port bindings for the container. Can be used alongside publishAllPorts, but often isn\'t necessary if publishAllPorts is true.'),
-    mounts: z.array(MountSchema).optional().describe('Bind and volume mounts for the container.'),
-    network: z.string().optional().describe('The name of the container network to connect the container to.'),
+    mounts: z.array(MountSchema).optional().describe('Bind and volume mounts for the container'),
+    network: z.string().optional().describe('The name of the container network to connect the container to'),
 });
 
 export const runContainerTool: CopilotTool<typeof RunContainerInputSchema, z.ZodVoid> = {
