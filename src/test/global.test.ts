@@ -5,7 +5,7 @@
 
 import assert from 'assert';
 import * as fse from "fs-extra";
-import mocha from 'mocha';
+import * as mocha from 'mocha';
 import * as path from "path";
 import * as vscode from "vscode";
 
