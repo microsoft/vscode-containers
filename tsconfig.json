@@ -19,11 +19,6 @@
         "noImplicitAny": false, // TODO ~14 errors
         "noImplicitOverride": false, // TODO ~78 errors
         "strictNullChecks": false, // TODO ~425 errors
-        "paths": {
-            "@modelcontextprotocol/sdk/*": [ // MCP SDK has some obnoxious type conflicts between ESM and CJS, so let's utterly ignore the CJS
-                "./node_modules/@modelcontextprotocol/sdk/dist/esm/*"
-            ]
-        }
     },
     "exclude": [
         "node_modules",
