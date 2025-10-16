@@ -30,21 +30,26 @@ export async function getContainersMcpServer(): Promise<McpServer> {
         }
     );
 
+    // Container tools
     registerMcpToolWithTelemetry(mcpServer, actContainerTool);
     registerMcpToolWithTelemetry(mcpServer, inspectContainerTool);
     registerMcpToolWithTelemetry(mcpServer, listContainersTool);
     registerMcpToolWithTelemetry(mcpServer, logsContainerTool);
     registerMcpToolWithTelemetry(mcpServer, runContainerTool);
 
+    // Image tools
     registerMcpToolWithTelemetry(mcpServer, actImageTool);
     registerMcpToolWithTelemetry(mcpServer, inspectImageTool);
     registerMcpToolWithTelemetry(mcpServer, listImagesTool);
     registerMcpToolWithTelemetry(mcpServer, tagImageTool);
 
+    // Network tools
     registerMcpToolWithTelemetry(mcpServer, listNetworksTool);
 
+    // System tools
     registerMcpToolWithTelemetry(mcpServer, pruneTool);
 
+    // Volume tools
     registerMcpToolWithTelemetry(mcpServer, listVolumesTool);
 
     return mcpServer;
