@@ -26,11 +26,6 @@ export async function getHandlebars() {
     return await handlebarsLazy.value;
 }
 
-const mcpServerLazy = new Lazy(async () => await import('@modelcontextprotocol/sdk/server/mcp.js'));
-export async function getMcpServer() {
-    return await mcpServerLazy.value;
-}
-
 // This file is really most important for these next two functions, which ensure that the extension variables are registered before the package is used
 const azExtAzureUtilsLazy = new Lazy(async () => {
     const azExtAzureUtils = await import('@microsoft/vscode-azext-azureutils');

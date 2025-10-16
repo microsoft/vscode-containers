@@ -76,7 +76,6 @@ export default defineConfig([{
                 "patterns": [
                     {
                         "group": [
-                            "@modelcontextprotocol/*",
                             "@azure/*",
                             "handlebars",
                             "@microsoft/vscode-azext-azure*",
