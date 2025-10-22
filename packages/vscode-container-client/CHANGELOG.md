@@ -1,3 +1,7 @@
+## 0.5.1 - 23 October 2025
+### Fixed
+* Fixed an issue with dates not always being parsed correctly. [#312](https://github.com/microsoft/vscode-docker-extensibility/issues/312)
+
 ## 0.5.0 - 6 October 2025
 ### Added
 * Package is now a combined CJS+ESM package, instead of just CJS. [#297](https://github.com/microsoft/vscode-docker-extensibility/pull/297)

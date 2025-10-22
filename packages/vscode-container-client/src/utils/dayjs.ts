@@ -10,7 +10,7 @@ import utc from 'dayjs/plugin/utc';
 dayjsinner.extend(customParseFormat);
 dayjsinner.extend(utc);
 
-const defaultFormats = ['YYYY-MM-DD HH:mm:ss ZZ'];
+const defaultFormats = ['YYYY-MM-DD HH:mm:ss ZZ', 'YYYY-MM-DDTHH:mm:ssZ'];
 
 /**
  * Wrap the dayjs methods to apply a default Docker friendly format to all parsing
