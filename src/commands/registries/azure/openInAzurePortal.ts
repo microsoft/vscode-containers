@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, createSubscriptionContext } from '@microsoft/vscode-azext-utils';
+import { isRepository } from '@microsoft/vscode-docker-registries';
 import { ext } from '../../../extensionVariables';
 import { AzureRegistry, AzureRepository, AzureSubscriptionRegistryItem, isAzureRegistry, isAzureSubscriptionRegistryItem } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
@@ -26,9 +27,9 @@ export async function openInAzurePortal(context: IActionContext, node?: UnifiedR
         await azExtAzureUtils.openInPortal(subscriptionContext, `/subscriptions/${subscriptionContext.subscriptionId}`);
     } else if (isAzureRegistry(azureRegistryItem)) {
         subscriptionContext = createSubscriptionContext(azureRegistryItem.parent.subscription);
-        await azExtAzureUtils.openInPortal(subscriptionContext, azureRegistryItem.id);
-    } else {
+        await azExtAzureUtils.openInPortal(subscriptionContext, azureRegistryItem.registryProperties.id);
+    } else if (isRepository(azureRegistryItem)) {
         subscriptionContext = createSubscriptionContext(azureRegistryItem.parent.parent.subscription);
-        await azExtAzureUtils.openInPortal(subscriptionContext, `${azureRegistryItem.parent.id}/repository`);
+        await azExtAzureUtils.openInPortal(subscriptionContext, `${azureRegistryItem.parent.registryProperties.id}/repository`);
     }
 }
