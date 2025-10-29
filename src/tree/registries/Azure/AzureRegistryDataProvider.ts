@@ -46,7 +46,7 @@ export function isAzureTag(item: unknown): item is AzureTag {
     return isTag(item) && item.additionalContextValues?.includes('azure');
 }
 
-export class AzureRegistryDataProvider extends RegistryV2DataProvider implements vscode.Disposable {
+export class AzureRegistryDataProvider extends RegistryV2DataProvider {
     public readonly id = 'vscode-containers.azureContainerRegistry';
     public readonly label = vscode.l10n.t('Azure');
     public readonly iconPath = new vscode.ThemeIcon('azure');
@@ -61,12 +61,22 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
 
     public override async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
         if (isRegistryRoot(element)) {
-            if (!await this.subscriptionProvider.isSignedIn()) {
-                await this.subscriptionProvider.signIn();
-            }
+            //const msftAccount = (await this.subscriptionProvider.getAccounts()).find(a => a.label.toLowerCase().includes('microsoft.com'));
+            // TODO
+            const result = await this.subscriptionProvider.signIn(undefined, { promptIfNeeded: true });
+            ext.outputChannel.appendLine(`Sign-in for Microsoft account: ${result ? 'succeeded' : 'failed'}`);
 
-            const subscriptions = await this.subscriptionProvider.getSubscriptions();
-            this.sendSubscriptionTelemetryIfNeeded();
+            // for (const account of await this.subscriptionProvider.getAccounts()) {
+            //     const accountSignInResult = await this.subscriptionProvider.signIn({ account: account, tenantId: undefined! }, { promptIfNeeded: false });
+            //     ext.outputChannel.appendLine(`Auto sign-in for account ${account.label}: ${accountSignInResult ? 'succeeded' : 'failed'}`);
+            //     for (const tenant of await this.subscriptionProvider.getTenantsForAccount(account)) {
+            //         const tenantSignInResult = await this.subscriptionProvider.signIn(tenant, { promptIfNeeded: false });
+            //         ext.outputChannel.appendLine(`Auto sign-in for account ${account.label} in tenant ${tenant.displayName}: ${tenantSignInResult ? 'succeeded' : 'failed'}`);
+            //     }
+            // }
+
+            const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions();
+            // TODO this.sendSubscriptionTelemetryIfNeeded();
 
             return subscriptions.map(sub => {
                 const isSubFromMultipleAccounts = subscriptions.some(s => s.subscriptionId === sub.subscriptionId && s.account.id !== sub.account.id);
@@ -99,11 +109,6 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
 
             return children;
         }
-    }
-
-    public dispose(): void {
-        super.dispose();
-        this.subscriptionProvider.dispose();
     }
 
     public override async getRegistries(subscriptionItem: AzureSubscriptionRegistryItem): Promise<AzureRegistry[]> {
@@ -223,7 +228,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
             context.telemetry.properties.isActivationEvent = 'true';
             context.errorHandling.suppressDisplay = true;
 
-            const subscriptions = await this.subscriptionProvider.getSubscriptions(false);
+            const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions({ all: true });
 
             const tenantSet = new Set<string>();
             const subscriptionSet = new Set<string>();
