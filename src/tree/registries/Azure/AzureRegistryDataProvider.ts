@@ -6,8 +6,7 @@
 import type { Registry as AcrRegistry, RegistryListCredentialsResult } from '@azure/arm-containerregistry';
 import { VSCodeAzureSubscriptionProvider, type AzureSubscription } from '@microsoft/vscode-azext-azureauth';
 import { callWithTelemetryAndErrorHandling, createSubscriptionContext, type ISubscriptionActionContext } from '@microsoft/vscode-azext-utils';
-import { getContextValue, RegistryV2DataProvider, registryV2Request, V2Registry, V2RegistryItem, V2Repository, V2Tag } from '@microsoft/vscode-docker-registries';
-import { CommonRegistryItem, isRegistry, isRegistryRoot, isRepository, isTag } from '@microsoft/vscode-docker-registries/lib/clients/Common/models';
+import { CommonRegistryItem, getContextValue, isRegistry, isRegistryRoot, isRepository, isTag, RegistryV2DataProvider, registryV2Request, V2Registry, V2RegistryItem, V2Repository, V2Tag } from '@microsoft/vscode-docker-registries';
 import * as vscode from 'vscode';
 import { ext } from '../../../extensionVariables';
 import { createArmContainerRegistryClient, getResourceGroupFromId } from '../../../utils/azureUtils';
@@ -70,9 +69,12 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
             this.sendSubscriptionTelemetryIfNeeded();
 
             return subscriptions.map(sub => {
+                const isSubFromMultipleAccounts = subscriptions.some(s => s.subscriptionId === sub.subscriptionId && s.account.id !== sub.account.id);
+
                 return {
                     parent: element,
                     label: sub.name,
+                    description: isSubFromMultipleAccounts ? sub.account.label : undefined,
                     type: 'azuresubscription',
                     subscription: sub,
                     additionalContextValues: ['azuresubscription'],
@@ -127,7 +129,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
                 iconPath: vscode.Uri.joinPath(this.extensionContext.extensionUri, 'resources', 'azureRegistry.svg'),
                 subscription: subscriptionItem.subscription,
                 additionalContextValues: ['azureContainerRegistry'],
-                id: registry.id!,
+                id: `${subscriptionItem.subscription.account.id}/${registry.id!}`,
                 registryProperties: registry
             };
         });
@@ -137,6 +139,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         if (isAzureSubscriptionRegistryItem(element)) {
             return Promise.resolve({
                 label: element.label,
+                description: element.description,
                 collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
                 contextValue: getContextValue(element),
                 iconPath: element.iconPath,

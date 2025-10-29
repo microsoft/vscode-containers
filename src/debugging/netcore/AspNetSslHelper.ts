@@ -3,13 +3,12 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IActionContext, parseError } from '@microsoft/vscode-azext-utils';
+import { IActionContext, parseError, randomUtils } from '@microsoft/vscode-azext-utils';
 import { composeArgs, withArg, withNamedArg } from '@microsoft/vscode-processutils';
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import { l10n, MessageItem } from 'vscode';
-import { cryptoUtils } from '../../utils/cryptoUtils';
 import { execAsync } from '../../utils/execAsync';
 import { isMac, isWindows } from '../../utils/osUtils';
 import { PlatformOS } from '../../utils/platform';
@@ -137,13 +136,13 @@ async function addUserSecretsIfNecessary(projectFile: string): Promise<void> {
     const args = composeArgs(
         withArg('user-secrets', 'init'),
         withNamedArg('--project', projectFile, { shouldQuote: true }),
-        withNamedArg('--id', cryptoUtils.getRandomHexString(32)),
+        withNamedArg('--id', randomUtils.getRandomHexString(32)),
     )();
     await execAsync('dotnet', args);
 }
 
 async function exportCertificateAndSetPassword(projectFile: string, certificateExportPath: string): Promise<void> {
-    const password = cryptoUtils.getRandomHexString(32);
+    const password = randomUtils.getRandomHexString(32);
 
     // Export the certificate
     const exportArgs = composeArgs(

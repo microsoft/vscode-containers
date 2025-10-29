@@ -8,12 +8,12 @@
 
 'use strict';
 
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-/* eslint-enable @typescript-eslint/no-var-requires */
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 const debugWebpack = !!process.env.DEBUG_WEBPACK;
 
@@ -56,15 +56,6 @@ const config = {
                     }
                 ]
             },
-            {
-                // Unpack UMD module headers used in some modules since webpack doesn't handle them.
-                test: /dockerfile-language-service|vscode-languageserver-types/,
-                use: { loader: 'umd-compat-loader' }
-            },
-            {
-                test: /\.node$/,
-                loader: 'node-loader',
-            },
         ]
     },
     plugins: [
@@ -96,21 +87,6 @@ const config = {
             message: /require\.extensions/,
         },
         {
-            // Ignore a warning from `@vscode/extension-telemetry`
-            module: /node_modules\/@vscode\/extension-telemetry/,
-            message: /Can't resolve 'applicationinsights-native-metrics'/
-        },
-        {
-            // Ignore a warning for missing optional dependency of `ssh2`
-            module: /node_modules\/ssh2/,
-            message: /Can't resolve 'cpu-features'/
-        },
-        {
-            // Ignore another warning for missing optional dependency of `ssh2`, if VS build tools aren't installed
-            module: /node_modules\/ssh2/,
-            message: /Can't resolve '.\/crypto\/build\/Release\/sshcrypto.node'/
-        },
-        {
             // Ignore a warning for a missing optional dependency of `ws` via `@microsoft/vscode-azext-azureappservice`
             module: /node_modules\/ws/,
             message: /Can't resolve 'bufferutil'/
@@ -119,6 +95,11 @@ const config = {
             // Ignore another warning for a missing optional dependency of `ws` via `@microsoft/vscode-azext-azureappservice`
             module: /node_modules\/ws/,
             message: /Can't resolve 'utf-8-validate'/
+        },
+        {
+            // Ignore a warning from vscode-languageclient about umd dependencies
+            module: /node_modules\/vscode-languageclient\/node_modules\/vscode-languageserver-types\/lib\/umd\/main.js/,
+            message: /Critical dependency: require function/
         },
         (warning) => false, // No other warnings should be ignored
     ],

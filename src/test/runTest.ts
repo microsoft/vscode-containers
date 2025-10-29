@@ -5,8 +5,7 @@
 
 // Adapted from https://code.visualstudio.com/api/working-with-extensions/testing-extension
 
-import { runTests } from '@vscode/test-electron';
-import { TestOptions } from '@vscode/test-electron/out/runTest';
+import { runTests, type TestOptions } from '@vscode/test-electron';
 import * as path from 'path';
 
 async function main(): Promise<void> {
