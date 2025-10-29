@@ -121,14 +121,6 @@ function getTreeViewForPrefix(
       return ext.containersTreeView;
     case "images":
       return ext.imagesTreeView;
-    case "networks":
-      return ext.networksTreeView;
-    case "volumes":
-      return ext.volumesTreeView;
-    case "contexts":
-      return ext.contextsTreeView;
-    case "registries":
-      return ext.registriesTreeView;
     default:
       return undefined;
   }
@@ -137,13 +129,7 @@ function getTreeViewForPrefix(
 async function refreshTreeView(treePrefix: TreePrefix): Promise<void> {
   updateTreeViewTitle(treePrefix);
 
-  // For registries tree, just call refresh directly
-  if (treePrefix === "registries") {
-    void ext.registriesTree.refresh();
-    return;
-  }
-
-  // For other trees, get the root and refresh it
+  // Get the root and refresh it
   const root = getTreeRootForPrefix(treePrefix);
   if (root) {
     await root.refresh(undefined);
@@ -158,12 +144,6 @@ function getTreeRootForPrefix(
       return ext.containersRoot;
     case "images":
       return ext.imagesRoot;
-    case "networks":
-      return ext.networksRoot;
-    case "volumes":
-      return ext.volumesRoot;
-    case "contexts":
-      return ext.contextsRoot;
     default:
       return undefined;
   }
@@ -183,26 +163,18 @@ export async function filterImagesTree(context: IActionContext): Promise<void> {
   await filterTreeView(context, "images");
 }
 
-export async function filterNetworksTree(
+export async function clearContainersFilter(
   context: IActionContext
 ): Promise<void> {
-  await filterTreeView(context, "networks");
+  clearTreeFilter("containers");
+  context.telemetry.properties.action = "clearFilter";
+  void refreshTreeView("containers");
 }
 
-export async function filterVolumesTree(
+export async function clearImagesFilter(
   context: IActionContext
 ): Promise<void> {
-  await filterTreeView(context, "volumes");
-}
-
-export async function filterContextsTree(
-  context: IActionContext
-): Promise<void> {
-  await filterTreeView(context, "contexts");
-}
-
-export async function filterRegistriesTree(
-  context: IActionContext
-): Promise<void> {
-  await filterTreeView(context, "registries");
+  clearTreeFilter("images");
+  context.telemetry.properties.action = "clearFilter";
+  void refreshTreeView("images");
 }
