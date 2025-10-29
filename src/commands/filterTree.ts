@@ -55,6 +55,27 @@ export function setInitialFilterContextValues(): void {
   }
 }
 
+/**
+ * @param filterText The filter pattern (already lowercase)
+ * @param searchableText The text to search in (already lowercase)
+ */
+function fuzzyMatch(filterText: string, searchableText: string): boolean {
+  let filterIndex = 0;
+  let searchIndex = 0;
+
+  while (
+    filterIndex < filterText.length &&
+    searchIndex < searchableText.length
+  ) {
+    if (filterText[filterIndex] === searchableText[searchIndex]) {
+      filterIndex++;
+    }
+    searchIndex++;
+  }
+
+  return filterIndex === filterText.length;
+}
+
 export function shouldShowItem(
   treePrefix: TreePrefix,
   searchableText: string
@@ -63,7 +84,14 @@ export function shouldShowItem(
   if (!filter.isActive) {
     return true;
   }
-  return searchableText.toLowerCase().includes(filter.filterText);
+
+  const lowerSearchableText = searchableText.toLowerCase();
+
+  if (lowerSearchableText.includes(filter.filterText)) {
+    return true;
+  }
+
+  return fuzzyMatch(filter.filterText, lowerSearchableText);
 }
 
 /**

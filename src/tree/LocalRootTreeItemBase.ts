@@ -6,7 +6,7 @@
 import { AzExtParentTreeItem, AzExtTreeItem, AzureWizard, GenericTreeItem, IActionContext, parseError } from "@microsoft/vscode-azext-utils";
 import { ListContainersItem, ListContextItem, ListImagesItem, ListNetworkItem, ListVolumeItem, isCommandNotSupportedError } from "@microsoft/vscode-container-client";
 import { ConfigurationTarget, ThemeColor, ThemeIcon, WorkspaceConfiguration, l10n, workspace } from "vscode";
-import { getTreeFilter } from "../commands/filterTree";
+import { getTreeFilter, shouldShowItem } from "../commands/filterTree";
 import { configPrefix } from "../constants";
 import { ext } from "../extensionVariables";
 import { runtimeInstallStatusProvider } from "../utils/RuntimeInstallStatusProvider";
@@ -95,7 +95,7 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
 
             const filter = getTreeFilter(this.treePrefix);
             if (filter.isActive && this._currentItems) {
-                this._currentItems = this._currentItems.filter(item => this.matchesFilter(item, filter.filterText));
+                this._currentItems = this._currentItems.filter(item => this.matchesFilter(item));
                 context.telemetry.properties.filtered = 'true';
                 context.telemetry.measurements.filteredItemCount = this._currentItems.length;
             }
@@ -330,16 +330,14 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
     /**
      * Checks if an item matches the filter text by searching across its properties
      */
-    private matchesFilter(item: TItem, filterText: string): boolean {
-        const lowerFilter = filterText.toLowerCase();
-
+    private matchesFilter(item: TItem): boolean {
         const label = this.getTreeItemLabel(item);
-        if (label.toLowerCase().includes(lowerFilter)) {
+        if (shouldShowItem(this.treePrefix, label)) {
             return true;
         }
 
         const description = this.getTreeItemDescription(item);
-        if (description.toLowerCase().includes(lowerFilter)) {
+        if (shouldShowItem(this.treePrefix, description)) {
             return true;
         }
 
@@ -347,7 +345,7 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
         const propertyInfos = [...this.labelSettingInfo.properties, ...this.descriptionSettingInfo.properties];
         for (const propInfo of propertyInfos) {
             const value = this.getPropertyValue(item, propInfo.property);
-            if (value && value.toLowerCase().includes(lowerFilter)) {
+            if (value && shouldShowItem(this.treePrefix, value)) {
                 return true;
             }
         }
