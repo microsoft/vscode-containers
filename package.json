@@ -60,6 +60,14 @@
                     "when": "never"
                 },
                 {
+                    "command": "vscode-containers.containers.clearFilter",
+                    "when": "never"
+                },
+                {
+                    "command": "vscode-containers.images.clearFilter",
+                    "when": "never"
+                },
+                {
                     "command": "vscode-containers.registries.reconnectRegistry",
                     "when": "never"
                 },
@@ -233,6 +241,16 @@
                     "group": "navigation@1"
                 },
                 {
+                    "command": "vscode-containers.containers.filter",
+                    "when": "view == vscode-containers.views.containers && !vscode-containers:containersFiltered",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "vscode-containers.containers.clearFilter",
+                    "when": "view == vscode-containers.views.containers && vscode-containers:containersFiltered",
+                    "group": "navigation@2"
+                },
+                {
                     "command": "vscode-containers.chooseContainerRuntime",
                     "when": "view == vscode-containers.views.containers",
                     "group": "navigation@7"
@@ -271,6 +289,16 @@
                     "command": "vscode-containers.images.prune",
                     "when": "view == vscode-containers.views.images",
                     "group": "navigation@2"
+                },
+                {
+                    "command": "vscode-containers.images.filter",
+                    "when": "view == vscode-containers.views.images && !vscode-containers:imagesFiltered",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "vscode-containers.images.clearFilter",
+                    "when": "view == vscode-containers.views.images && vscode-containers:imagesFiltered",
+                    "group": "navigation@3"
                 },
                 {
                     "command": "vscode-containers.images.showDangling",
@@ -2539,6 +2567,18 @@
                 "category": "%vscode-containers.commands.category.containers%"
             },
             {
+                "command": "vscode-containers.containers.filter",
+                "title": "%vscode-containers.commands.containers.filter%",
+                "category": "%vscode-containers.commands.category.containers%",
+                "icon": "$(search)"
+            },
+            {
+                "command": "vscode-containers.containers.clearFilter",
+                "title": "%vscode-containers.commands.containers.clearFilter%",
+                "category": "%vscode-containers.commands.category.containers%",
+                "icon": "$(search-stop)"
+            },
+            {
                 "command": "vscode-containers.debugging.initializeForDebugging",
                 "title": "%vscode-containers.commands.debugging.initializeForDebugging%",
                 "category": "%vscode-containers.commands.category.containersGeneric%"
@@ -2627,6 +2667,18 @@
                 "command": "vscode-containers.images.copyFullTag",
                 "title": "%vscode-containers.commands.images.copyFullTag%",
                 "category": "%vscode-containers.commands.category.images%"
+            },
+            {
+                "command": "vscode-containers.images.filter",
+                "title": "%vscode-containers.commands.images.filter%",
+                "category": "%vscode-containers.commands.category.images%",
+                "icon": "$(search)"
+            },
+            {
+                "command": "vscode-containers.images.clearFilter",
+                "title": "%vscode-containers.commands.images.clearFilter%",
+                "category": "%vscode-containers.commands.category.images%",
+                "icon": "$(search-stop)"
             },
             {
                 "command": "vscode-containers.networks.configureExplorer",
