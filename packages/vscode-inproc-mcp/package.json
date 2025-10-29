@@ -1,0 +1,61 @@
+{
+    "name": "@microsoft/vscode-inproc-mcp",
+    "author": "Microsoft Corporation",
+    "version": "0.1.0",
+    "description": "Library support for building MCP servers, primarily for use in VS Code.",
+    "license": "See LICENSE in the project root for license information.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/vscode-docker-extensibility"
+    },
+    "bugs": {
+        "url": "https://github.com/microsoft/vscode-docker-extensibility/issues"
+    },
+    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-inproc-mcp/README.md",
+    "exports": {
+        ".": {
+            "import": "./dist/esm/index.js",
+            "require": "./dist/cjs/index.js",
+            "types": "./dist/esm/index.d.ts"
+        },
+        "./mcp": {
+            "import": "./dist/esm/mcp/index.js",
+            "require": "./dist/cjs/mcp/index.js",
+            "types": "./dist/esm/mcp/index.d.ts"
+        },
+        "./vscode": {
+            "import": "./dist/esm/vscode/index.js",
+            "require": "./dist/cjs/vscode/index.js",
+            "types": "./dist/esm/vscode/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "npm run build:esm && npm run build:cjs",
+        "build:esm": "tsc",
+        "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
+        "lint": "eslint --max-warnings 0 . --ext ts",
+        "package": "npm pack",
+        "test": "mocha"
+    },
+    "engines": {
+        "vscode": "^1.105.0"
+    },
+    "dependencies": {
+        "@microsoft/vscode-azext-utils": "^4.0.0",
+        "@microsoft/vscode-processutils": "^0.2.1",
+        "@modelcontextprotocol/sdk": "^1.20.1",
+        "express": "~5",
+        "zod": "~3"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.3"
+    },
+    "mocha": {
+        "node-option": [
+            "import=tsx"
+        ],
+        "spec": [
+            "src/test/**/*.test.ts"
+        ]
+    }
+}
