@@ -15,6 +15,12 @@ interface TreeFilterState {
 
 const treeFilters: Map<TreePrefix, TreeFilterState> = new Map();
 
+// Only support filtering for containers and images
+const contextKeys: Partial<Record<TreePrefix, string>> = {
+  containers: "vscode-containers:containersFiltered",
+  images: "vscode-containers:imagesFiltered",
+};
+
 export function getTreeFilter(treePrefix: TreePrefix): TreeFilterState {
   return treeFilters.get(treePrefix) || { filterText: "", isActive: false };
 }
@@ -27,10 +33,26 @@ export function setTreeFilter(
     filterText: filterText.toLowerCase(),
     isActive: filterText.length > 0,
   });
+  setFilterContextValue(treePrefix, filterText.length > 0);
 }
 
 export function clearTreeFilter(treePrefix: TreePrefix): void {
   treeFilters.set(treePrefix, { filterText: "", isActive: false });
+  setFilterContextValue(treePrefix, false);
+}
+
+function setFilterContextValue(treePrefix: TreePrefix, value: boolean): void {
+  const contextKey = contextKeys[treePrefix];
+  if (contextKey) {
+    void vscode.commands.executeCommand("setContext", contextKey, value);
+  }
+}
+
+export function setInitialFilterContextValues(): void {
+  for (const treePrefix of Object.keys(contextKeys) as TreePrefix[]) {
+    const filter = getTreeFilter(treePrefix);
+    setFilterContextValue(treePrefix, filter.isActive);
+  }
 }
 
 export function shouldShowItem(
