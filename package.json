@@ -3166,7 +3166,7 @@
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.1",
         "@microsoft/vscode-docker-registries": "^0.4.1",
-        "@microsoft/vscode-inproc-mcp": "file:../vscode-docker-extensibility/packages/vscode-inproc-mcp/microsoft-vscode-inproc-mcp-0.1.0.tgz",
+        "@microsoft/vscode-inproc-mcp": "^0.1.0",
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
