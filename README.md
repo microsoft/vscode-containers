@@ -47,6 +47,12 @@ You can rearrange the view panes by dragging them up or down with a mouse and us
 
 ![Customize Container Explorer](resources/readme/container-view-rearrange.gif)
 
+### Copilot tools
+
+The extension includes tools for Copilot to help manage your containers, directly from chat!
+
+![Copilot tools](resources/readme/copilot-tools.gif)
+
 ### Container commands
 
 Many of the most common container commands are built right into the Command Palette:
