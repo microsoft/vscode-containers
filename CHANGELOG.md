@@ -1,3 +1,13 @@
+## 2.3.0 - 10 November 2025
+### Added
+* Copilot tools for container management are now available! Easily interact with containers through chat. [#256](https://github.com/microsoft/vscode-containers/issues/256)
+* Containers and images now have an "Ask Copilot" gesture in their context menus in the Container Explorer view. [#274](https://github.com/microsoft/vscode-containers/issues/274)
+* `Containerfile` (and similar) now supported as a name for Dockerfiles. [#237](https://github.com/microsoft/vscode-containers/issues/237)
+
+### Changed
+* For Windows containers, the base .NET image has been changed to `-nanoserver-ltsc2022` (previously `-nanoserver-1809`). This requires Windows 11. [#211](https://github.com/microsoft/vscode-containers/issues/211)
+* With the finalization of the [authentication challenges API](https://code.visualstudio.com/updates/v1_105#_microsoft-authentication-now-supports-wwwauthenticate-claims-challenges) in VS Code, the minimum VS Code version is now 1.105.0. [#223](https://github.com/microsoft/vscode-containers/issues/223)
+
 ## 2.2.0 - 22 September 2025
 ### Added
 * Added a "Compose Down - Select Services" command. This allows you to take down a subset of services in your compose project. [#82](https://github.com/microsoft/vscode-containers/pull/82)
