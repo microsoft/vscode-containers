@@ -101,6 +101,11 @@ const config = {
             module: /node_modules\/vscode-languageclient\/node_modules\/vscode-languageserver-types\/lib\/umd\/main.js/,
             message: /Critical dependency: require function/
         },
+        {
+            // Ignore a warning from express
+            module: /node_modules\/express\/lib\/view\.js/,
+            message: /Critical dependency: the request of a dependency is an expression/
+        },
         (warning) => false, // No other warnings should be ignored
     ],
 };
