@@ -48,6 +48,10 @@
                     "when": "never"
                 },
                 {
+                    "command": "vscode-containers.askCopilot",
+                    "when": "never"
+                },
+                {
                     "command": "vscode-containers.containers.downloadFile",
                     "when": "never"
                 },
@@ -352,12 +356,17 @@
                 {
                     "command": "vscode-containers.containers.attachShell",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /^runningContainer$/i",
-                    "group": "containers_1_general@2"
+                    "group": "containers_1_general@1.5"
                 },
                 {
                     "command": "vscode-containers.containers.inspect",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i",
                     "group": "containers_1_general@3"
+                },
+                {
+                    "command": "vscode-containers.askCopilot",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i",
+                    "group": "containers_1_general@3.5"
                 },
                 {
                     "command": "vscode-containers.containers.browse",
@@ -367,7 +376,7 @@
                 {
                     "command": "vscode-containers.containers.start",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /^(created|dead|exited|paused|terminated)Container$/i",
-                    "group": "containers_1_general@5"
+                    "group": "containers_2_active@5"
                 },
                 {
                     "command": "vscode-containers.containers.downloadFile",
@@ -382,17 +391,17 @@
                 {
                     "command": "vscode-containers.containers.stop",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /^(paused|restarting|running)Container$/i",
-                    "group": "containers_1_general@6"
+                    "group": "containers_2_active@6"
                 },
                 {
                     "command": "vscode-containers.containers.restart",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /^runningContainer$/i",
-                    "group": "containers_1_general@7"
+                    "group": "containers_2_active@7"
                 },
                 {
                     "command": "vscode-containers.containers.remove",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i",
-                    "group": "containers_2_destructive@1"
+                    "group": "containers_3_destructive@1"
                 },
                 {
                     "command": "vscode-containers.containers.group.remove",
@@ -438,6 +447,11 @@
                     "command": "vscode-containers.images.inspect",
                     "when": "view == vscode-containers.views.images && viewItem == image",
                     "group": "images_2_general@1"
+                },
+                {
+                    "command": "vscode-containers.askCopilot",
+                    "when": "view == vscode-containers.views.images && viewItem == image",
+                    "group": "images_2_general@1.5"
                 },
                 {
                     "command": "vscode-containers.images.pull",
@@ -2846,6 +2860,11 @@
                 "icon": "$(tools)"
             },
             {
+                "command": "vscode-containers.askCopilot",
+                "title": "%vscode-containers.commands.askCopilot%",
+                "category": "%vscode-containers.commands.category.containersGeneric%"
+            },
+            {
                 "command": "vscode-containers.contexts.use",
                 "title": "%vscode-containers.commands.contexts.use%",
                 "category": "%vscode-containers.commands.category.contexts%",
@@ -3139,7 +3158,7 @@
         "@azure/storage-blob": "^12.14.0",
         "@microsoft/compose-language-service": "^0.4.0",
         "@microsoft/vscode-azext-azureappservice": "^4.0.0",
-        "@microsoft/vscode-azext-azureauth": "^5.0.0",
+        "@microsoft/vscode-azext-azureauth": "^5.1.1",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.0",
