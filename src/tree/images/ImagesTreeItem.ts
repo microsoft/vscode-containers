@@ -55,8 +55,8 @@ export class ImagesTreeItem extends LocalRootTreeItemBase<DatedDockerImage, Imag
         defaultProperty: 'Repository',
     };
 
-    public get childTypeLabel(): string {
-        return this.groupBySetting === 'None' ? 'image' : 'image group';
+    public getChildTypeLabel(): string {
+        return this.groupBySetting === 'None' ? l10n.t('image') : l10n.t('image group');
     }
 
     public async getItems(context: IActionContext): Promise<DatedDockerImage[]> {
