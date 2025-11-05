@@ -70,7 +70,7 @@ export class DockerDebugConfigurationProvider implements DebugConfigurationProvi
                     }
                 }
 
-                if (Object.keys(debugConfiguration).length === 0) {
+                if (this.isEmptyDebugConfig(debugConfiguration)) {
 
                     const newlyCreatedDebugConfig = await this.handleEmptyDebugConfig(folder, actionContext);
                     // if there is no debugConfiguration, we should return undefined to exit the debug session
@@ -78,7 +78,10 @@ export class DockerDebugConfigurationProvider implements DebugConfigurationProvi
                         return undefined;
                     }
 
-                    debugConfiguration = newlyCreatedDebugConfig[0];
+                    debugConfiguration = {
+                        ...debugConfiguration,
+                        ...newlyCreatedDebugConfig[0]
+                    };
                 }
 
                 if (!debugConfiguration.request) {
@@ -170,6 +173,17 @@ export class DockerDebugConfigurationProvider implements DebugConfigurationProvi
                 // Best effort
             }
         }
+    }
+
+    private isEmptyDebugConfig(debugConfiguration: DockerDebugConfiguration): boolean {
+        if (Object.keys(debugConfiguration).length === 0) {
+            // F5 with an empty launch.json
+            return true;
+        } else if (Object.keys(debugConfiguration).length === 1 && 'noDebug' in debugConfiguration && typeof debugConfiguration.noDebug === 'boolean') {
+            // Ctrl+F5 with an empty launch.json
+            return true;
+        }
+        return false;
     }
 
     /**
