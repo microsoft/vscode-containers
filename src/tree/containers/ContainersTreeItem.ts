@@ -50,8 +50,8 @@ export class ContainersTreeItem extends LocalRootTreeItemBase<DockerContainerInf
         defaultProperty: 'None',
     };
 
-    public get childTypeLabel(): string {
-        return this.groupBySetting === 'None' ? 'container' : 'container group';
+    public getChildTypeLabel(): string {
+        return this.groupBySetting === 'None' ? l10n.t('container') : l10n.t('container group');
     }
 
     public async getItems(context: IActionContext): Promise<DockerContainerInfo[]> {

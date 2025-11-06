@@ -38,8 +38,8 @@ export class ContextsTreeItem extends LocalRootTreeItemBase<ListContextItem, Con
         defaultProperty: 'None',
     };
 
-    public get childTypeLabel(): string {
-        return this.groupBySetting === 'None' ? 'context' : 'context group';
+    public getChildTypeLabel(): string {
+        return this.groupBySetting === 'None' ? l10n.t('context') : l10n.t('context group');
     }
 
     public async getItems(actionContext: IActionContext): Promise<ListContextItem[]> {

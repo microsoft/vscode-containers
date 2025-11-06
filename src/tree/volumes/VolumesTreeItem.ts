@@ -37,8 +37,8 @@ export class VolumesTreeItem extends LocalRootTreeItemBase<ListVolumeItem, Volum
         defaultProperty: 'None',
     };
 
-    public get childTypeLabel(): string {
-        return this.groupBySetting === 'None' ? 'volume' : 'volume group';
+    public getChildTypeLabel(): string {
+        return this.groupBySetting === 'None' ? l10n.t('volume') : l10n.t('volume group');
     }
 
     public async getItems(context: IActionContext): Promise<ListVolumeItem[]> {

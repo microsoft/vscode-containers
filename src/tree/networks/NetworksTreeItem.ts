@@ -38,8 +38,8 @@ export class NetworksTreeItem extends LocalRootTreeItemBase<ListNetworkItem, Net
         defaultProperty: 'None',
     };
 
-    public get childTypeLabel(): string {
-        return this.groupBySetting === 'None' ? 'network' : 'network group';
+    public getChildTypeLabel(): string {
+        return this.groupBySetting === 'None' ? l10n.t('network') : l10n.t('network group');
     }
 
     public async getItems(context: IActionContext): Promise<ListNetworkItem[]> {
