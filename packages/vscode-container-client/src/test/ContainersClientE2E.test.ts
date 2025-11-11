@@ -916,7 +916,7 @@ describe('(integration) ContainersClientE2E', function () {
             }
 
             await defaultRunner.getCommandRunner()(
-                client.useContext({ context: 'default' })
+                client.useContext({ context: 'desktop-linux' })
             );
         });
 
