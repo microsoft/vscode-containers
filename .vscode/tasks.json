@@ -5,8 +5,14 @@
     "tasks": [
         {
             "label": "Watch: ESBuild",
-            "type": "npm",
-            "script": "build:esbuild -- --watch",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "build:esbuild",
+                "--",
+                "--watch"
+            ],
             "problemMatcher": "$esbuild-watch",
             "presentation": {
                 "reveal": "silent",
@@ -18,8 +24,14 @@
         },
         {
             "label": "Watch: Check Types",
-            "type": "npm",
-            "script": "build:check -- --watch",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "build:check",
+                "--",
+                "--watch"
+            ],
             "problemMatcher": "$tsc-watch",
             "presentation": {
                 "revealProblems": "onProblem",
