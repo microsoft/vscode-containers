@@ -46,3 +46,6 @@ export const ociClientId = 'tools/microsoft/vscode/docker';
 
 export const McpServerId = 'vscode-containers.mcp';
 export const McpServerLabel = vscode.l10n.t('Copilot Container Tools');
+
+// eslint-disable-next-line no-template-curly-in-string
+export const WorkspaceFolderPlaceholder = '${workspaceFolder}';
