@@ -218,7 +218,6 @@ export async function recursiveFindTaskByType(allTasks: TaskDefinitionBase[], ty
         return undefined;
     }
 
-    // tslint:disable: no-unsafe-any
     if (node.preLaunchTask) { // node is a debug configuration
         const next = await findTaskByLabel(allTasks, node.preLaunchTask);
         return await recursiveFindTaskByType(allTasks, type, next);
@@ -242,7 +241,6 @@ export async function recursiveFindTaskByType(allTasks: TaskDefinitionBase[], ty
             return await recursiveFindTaskByType(allTasks, type, next);
         }
     }
-    // tslint:enable: no-unsafe-any
 
     return undefined;
 }

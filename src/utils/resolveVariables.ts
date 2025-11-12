@@ -22,7 +22,6 @@ export function resolveVariables<T>(target: T, folder?: WorkspaceFolder, additio
     } else if (typeof (target) === 'number') {
         return target;
     } else if (Array.isArray(target)) {
-        // tslint:disable-next-line: no-unsafe-any
         return target.map(value => resolveVariables(value, folder, additionalVariables)) as unknown as T;
     } else {
         const result = cloneObject(target);

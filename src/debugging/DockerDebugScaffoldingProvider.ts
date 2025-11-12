@@ -75,17 +75,14 @@ export class DockerDebugScaffoldingProvider implements IDockerDebugScaffoldingPr
         const debugConfigurations = await provideDebugConfigurations();
 
         for (const buildTask of buildTasks) {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             overwrite = await DockerDebugScaffoldingProvider.addObjectWithOverwritePrompt((_overwrite?: boolean) => addTask(buildTask, context.folder, _overwrite), overwrite);
         }
 
         for (const runTask of runTasks) {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             overwrite = await DockerDebugScaffoldingProvider.addObjectWithOverwritePrompt((_overwrite?: boolean) => addTask(runTask, context.folder, _overwrite), overwrite);
         }
 
         for (const debugConfiguration of debugConfigurations) {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             overwrite = await DockerDebugScaffoldingProvider.addObjectWithOverwritePrompt((_overwrite?: boolean) => addDebugConfiguration(debugConfiguration, context.folder, _overwrite), overwrite);
         }
     }
