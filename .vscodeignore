@@ -24,7 +24,9 @@ testOutput/**
 tsconfig.json
 typings/**
 webpack.config*
+esbuild.mjs
 .eslintignore
 eslint.config.mjs
+.vscode-test.mjs
 .nvmrc
 component-detection-pip-report.json
