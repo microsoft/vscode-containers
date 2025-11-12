@@ -30,18 +30,5 @@
             },
             "isBackground": true,
         },
-        // {
-        //     "label": "Watch: Webpack",
-        //     "type": "npm",
-        //     "script": "build:webpack -- --watch",
-        //     "problemMatcher": "$ts-webpack-watch",
-        //     "presentation": {
-        //         "revealProblems": "onProblem",
-        //     },
-        //     "group": {
-        //         "kind": "build",
-        //     },
-        //     "isBackground": true,
-        // },
     ],
 }
