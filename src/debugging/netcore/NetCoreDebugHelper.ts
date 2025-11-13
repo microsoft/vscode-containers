@@ -9,6 +9,7 @@ import { CommandLineArgs, composeArgs, withArg, withQuotedArg } from '@microsoft
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { DebugConfiguration, MessageItem, ProgressLocation, l10n, window } from 'vscode';
+import { WorkspaceFolderPlaceholder } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { NetCoreTaskHelper, NetCoreTaskOptions } from '../../tasks/netcore/NetCoreTaskHelper';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
@@ -125,8 +126,8 @@ export class NetCoreDebugHelper implements DebugHelper {
             },
             pipeTransport: {
                 pipeProgram: await ext.runtimeManager.getCommand(),
-                pipeArgs: ['exec', '-i', containerName, '${debuggerCommand}'],
-                pipeCwd: '${workspaceFolder}',
+                pipeArgs: ['exec', '-i', containerName, '${debuggerCommand}'], // eslint-disable-line no-template-curly-in-string
+                pipeCwd: WorkspaceFolderPlaceholder,
                 debuggerPath: platformOS === 'Windows' ?
                     'C:\\remote_debugger\\win7-x64\\latest\\vsdbg' :
                     '/remote_debugger/vsdbg',
@@ -169,12 +170,12 @@ export class NetCoreDebugHelper implements DebugHelper {
             pipeTransport: {
                 pipeProgram: await ext.runtimeManager.getCommand(),
                 pipeArgs: ['exec', '-i', containerName],
-                pipeCwd: '${workspaceFolder}',
+                pipeCwd: WorkspaceFolderPlaceholder,
                 debuggerPath: debuggerPath,
                 quoteArgs: false,
             },
             sourceFileMap: debugConfiguration.sourceFileMap || {
-                '/src': '${workspaceFolder}'
+                '/src': WorkspaceFolderPlaceholder
             }
         };
     }

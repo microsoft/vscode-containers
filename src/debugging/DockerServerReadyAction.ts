@@ -12,12 +12,13 @@ import * as readline from 'readline';
 import * as stream from 'stream';
 import * as util from 'util';
 import * as vscode from 'vscode';
+import { WorkspaceFolderPlaceholder } from '../constants';
 import { ext } from '../extensionVariables';
 import { ResolvedDebugConfiguration } from './DebugHelper';
 
 const PATTERN = 'listening on.* (https?://\\S+|[0-9]+)'; // matches "listening on port 3000" or "Now listening on: https://localhost:5001"
 const URI_FORMAT = 'http://localhost:%s';
-const WEB_ROOT = '${workspaceFolder}';
+const WEB_ROOT = WorkspaceFolderPlaceholder;
 
 class ServerReadyDetector implements DockerServerReadyDetector {
     private hasFired: boolean = false;

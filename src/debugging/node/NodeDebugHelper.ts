@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from 'path';
+import { WorkspaceFolderPlaceholder } from '../../constants';
 import { NodeTaskHelper } from '../../tasks/node/NodeTaskHelper';
 import { inferPackageName, readPackage } from '../../utils/nodeUtils';
 import { unresolveWorkspaceFolder } from '../../utils/resolveVariables';
@@ -93,7 +94,7 @@ export class NodeDebugHelper implements DebugHelper {
         };
 
         if (resolvedConfiguration.localRoot === undefined) {
-            resolvedConfiguration.localRoot = '${workspaceFolder}';
+            resolvedConfiguration.localRoot = WorkspaceFolderPlaceholder;
         }
 
         if (resolvedConfiguration.port === undefined) {

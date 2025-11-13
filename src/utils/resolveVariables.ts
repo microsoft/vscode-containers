@@ -6,6 +6,7 @@
 import * as os from 'os';
 import * as path from 'path';
 import { WorkspaceFolder, window, workspace } from 'vscode';
+import { WorkspaceFolderPlaceholder } from '../constants';
 import { cloneObject } from '../utils/cloneObject';
 
 const variableMatcher: RegExp = /\$\{[a-z.\-_:]+\}/ig;
@@ -37,7 +38,8 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
     // Replace workspace folder variables
     if (folder) {
         switch (variable) {
-            case '${workspaceFolder}':
+            /* eslint-disable no-template-curly-in-string */
+            case WorkspaceFolderPlaceholder:
             case '${workspaceRoot}':
                 return path.normalize(folder.uri.fsPath);
             case '${userHome}':
@@ -45,6 +47,7 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
             case '${relativeFile}':
                 return path.relative(path.normalize(folder.uri.fsPath), getActiveFilePath());
             default:
+            /* eslint-enable no-template-curly-in-string */
         }
     }
 
@@ -83,6 +86,7 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
 
     // Replace other variables
     switch (variable) {
+        // eslint-disable-next-line no-template-curly-in-string
         case '${file}':
             return getActiveFilePath();
         default:
@@ -104,7 +108,7 @@ function getActiveFilePath(): string | undefined {
  * @param folder The workspace folder
  */
 export function unresolveWorkspaceFolder(filePath: string, folder: WorkspaceFolder): string {
-    let replacedPath = filePath.replace(folder.uri.fsPath, '${workspaceFolder}');
+    let replacedPath = filePath.replace(folder.uri.fsPath, WorkspaceFolderPlaceholder);
 
     // By convention, VSCode uses forward slash for files in tasks/launch
     replacedPath = replacedPath.replace(/\\/g, '/');
