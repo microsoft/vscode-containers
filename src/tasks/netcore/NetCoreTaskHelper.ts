@@ -9,6 +9,7 @@ import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import { WorkspaceFolder, l10n } from 'vscode';
+import { WorkspaceFolderPlaceholder } from '../../constants';
 import { getContainerSecretsFolders, getHostSecretsFolders } from '../../debugging/netcore/AspNetSslHelper';
 import { NetCoreDebugOptions } from '../../debugging/netcore/NetCoreDebugHelper';
 import { vsDbgInstallBasePath } from '../../debugging/netcore/VsDbgHelper';
@@ -58,7 +59,7 @@ export class NetCoreTaskHelper implements TaskHelper {
                     tag: getDefaultImageName(context.folder.name, 'dev'),
                     target: 'base',
                     dockerfile: unresolveWorkspaceFolder(context.dockerfile, context.folder),
-                    context: '${workspaceFolder}',
+                    context: WorkspaceFolderPlaceholder,
                     pull: true
                 },
                 netCore: {
@@ -72,7 +73,7 @@ export class NetCoreTaskHelper implements TaskHelper {
                 dockerBuild: {
                     tag: getDefaultImageName(context.folder.name, 'latest'), // The 'latest' here is redundant but added to differentiate from above's 'dev'
                     dockerfile: unresolveWorkspaceFolder(context.dockerfile, context.folder),
-                    context: '${workspaceFolder}',
+                    context: WorkspaceFolderPlaceholder,
                     platform: {
                         os: normalizeContainerOS(options?.platformOS),
                         architecture: 'amd64'
@@ -125,8 +126,8 @@ export class NetCoreTaskHelper implements TaskHelper {
     public async getDockerBuildOptions(context: DockerBuildTaskContext, buildDefinition: NetCoreBuildTaskDefinition): Promise<DockerBuildOptions> {
         const buildOptions = buildDefinition.dockerBuild;
 
-        buildOptions.context = buildOptions.context || '${workspaceFolder}';
-        buildOptions.dockerfile = buildOptions.dockerfile || path.join('${workspaceFolder}', 'Dockerfile');
+        buildOptions.context = buildOptions.context || WorkspaceFolderPlaceholder;
+        buildOptions.dockerfile = buildOptions.dockerfile || path.join(WorkspaceFolderPlaceholder, 'Dockerfile');
         buildOptions.tag = buildOptions.tag || getDefaultImageName(context.folder.name);
 
         return buildOptions;

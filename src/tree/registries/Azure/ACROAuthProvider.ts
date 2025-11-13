@@ -87,7 +87,6 @@ export class ACROAuthProvider implements AuthenticationProvider {
         const response = await httpRequest<{ refresh_token: string }>(requestUrl.toString(), {
             method: 'POST',
             headers: {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 'content-type': 'application/x-www-form-urlencoded'
             },
             body: requestBody,

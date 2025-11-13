@@ -143,7 +143,6 @@ async function uploadSourceCode(client: ContainerRegistryManagementClient, regis
     const source: string = rootFolder.fsPath;
     let items = await fse.readdir(source);
     items = items.filter(i => !(i in vcsIgnoreList));
-    // tslint:disable-next-line:no-unsafe-any
     tar.c({ cwd: source }, items).pipe(fse.createWriteStream(tarFilePath));
 
     ext.outputChannel.info(vscode.l10n.t('   Getting build source upload URL'));

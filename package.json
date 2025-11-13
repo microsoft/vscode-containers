@@ -3137,15 +3137,12 @@
         }
     },
     "scripts": {
-        "watch": "webpack --watch",
-        "build": "webpack --mode production --devtool hidden-source-map",
-        "ci-build": "npm test",
+        "build": "npm run build:esbuild & npm run build:check",
+        "build:esbuild": "node esbuild.mjs",
+        "build:check": "tsc --noEmit",
         "package": "vsce package",
-        "ci-package": "npm test && vsce package",
-        "lint": "eslint --max-warnings 0 src --ext ts",
-        "test": "node ./out/test/runTest.js",
-        "pretest": "tsc -p ./",
-        "test-watch": "tsc -watch -p ./"
+        "lint": "eslint --max-warnings 0",
+        "test": "vscode-test"
     },
     "extensionDependencies": [
         "vscode.docker",
@@ -3153,26 +3150,12 @@
     ],
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.1",
         "@types/fs-extra": "^11.0.1",
-        "@types/mocha": "^10.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
         "@types/vscode": "1.105.0",
-        "@types/xml2js": "^0.4.11",
-        "@typescript-eslint/eslint-plugin": "^8.26.1",
-        "@typescript-eslint/parser": "^8.26.1",
-        "@vscode/test-electron": "^2.3.9",
-        "@vscode/vsce": "^3.1.0",
-        "chai": "^5.2.0",
-        "copy-webpack-plugin": "^13.0.0",
-        "eslint": "^9.22.0",
-        "glob": "^11.0.1",
-        "mocha": "^11.1.0",
-        "ts-loader": "^9.4.2",
-        "typescript": "^5.0.4",
-        "webpack": "^5.94.0",
-        "webpack-bundle-analyzer": "^4.8.0",
-        "webpack-cli": "^6.0.1"
+        "@types/xml2js": "^0.4.11"
     },
     "dependencies": {
         "@azure/arm-authorization": "^9.0.0",

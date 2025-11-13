@@ -7,7 +7,7 @@ import { IActionContext, registerEvent } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { ext } from '../extensionVariables';
 
-type docHandler = (context: IActionContext, doc: vscode.TextDocument) => void;
+type DocHandler = (context: IActionContext, doc: vscode.TextDocument) => void;
 
 export function registerFileListeners(): void {
     if (vscode.env.isTelemetryEnabled) {
@@ -29,7 +29,7 @@ export function registerFileListeners(): void {
     registerEvent('composefileopen', vscode.workspace.onDidOpenTextDocument, handleDocEvent('dockercompose'));
 }
 
-function handleDocEvent(languageId: string, additionalHandler?: docHandler): docHandler {
+function handleDocEvent(languageId: string, additionalHandler?: DocHandler): DocHandler {
     return (context: IActionContext, doc: vscode.TextDocument) => {
         // If it is not the document of type we expect, skip
         if (doc.languageId !== languageId || doc.uri.scheme !== 'file') {

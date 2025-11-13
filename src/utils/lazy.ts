@@ -7,7 +7,6 @@ export class Lazy<T> {
     private _isValueCreated: boolean = false;
     private _value: T | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public constructor(private readonly valueFactory: () => T, private _valueLifetime?: number) {
     }
 
@@ -51,7 +50,6 @@ export class AsyncLazy<T> {
     private _value: T | undefined;
     private _valuePromise: Promise<T> | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public constructor(private readonly valueFactory: () => Promise<T>, private _valueLifetime?: number) {
     }
 

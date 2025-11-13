@@ -11,7 +11,7 @@ suite('(unit) Lazy tests', () => {
     suite('Lazy<T>', () => {
         test('Normal', async () => {
             let factoryCallCount = 0;
-            const lazy: Lazy<boolean> = new Lazy(() => {
+            const lazy = new Lazy<boolean>(() => {
                 factoryCallCount++;
                 return true;
             });
@@ -24,7 +24,7 @@ suite('(unit) Lazy tests', () => {
 
         test('With lifetime', async () => {
             let factoryCallCount = 0;
-            const lazy: Lazy<boolean> = new Lazy(() => {
+            const lazy = new Lazy<boolean>(() => {
                 factoryCallCount++;
                 return true;
             }, 5);
@@ -43,7 +43,7 @@ suite('(unit) Lazy tests', () => {
 
         test('clear lifetime', async () => {
             let factoryCallCount = 0;
-            const lazy: Lazy<boolean> = new Lazy(() => {
+            const lazy = new Lazy<boolean>(() => {
                 factoryCallCount++;
                 return true;
             }, 5);
@@ -66,7 +66,7 @@ suite('(unit) Lazy tests', () => {
     suite('AsyncLazy<T>', () => {
         test('Normal', async () => {
             let factoryCallCount = 0;
-            const lazy: AsyncLazy<boolean> = new AsyncLazy(async () => {
+            const lazy = new AsyncLazy<boolean>(async () => {
                 factoryCallCount++;
                 await delay(5);
                 return true;
@@ -80,7 +80,7 @@ suite('(unit) Lazy tests', () => {
 
         test('Simultaneous callers', async () => {
             let factoryCallCount = 0;
-            const lazy: AsyncLazy<boolean> = new AsyncLazy(async () => {
+            const lazy = new AsyncLazy<boolean>(async () => {
                 factoryCallCount++;
                 await delay(5);
                 return true;
@@ -95,7 +95,7 @@ suite('(unit) Lazy tests', () => {
 
         test('With lifetime', async () => {
             let factoryCallCount = 0;
-            const lazy: AsyncLazy<boolean> = new AsyncLazy(async () => {
+            const lazy = new AsyncLazy<boolean>(async () => {
                 factoryCallCount++;
                 await delay(5);
                 return true;
@@ -115,7 +115,7 @@ suite('(unit) Lazy tests', () => {
 
         test('Simultaneous callers with lifetime', async () => {
             let factoryCallCount = 0;
-            const lazy: AsyncLazy<boolean> = new AsyncLazy(async () => {
+            const lazy = new AsyncLazy<boolean>(async () => {
                 factoryCallCount++;
                 await delay(5);
                 return true;
@@ -137,7 +137,7 @@ suite('(unit) Lazy tests', () => {
 
         test('Simultaneous callers with clear lifetime', async () => {
             let factoryCallCount = 0;
-            const lazy: AsyncLazy<boolean> = new AsyncLazy(async () => {
+            const lazy = new AsyncLazy<boolean>(async () => {
                 factoryCallCount++;
                 await delay(5);
                 return true;

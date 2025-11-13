@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from 'path';
+import { WorkspaceFolderPlaceholder } from '../../constants';
 import { PythonScaffoldingOptions } from '../../debugging/DockerDebugScaffoldingProvider';
 import { inferPythonArgs } from '../../utils/pythonUtils';
 import { unresolveWorkspaceFolder } from "../../utils/resolveVariables";
@@ -36,7 +37,7 @@ export class PythonTaskHelper implements TaskHelper {
                 dockerBuild: {
                     tag: getDefaultImageName(context.folder.name),
                     dockerfile: unresolveWorkspaceFolder(context.dockerfile, context.folder),
-                    context: '${workspaceFolder}',
+                    context: WorkspaceFolderPlaceholder,
                     pull: true
                 },
             }
@@ -91,8 +92,8 @@ export class PythonTaskHelper implements TaskHelper {
     public async getDockerBuildOptions(context: DockerBuildTaskContext, buildDefinition: DockerBuildTaskDefinition): Promise<DockerBuildOptions> {
         const buildOptions = buildDefinition.dockerBuild;
 
-        buildOptions.context = buildOptions.context || '${workspaceFolder}';
-        buildOptions.dockerfile = buildOptions.dockerfile || '${workspaceFolder}/Dockerfile';
+        buildOptions.context = buildOptions.context || WorkspaceFolderPlaceholder;
+        buildOptions.dockerfile = buildOptions.dockerfile || `${WorkspaceFolderPlaceholder}/Dockerfile`;
 
         buildOptions.tag = buildOptions.tag || getDefaultImageName(context.folder.name);
 
