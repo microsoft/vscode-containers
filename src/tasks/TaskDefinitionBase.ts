@@ -21,7 +21,6 @@ export interface TaskDefinitionBase extends TaskDefinition {
 export type DockerLabels = { includeDefaults?: boolean; } & { [key: string]: string; };
 
 export const defaultVsCodeLabels: { [key: string]: string } = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     'com.microsoft.created-by': 'visual-studio-code'
 };
 

@@ -118,7 +118,6 @@ async function doFetchHttpsJson<T>(url: string): Promise<T> {
     const options = {
         headers: {
             Accept: 'application/json',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             'X-Meta-Source-Client': ociClientId,
         }
     };

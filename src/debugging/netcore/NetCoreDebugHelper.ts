@@ -133,7 +133,6 @@ export class NetCoreDebugHelper implements DebugHelper {
                 quoteArgs: false,
             },
             sourceFileMap: debugConfiguration.sourceFileMap || {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 '/app/Views': path.join(path.dirname(debugConfiguration.netCore.appProject), 'Views'),
             }
         };
@@ -175,7 +174,6 @@ export class NetCoreDebugHelper implements DebugHelper {
                 quoteArgs: false,
             },
             sourceFileMap: debugConfiguration.sourceFileMap || {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 '/src': '${workspaceFolder}'
             }
         };
