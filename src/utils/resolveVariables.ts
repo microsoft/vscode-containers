@@ -9,9 +9,10 @@ import { WorkspaceFolder, window, workspace } from 'vscode';
 import { WorkspaceFolderPlaceholder } from '../constants';
 import { cloneObject } from '../utils/cloneObject';
 
-const variableMatcher: RegExp = /\$\{[a-z.\-_:]+\}/ig;
-const configVariableMatcher: RegExp = /\$\{config:([a-z.\-_]+)\}/i;
+const variableMatcher: RegExp = /\$\{[a-z0-9.\-_:]+\}/ig;
+const configVariableMatcher: RegExp = /\$\{config:([a-z0-9.\-_]+)\}/i;
 const envVariableMatcher: RegExp = /\$\{env:([\w\d]+)\}/i;
+const scopedWorkspaceFolderMatcher: RegExp = /^\$\{workspace(?:Folder|Root):([^}]+)\}$/i;
 
 export function resolveVariables<T>(target: T, folder?: WorkspaceFolder, additionalVariables?: { [key: string]: string }): T {
     if (!target) {
@@ -48,6 +49,17 @@ function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, addit
                 return path.relative(path.normalize(folder.uri.fsPath), getActiveFilePath());
             default:
             /* eslint-enable no-template-curly-in-string */
+        }
+    }
+
+    // Replace multi-workspace folders, e.g. ${workspaceFolder:foo}
+    const scopedWorkspaceFolderMatch = scopedWorkspaceFolderMatcher.exec(variable);
+    if (scopedWorkspaceFolderMatch && scopedWorkspaceFolderMatch.length > 1) {
+        const folderName = scopedWorkspaceFolderMatch[1].trim(); // Index 1 is the "foo" group of "${workspaceFolder:foo}"
+        const targetFolder = workspace.workspaceFolders?.find(f => f.name === folderName);
+
+        if (targetFolder) {
+            return path.normalize(targetFolder.uri.fsPath);
         }
     }
 
