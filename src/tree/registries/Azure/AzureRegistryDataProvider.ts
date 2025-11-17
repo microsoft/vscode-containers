@@ -235,17 +235,19 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
 
             const {
                 totalAccounts,
-                totalTenants,
-                maybeTotalSubscriptions,
+                visibleTenants,
+                visibleSubscriptions,
                 subscriptionIdList,
+                subscriptionIdListIsIncomplete,
             } = await getMetricsForTelemetry(this.subscriptionProvider);
 
             // These counts really belong in Measurements but for backwards compatibility
             // they will be put into Properties instead.
             context.telemetry.properties.numaccounts = totalAccounts.toString();
-            context.telemetry.properties.numtenants = totalTenants.toString();
-            context.telemetry.properties.numsubscriptions = maybeTotalSubscriptions.toString();
+            context.telemetry.properties.numtenants = visibleTenants.toString();
+            context.telemetry.properties.numsubscriptions = visibleSubscriptions.toString();
             context.telemetry.properties.subscriptions = subscriptionIdList;
+            context.telemetry.properties.subscriptionidlistisincomplete = subscriptionIdListIsIncomplete.toString();
         });
     }
 }
