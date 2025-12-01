@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-inproc-mcp",
     "author": "Microsoft Corporation",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Library support for building MCP servers, primarily for use in VS Code.",
     "license": "See LICENSE in the project root for license information.",
     "repository": {
@@ -43,11 +43,12 @@
     "dependencies": {
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-processutils": "^0.2.1",
-        "@modelcontextprotocol/sdk": "^1.20.1",
+        "@modelcontextprotocol/sdk": "^1.23.0",
         "express": "~5",
-        "zod": "~3"
+        "zod": "~4"
     },
     "devDependencies": {
+        "@cfworker/json-schema": "~4",
         "@types/express": "^5.0.3"
     },
     "mocha": {

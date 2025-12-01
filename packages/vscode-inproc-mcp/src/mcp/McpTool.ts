@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationTokenLike } from '@microsoft/vscode-processutils';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { CopilotToolBase } from '../base/CopilotToolBase';
 import type { ToolExecutionExtras, ToolIOSchema } from '../contracts/CopilotTool';
 import { getErrorMessage } from '../utils/getErrorMessage';
 import type { McpToolResult } from './McpToolResult';
+import { isVoidishSchema } from './schema/schemaTypeChecks';
 
 /**
  * Message returned to the MCP client if a tool is successful but produces no output
@@ -51,7 +52,7 @@ export class McpTool<TInSchema extends ToolIOSchema, TOutSchema extends ToolIOSc
 
             const result = await this.execute(input, extra);
 
-            if (!!this.outputSchema && !(this.outputSchema instanceof z.ZodVoid)) {
+            if (!isVoidishSchema(this.outputSchema)) {
                 // If there is an output schema, assume we want to return structured content to the MCP client
                 // The base class will have already validated that the output matches the schema
                 return {

@@ -6,4 +6,4 @@
 export * from './McpTool';
 export * from './McpToolResult';
 export * from './registerMcpTool';
-export * from './UnspecifiedOutputSchema';
+export * from './schema/UnspecifiedOutputSchema';

@@ -1,3 +1,7 @@
+## 0.5.2 - 1 December 2025
+### Changed
+* Updated to use `zod` v4. [#319](https://github.com/microsoft/vscode-docker-extensibility/pull/319)
+
 ## 0.5.1 - 23 October 2025
 ### Fixed
 * Fixed an issue with dates not always being parsed correctly. [#312](https://github.com/microsoft/vscode-docker-extensibility/issues/312)

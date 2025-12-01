@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { z } from 'zod';
+import type { z } from 'zod/v4';
 import type { ToolExecutionExtras, ToolIOSchema } from '../contracts/CopilotTool';
 import { McpTool } from '../mcp/McpTool';
 import type { McpToolResult } from '../mcp/McpToolResult';

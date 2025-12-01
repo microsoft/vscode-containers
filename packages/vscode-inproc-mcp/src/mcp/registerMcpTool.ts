@@ -5,9 +5,10 @@
 
 import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import { z } from 'zod';
+import type { z } from 'zod/v4';
 import type { CopilotTool, ToolIOSchema } from '../contracts/CopilotTool';
 import { McpTool } from './McpTool';
+import { isEmptyObjectSchema, isVoidishSchema } from './schema/schemaTypeChecks';
 
 /**
  * Registers a tool with the MCP server
@@ -57,28 +58,19 @@ export function registerMcpTool<TInSchema extends ToolIOSchema, TOutSchema exten
         mcpTool.name,
         {
             ...mcpTool,
-            // Regrettably, the MCP SDK calls for the *shape* of the schema, not the schema itself
-            inputSchema: normalizedInputSchema?.shape,
-            outputSchema: normalizedOutputSchema?.shape,
+            inputSchema: normalizedInputSchema,
+            outputSchema: normalizedOutputSchema,
         },
         async (input, extra) => {
             // If the input is void, MCP SDK will call with (extra) instead of (undefined, extra)
             // We won't want that, so detect that case and call appropriately
             if (inputIsRequestHandlerExtra(input)) {
-                return mcpTool.executeMcp.call(mcpTool, undefined, input);
+                return mcpTool.executeMcp.call(mcpTool, undefined as z.infer<TInSchema>, input);
             } else {
-                return mcpTool.executeMcp.call(mcpTool, input, extra);
+                return mcpTool.executeMcp.call(mcpTool, input as z.infer<TInSchema>, extra);
             }
         }
     );
-}
-
-function isVoidishSchema(schema: ToolIOSchema | undefined): schema is undefined | z.ZodVoid {
-    return schema === undefined || schema instanceof z.ZodVoid;
-}
-
-function isEmptyObjectSchema(schema: ToolIOSchema): boolean {
-    return schema instanceof z.ZodObject && Object.keys(schema.shape).length === 0;
 }
 
 function inputIsRequestHandlerExtra(input: unknown): input is RequestHandlerExtra<never, never> {
