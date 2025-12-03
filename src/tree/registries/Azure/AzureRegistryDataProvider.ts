@@ -61,20 +61,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
 
     public override async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
         if (isRegistryRoot(element)) {
-            //const msftAccount = (await this.subscriptionProvider.getAccounts()).find(a => a.label.toLowerCase().includes('microsoft.com'));
-            // TODO
-            const result = await this.subscriptionProvider.signIn(undefined, { promptIfNeeded: true });
-            ext.outputChannel.appendLine(`Sign-in for Microsoft account: ${result ? 'succeeded' : 'failed'}`);
-
-            // for (const account of await this.subscriptionProvider.getAccounts()) {
-            //     const accountSignInResult = await this.subscriptionProvider.signIn({ account: account, tenantId: undefined! }, { promptIfNeeded: false });
-            //     ext.outputChannel.appendLine(`Auto sign-in for account ${account.label}: ${accountSignInResult ? 'succeeded' : 'failed'}`);
-            //     for (const tenant of await this.subscriptionProvider.getTenantsForAccount(account)) {
-            //         const tenantSignInResult = await this.subscriptionProvider.signIn(tenant, { promptIfNeeded: false });
-            //         ext.outputChannel.appendLine(`Auto sign-in for account ${account.label} in tenant ${tenant.displayName}: ${tenantSignInResult ? 'succeeded' : 'failed'}`);
-            //     }
-            // }
-
+            await this.subscriptionProvider.signIn(undefined, { promptIfNeeded: true }); // TODO: try/catch instead of always signing in?
             const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions();
             this.sendSubscriptionTelemetryIfNeeded();
 
