@@ -3151,12 +3151,17 @@
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
         "@cfworker/json-schema": "^4.1.1",
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.1",
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.4",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
         "@types/vscode": "1.105.0",
-        "@types/xml2js": "^0.4.11"
+        "@types/xml2js": "^0.4.11",
+        "@vscode/test-cli": "*",
+        "@vscode/test-electron": "*",
+        "@vscode/vsce": "*",
+        "esbuild": "*",
+        "esbuild-plugin-copy": "*"
     },
     "dependencies": {
         "@azure/arm-authorization": "^9.0.0",
