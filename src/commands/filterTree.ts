@@ -13,7 +13,7 @@ interface TreeFilterState {
     isActive: boolean;
 }
 
-const treeFilters: Map<TreePrefix, TreeFilterState> = new Map();
+const treeFilters = new Map<TreePrefix, TreeFilterState>();
 
 // Only support filtering for containers and images
 const contextKeys: Partial<Record<TreePrefix, string>> = {
