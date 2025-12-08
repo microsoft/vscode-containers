@@ -25,7 +25,7 @@ export function getTreeFilter(treePrefix: TreePrefix): TreeFilterState {
   return treeFilters.get(treePrefix) || { filterText: "", isActive: false };
 }
 
-export function setTreeFilter(
+function setTreeFilter(
   treePrefix: TreePrefix,
   filterText: string
 ): void {
@@ -36,7 +36,7 @@ export function setTreeFilter(
   setFilterContextValue(treePrefix, filterText.length > 0);
 }
 
-export function clearTreeFilter(treePrefix: TreePrefix): void {
+function clearTreeFilter(treePrefix: TreePrefix): void {
   treeFilters.set(treePrefix, { filterText: "", isActive: false });
   setFilterContextValue(treePrefix, false);
 }
@@ -97,14 +97,14 @@ export function shouldShowItem(
 /**
  * Command to filter a tree view
  */
-export async function filterTreeView(
+async function filterTreeView(
   context: IActionContext,
   treePrefix: TreePrefix
 ): Promise<void> {
   const currentFilter = getTreeFilter(treePrefix);
 
   const quickPick = vscode.window.createQuickPick();
-  quickPick.placeholder = `Filter ${treePrefix}... (Press Enter to apply, Esc to cancel)`;
+  quickPick.placeholder = vscode.l10n.t("Filter {0}... (Press Enter to apply, Esc to cancel)", treePrefix);
   quickPick.value = currentFilter.filterText;
   quickPick.title = `Filter ${capitalize(treePrefix)}`;
 
@@ -148,7 +148,7 @@ export async function filterTreeView(
 /**
  * Update the tree view title to show filter status
  */
-export function updateTreeViewTitle(treePrefix: TreePrefix): void {
+function updateTreeViewTitle(treePrefix: TreePrefix): void {
   const filter = getTreeFilter(treePrefix);
   const treeView = getTreeViewForPrefix(treePrefix);
 
