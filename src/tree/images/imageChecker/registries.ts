@@ -29,7 +29,6 @@ export const registries: ImageRegistry[] = [
                 try {
                     const options: RequestOptionsLike = {
                         headers: {
-                            // eslint-disable-next-line @typescript-eslint/naming-convention
                             'X-Meta-Source-Client': ociClientId,
                         },
                     };
@@ -47,7 +46,6 @@ export const registries: ImageRegistry[] = [
             const authRequestOptions: RequestOptionsLike = {
                 method: 'GET',
                 headers: {
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     'X-Meta-Source-Client': ociClientId,
                     service: dockerHubAuthContext.service,
                     scope: scope,

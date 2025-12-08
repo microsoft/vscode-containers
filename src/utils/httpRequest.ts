@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fse from 'fs-extra';
+import * as stream from 'stream';
 import { URL, URLSearchParams } from 'url';
 import { l10n } from 'vscode';
 
@@ -55,9 +56,9 @@ export class HttpResponse<T> implements ResponseLike {
             get: (key: string) => {
                 if (!this.normalizedHeaders) {
                     this.normalizedHeaders = {};
-                    for (const key of this.innerResponse.headers.keys()) {
-                        this.normalizedHeaders[key] = this.innerResponse.headers.get(key);
-                    }
+                    this.innerResponse.headers.forEach((value, key) => {
+                        this.normalizedHeaders[key] = value;
+                    });
                 }
 
                 return this.normalizedHeaders[key];
@@ -138,11 +139,7 @@ export async function streamToFile(downloadUrl: string, fileName: string): Promi
         }
 
         const writeStream = fse.createWriteStream(fileName);
-
-        for await (const chunk of response.body) {
-            writeStream.write(chunk);
-        }
-
+        await response.body.pipeTo(stream.Writable.toWeb(writeStream));
         writeStream.close();
     } catch (error) {
         // Sometimes the error has a cause field, sometimes a message, sometimes maybe neither

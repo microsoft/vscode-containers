@@ -55,8 +55,7 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
     public abstract getItems(context: IActionContext): Promise<TItem[] | undefined>;
     public abstract getPropertyValue(item: TItem, property: TProperty): string;
 
-    // Redefining this as an abstract allows inheriting classes to either do an accessor or a property
-    public readonly abstract childTypeLabel: string;
+    public abstract getChildTypeLabel(): string;
 
     public static autoRefreshViews: boolean = true;
 
@@ -69,6 +68,12 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
     private _currentItems: TItem[] | undefined;
     private _cachedItems: TItem[] | undefined;
     private _currentDockerStatus: DockerStatus;
+
+    public constructor(parent: AzExtParentTreeItem | undefined) {
+        super(parent);
+        // `childTypeLabel` is a field in the base class, but we need to redefine it to make it an accessor
+        Object.defineProperty(this, 'childTypeLabel', { get: () => this.getChildTypeLabel() });
+    }
 
     public get contextValue(): string {
         return this.treePrefix;

@@ -10,32 +10,29 @@
             "type": "extensionHost",
             "request": "launch",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
+                "--extensionDevelopmentPath=${workspaceFolder}",
             ],
             "env": {
-                "DEBUGTELEMETRY": "1"
+                "DEBUGTELEMETRY": "1",
             },
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
+                "${workspaceFolder}/dist/**/*.{js,mjs,cjs}",
             ],
-            "preLaunchTask": "${defaultBuildTask}"
+            "preLaunchTask": "Watch: ESBuild",
         },
         {
-            // TODO: Running this requires running the webpack build manually first (background tasks can't be used as dependsOn at this time, https://github.com/microsoft/vscode/issues/70283)
-            "name": "Extension Tests",
+            "name": "Run Tests",
             "type": "extensionHost",
             "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}",
-                "--extensionTestsPath=${workspaceFolder}/out/test/index"
-            ],
+            "testConfiguration": "${workspaceFolder}/.vscode-test.mjs",
             "env": {
-                "DEBUGTELEMETRY": "1"
+                "DEBUGTELEMETRY": "1",
             },
             "outFiles": [
-                "${workspaceFolder}/out/test/**/*.js"
+                "${workspaceFolder}/dist/**/*.{js,mjs,cjs}",
+                "${workspaceFolder}/src/test/**/*.{ts,mts,cts}", // We are using TSX so out files *are* the source files
             ],
-            "preLaunchTask": "npm: test-watch"
-        }
-    ]
+            "preLaunchTask": "Watch: ESBuild",
+        },
+    ],
 }

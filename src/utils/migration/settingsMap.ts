@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable @typescript-eslint/naming-convention */
-
 // A map of the old settings to their new names. Most are just directly renamed, but some are
 // not direct renames, so we need to do this manually.
 export const settingsMap: Record<string, string> = {
@@ -64,5 +62,3 @@ export const settingsMap: Record<string, string> = {
     "docker.composeCommand": "containers.composeCommand",
     "docker.enableDockerComposeLanguageService": "containers.enableComposeLanguageService" // Changed name
 };
-
-/* eslint-enable @typescript-eslint/naming-convention */

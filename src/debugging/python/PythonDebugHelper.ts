@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from 'path';
+import { WorkspaceFolderPlaceholder } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { PythonExtensionHelper } from '../../tasks/python/PythonExtensionHelper';
 import { PythonRunTaskDefinition } from '../../tasks/python/PythonTaskHelper';
@@ -48,7 +49,7 @@ export class PythonDebugHelper implements DebugHelper {
             python: {
                 pathMappings: [
                     {
-                        localRoot: '${workspaceFolder}',
+                        localRoot: WorkspaceFolderPlaceholder,
                         remoteRoot: '/app'
                     }
                 ],
@@ -107,12 +108,12 @@ export class PythonDebugHelper implements DebugHelper {
             // These settings control what Python interpreter gets used in what circumstance.
             // debugAdapterPython controls the interpreter used by the Python extension to start the debug adapter, on the local client
             // We want it to use what it would normally use for local Python debugging, i.e. the chosen local interpreter
-            debugAdapterPython: '${command:python.interpreterPath}',
+            debugAdapterPython: '${command:python.interpreterPath}', // eslint-disable-line no-template-curly-in-string
 
             // debugLauncherPython controls the interpreter used by the debug adapter to start the launcher, also on the local client
             // We want it to use what it would normally use for local Python debugging, i.e. the chosen local interpreter
             // This actually launches our launcher in resources/python/launcher.py, which uses `docker exec -d <containerId> python3 /debugpy/launcher ...` to launch the real debugpy launcher in the container
-            debugLauncherPython: '${command:python.interpreterPath}',
+            debugLauncherPython: '${command:python.interpreterPath}', // eslint-disable-line no-template-curly-in-string
 
             // python controls the interpreter used by the launcher to start the application itself
             // Since this is in the container it should always use `python3`

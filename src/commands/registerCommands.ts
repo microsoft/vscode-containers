@@ -11,6 +11,7 @@ import { scaffoldCompose } from "../scaffolding/scaffoldCompose";
 import { scaffoldDebugConfig } from "../scaffolding/scaffoldDebugConfig";
 import { chooseContainerRuntime } from "./chooseContainerRuntime";
 import { composeDown, composeDownSubset, composeRestart, composeUp, composeUpSubset } from "./compose/compose";
+import { askCopilot } from "./containers/askCopilot";
 import { attachShellContainer } from "./containers/attachShellContainer";
 import { browseContainer } from "./containers/browseContainer";
 import { composeGroupDown, composeGroupLogs, composeGroupRestart, composeGroupStart, composeGroupStop } from "./containers/composeGroup";
@@ -218,6 +219,7 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.help.openWalkthrough', () => commands.executeCommand('workbench.action.openWalkthrough', 'ms-azuretools.vscode-containers#containersStart'));
     registerCommand('vscode-containers.help.reportIssue', reportIssue);
     registerCommand('vscode-containers.chooseContainerRuntime', chooseContainerRuntime);
+    registerCommand('vscode-containers.askCopilot', askCopilot);
 
     registerCommand('vscode-containers.activateContainerRuntimeProviders', (context: IActionContext) => {
         // Do nothing, but container runtime provider extensions can use this command as an activation event
