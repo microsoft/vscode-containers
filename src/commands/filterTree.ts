@@ -25,10 +25,7 @@ export function getTreeFilter(treePrefix: TreePrefix): TreeFilterState {
   return treeFilters.get(treePrefix) || { filterText: "", isActive: false };
 }
 
-function setTreeFilter(
-  treePrefix: TreePrefix,
-  filterText: string
-): void {
+function setTreeFilter(treePrefix: TreePrefix, filterText: string): void {
   treeFilters.set(treePrefix, {
     filterText: filterText.toLowerCase(),
     isActive: filterText.length > 0,
@@ -102,17 +99,24 @@ async function filterTreeView(
   treePrefix: TreePrefix
 ): Promise<void> {
   const currentFilter = getTreeFilter(treePrefix);
+  const clearFilterLabel = vscode.l10n.t("$(clear-all) Clear Filter");
 
   const quickPick = vscode.window.createQuickPick();
-  quickPick.placeholder = vscode.l10n.t("Filter {0}... (Press Enter to apply, Esc to cancel)", treePrefix);
+  quickPick.placeholder = vscode.l10n.t(
+    "Filter {0}... (Press Enter to apply, Esc to cancel)",
+    treePrefix
+  );
   quickPick.value = currentFilter.filterText;
-  quickPick.title = `Filter ${capitalize(treePrefix)}`;
+  quickPick.title = vscode.l10n.t("Filter {0}", capitalize(treePrefix));
 
   if (currentFilter.isActive) {
     quickPick.items = [
       {
-        label: "$(clear-all) Clear Filter",
-        description: `Currently filtering by: "${currentFilter.filterText}"`,
+        label: clearFilterLabel,
+        description: vscode.l10n.t(
+          'Currently filtering by: "{0}"',
+          currentFilter.filterText
+        ),
       },
     ];
   }
@@ -122,7 +126,7 @@ async function filterTreeView(
     const selectedItem = quickPick.selectedItems[0];
 
     // Check if "Clear Filter" was selected
-    if (selectedItem?.label === "$(clear-all) Clear Filter") {
+    if (selectedItem?.label === clearFilterLabel) {
       clearTreeFilter(treePrefix);
       context.telemetry.properties.action = "clearFilter";
     } else if (value) {
@@ -157,7 +161,7 @@ function updateTreeViewTitle(treePrefix: TreePrefix): void {
   }
 
   if (filter.isActive) {
-    treeView.description = `Filtered: "${filter.filterText}"`;
+    treeView.description = vscode.l10n.t('Filtered: "{0}"', filter.filterText);
   } else {
     treeView.description = undefined;
   }
