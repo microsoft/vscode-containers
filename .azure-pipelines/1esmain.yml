@@ -21,7 +21,7 @@ resources:
     - repository: azExtTemplates
       type: github
       name: microsoft/vscode-azuretools
-      ref: main
+      ref: bmw/pipelinesv2
       endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
 
 variables:
@@ -31,4 +31,4 @@ variables:
 
 # Use those templates
 extends:
-  template: azure-pipelines/1esmain.yml@azExtTemplates
+  template: azure-pipelines/v2/1es-main.yml@azExtTemplates
