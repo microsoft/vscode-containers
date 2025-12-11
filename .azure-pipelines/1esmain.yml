@@ -29,8 +29,9 @@ variables:
   - name: TeamName
     value: "Container Tools Team"
 
+parameters:
+  - template: azure-pipelines/v2/parameters.azcode.yml@azExtTemplates
+
 # Use those templates
 extends:
   template: azure-pipelines/v2/1es-main.yml@azExtTemplates
-  parameters:
-    - template: azure-pipelines/v2/parameters.azcode.yml@azExtTemplates
