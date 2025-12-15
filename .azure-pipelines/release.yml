@@ -31,3 +31,4 @@ extends:
     dryRun: ${{ parameters.dryRun }}
     artifactPipeline: \Azure Tools\VSCode\Extensions\vscode-containers
     extensionReleaseServiceConnection: ${{ variables.extensionReleaseServiceConnection }}
+    packageToPublish: vscode-containers
