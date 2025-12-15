@@ -28,7 +28,7 @@ variables:
   # Required by MicroBuild template
   - name: TeamName
     value: "Container Tools Team"
-  - template: azure-pipelines/v2/variables.azcode.yml@azExtTemplates
+  - template: azure-pipelines/v2/azcode.variables.yml@azExtTemplates
 
 # Use those templates
 extends:

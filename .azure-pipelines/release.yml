@@ -10,14 +10,11 @@ parameters:
     default: false
 
 resources:
-  pipelines:
-    - pipeline: build # This must be "build"
-      source: \Azure Tools\VSCode\Extensions\vscode-containers # name of the pipeline that produces the artifacts
   repositories:
     - repository: azExtTemplates
       type: github
       name: microsoft/vscode-azuretools
-      ref: main
+      ref: bmw/pipelinesv2
       endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
 
 variables:
@@ -27,10 +24,8 @@ variables:
 
 # Use those templates
 extends:
-  template: azure-pipelines/release-extension.yml@azExtTemplates
+  template: azure-pipelines/v2/1es-release-extension.yml@azExtTemplates
   parameters:
     publishVersion: ${{ parameters.publishVersion }}
     dryRun: ${{ parameters.dryRun }}
-    environmentName: VSCodeDockerExtensionPublish
-    publishCommands: # Temporary for Authentication Challenges proposed API
-      - "vsce publish --azure-credential --packagePath vscode-containers-${{ parameters.publishVersion }}.vsix --manifestPath extension.manifest --signaturePath extension.signature.p7s --allow-proposed-apis authenticationChallenges"
+    artifactPipeline: \Azure Tools\VSCode\Extensions\vscode-containers
