@@ -21,6 +21,7 @@ variables:
   # Required by MicroBuild template
   - name: TeamName
     value: "Container Tools Team"
+  - template: azure-pipelines/v2/azcode.variables.yml@azExtTemplates
 
 # Use those templates
 extends:
@@ -29,3 +30,4 @@ extends:
     publishVersion: ${{ parameters.publishVersion }}
     dryRun: ${{ parameters.dryRun }}
     artifactPipeline: \Azure Tools\VSCode\Extensions\vscode-containers
+    extensionReleaseServiceConnection: ${{ variables.extensionReleaseServiceConnection }}
