@@ -35,4 +35,3 @@ extends:
   template: azure-pipelines/v2/1es-main.yml@azExtTemplates
   parameters:
     testServiceConnection: ${{ variables.testServiceConnection }}
-    signType: none # Temporarily disable signing so it goes faster
