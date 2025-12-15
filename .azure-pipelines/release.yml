@@ -16,6 +16,8 @@ resources:
       name: microsoft/vscode-azuretools
       ref: bmw/pipelinesv2
       endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
+    - pipeline: build
+      source: \Azure Tools\VSCode\Extensions\vscode-containers # name of the pipeline that produces the artifacts
 
 variables:
   # Required by MicroBuild template
@@ -29,6 +31,5 @@ extends:
   parameters:
     publishVersion: ${{ parameters.publishVersion }}
     dryRun: ${{ parameters.dryRun }}
-    artifactPipeline: \Azure Tools\VSCode\Extensions\vscode-containers
     extensionReleaseServiceConnection: ${{ variables.extensionReleaseServiceConnection }}
     packageToPublish: vscode-containers
