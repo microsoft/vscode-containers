@@ -99,6 +99,7 @@ export class ACROAuthProvider implements AuthenticationProvider {
         // Registry scopes, i.e. those passed to `getSession()`, are not valid for acquiring this
         // access token--instead, those only need to be passed to `getOAuthTokenFromRefreshToken()`
         const token = await subscription.credential.getToken([]);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return token!.token;
     }
 
@@ -108,6 +109,7 @@ export class ACROAuthProvider implements AuthenticationProvider {
 
         let refreshToken: string;
         if (!options?.forceNewSession && this.refreshTokenCache.has(registryString)) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             refreshToken = this.refreshTokenCache.get(registryString)!;
         } else {
             refreshToken = await this.getRefreshTokenFromAccessToken(accessToken, this.registryUri, this.subscription);
