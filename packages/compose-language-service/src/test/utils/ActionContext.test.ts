@@ -10,12 +10,12 @@ import { ActionContext, getCurrentContext, runWithContext } from '../../service/
 
 describe('(Unit) ActionContext', () => {
     describe('Common scenarios', () => {
-        it('Should provide a context when called correctly', async () => {
+        it('Should provide a context when called correctly', () => {
             const ctx = {
                 telemetry: initEvent('foo'),
             } as ActionContext;
 
-            await runWithContext(ctx, async () => {
+            runWithContext(ctx, () => {
                 const localCtx = getCurrentContext();
 
                 ctx.should.equal(localCtx);
@@ -28,7 +28,7 @@ describe('(Unit) ActionContext', () => {
     });
 
     describe('Error scenarios', () => {
-        it('Should throw a ResponseError if called incorrectly', async () => {
+        it('Should throw a ResponseError if called incorrectly', () => {
             expect(getCurrentContext).to.throw(ResponseError);
         });
     });

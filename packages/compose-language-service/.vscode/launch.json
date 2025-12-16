@@ -5,52 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
+            "name": "Run Tests",
             "request": "launch",
-            "name": "Mocha All",
-            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "args": [
-                "--timeout", // Set an infinite timeout when debugging so breakpoints don't mislead into thinking the test failed
-                "0",
-                "--file",
-                "${workspaceFolder}/lib/test/global.test.js",
-                "--recursive",
-                "${workspaceFolder}/lib/test"
+            "runtimeArgs": [
+                "test",
             ],
-            "preLaunchTask": "${defaultBuildTask}",
-            "resolveSourceMapLocations": [
-                "${workspaceFolder}/**",
-                "!**/node_modules/**"
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
             ],
-            "internalConsoleOptions": "openOnSessionStart",
-            "presentation": {
-                "group": "Mocha",
-            }
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Mocha Unit Tests",
-            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "args": [
-                "--timeout", // Set an infinite timeout when debugging so breakpoints don't mislead into thinking the test failed
-                "0",
-                "--file",
-                "${workspaceFolder}/lib/test/global.test.js",
-                "--grep",
-                "/unit/i",
-                "--recursive",
-                "${workspaceFolder}/lib/test"
-            ],
-            "preLaunchTask": "${defaultBuildTask}",
-            "resolveSourceMapLocations": [
-                "${workspaceFolder}/**",
-                "!**/node_modules/**"
-            ],
-            "internalConsoleOptions": "openOnSessionStart",
-            "presentation": {
-                "group": "Mocha",
-            }
+            "type": "node"
         },
         {
             "name": "Test Client Extension",
@@ -59,9 +23,9 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/src/test/clientExtension",
                 "--disable-extension=ms-azuretools.vscode-containers", // Keep the Container Tools extension from running so it doesn't interfere with testing
+                "--disable-extension=docker.docker", // Keep the Docker DX extension from running so it doesn't interfere with testing
                 "--disable-extension=redhat.vscode-yaml", // Keep the YAML extension from running so it doesn't interfere with testing
             ],
-            "preLaunchTask": "tsc-watch: client extension",
             "presentation": {
                 "hidden": true,
             }
@@ -92,7 +56,7 @@
                 "group": "Live testing",
                 "order": 1
             },
-            "preLaunchTask": "tsc-watch: language service"
+            "preLaunchTask": "Build+Watch+CJS"
         }
     ]
 }

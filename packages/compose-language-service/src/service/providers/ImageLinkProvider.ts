@@ -56,7 +56,7 @@ export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & Extende
         let imageName: string | undefined;
 
         if ((match = dockerHubImageRegex.exec(image)) &&
-            (imageName = match.groups?.['imageName'])) {
+            (imageName = match.groups?.imageName)) {
 
             imageTypes.add('dockerHub');
 
@@ -66,8 +66,8 @@ export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & Extende
                 length: imageName.length
             };
         } else if ((match = dockerHubNamespacedImageRegex.exec(image)) &&
-            (namespace = match.groups?.['namespace']) &&
-            (imageName = match.groups?.['imageName'])) {
+            (namespace = match.groups?.namespace) &&
+            (imageName = match.groups?.imageName)) {
 
             imageTypes.add('dockerHubNamespaced');
 
@@ -77,8 +77,8 @@ export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & Extende
                 length: namespace.length + 1 + imageName.length // 1 is the length of the '/' after namespace
             };
         } else if ((match = mcrImageRegex.exec(image)) &&
-            (namespace = match.groups?.['namespace']?.replace(/\/$/, '')) &&
-            (imageName = match.groups?.['imageName'])) {
+            (namespace = match.groups?.namespace?.replace(/\/$/, '')) &&
+            (imageName = match.groups?.imageName)) {
 
             imageTypes.add('mcr');
 

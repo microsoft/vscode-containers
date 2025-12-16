@@ -5,7 +5,7 @@
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Range } from 'vscode-languageserver-types';
-import { Range as YamlRange } from 'yaml/dist/nodes/Node';
+import type { Range as YamlRange } from 'yaml';
 import { yamlRangeToLspRange } from '../../service/utils/yamlRangeToLspRange';
 
 describe('(Unit) yamlRangeToLspRange', () => {

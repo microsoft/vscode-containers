@@ -3,24 +3,23 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import type { ClientCapabilities, FeatureState, StaticFeature } from 'vscode-languageclient';
-import type { LanguageClient } from 'vscode-languageclient/node';
-import type { DocumentSettings, DocumentSettingsClientCapabilities, DocumentSettingsNotificationParams, DocumentSettingsParams } from '../../../lib/client/DocumentSettings'; // Dev-time-only imports, with `require` below for the real imports, to avoid desync issues or needing to actually install the langserver package
+const vscode = require('vscode');
+const documentSettings = require('../../../dist/cjs/client/DocumentSettings');
 
-export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disposable {
-    private disposables: vscode.Disposable[] = [];
+class DocumentSettingsClientFeature {
+    constructor(client) {
+        this.client = client;
+        this.disposables = [];
+    }
 
-    public constructor(private readonly client: LanguageClient) { }
-
-    public getState(): FeatureState {
+    getState() {
         return {
             kind: 'static'
         };
     }
 
-    public fillClientCapabilities(capabilities: ClientCapabilities): void {
-        const docSettingsClientCapabilities: DocumentSettingsClientCapabilities = {
+    fillClientCapabilities(capabilities) {
+        const docSettingsClientCapabilities = {
             notify: true,
             request: true,
         };
@@ -31,11 +30,11 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
         };
     }
 
-    public initialize(): void {
+    initialize() {
         this.disposables.push(
             this.client.onRequest(
-                require('../../../../lib/client/DocumentSettings').DocumentSettingsRequest.method,
-                (params: DocumentSettingsParams): DocumentSettings | undefined => {
+                documentSettings.DocumentSettingsRequest.method,
+                (params) => {
                     const textEditor = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === params.textDocument.uri);
 
                     if (!textEditor) {
@@ -52,20 +51,22 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
 
         this.disposables.push(
             vscode.window.onDidChangeTextEditorOptions(
-                (e: vscode.TextEditorOptionsChangeEvent) => {
-                    const params: DocumentSettingsNotificationParams = {
+                (e) => {
+                    const params = {
                         textDocument: { uri: e.textEditor.document.uri.toString() },
                         eol: e.textEditor.document.eol,
                         tabSize: Number(e.options.tabSize),
                     };
 
-                    this.client.sendNotification(require('../../../../lib/client/DocumentSettings').DocumentSettingsNotification.method, params);
+                    void this.client.sendNotification(documentSettings.DocumentSettingsNotification.method, params);
                 }
             )
         );
     }
 
-    public dispose(): void {
-        this.disposables.forEach(d => d.dispose());
+    dispose() {
+        this.disposables.forEach(d => { d.dispose(); });
     }
 }
+
+module.exports = { DocumentSettingsClientFeature };

@@ -3,25 +3,23 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { AlternateYamlLanguageServiceClientCapabilities } from '../../../lib/client/AlternateYamlLanguageServiceClientCapabilities';
-import * as vscode from 'vscode';
-import type { ClientCapabilities, FeatureState, StaticFeature } from 'vscode-languageclient';
+const vscode = require('vscode');
 
 /**
  * This class will note the features covered by an alternate YAML language service,
  * that the compose language service can disable
  */
-export class AlternateYamlLanguageServiceClientFeature implements StaticFeature, vscode.Disposable {
-    public getState(): FeatureState {
+class AlternateYamlLanguageServiceClientFeature {
+    getState() {
         return {
             kind: 'static'
         };
     }
 
-    public fillClientCapabilities(capabilities: ClientCapabilities): void {
+    fillClientCapabilities(capabilities) {
         // If the RedHat YAML extension is present, we can disable many of the compose language service features
         if (vscode.extensions.getExtension('redhat.vscode-yaml')) {
-            const altYamlClientCapabilities: AlternateYamlLanguageServiceClientCapabilities = {
+            const altYamlClientCapabilities = {
                 syntaxValidation: true,
                 schemaValidation: true,
                 basicCompletions: true,
@@ -39,11 +37,13 @@ export class AlternateYamlLanguageServiceClientFeature implements StaticFeature,
         }
     }
 
-    public initialize(): void {
+    initialize() {
         // Noop
     }
 
-    public dispose(): void {
+    dispose() {
         // Noop
     }
 }
+
+module.exports = { AlternateYamlLanguageServiceClientFeature };

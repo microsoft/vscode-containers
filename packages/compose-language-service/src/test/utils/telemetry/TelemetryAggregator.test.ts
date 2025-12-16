@@ -14,7 +14,7 @@ const TelemetryAggregationInterval = 10;
 describe('(Unit) TelemetryAggregator', () => {
     let testConnection: TestConnection;
     let telemetryAggregator: TelemetryAggregator;
-    beforeEach('Prepare a language server for testing', async () => {
+    beforeEach('Prepare a language server for testing', () => {
         testConnection = new TestConnection();
         telemetryAggregator = new TelemetryAggregator(testConnection.server, TelemetryAggregationInterval);
     });
@@ -146,7 +146,6 @@ describe('(Unit) TelemetryAggregator', () => {
             const inputEvent: TelemetryEvent = initEvent('canary');
 
             // Deleting the measurements property will cause the aggregation procedure to throw
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (inputEvent as any).measurements;
 
             const expected: TelemetryEvent = initEvent('telemetryaggregatorfailure');
@@ -171,13 +170,14 @@ async function awaitTelemetryAndCompare(testConnection: TestConnection, telemetr
         // Need to connect the listener *before* sending the events, to ensure no timing issues, i.e. with the response being sent before the listener is ready
         const listenerPromise = new Promise<TelemetryEvent>((resolve) => {
             testConnection.client.onNotification(TelemetryEventNotification.type, (telemetry) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 resolve(telemetry);
             });
         });
 
         // A promise that will reject if it times out (if the diagnostics never get sent)
         const failurePromise = new Promise<never>((resolve, reject) => {
-            timeout = setTimeout(() => reject('timed out awaiting aggregated telemetry response'), TelemetryAggregationInterval * 10); // This carries some risk of test fragility but we have to draw a line somewhere (*sigh* halting problem)
+            timeout = setTimeout(() => reject(new Error('timed out awaiting aggregated telemetry response')), TelemetryAggregationInterval * 10); // This carries some risk of test fragility but we have to draw a line somewhere (*sigh* halting problem)
         });
 
         for (const inputEvent of input) {

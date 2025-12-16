@@ -612,24 +612,23 @@ describe('ComposeDocument', () => {
             });
 
             it('Should give lines correctly for numeric inputs', () => {
-                sharedComposeDocument.lineAt(0).should.equal('version: \'3.4\'\n');
-                sharedComposeDocument.lineAt(1).should.equal('\n');
-                sharedComposeDocument.lineAt(2).should.equal('# This line is a comment\n');
-                sharedComposeDocument.lineAt(17).should.equal('        volumes: # With a bonus comment\n');
+                sharedComposeDocument.lineAt(0).should.equal('version: \'3.4\'');
+                sharedComposeDocument.lineAt(1).should.equal('');
+                sharedComposeDocument.lineAt(2).should.equal('# This line is a comment');
+                sharedComposeDocument.lineAt(17).should.equal('        volumes: # With a bonus comment');
             });
 
             it('Should give lines correctly for position inputs', () => {
-                sharedComposeDocument.lineAt(Position.create(0, 0)).should.equal('version: \'3.4\'\n');
-                sharedComposeDocument.lineAt(Position.create(1, 111)).should.equal('\n'); // 111 should round backward to the end of this line
-                sharedComposeDocument.lineAt(Position.create(2, 4)).should.equal('# This line is a comment\n');
-                sharedComposeDocument.lineAt(Position.create(17, 0)).should.equal('        volumes: # With a bonus comment\n');
+                sharedComposeDocument.lineAt(Position.create(0, 0)).should.equal('version: \'3.4\'');
+                sharedComposeDocument.lineAt(Position.create(1, 111)).should.equal(''); // 111 should round backward to the end of this line
+                sharedComposeDocument.lineAt(Position.create(2, 4)).should.equal('# This line is a comment');
+                sharedComposeDocument.lineAt(Position.create(17, 0)).should.equal('        volumes: # With a bonus comment');
             });
         });
 
         describe('DocumentSettings scenarios', () => {
             it('Should guess document settings correctly if the client doesn\'t support DocumentSettings', async () => {
                 // Clear out the settings first, to force the ComposeDocument to recompute it
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (noDocSettingsSharedComposeDocument as any).documentSettings = undefined;
 
                 const settings = await runWithContext(noDocSettingsConnection.getMockContext(), async () => {
@@ -653,7 +652,6 @@ describe('ComposeDocument', () => {
 
             it('Should ask client for document settings if the client does support DocumentSettings', async () => {
                 // Clear out the settings first, to force the ComposeDocument to recompute it
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (sharedComposeDocument as any).documentSettings = undefined;
 
                 const requestPromise = new Promise<void>((resolve, reject) => {
@@ -665,9 +663,8 @@ describe('ComposeDocument', () => {
                         };
                     });
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (sharedComposeDocument as any).guessDocumentSettings = function () {
-                        reject('Should not be guessing settings if the client can answer');
+                        reject(new Error('Should not be guessing settings if the client can answer'));
                     };
                 });
 
@@ -704,7 +701,6 @@ describe('ComposeDocument', () => {
                     };
                 });
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const settings = (sharedComposeDocument as any).documentSettings as DocumentSettings;
                 settings.eol.should.equal(LF);
                 settings.tabSize.should.equal(3);
@@ -748,7 +744,6 @@ services:
 });
 
 async function sendAndAwaitDocument(testConnection: TestConnection, document: string): Promise<ComposeDocument> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const testConnectionDocManager = (testConnection.languageService as any).documentManager as TextDocuments<ComposeDocument>;
 
     // Set up a listener so we can wait for the service to get the document
@@ -764,7 +759,6 @@ async function sendAndAwaitDocument(testConnection: TestConnection, document: st
     await waitListener;
 
     // Grab the doc
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return testConnectionDocManager.get(uri)!;
 }
 

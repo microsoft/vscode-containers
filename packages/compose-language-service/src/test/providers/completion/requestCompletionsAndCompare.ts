@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+
 import { expect } from 'chai';
 import { CompletionItem, CompletionRequest, DocumentUri, InsertTextFormat, InsertTextMode, Position } from 'vscode-languageserver';
 import { TestConnection } from '../../TestConnection';

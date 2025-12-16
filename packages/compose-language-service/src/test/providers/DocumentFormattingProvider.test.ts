@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { DocumentFormattingRequest, DocumentUri, FormattingOptions, ResponseError, TextEdit } from 'vscode-languageserver-protocol';
+import { DocumentFormattingRequest, DocumentUri, FormattingOptions, ResponseError } from 'vscode-languageserver-protocol';
 import { TestConnection } from '../TestConnection';
 
 describe('DocumentFormattingProvider', () => {
     let testConnection: TestConnection;
-    before('Populate the language server with a compose document', async () => {
+    before('Populate the language server with a compose document', () => {
         testConnection = new TestConnection();
     });
 
@@ -115,16 +115,14 @@ services:
 });
 
 async function requestDocumentFormattingAndCompare(testConnection: TestConnection, uri: DocumentUri, tabSize: number, expected: string | undefined): Promise<void> {
-    const result = await testConnection.client.sendRequest(DocumentFormattingRequest.type, { textDocument: { uri }, options: FormattingOptions.create(tabSize, true) }) as TextEdit[] | null;
+    const result = await testConnection.client.sendRequest(DocumentFormattingRequest.type, { textDocument: { uri }, options: FormattingOptions.create(tabSize, true) });
 
     if (expected === undefined) {
         expect(result).to.not.be.ok;
     } else {
         expect(result).to.be.ok;
 
-        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         result!.length.should.equal(1); // As of today, the formatter only ever rewrites the whole document
         result![0].newText.should.equal(expected);
-        /* eslint-enable @typescript-eslint/no-non-null-assertion */
     }
 }

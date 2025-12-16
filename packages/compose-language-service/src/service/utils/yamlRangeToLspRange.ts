@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Range as LspRange } from 'vscode-languageserver';
-import { Range as YamlRange } from 'yaml/dist/nodes/Node';
+import { Range as YamlRange } from 'yaml';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 export function yamlRangeToLspRange(document: TextDocument, yamlRange: YamlRange | [number, number]): LspRange {

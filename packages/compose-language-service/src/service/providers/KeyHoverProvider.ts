@@ -29,8 +29,8 @@ export class KeyHoverProvider extends ProviderBase<HoverParams & ExtendedParams,
             const lineMatch = KeyValueRegex.exec(line);
 
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const pathKeyName = pathMatch.groups!['keyName']; // Can't be undefined if it matched
-            const lineKeyName = lineMatch?.groups?.['keyName'];
+            const pathKeyName = pathMatch.groups!.keyName; // Can't be undefined if it matched
+            const lineKeyName = lineMatch?.groups?.keyName;
 
             // Need to ensure the key on the line is the same as the key in the path
             // They can be different is because if you are in the whitespace before a key--the path will be in the parent key, but no hover should be provided here

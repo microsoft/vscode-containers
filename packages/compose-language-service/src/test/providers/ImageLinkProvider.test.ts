@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { DocumentLink, DocumentLinkRequest, DocumentUri, Range, ResponseError } from 'vscode-languageserver';
+import { DocumentLinkRequest, DocumentUri, Range, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../TestConnection';
 
 interface ExpectedImageLink {
@@ -14,7 +14,7 @@ interface ExpectedImageLink {
 
 describe('ImageLinkProvider', () => {
     let testConnection: TestConnection;
-    before('Prepare a language server for testing', async () => {
+    before('Prepare a language server for testing', () => {
         testConnection = new TestConnection();
     });
 
@@ -291,7 +291,7 @@ services:
 });
 
 async function requestImageLinksAndCompare(testConnection: TestConnection, uri: DocumentUri, expected: ExpectedImageLink[]): Promise<void> {
-    const result = await testConnection.client.sendRequest(DocumentLinkRequest.type, { textDocument: { uri } }) as DocumentLink[];
+    const result = (await testConnection.client.sendRequest(DocumentLinkRequest.type, { textDocument: { uri } }))!;
 
     expect(result).to.be.ok; // Should always be OK result even if 0 links
 

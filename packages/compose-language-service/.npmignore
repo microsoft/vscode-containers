@@ -1,9 +1,13 @@
-lib/test/**
+!dist
+dist/*/test/**
 .eslint*
 .vscode
+.nvmrc
 src
 tsconfig.json
 .github
 .azure-pipelines
 *.tgz
 .gitattributes
+*.map
+eslint.config.mjs

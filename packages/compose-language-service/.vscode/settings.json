@@ -8,7 +8,6 @@
     "editor.codeActionsOnSave": {
         "source.fixAll": "explicit"
     },
-    "typescript.preferences.importModuleSpecifier": "relative",
     "git.branchProtection": [
         "main",
         "rel/*"

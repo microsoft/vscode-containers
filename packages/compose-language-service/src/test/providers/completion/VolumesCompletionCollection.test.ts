@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable no-template-curly-in-string */
+
 import { CompletionRequest, InsertTextFormat, Position, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../../TestConnection';
 import { ExpectedCompletionItem, requestCompletionsAndCompare, UnexpectedCompletionItem } from './requestCompletionsAndCompare';
@@ -22,7 +24,7 @@ const defaultUnexpected: UnexpectedCompletionItem[] = [
 
 describe('VolumesCompletionCollection', () => {
     let testConnection: TestConnection;
-    before('Prepare a language server for testing', async () => {
+    before('Prepare a language server for testing', () => {
         testConnection = new TestConnection();
     });
 

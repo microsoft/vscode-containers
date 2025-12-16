@@ -101,7 +101,7 @@ describe('(Unit) debounce', () => {
                     foo: 1,
                 };
 
-                debounce(delay, { callId: 'debounce', uri: 'file:///foo', }, x.test, x);
+                debounce(delay, { callId: 'debounce', uri: 'file:///foo', }, () => x.test(), x);
             });
 
             const stop = process.hrtime.bigint();

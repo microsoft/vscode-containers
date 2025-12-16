@@ -16,7 +16,7 @@ interface ExpectedServiceStartupCodeLens {
 
 describe('ServiceStartupCodeLensProvider', () => {
     let testConnection: TestConnection;
-    before('Prepare a language server for testing', async () => {
+    before('Prepare a language server for testing', () => {
         testConnection = new TestConnection();
     });
 
@@ -106,7 +106,7 @@ describe('ServiceStartupCodeLensProvider', () => {
 });
 
 async function requestServiceStartupCodeLensesAndCompare(testConnection: TestConnection, uri: DocumentUri, expected: ExpectedServiceStartupCodeLens[] | undefined): Promise<void> {
-    const result = await testConnection.client.sendRequest(CodeLensRequest.type, { textDocument: { uri } }) as CodeLens[];
+    const result = (await testConnection.client.sendRequest(CodeLensRequest.type, { textDocument: { uri } }))!;
 
     if (expected === undefined) {
         expect(result).to.be.null;
@@ -114,16 +114,14 @@ async function requestServiceStartupCodeLensesAndCompare(testConnection: TestCon
     }
 
     expect(result).to.be.ok; // Should always be OK result even if 0 code lenses
-    /* eslint-disable @typescript-eslint/no-non-null-assertion */
-    result.length.should.equal(expected!.length);
+    result.length.should.equal(expected.length);
 
-    if (expected!.length) {
+    if (expected.length) {
         // Each diagnostic should have a matching range and content canary in the results
-        for (const expectedCodeLens of expected!) {
+        for (const expectedCodeLens of expected) {
             result.some(actualCodeLens => lensesMatch(actualCodeLens, expectedCodeLens)).should.be.true;
         }
     }
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 }
 
 function lensesMatch(actual: CodeLens, expected: ExpectedServiceStartupCodeLens): boolean {

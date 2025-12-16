@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as util from 'util';
 import {
     CancellationToken,
     Connection,
@@ -88,7 +89,7 @@ const DefaultAlternateYamlLanguageServiceClientCapabilities: AlternateYamlLangua
 };
 
 export class ComposeLanguageService implements Disposable {
-    private readonly documentManager: TextDocuments<ComposeDocument> = new TextDocuments(ComposeDocument.DocumentManagerConfig);
+    private readonly documentManager = new TextDocuments<ComposeDocument>(ComposeDocument.DocumentManagerConfig);
     private readonly subscriptions: Disposable[] = [];
     private readonly telemetryAggregator: TelemetryAggregator;
     private readonly _capabilities: ServerCapabilities = DefaultCapabilities;
@@ -107,6 +108,7 @@ export class ComposeLanguageService implements Disposable {
         if (altYamlCapabilities.syntaxValidation && altYamlCapabilities.schemaValidation) {
             // Noop. No server-side capability needs to be set for diagnostics because it is based on pushing from server to client.
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             this.createDocumentManagerHandler(this.documentManager.onDidChangeContent, new DiagnosticProvider(clientParams.initializationOptions?.diagnosticDelay, !altYamlCapabilities.syntaxValidation, !altYamlCapabilities.schemaValidation));
         }
 
@@ -117,42 +119,43 @@ export class ComposeLanguageService implements Disposable {
         if (altYamlCapabilities.basicCompletions && altYamlCapabilities.advancedCompletions) {
             this._capabilities.completionProvider = undefined;
         } else {
-            this.createLspHandler(this.connection.onCompletion, new MultiCompletionProvider(!altYamlCapabilities.basicCompletions, !altYamlCapabilities.advancedCompletions));
+            this.createLspHandler(this.connection.onCompletion.bind(this), new MultiCompletionProvider(!altYamlCapabilities.basicCompletions, !altYamlCapabilities.advancedCompletions));
         }
 
         if (altYamlCapabilities.serviceStartupCodeLens) {
             this._capabilities.codeLensProvider = undefined;
         } else {
-            this.createLspHandler(this.connection.onCodeLens, new ServiceStartupCodeLensProvider());
+            this.createLspHandler(this.connection.onCodeLens.bind(this), new ServiceStartupCodeLensProvider());
         }
 
         if (altYamlCapabilities.hover) {
             this._capabilities.hoverProvider = undefined;
         } else {
-            this.createLspHandler(this.connection.onHover, new KeyHoverProvider());
+            this.createLspHandler(this.connection.onHover.bind(this), new KeyHoverProvider());
         }
 
         if (altYamlCapabilities.imageLinks) {
             this._capabilities.documentLinkProvider = undefined;
         } else {
-            this.createLspHandler(this.connection.onDocumentLinks, new ImageLinkProvider());
+            this.createLspHandler(this.connection.onDocumentLinks.bind(this), new ImageLinkProvider());
         }
 
         if (altYamlCapabilities.formatting) {
             this._capabilities.documentFormattingProvider = undefined;
         } else {
-            this.createLspHandler(this.connection.onDocumentFormatting, new DocumentFormattingProvider());
+            this.createLspHandler(this.connection.onDocumentFormatting.bind(this), new DocumentFormattingProvider());
         }
 
         // End of LSP listeners
 
         // Hook up one additional notification handler
-        this.connection.onNotification(DocumentSettingsNotification.method, (params) => this.onDidChangeDocumentSettings(params));
+        this.connection.onNotification(DocumentSettingsNotification.method, (params: DocumentSettingsNotificationParams) => this.onDidChangeDocumentSettings(params));
 
         // Start the document listener
         this.documentManager.listen(this.connection);
 
         // Start the telemetry aggregator
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         this.subscriptions.push(this.telemetryAggregator = new TelemetryAggregator(this.connection, clientParams.initializationOptions?.telemetryAggregationInterval));
     }
 
@@ -232,14 +235,13 @@ export class ComposeLanguageService implements Disposable {
             let stack: string | undefined;
 
             if (error instanceof ResponseError) {
-                responseError = error;
+                responseError = error as ResponseError<E>;
                 stack = error.stack;
             } else if (error instanceof Error) {
-                responseError = new ResponseError(ErrorCodes.UnknownErrorCode, error.message, error as unknown as E);
+                responseError = new ResponseError(ErrorCodes.UnknownErrorCode, error.message, error as E);
                 stack = error.stack;
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                responseError = new ResponseError(ErrorCodes.InternalError, (error as any).toString ? (error as any).toString() : 'Unknown error');
+                responseError = new ResponseError(ErrorCodes.InternalError, util.inspect(error) || 'Unknown error');
             }
 
             actionContext.telemetry.properties.result = 'Failed';

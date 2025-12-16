@@ -1,15 +1,15 @@
 {
     "compilerOptions": {
-        "target": "es2018",
-        "module": "commonjs",
+        "target": "es2022",
         "lib": [
-            "es2018",
+            "es2022",
         ],
-        "moduleResolution": "node",
+        "module": "es2022",
+        "moduleResolution": "bundler",
         "sourceMap": true,
         "inlineSources": false,
         "declaration": true,
-        "outDir": "lib",
+        "outDir": "dist/esm",
         "rootDir": "src",
         "alwaysStrict": true,
         "noFallthroughCasesInSwitch": true,
@@ -20,7 +20,7 @@
     },
     "exclude": [
         "src/test/clientExtension",
-        "lib",
+        "**/dist",
         "bin"
     ],
 }

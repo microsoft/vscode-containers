@@ -41,7 +41,7 @@ const defaultUnexpected: UnexpectedCompletionItem[] = [
 
 describe('RootCompletionCollection', () => {
     let testConnection: TestConnection;
-    before('Prepare a language server for testing', async () => {
+    before('Prepare a language server for testing', () => {
         testConnection = new TestConnection();
     });
 

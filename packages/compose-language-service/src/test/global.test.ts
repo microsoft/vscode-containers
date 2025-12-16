@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
+import chaiAsPromised from 'chai-as-promised';
+import 'chai/register-should';
 
 before('Global setup', function () {
     console.log('Global setup');
     chai.use(chaiAsPromised);
-    chai.should();
 });

@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
-import { DocumentSettingsClientFeature } from './DocumentSettingsClientFeature';
-import { AlternateYamlLanguageServiceClientFeature } from './AlternateYamlLanguageServiceClientFeature';
+const vscode = require('vscode');
+const { LanguageClient, TransportKind } = require('vscode-languageclient/node');
+const { DocumentSettingsClientFeature } = require('./DocumentSettingsClientFeature');
+const { AlternateYamlLanguageServiceClientFeature } = require('./AlternateYamlLanguageServiceClientFeature');
 
-export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    const serverModule = context.asAbsolutePath('../../../lib/server.js');
+async function activate(context) {
+    const serverModule = context.asAbsolutePath('../../../dist/cjs/server.js');
 
-    const serverOptions: ServerOptions = {
+    const serverOptions = {
         run: {
             module: serverModule,
             transport: TransportKind.ipc,
@@ -26,7 +26,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     const serverOutputChannel = vscode.window.createOutputChannel('Compose Language Service');
     const clientOutputChannel = vscode.window.createOutputChannel('Compose Client Extension');
 
-    const clientOptions: LanguageClientOptions = {
+    const clientOptions = {
         documentSelector: [
             {
                 language: 'dockercompose'
@@ -50,6 +50,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     await client.start();
 }
 
-export function deactivate(): void {
+function deactivate() {
     // Do nothing
 }
+
+module.exports = {
+    activate,
+    deactivate,
+};

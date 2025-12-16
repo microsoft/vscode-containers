@@ -82,9 +82,7 @@ export class ComposeDocument {
         }
 
         // If the capability is not present, or the above didn't get a result for some reason, try heuristically guessing
-        if (!this.documentSettings) {
-            this.documentSettings = this.guessDocumentSettings();
-        }
+        this.documentSettings ??= this.guessDocumentSettings();
 
         return this.documentSettings;
     }
@@ -119,7 +117,7 @@ export class ComposeDocument {
 
             /* eslint-disable @typescript-eslint/no-non-null-assertion */
             if ((result = ItemValueRegex.exec(currentLine))) {
-                indentDepth = result.groups!['indent'].length / tabSize;
+                indentDepth = result.groups!.indent.length / tabSize;
 
                 if (indentDepth < currentIndentDepth) {
                     // If this line is an ItemValue and less indented, then add `<item>` to the path
@@ -127,14 +125,14 @@ export class ComposeDocument {
                     fullPathParts.unshift(Item);
                 }
             } else if ((result = KeyValueRegex.exec(currentLine))) {
-                indentDepth = result.groups!['indent'].length / tabSize;
+                indentDepth = result.groups!.indent.length / tabSize;
 
                 if (indentDepth < currentIndentDepth ||
                     (indentDepth === currentIndentDepth && fullPathParts[0] === Item)) // YAML is too permissive and allows for items to have the same indentation as their parent key, so need to account for that
                 {
                     // If this line is a KeyValue (which also includes keys alone) and less indented, add that key to the path
                     currentIndentDepth = indentDepth;
-                    fullPathParts.unshift(result.groups!['keyName']);
+                    fullPathParts.unshift(result.groups!.keyName);
                 }
             }
             /* eslint-enable @typescript-eslint/no-non-null-assertion */
@@ -171,8 +169,8 @@ export class ComposeDocument {
         let tabSize = 2;
         const indentedKeyLineMatch = /^(?<indentation>[ ]+)(?<key>[.\w-]+:\s*)$/im.exec(documentText);
 
-        if (indentedKeyLineMatch?.groups?.['indentation']) {
-            tabSize = indentedKeyLineMatch.groups['indentation'].length;
+        if (indentedKeyLineMatch?.groups?.indentation) {
+            tabSize = indentedKeyLineMatch.groups.indentation.length;
         }
 
         return {
@@ -199,7 +197,7 @@ export class ComposeDocument {
 
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         if ((result = LineWithCommentRegex.exec(currentLine))) {
-            const commentSepPosition = currentLine.indexOf(result.groups!['commentSep']);
+            const commentSepPosition = currentLine.indexOf(result.groups!.commentSep);
 
             // If the cursor is in a comment, then it's not "in" the document per se, but in the comment
             // So the path will only be "/<comment>", and the cursorIndentDepth is set to -1 to short-circuit the loop above
@@ -213,10 +211,10 @@ export class ComposeDocument {
 
         if ((result = ItemKeyValueRegex.exec(currentLine))) {
             // First, see if it's an ItemKeyValue, i.e. `  - foo: bar`
-            const itemSepPosition = currentLine.indexOf(result.groups!['itemInd']);
-            const keySepPosition = currentLine.indexOf(result.groups!['keyInd'], itemSepPosition);
-            const indentLength = result.groups!['indent'].length;
-            const keyName = result.groups!['keyName'];
+            const itemSepPosition = currentLine.indexOf(result.groups!.itemInd);
+            const keySepPosition = currentLine.indexOf(result.groups!.keyInd, itemSepPosition);
+            const indentLength = result.groups!.indent.length;
+            const keyName = result.groups!.keyName;
 
             cursorIndentDepth = indentLength / tabSize;
 
@@ -244,9 +242,9 @@ export class ComposeDocument {
             }
         } else if ((result = KeyValueRegex.exec(currentLine))) {
             // Next, check if it's a standard KeyValue, i.e. `  foo: bar`
-            const keySepPosition = currentLine.indexOf(result.groups!['keyInd']);
-            const indentLength = result.groups!['indent'].length;
-            const keyName = result.groups!['keyName'];
+            const keySepPosition = currentLine.indexOf(result.groups!.keyInd);
+            const indentLength = result.groups!.indent.length;
+            const keyName = result.groups!.keyName;
 
             cursorIndentDepth = indentLength / tabSize;
 
@@ -267,8 +265,8 @@ export class ComposeDocument {
             }
         } else if ((result = ItemValueRegex.exec(currentLine))) {
             // Next, check if it's an ItemValue, i.e. `  - foo`
-            const itemSepPosition = currentLine.indexOf(result.groups!['itemInd']);
-            const indentLength = result.groups!['indent'].length;
+            const itemSepPosition = currentLine.indexOf(result.groups!.itemInd);
+            const indentLength = result.groups!.indent.length;
 
             cursorIndentDepth = indentLength / tabSize;
 
@@ -286,7 +284,7 @@ export class ComposeDocument {
             }
         } else if ((result = ValueRegex.exec(currentLine))) {
             // Next, check if it's a value alone, i.e. `  foo`
-            const indentLength = result.groups!['indent'].length;
+            const indentLength = result.groups!.indent.length;
 
             cursorIndentDepth = indentLength / tabSize;
 
@@ -299,7 +297,7 @@ export class ComposeDocument {
             }
         } else if ((result = WhitespaceRegex.exec(currentLine))) {
             // Last, check if it's whitespace only
-            const indentLength = result.groups!['indent'].length;
+            const indentLength = result.groups!.indent.length;
 
             cursorIndentDepth = indentLength / tabSize;
 
@@ -351,8 +349,8 @@ const Comment = '<comment>';
 const ComposeCustomTags: Tags = [
     { tag: '!reset', collection: 'seq', resolve: v => v },
     { tag: '!reset', collection: 'map', resolve: v => v },
-    { tag: '!reset', resolve: v => v} satisfies ScalarTag,
+    { tag: '!reset', resolve: v => v } satisfies ScalarTag,
     { tag: '!override', collection: 'seq', resolve: v => v },
     { tag: '!override', collection: 'map', resolve: v => v },
-    { tag: '!override', resolve: v => v} satisfies ScalarTag,
+    { tag: '!override', resolve: v => v } satisfies ScalarTag,
 ];
