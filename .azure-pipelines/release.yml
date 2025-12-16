@@ -1,6 +1,7 @@
 trigger: none # Only run this pipeline when manually triggered
 
 parameters:
+  - extends: ./params.yml
   - name: publishVersion
     displayName: Version to publish
     type: string
@@ -34,3 +35,4 @@ extends:
     dryRun: ${{ parameters.dryRun }}
     extensionReleaseServiceConnection: ${{ variables.extensionReleaseServiceConnection }}
     packageToPublish: vscode-containers
+    releasePool: ${{ parameters.releasePool }}
