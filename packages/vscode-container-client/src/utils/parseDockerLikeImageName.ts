@@ -39,7 +39,7 @@ export function parseDockerLikeImageName(originalName: string | undefined): Imag
 
     const match = imageNameRegex.exec(originalName);
 
-    if (!match || !match.groups) {
+    if (!match?.groups) {
         throw new Error('Invalid image name');
     }
 

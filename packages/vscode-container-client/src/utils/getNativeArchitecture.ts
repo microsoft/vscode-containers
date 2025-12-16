@@ -5,6 +5,7 @@
 
 import * as os from 'os';
 
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 export type CpuArchitecture =
     | 'amd64'
     | '386'
@@ -15,6 +16,7 @@ export type CpuArchitecture =
     | 'ppc64'
     | 's390x'
     | string;
+/* eslint-enable @typescript-eslint/no-redundant-type-constituents */
 
 /**
  * Returns native architecture of the current machine

@@ -13,6 +13,7 @@ export class McpToolWithTelemetry<TInSchema extends ToolIOSchema, TOutSchema ext
     public override async executeMcp(input: z.infer<TInSchema>, extra: ToolExecutionExtras): Promise<McpToolResult> {
         const callWithTelemetryAndErrorHandling = await callWithTelemetryAndErrorHandlingLazy.value;
 
+        // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
         return await callWithTelemetryAndErrorHandling<McpToolResult>(`mcpTool/${this.name}`, async (context) => {
             // Copilot will display the error messages, we don't need to also display them
             context.errorHandling.suppressDisplay = true;

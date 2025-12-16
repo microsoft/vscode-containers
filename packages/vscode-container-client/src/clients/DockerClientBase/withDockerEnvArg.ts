@@ -6,5 +6,5 @@
 import { withNamedArg } from "@microsoft/vscode-processutils";
 
 export function withDockerEnvArg(env?: Record<string, string>) {
-    return withNamedArg('--env', Object.entries(env || {}).map(([key, value]) => `${key}=${value}`));
+    return withNamedArg('--env', Object.entries(env ?? {}).map(([key, value]) => `${key}=${value}`));
 }

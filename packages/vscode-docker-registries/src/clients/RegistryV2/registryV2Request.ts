@@ -34,7 +34,8 @@ export async function registryV2Request<T>(options: RegistryV2RequestOptions): P
         if (result.succeeded) {
             return result;
         } else if (result.status === 401 && result.headers.get('www-authenticate')) {
-            options.authenticationProvider.fallback(result.headers.get('www-authenticate') as string);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            options.authenticationProvider.fallback(result.headers.get('www-authenticate')!);
         } else {
             throw new HttpErrorResponse(options.requestUri.toString(), result.status, result.statusText);
         }

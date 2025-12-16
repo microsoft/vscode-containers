@@ -26,7 +26,6 @@ describe('(unit) getSafeExecPath', () => {
             this.skip(); // Skip this test on non-Windows
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const absoluteCommand = process.env.COMSPEC!;
 
         expect(getSafeExecPath(path.basename(absoluteCommand)).toLowerCase()).to.equal(absoluteCommand.toLowerCase()); // 'cmd' should resolve to the COMSPEC environment variable on Windows

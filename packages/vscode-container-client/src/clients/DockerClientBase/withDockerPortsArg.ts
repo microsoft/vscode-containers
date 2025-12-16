@@ -9,7 +9,7 @@ import { PortBinding } from "../../contracts/ContainerClient";
 export function withDockerPortsArg(ports?: Array<PortBinding>) {
     return withNamedArg(
         '--publish',
-        (ports || []).map((port) => {
+        (ports ?? []).map((port) => {
             let binding = port.hostIp ? `${port.hostIp}:` : '';
             binding += `${port.hostPort || ''}:`;
             binding += port.containerPort;

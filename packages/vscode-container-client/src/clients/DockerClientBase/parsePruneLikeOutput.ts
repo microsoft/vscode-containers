@@ -20,7 +20,7 @@ export type PruneResult = {
 };
 
 export function parsePruneLikeOutput(output: string, options: PruneParseOptions): PruneResult {
-    const resourceRegex = options?.resourceRegex || ResourceRegex;
+    const resourceRegex = options?.resourceRegex ?? ResourceRegex;
 
     const deletedResources: string[] = [];
     let spaceReclaimed: number = 0;

@@ -11,5 +11,5 @@ export function formatAddHost(addHost: RunContainerExtraHost): string {
 }
 
 export function withDockerAddHostArg(addHosts?: Array<RunContainerExtraHost>) {
-    return withNamedArg('--add-host', (addHosts || []).map(formatAddHost));
+    return withNamedArg('--add-host', (addHosts ?? []).map(formatAddHost));
 }

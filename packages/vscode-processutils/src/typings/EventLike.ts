@@ -13,7 +13,7 @@ import { DisposableLike } from './DisposableLike';
  * workers in VS).
  */
 export interface EventLike<T> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/prefer-function-type
     (listener: (e: T) => any, thisArgs?: any, disposables?: DisposableLike[]): DisposableLike;
 }
 

@@ -14,7 +14,7 @@ import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
 import { WslShellCommandRunnerFactory, WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
-import { IContainersClient, ListContainersItem, ListImagesItem, ListNetworkItem, ListVolumeItem, StatPathItem } from '../contracts/ContainerClient';
+import { IContainersClient, ListContainersItem, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
 import { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
 import { wslifyPath } from '../utils/wslifyPath';
 
@@ -133,7 +133,7 @@ describe('(integration) ContainersClientE2E', function () {
             try {
                 await fs.mkdir(testDockerfileContext, { recursive: true });
                 await fs.writeFile(testDockerfile, TestDockerfileContent);
-            } catch (error) {
+            } catch {
                 // Ignore error
             }
 
@@ -300,7 +300,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeContainers({ containers: [testContainerName], force: true })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the container doesn't exist
             }
 
@@ -309,7 +309,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeNetworks({ networks: [testContainerNetworkName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the network doesn't exist
             }
 
@@ -318,7 +318,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeVolumes({ volumes: [testContainerVolumeName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the volume doesn't exist
             }
 
@@ -335,7 +335,7 @@ describe('(integration) ContainersClientE2E', function () {
             // Create a container that will stay running
             // For fun we'll add a network, a bind mount, a volume, and some ports to it and verify those in both
             // it('ListContainersCommand') and it('InspectContainersCommand')
-            testContainerId = await defaultRunner.getCommandRunner()(
+            testContainerId = (await defaultRunner.getCommandRunner()(
                 client.runContainer({
                     imageRef: imageToTest,
                     detached: true,
@@ -349,7 +349,7 @@ describe('(integration) ContainersClientE2E', function () {
                     exposePorts: [3000], // Uses the `--expose` flag to expose a port without binding it
                     publishAllPorts: true, // Which will then get bound to a random port on the host, due to this flag
                 })
-            ) as string;
+            ))!;
         });
 
         after('Containers', async function () {
@@ -367,7 +367,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeNetworks({ networks: [testContainerNetworkName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the network doesn't exist
             }
 
@@ -376,7 +376,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeVolumes({ volumes: [testContainerVolumeName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the volume doesn't exist
             }
         });
@@ -388,7 +388,7 @@ describe('(integration) ContainersClientE2E', function () {
         });
 
         it('ListContainersCommand', async function () {
-            const container = await validateContainerExists(client, defaultRunner, { containerId: testContainerId }) as ListContainersItem;
+            const container = (await validateContainerExists(client, defaultRunner, { containerId: testContainerId }))!;
             expect(container).to.be.ok;
 
             // Validate some important properties
@@ -474,14 +474,14 @@ describe('(integration) ContainersClientE2E', function () {
             const content = 'Log entry for testing';
 
             // Generate some logs in a new container
-            const testContainerId2 = await defaultRunner.getCommandRunner()(
+            const testContainerId2 = (await defaultRunner.getCommandRunner()(
                 client.runContainer({
                     imageRef: imageToTest,
                     detached: true,
                     entrypoint: 'sh',
                     command: ['-c', `"echo '${content}'"`]
                 })
-            ) as string;
+            ))!;
 
             expect(testContainerId2).to.be.a('string');
 
@@ -513,7 +513,7 @@ describe('(integration) ContainersClientE2E', function () {
             expect(stoppedContainers).to.include(testContainerId);
 
             // Verify it's stopped
-            const stoppedContainer = await validateContainerExists(client, defaultRunner, { containerId: testContainerId }) as ListContainersItem;
+            const stoppedContainer = (await validateContainerExists(client, defaultRunner, { containerId: testContainerId }))!;
             expect(stoppedContainer).to.be.ok;
             expect(stoppedContainer.state.toLowerCase()).to.equal('exited');
         });
@@ -529,7 +529,7 @@ describe('(integration) ContainersClientE2E', function () {
             expect(startedContainers).to.include(testContainerId);
 
             // Verify it's running
-            const startedContainer = await validateContainerExists(client, defaultRunner, { containerId: testContainerId }) as ListContainersItem;
+            const startedContainer = (await validateContainerExists(client, defaultRunner, { containerId: testContainerId }))!;
             expect(startedContainer).to.be.ok;
             expect(startedContainer.state.toLowerCase()).to.equal('running');
         });
@@ -545,7 +545,7 @@ describe('(integration) ContainersClientE2E', function () {
             expect(restartedContainers).to.include(testContainerId);
 
             // Verify it's running
-            const restartedContainer = await validateContainerExists(client, defaultRunner, { containerId: testContainerId }) as ListContainersItem;
+            const restartedContainer = (await validateContainerExists(client, defaultRunner, { containerId: testContainerId }))!;
             expect(restartedContainer).to.be.ok;
             expect(restartedContainer.state.toLowerCase()).to.equal('running');
         });
@@ -563,14 +563,14 @@ describe('(integration) ContainersClientE2E', function () {
 
         it('RemoveContainersCommand', async function () {
             // Create a second container to test container removal
-            const testContainerId2 = await defaultRunner.getCommandRunner()(
+            const testContainerId2 = (await defaultRunner.getCommandRunner()(
                 client.runContainer({
                     imageRef: imageToTest,
                     detached: true,
                     command: ['sleep', '1'],
                     name: 'test-container-e2e-2'
                 })
-            ) as string;
+            ))!;
 
             expect(testContainerId2).to.be.ok;
             expect(testContainerId2).to.be.a('string');
@@ -621,7 +621,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeNetworks({ networks: [testNetworkName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the network doesn't exist
             }
 
@@ -637,7 +637,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeNetworks({ networks: [testNetworkName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the network doesn't exist
             }
         });
@@ -647,7 +647,7 @@ describe('(integration) ContainersClientE2E', function () {
         });
 
         it('ListNetworksCommand', async function () {
-            const network = await validateNetworkExists(client, defaultRunner, testNetworkName) as ListNetworkItem;
+            const network = (await validateNetworkExists(client, defaultRunner, testNetworkName))!;
             expect(network).to.be.ok;
 
             expect(network.name).to.equal(testNetworkName);
@@ -716,7 +716,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeVolumes({ volumes: [testVolumeName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the volume doesn't exist
             }
 
@@ -732,7 +732,7 @@ describe('(integration) ContainersClientE2E', function () {
                 await defaultRunner.getCommandRunner()(
                     client.removeVolumes({ volumes: [testVolumeName] })
                 );
-            } catch (error) {
+            } catch {
                 // Ignore error if the volume doesn't exist
             }
         });
@@ -742,7 +742,7 @@ describe('(integration) ContainersClientE2E', function () {
         });
 
         it('ListVolumesCommand', async function () {
-            const volume = await validateVolumeExists(client, defaultRunner, testVolumeName) as ListVolumeItem;
+            const volume = (await validateVolumeExists(client, defaultRunner, testVolumeName))!;
             expect(volume).to.be.ok;
 
             expect(volume.name).to.equal(testVolumeName);
@@ -949,12 +949,12 @@ describe('(integration) ContainersClientE2E', function () {
         let containerId: string;
 
         before('Filesystem', async function () {
-            containerId = await defaultRunner.getCommandRunner()(
+            containerId = (await defaultRunner.getCommandRunner()(
                 client.runContainer({
                     imageRef: 'alpine:latest',
                     detached: true,
                 })
-            ) as string;
+            ))!;
 
             if (!containerId) {
                 expect.fail('Failed to create container for filesystem tests');
@@ -987,9 +987,9 @@ describe('(integration) ContainersClientE2E', function () {
         });
 
         it('StatPathCommand', async function () {
-            const stats = await defaultRunner.getCommandRunner()(
+            const stats = (await defaultRunner.getCommandRunner()(
                 client.statPath({ container: containerId, path: '/etc/hosts' })
-            ) as StatPathItem;
+            ))!;
 
             expect(stats).to.be.ok;
             expect(stats.name).to.be.a('string');

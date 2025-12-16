@@ -36,7 +36,7 @@ type DockerInspectNetworkRecord = z.infer<typeof DockerInspectNetworkRecordSchem
 export function normalizeDockerInspectNetworkRecord(network: DockerInspectNetworkRecord, raw: string): InspectNetworksItem {
     const ipam: NetworkIpamConfig = {
         driver: network.IPAM.Driver,
-        config: network.IPAM.Config?.map(({ Subnet, Gateway }) => ({
+        config: network.IPAM.Config?.map(({ Subnet, Gateway }) => ({ // eslint-disable-line @typescript-eslint/naming-convention
             subnet: Subnet,
             gateway: Gateway,
         })) ?? [],

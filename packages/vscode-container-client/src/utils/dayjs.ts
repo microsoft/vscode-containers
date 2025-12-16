@@ -29,7 +29,7 @@ export const dayjs = new Proxy(dayjsinner, {
         return target.apply(thisArg, argArray);
     },
     get(target, prop, receiver) {
-        const value = Reflect.get(target, prop, receiver);
+        const value: unknown = Reflect.get(target, prop, receiver);
         if (typeof value === 'function') {
             if (prop === 'utc') {
                 return function (this: typeof dayjsinner, ...args: Array<unknown>) {
@@ -42,10 +42,12 @@ export const dayjs = new Proxy(dayjsinner, {
                         args.push(formats);
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return value.apply(this === receiver ? target : this, args);
                 };
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return value.bind(this === receiver ? target : this);
         } else {
             return value;

@@ -89,7 +89,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
                     timeoutSeconds: 1,
                 })
             );
-        } catch (error) {
+        } catch {
             // Ignore errors during cleanup
         }
     });

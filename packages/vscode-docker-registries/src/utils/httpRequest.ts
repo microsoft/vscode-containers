@@ -12,6 +12,7 @@ export function getNextLinkFromHeaders(headers: Headers, baseUrl: vscode.Uri): v
         return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
     const match = linkHeader.match(/<(.*)>; rel="next"/i);
     if (!match) {
         return undefined;

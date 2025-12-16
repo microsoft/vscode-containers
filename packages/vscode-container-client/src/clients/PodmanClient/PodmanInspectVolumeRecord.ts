@@ -24,9 +24,9 @@ export function normalizePodmanInspectVolumeRecord(volume: PodmanInspectVolumeRe
         driver: volume.Driver,
         mountpoint: volume.Mountpoint,
         createdAt: new Date(volume.CreatedAt),
-        labels: volume.Labels || {},
+        labels: volume.Labels ?? {},
         scope: volume.Scope,
-        options: volume.Options || {},
+        options: volume.Options ?? {},
         raw,
     };
 }

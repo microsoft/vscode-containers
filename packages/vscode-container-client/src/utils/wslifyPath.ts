@@ -13,6 +13,5 @@ export function wslifyPath(windowsPath: string): string {
 
     return windowsPath
         .replace(/\\/g, '/')
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        .replace(/^([A-Za-z]):/, (_, drive) => `/mnt/${drive.toLowerCase()}`);
+        .replace(/^([A-Za-z]):/, (_, drive: string) => `/mnt/${drive.toLowerCase()}`);
 }

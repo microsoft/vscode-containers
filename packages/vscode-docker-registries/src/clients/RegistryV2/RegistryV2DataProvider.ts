@@ -56,7 +56,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
                 scopes: ['registry:catalog:*'],
             });
 
-            for (const repository of catalogResponse.body?.repositories || []) {
+            for (const repository of catalogResponse.body?.repositories ?? []) {
                 results.push({
                     parent: registry,
                     baseUrl: registry.baseUrl,
@@ -84,7 +84,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
                 throwOnFailure: true,
             });
 
-            for (const tag of tagsResponse.body?.tags || []) {
+            for (const tag of tagsResponse.body?.tags ?? []) {
                 results.push({
                     parent: repository,
                     baseUrl: repository.baseUrl,
@@ -160,35 +160,37 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
     }
 
     private async getTagCreatedDate(item: V2Tag): Promise<Date | undefined> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const manifest = await this.getManifest(item) as any;
+        const manifest = await this.getManifest(item) as Manifest | ManifestList;
+
+        if (!manifest) {
+            return undefined;
+        }
 
         // Depending on the type of manifest, there's a lot of different places the date might be...
-        if (manifest?.history?.[0]?.v1Compatibility) {
+        if ('history' in manifest && manifest.history?.[0]?.v1Compatibility) {
             // Older v1 manifests have a "history" section with double-encoded JSON
-            const v1Compatibility = JSON.parse(manifest.history[0].v1Compatibility);
+            const v1Compatibility = JSON.parse(manifest.history[0].v1Compatibility) as V1Compatibility;
             if (v1Compatibility?.created) {
                 return new Date(v1Compatibility.created);
             }
-        } else if (manifest?.annotations?.['org.opencontainers.image.created']) {
+        } else if ('annotations' in manifest && manifest.annotations?.['org.opencontainers.image.created']) {
             // Some OCI manifests have a date annotation
             return new Date(manifest.annotations['org.opencontainers.image.created']);
-        } else if (manifest?.config?.digest) {
+        } else if ('config' in manifest && manifest.config?.digest) {
             // If there's a config, we can request it to find the created date
             return await this.getTagCreatedDateFromConfig(manifest.config.digest, item.parent);
-        } else if (Array.isArray(manifest?.manifests)) {
+        } else if ('manifests' in manifest && Array.isArray(manifest.manifests)) {
             // If this is a manifest list / index, we need to look at the individual manifests
             // Try to pick the "best" manifest based on platform/arch
             const selectedManifest =
                 manifest.manifests.find(LinuxAndSameArchSelector)
-                || manifest.manifests.find(LinuxAndAmd64Selector)
-                || manifest.manifests.find(LinuxSelector)
-                || manifest.manifests.find(WindowsSelector)
-                || manifest.manifests[0]; // Worst case, just take the first one, if it exists
+                ?? manifest.manifests.find(LinuxAndAmd64Selector)
+                ?? manifest.manifests.find(LinuxSelector)
+                ?? manifest.manifests.find(WindowsSelector)
+                ?? manifest.manifests[0]; // Worst case, just take the first one, if it exists
 
             if (selectedManifest?.digest) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const selectedManifestResponse = await this.getManifestResponse(selectedManifest.digest, item.parent) as any;
+                const selectedManifestResponse = await this.getManifestResponse(selectedManifest.digest, item.parent) as { body: Manifest };
 
                 if (selectedManifestResponse?.body?.config?.digest) {
                     return await this.getTagCreatedDateFromConfig(selectedManifestResponse.body.config.digest, item.parent);
@@ -217,23 +219,43 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
     protected abstract getAuthenticationProvider(item: V2RegistryItem): AuthenticationProvider<never>;
 }
 
-type Platform = { os?: string; architecture?: string } | undefined;
-
-const LinuxAndSameArchSelector = (platform: Platform) => {
-    return platform?.os === 'linux' &&
-        (process.arch === platform?.architecture || // Best case, exact match
-            (process.arch === 'arm64' && platform?.architecture === 'arm') || // arm64 can run arm
-            (process.arch === 'x64' && platform?.architecture === 'amd64')); // Node x64 *is* GOARCH amd64
+const LinuxAndSameArchSelector = (entry: ManifestListEntry) => {
+    return entry.platform?.os === 'linux' &&
+        (process.arch === entry.platform?.architecture || // Best case, exact match
+            (process.arch === 'arm64' && entry.platform?.architecture === 'arm') || // arm64 can run arm
+            (process.arch === 'x64' && entry.platform?.architecture === 'amd64')); // Node x64 *is* GOARCH amd64
 };
 
-const LinuxAndAmd64Selector = (platform: Platform) => {
-    return platform?.os === 'linux' && platform?.architecture === 'amd64';
+const LinuxAndAmd64Selector = (entry: ManifestListEntry) => {
+    return entry.platform?.os === 'linux' && entry.platform?.architecture === 'amd64';
 };
 
-const LinuxSelector = (platform: Platform) => {
-    return platform?.os === 'linux';
+const LinuxSelector = (entry: ManifestListEntry) => {
+    return entry.platform?.os === 'linux';
 };
 
-const WindowsSelector = (platform: Platform) => {
-    return platform?.os === 'windows';
+const WindowsSelector = (entry: ManifestListEntry) => {
+    return entry.platform?.os === 'windows';
 };
+
+interface ManifestList {
+    manifests?: ManifestListEntry[];
+}
+
+interface ManifestListEntry {
+    digest?: string;
+    platform?: {
+        os?: string;
+        architecture?: string;
+    };
+}
+
+interface Manifest {
+    history?: { v1Compatibility?: string }[];
+    annotations?: { [key: string]: string };
+    config?: { digest?: string };
+}
+
+interface V1Compatibility {
+    created?: string;
+}

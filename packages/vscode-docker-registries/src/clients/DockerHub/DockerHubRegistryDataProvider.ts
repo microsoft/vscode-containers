@@ -75,10 +75,10 @@ export class DockerHubRegistryDataProvider extends CommonRegistryDataProvider {
         await this.authenticationProvider.removeSession();
     }
 
-    public async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
+    public async getChildren(element?: CommonRegistryItem): Promise<CommonRegistryItem[]> {
         const children = await super.getChildren(element);
         children.forEach(child => {
-            child.additionalContextValues = [...(child.additionalContextValues || []), DockerHubContextValue];
+            child.additionalContextValues = [...(child.additionalContextValues ?? []), DockerHubContextValue];
         });
         return children;
     }

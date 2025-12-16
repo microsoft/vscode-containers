@@ -40,10 +40,10 @@ export function normalizeDockerInspectImageRecord(image: DockerInspectImageRecor
     const imageNameInfo: ImageNameInfo = parseDockerLikeImageName(image.RepoTags?.[0]);
 
     // Parse any environment variables defined for the image
-    const environmentVariables = parseDockerLikeEnvironmentVariables(image.Config?.Env || []);
+    const environmentVariables = parseDockerLikeEnvironmentVariables(image.Config?.Env ?? []);
 
     // Parse any default ports exposed by the image
-    const ports = Object.entries(image.Config?.ExposedPorts || {}).map<PortBinding>(([rawPort]) => {
+    const ports = Object.entries(image.Config?.ExposedPorts ?? {}).map<PortBinding>(([rawPort]) => {
         const [port, protocol] = rawPort.split('/');
         return {
             containerPort: parseInt(port),
@@ -52,7 +52,7 @@ export function normalizeDockerInspectImageRecord(image: DockerInspectImageRecor
     });
 
     // Parse any default volumes specified by the image
-    const volumes = Object.entries(image.Config?.Volumes || {}).map<string>(([rawVolume]) => rawVolume);
+    const volumes = Object.entries(image.Config?.Volumes ?? {}).map<string>(([rawVolume]) => rawVolume);
 
     // Parse any labels assigned to the image
     const labels = image.Config?.Labels ?? {};

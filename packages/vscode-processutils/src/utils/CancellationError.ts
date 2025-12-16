@@ -12,7 +12,6 @@ export class CancellationError extends Error {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isCancellationError(err: any): err is CancellationError {
-    return err?.name === CancellationError.name;
+export function isCancellationError(err: unknown): err is CancellationError {
+    return !!err && typeof err === 'object' && 'name' in err && err.name === CancellationError.name;
 }

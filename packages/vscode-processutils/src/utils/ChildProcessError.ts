@@ -10,7 +10,6 @@ export class ChildProcessError extends Error {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isChildProcessError(err: any): err is ChildProcessError {
-    return err?.name === ChildProcessError.name;
+export function isChildProcessError(err: unknown): err is ChildProcessError {
+    return !!err && typeof err === 'object' && 'name' in err && err.name === ChildProcessError.name;
 }

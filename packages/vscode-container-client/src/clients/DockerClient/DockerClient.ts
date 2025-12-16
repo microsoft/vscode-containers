@@ -52,7 +52,7 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
         )();
     }
 
-    private async parseListContextsCommandOutput(
+    private parseListContextsCommandOutput(
         output: string,
         strict: boolean,
     ): Promise<ListContextItem[]> {
@@ -87,15 +87,15 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
             }
         }
 
-        return contexts;
+        return Promise.resolve(contexts);
     }
 
-    override async listContexts(options: ListContextsCommandOptions): Promise<PromiseCommandResponse<ListContextItem[]>> {
-        return {
+    override listContexts(options: ListContextsCommandOptions): Promise<PromiseCommandResponse<ListContextItem[]>> {
+        return Promise.resolve({
             command: this.commandName,
             args: this.getListContextsCommandArgs(options),
-            parse: this.parseListContextsCommandOutput,
-        };
+            parse: (output, strict) => this.parseListContextsCommandOutput(output, strict),
+        });
     }
 
     //#endregion
@@ -110,19 +110,19 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
         )();
     }
 
-    private async parseRemoveContextsCommandOutput(
+    private parseRemoveContextsCommandOutput(
         output: string,
         strict: boolean,
     ): Promise<string[]> {
-        return asIds(output);
+        return Promise.resolve(asIds(output));
     }
 
-    override async removeContexts(options: RemoveContextsCommandOptions): Promise<PromiseCommandResponse<string[]>> {
-        return {
+    override removeContexts(options: RemoveContextsCommandOptions): Promise<PromiseCommandResponse<string[]>> {
+        return Promise.resolve({
             command: this.commandName,
             args: this.getRemoveContextsCommandArgs(options),
-            parse: this.parseRemoveContextsCommandOutput,
-        };
+            parse: (output, strict) => this.parseRemoveContextsCommandOutput(output, strict),
+        });
     }
 
     //#endregion
@@ -136,11 +136,11 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
         )();
     }
 
-    override async useContext(options: UseContextCommandOptions): Promise<VoidCommandResponse> {
-        return {
+    override useContext(options: UseContextCommandOptions): Promise<VoidCommandResponse> {
+        return Promise.resolve({
             command: this.commandName,
             args: this.getUseContextCommandArgs(options),
-        };
+        });
     }
 
     //#endregion
@@ -155,12 +155,12 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
         )();
     }
 
-    private async parseInspectContextsCommandOutput(
+    private parseInspectContextsCommandOutput(
         output: string,
         strict: boolean,
     ): Promise<InspectContextsItem[]> {
         try {
-            return output.split('\n').reduce<Array<InspectContextsItem>>((volumes, inspectString) => {
+            return Promise.resolve(output.split('\n').reduce<Array<InspectContextsItem>>((volumes, inspectString) => {
                 if (!inspectString) {
                     return volumes;
                 }
@@ -183,22 +183,22 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
                 }
 
                 return volumes;
-            }, new Array<InspectContextsItem>());
+            }, new Array<InspectContextsItem>()));
         } catch (err) {
             if (strict) {
                 throw err;
             }
         }
 
-        return new Array<InspectContextsItem>();
+        return Promise.resolve(new Array<InspectContextsItem>());
     }
 
-    override async inspectContexts(options: InspectContextsCommandOptions): Promise<PromiseCommandResponse<InspectContextsItem[]>> {
-        return {
+    override inspectContexts(options: InspectContextsCommandOptions): Promise<PromiseCommandResponse<InspectContextsItem[]>> {
+        return Promise.resolve({
             command: this.commandName,
             args: this.getInspectContextsCommandArgs(options),
-            parse: this.parseInspectContextsCommandOutput,
-        };
+            parse: (output, strict) => this.parseInspectContextsCommandOutput(output, strict),
+        });
     }
 
     //#endregion

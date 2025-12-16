@@ -85,11 +85,11 @@ type PodmanInspectContainerRecord = z.infer<typeof PodmanInspectContainerRecordS
 
 export function normalizePodmanInspectContainerRecord(container: PodmanInspectContainerRecord, raw: string): InspectContainersItem {
     // Parse the environment variables assigned to the container at runtime
-    const environmentVariables = parseDockerLikeEnvironmentVariables(container.Config?.Env || []);
+    const environmentVariables = parseDockerLikeEnvironmentVariables(container.Config?.Env ?? []);
 
     // Parse the networks assigned to the container and normalize to InspectContainersItemNetwork
     // records
-    const networks = Object.entries(container.NetworkSettings?.Networks || {}).map<InspectContainersItemNetwork>(([name, dockerNetwork]) => {
+    const networks = Object.entries(container.NetworkSettings?.Networks ?? {}).map<InspectContainersItemNetwork>(([name, dockerNetwork]) => {
         return {
             name,
             gateway: dockerNetwork.Gateway || undefined,
@@ -99,7 +99,7 @@ export function normalizePodmanInspectContainerRecord(container: PodmanInspectCo
     });
 
     // Parse the exposed ports for the container and normalize to a PortBinding record
-    const ports = Object.entries(container.NetworkSettings?.Ports || {}).map<PortBinding>(([rawPort, hostBinding]) => {
+    const ports = Object.entries(container.NetworkSettings?.Ports ?? {}).map<PortBinding>(([rawPort, hostBinding]) => {
         const [port, protocol] = rawPort.split('/');
         return {
             hostIp: normalizeIpAddress(hostBinding?.[0]?.HostIp),

@@ -64,10 +64,10 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
         await this.authenticationProvider.removeSession();
     }
 
-    public override async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
+    public override async getChildren(element?: CommonRegistryItem): Promise<CommonRegistryItem[]> {
         const children = await super.getChildren(element);
         children.forEach(e => {
-            e.additionalContextValues = [...(e.additionalContextValues || []), GitHubContextValue];
+            e.additionalContextValues = [...(e.additionalContextValues ?? []), GitHubContextValue];
         });
         return children;
     }
@@ -103,7 +103,7 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
                 throwOnFailure: true,
             });
 
-            for (const repository of catalogResponse.body?.repositories || []) {
+            for (const repository of catalogResponse.body?.repositories ?? []) {
                 if (!repository.startsWith(originalSearchString)) {
                     foundAllInSearch = true;
                     break;
@@ -137,7 +137,6 @@ export class GitHubRegistryDataProvider extends RegistryV2DataProvider {
         const response = await httpRequest<{ login: string }[]>(requestUrl.toString(), {
             headers: {
                 'Accept': 'application/vnd.github+json',
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 'X-GitHub-Api-Version': '2022-11-28',
                 'Authorization': `Bearer ${creds.secret}`
             }

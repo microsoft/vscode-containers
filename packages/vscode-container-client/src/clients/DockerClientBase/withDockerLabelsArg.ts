@@ -9,6 +9,6 @@ import { Labels } from "../../contracts/ContainerClient";
 export function withDockerLabelsArg(labels?: Labels) {
     return withNamedArg(
         '--label',
-        Object.entries(labels || {}).map(([label, value]) => `${label}=${value}`),
+        Object.entries(labels ?? {}).map(([label, value]) => `${label}=${value}`),
     );
 }

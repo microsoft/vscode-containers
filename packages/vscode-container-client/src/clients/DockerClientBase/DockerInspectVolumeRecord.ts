@@ -28,8 +28,8 @@ export function normalizeDockerInspectVolumeRecord(volume: DockerInspectVolumeRe
         driver: volume.Driver,
         mountpoint: volume.Mountpoint,
         scope: volume.Scope,
-        labels: volume.Labels || {},
-        options: volume.Options || {},
+        labels: volume.Labels ?? {},
+        options: volume.Options ?? {},
         createdAt: createdAt.toDate(),
         raw,
     };

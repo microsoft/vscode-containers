@@ -5,4 +5,6 @@ node_modules/
 src
 tsconfig.json
 *.tgz
+*.map
 vscode.ts
+eslint.config.mjs

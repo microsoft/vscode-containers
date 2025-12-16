@@ -27,7 +27,7 @@ export function normalizePodmanInspectNetworkRecord(network: PodmanInspectNetwor
         createdAt: network.created ? new Date(network.created) : undefined,
         internal: network.internal,
         ipv6: network.ipv6_enabled,
-        labels: network.labels || {},
+        labels: network.labels ?? {},
         scope: undefined,
         attachable: undefined,
         ingress: undefined,

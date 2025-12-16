@@ -73,7 +73,7 @@ export async function spawnStreamAsync(
     args: CommandLineArgs,
     options: StreamSpawnOptions,
 ): Promise<void> {
-    const cancellationToken = options.cancellationToken || CancellationTokenLike.None;
+    const cancellationToken = options.cancellationToken ?? CancellationTokenLike.None;
     const shell = options.shellProvider?.getShellOrDefault(options.shell) ?? options.shell;
 
     // If there is a shell provider, apply its quoting, otherwise just flatten arguments into strings

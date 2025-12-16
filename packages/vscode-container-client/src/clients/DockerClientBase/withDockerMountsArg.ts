@@ -18,5 +18,5 @@ export function formatDockerMount(mount: RunContainerMount): string {
 }
 
 export function withDockerMountsArg(mounts?: Array<RunContainerMount>) {
-    return withNamedArg('--mount', (mounts || []).map(formatDockerMount));
+    return withNamedArg('--mount', (mounts ?? []).map(formatDockerMount));
 }

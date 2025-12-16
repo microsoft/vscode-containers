@@ -87,6 +87,7 @@ export function withFlagArg(name: string, value: boolean | undefined): CommandLi
  *
  * These options cannot be used together
  */
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 type WithNamedArgOptions = {
     assignValue?: true,
     shouldQuote?: never | false,
@@ -97,6 +98,7 @@ type WithNamedArgOptions = {
     assignValue?: never | false,
     shouldQuote?: never | false,
 };
+/* eslint-enable @typescript-eslint/no-redundant-type-constituents */
 /**
  * Functional method for assigning an array style argument (multiple instances
  * of the argument are treated as an appended list)

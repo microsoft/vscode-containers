@@ -27,7 +27,6 @@ export class DockerHubAuthProvider extends BasicAuthProvider implements Authenti
 
             const response = await httpRequest<{ token: string }>(requestUrl.toString(), {
                 method: 'POST',
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username: creds.username,

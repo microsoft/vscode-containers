@@ -7,7 +7,7 @@ import { LabelFilters } from "../../contracts/ContainerClient";
 import { conditional } from "../../utils/conditional";
 import { withDockerFilterArg } from "./withDockerFilterArg";
 
-export function formatDockerLabelFilter(name: string, value: boolean | string): string | undefined {
+function formatDockerLabelFilter(name: string, value: boolean | string): string | undefined {
     if (typeof value === 'boolean' && value) {
         return `label=${name}`;
     } else if (typeof value === 'string') {
@@ -19,6 +19,6 @@ export function formatDockerLabelFilter(name: string, value: boolean | string): 
 
 export function withDockerLabelFilterArgs(labels?: LabelFilters) {
     return withDockerFilterArg(
-        Object.entries(labels || {}).map(([label, value]) => formatDockerLabelFilter(label, value)),
+        Object.entries(labels ?? {}).map(([label, value]) => formatDockerLabelFilter(label, value)),
     );
 }

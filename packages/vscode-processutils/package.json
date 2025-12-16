@@ -19,7 +19,7 @@
         "build": "npm run build:esm && npm run build:cjs",
         "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
-        "lint": "eslint --max-warnings 0 . --ext ts",
+        "lint": "eslint --max-warnings 0",
         "package": "npm pack",
         "test": "mocha",
         "testintegration": "mocha --grep \"(integration)\""

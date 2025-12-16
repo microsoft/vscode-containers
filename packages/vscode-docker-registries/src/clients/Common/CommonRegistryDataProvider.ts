@@ -22,7 +22,7 @@ export abstract class CommonRegistryDataProvider implements RegistryDataProvider
         this.onDidChangeTreeDataEmitter.dispose();
     }
 
-    public async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
+    public async getChildren(element?: CommonRegistryItem): Promise<CommonRegistryItem[]> {
         try {
             if (!element) {
                 return [await this.getRoot()];
@@ -53,7 +53,7 @@ export abstract class CommonRegistryDataProvider implements RegistryDataProvider
                 ...element,
                 collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
                 contextValue: getContextValue(element, 'commonregistry'),
-                iconPath: element.iconPath || new vscode.ThemeIcon('briefcase'),
+                iconPath: element.iconPath ?? new vscode.ThemeIcon('briefcase'),
             });
         } else if (isRepository(element)) {
             return Promise.resolve({

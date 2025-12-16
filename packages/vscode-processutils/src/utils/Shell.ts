@@ -13,7 +13,7 @@ import { CommandLineArgs } from './commandLineBuilder';
  * Quoth the cmd.exe 'nevermore'.
  */
 export abstract class Shell implements IShell {
-    public static getShellOrDefault(shell?: Shell | null | undefined): Shell {
+    public static getShellOrDefault(shell?: Shell | null): Shell {
         if (shell) {
             return shell;
         }
@@ -87,7 +87,7 @@ export class Powershell extends Shell {
         }
     }
 
-    public override getShellOrDefault(shell?: string | boolean | undefined): string | boolean | undefined {
+    public override getShellOrDefault(shell?: string | boolean): string | boolean | undefined {
         if (typeof shell !== 'string' && shell !== false) {
             return 'powershell.exe';
         }
@@ -190,7 +190,7 @@ export class NoShell extends Shell {
         });
     }
 
-    public override getShellOrDefault(shell?: string | boolean | undefined): string | boolean | undefined {
+    public override getShellOrDefault(shell?: string | boolean): string | boolean | undefined {
         return false;
     }
 }

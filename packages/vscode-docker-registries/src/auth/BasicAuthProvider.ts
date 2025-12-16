@@ -38,6 +38,6 @@ export abstract class BasicAuthProvider implements AuthenticationProvider {
         await this.secretStorage.store(`BasicAuthProvider.${this.storageSubKey}.secret`, credential.secret);
     }
 
-    public abstract getSession(scopes: string[], options?: vscode.AuthenticationGetSessionOptions | undefined): Promise<vscode.AuthenticationSession & { type: string; }>;
+    public abstract getSession(scopes: string[], options?: vscode.AuthenticationGetSessionOptions): Promise<vscode.AuthenticationSession & { type: string; }>;
     public abstract getLoginInformation?(): Promise<LoginInformation>;
 }

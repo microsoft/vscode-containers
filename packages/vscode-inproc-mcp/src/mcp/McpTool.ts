@@ -48,7 +48,7 @@ export class McpTool<TInSchema extends ToolIOSchema, TOutSchema extends ToolIOSc
     public async executeMcp(input: z.infer<TInSchema>, extra: ToolExecutionExtras): Promise<McpToolResult> {
         try {
             // Ensure we have a signal and token to work with. In MCP the signal will always be defined.
-            extra.token ||= CancellationTokenLike.fromAbortSignal(extra.signal);
+            extra.token ??= CancellationTokenLike.fromAbortSignal(extra.signal);
 
             const result = await this.execute(input, extra);
 

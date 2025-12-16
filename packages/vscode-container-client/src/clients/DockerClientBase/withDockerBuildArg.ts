@@ -6,5 +6,5 @@
 import { withNamedArg } from "@microsoft/vscode-processutils";
 
 export function withDockerBuildArg(buildArgs?: Record<string, string>) {
-    return withNamedArg('--build-arg', Object.entries(buildArgs || {}).map(([key, value]) => `${key}=${value}`));
+    return withNamedArg('--build-arg', Object.entries(buildArgs ?? {}).map(([key, value]) => `${key}=${value}`));
 }

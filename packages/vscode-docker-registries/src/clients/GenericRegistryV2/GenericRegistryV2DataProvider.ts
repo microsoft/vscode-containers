@@ -36,10 +36,10 @@ export class GenericRegistryV2DataProvider extends RegistryV2DataProvider {
         await this.addTrackedRegistry();
     }
 
-    public async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
+    public async getChildren(element?: CommonRegistryItem): Promise<CommonRegistryItem[]> {
         const children = await super.getChildren(element);
         children.forEach(e => {
-            e.additionalContextValues = [...(e.additionalContextValues || []), GenericV2ContextValue];
+            e.additionalContextValues = [...(e.additionalContextValues ?? []), GenericV2ContextValue];
         });
         return children;
     }
@@ -53,18 +53,18 @@ export class GenericRegistryV2DataProvider extends RegistryV2DataProvider {
         };
     }
 
-    public async getRegistries(root: V2RegistryRoot | V2RegistryItem): Promise<V2Registry[]> {
+    public getRegistries(root: V2RegistryRoot | V2RegistryItem): Promise<V2Registry[]> {
         const trackedRegistryStrings = this.extensionContext.globalState.get<string[]>(TrackedRegistriesKey, []);
         const trackedRegistries = trackedRegistryStrings.map(r => vscode.Uri.parse(r));
 
-        return trackedRegistries.map(r => {
+        return Promise.resolve(trackedRegistries.map(r => {
             return {
                 label: r.toString(),
                 parent: root,
                 type: 'commonregistry',
                 baseUrl: r
             };
-        });
+        }));
     }
 
     protected override getAuthenticationProvider(item: V2Registry): BasicOAuthProvider {
