@@ -1,7 +1,7 @@
 trigger: none # Only run this pipeline when manually triggered
 
 parameters:
-  - extends: ./params.yml
+  - template: ./params.yml
   - name: publishVersion
     displayName: Version to publish
     type: string
