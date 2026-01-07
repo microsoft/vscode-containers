@@ -3202,7 +3202,6 @@
     ],
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
-        "@cfworker/json-schema": "^4.1.1",
         "@microsoft/vscode-azext-eng": "1.0.0-alpha.8",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
