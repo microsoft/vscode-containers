@@ -32,6 +32,7 @@ import { configureDockerContextsExplorer, dockerContextsHelp } from "./context/D
 import { inspectDockerContext } from "./context/inspectDockerContext";
 import { removeDockerContext } from "./context/removeDockerContext";
 import { useDockerContext } from "./context/useDockerContext";
+import { clearContainersFilter, clearImagesFilter, filterContainersTree, filterImagesTree, setInitialFilterContextValues } from "./filterTree";
 import { help, reportIssue } from "./help";
 import { buildImage } from "./images/buildImage";
 import { configureImagesExplorer } from "./images/configureImagesExplorer";
@@ -130,6 +131,8 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.containers.downloadFile', downloadContainerFile);
     registerCommand('vscode-containers.containers.inspect', inspectContainer);
     registerCommand('vscode-containers.containers.configureExplorer', configureContainersExplorer);
+    registerCommand('vscode-containers.containers.filter', filterContainersTree);
+    registerCommand('vscode-containers.containers.clearFilter', clearContainersFilter);
     registerCommand('vscode-containers.containers.openFile', openContainerFile);
     registerCommand('vscode-containers.containers.prune', pruneContainers);
     registerCommand('vscode-containers.containers.remove', removeContainer);
@@ -148,11 +151,14 @@ export function registerCommands(): void {
 
     registerWorkspaceCommand('vscode-containers.images.build', buildImage);
     registerCommand('vscode-containers.images.configureExplorer', configureImagesExplorer);
+    registerCommand('vscode-containers.images.filter', filterImagesTree);
+    registerCommand('vscode-containers.images.clearFilter', clearImagesFilter);
     registerCommand('vscode-containers.images.inspect', inspectImage);
     registerCommand('vscode-containers.images.prune', pruneImages);
     registerCommand('vscode-containers.images.showDangling', showDanglingImages);
     registerCommand('vscode-containers.images.hideDangling', hideDanglingImages);
     setInitialDanglingContextValue();
+    setInitialFilterContextValues();
     registerWorkspaceCommand('vscode-containers.images.pull', pullImage);
     registerWorkspaceCommand('vscode-containers.images.push', pushImage);
     registerCommand('vscode-containers.images.remove', removeImage);
