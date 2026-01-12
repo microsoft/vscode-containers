@@ -2031,7 +2031,9 @@
                     "description": "%vscode-containers.config.containers.containers.sortBy%",
                     "enum": [
                         "CreatedTime",
-                        "Label"
+                        "CreatedTimeReverse",
+                        "Label",
+                        "LabelReverse"
                     ]
                 },
                 "containers.contexts.description": {
@@ -2129,8 +2131,11 @@
                     "description": "%vscode-containers.config.containers.images.sortBy%",
                     "enum": [
                         "CreatedTime",
+                        "CreatedTimeReverse",
                         "Label",
-                        "Size"
+                        "LabelReverse",
+                        "Size",
+                        "SizeReverse"
                     ]
                 },
                 "containers.images.checkForOutdatedImages": {
@@ -2189,7 +2194,9 @@
                     "description": "%vscode-containers.config.containers.networks.sortBy%",
                     "enum": [
                         "CreatedTime",
-                        "Label"
+                        "CreatedTimeReverse",
+                        "Label",
+                        "LabelReverse"
                     ]
                 },
                 "containers.volumes.groupBy": {
@@ -2231,7 +2238,9 @@
                     "description": "%vscode-containers.config.containers.volumes.sortBy%",
                     "enum": [
                         "CreatedTime",
-                        "Label"
+                        "CreatedTimeReverse",
+                        "Label",
+                        "LabelReverse"
                     ]
                 },
                 "containers.imageBuildContextPath": {
