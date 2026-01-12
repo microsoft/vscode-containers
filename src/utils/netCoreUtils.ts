@@ -62,7 +62,6 @@ export async function getNetCoreProjectInfo(project: string, additionalPropertie
         const assemblyName = `${rawInfo.Properties.AssemblyName}.dll`;
         const targetFrameworks = rawInfo.Properties.TargetFrameworks ?
             rawInfo.Properties.TargetFrameworks.split(';') : [rawInfo.Properties.TargetFramework!]; // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know it must be one of the two due to the schema refinement
-        const enableSdkContainerSupport = !!rawInfo.Properties.EnableSdkContainerSupport;
 
         const commonInfo = {
             assemblyName: assemblyName,
@@ -70,7 +69,7 @@ export async function getNetCoreProjectInfo(project: string, additionalPropertie
             assemblyRelativeOutputPath: path.join(rawInfo.Properties.OutputPath, assemblyName),
         };
 
-        if (enableSdkContainerSupport) {
+        if (rawInfo.Properties.EnableSdkContainerSupport) {
             return {
                 ...commonInfo,
                 enableSdkContainerSupport: true,
