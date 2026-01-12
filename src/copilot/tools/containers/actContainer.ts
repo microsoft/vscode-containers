@@ -4,18 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { CopilotTool } from '@microsoft/vscode-inproc-mcp';
+import * as vscode from 'vscode';
 import { z } from 'zod';
 import { ext } from '../../../extensionVariables';
 import { ContainerRefSchema } from '../common';
 
 const ActContainerInputSchema = ContainerRefSchema.extend({
-    action: z.enum(['start', 'stop', 'restart', 'remove']).describe('The action to perform on the container'),
+    action: z.enum(['start', 'stop', 'restart', 'remove', 'attachShell']).describe('The action to perform on the container'),
 });
 
 export const actContainerTool: CopilotTool<typeof ActContainerInputSchema, z.ZodVoid> = {
     name: 'act_container',
     inputSchema: ActContainerInputSchema,
-    description: 'Start, stop, restart or remove a container by name or ID',
+    description: 'Start, stop, restart, remove, or attach a shell to a container by name or ID',
     annotations: {
         destructiveHint: true, // Container stop can also result in removal, so mark as destructive
         idempotentHint: true,
@@ -45,6 +46,10 @@ export const actContainerTool: CopilotTool<typeof ActContainerInputSchema, z.Zod
                     client.removeContainers({ containers: [input.containerNameOrId], force: true }),
                     { cancellationToken: extras.token }
                 );
+                return;
+            case 'attachShell':
+                // Don't wait--the task will run interactively but we don't want to block the agent forever
+                void vscode.commands.executeCommand('vscode-containers.containers.attachShell', input.containerNameOrId);
                 return;
             default:
                 throw new Error(`Unknown action: ${input.action}`);

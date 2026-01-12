@@ -13,13 +13,15 @@ import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
 import { getDockerOSType } from '../../utils/osUtils';
 import { selectAttachCommand } from '../selectCommandTemplate';
 
-export async function attachShellContainer(context: IActionContext, node?: ContainerTreeItem): Promise<void> {
+export async function attachShellContainer(context: IActionContext, node?: ContainerTreeItem | string): Promise<void> {
     if (!node) {
         await ext.containersTree.refresh(context);
         node = await ext.containersTree.showTreeItemPicker<ContainerTreeItem>(ContainerTreeItem.runningContainerRegExp, {
             ...context,
             noItemFoundErrorMessage: l10n.t('No running containers are available to attach')
         });
+    } else if (typeof node === 'string') {
+        // TODO
     }
 
     const osType: ContainerOS = await getDockerOSType();
