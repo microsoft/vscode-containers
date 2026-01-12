@@ -133,7 +133,7 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
 
     private async normalizeAppOutput(unnormalizedContainerWorkingDirectory: string, isSdkContainerSupportEnabled: boolean): Promise<string> {
         if (isSdkContainerSupportEnabled) {
-            return await getDockerOSType() === 'windows' // fourth is output path
+            return await getDockerOSType() === 'windows'
                 ? path.win32.normalize(unnormalizedContainerWorkingDirectory)
                 : path.posix.normalize(unnormalizedContainerWorkingDirectory);
         } else {
