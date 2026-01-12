@@ -204,20 +204,13 @@ export class NetCoreDebugHelper implements DebugHelper {
     }
 
     protected async getProjectProperties(debugConfiguration: DockerDebugConfiguration): Promise<NetCoreProjectProperties> {
-        const projectInfo = await getNetCoreProjectInfo('GetProjectProperties', debugConfiguration.netCore?.appProject);
+        const projectInfo = await getNetCoreProjectInfo(debugConfiguration.netCore?.appProject);
 
-        if (projectInfo.length < 3) {
-            throw new Error(l10n.t('Unable to determine assembly output path.'));
-        }
-
-        // First line is assembly name, second is target framework, third+ are output path(s)
-        const projectProperties: NetCoreProjectProperties = {
-            assemblyName: projectInfo[0],
-            targetFramework: projectInfo[1],
-            appOutput: projectInfo[2]
+        return {
+            assemblyName: projectInfo.assemblyName,
+            targetFramework: projectInfo.targetFrameworks[0],
+            appOutput: projectInfo.assemblyRelativeOutputPath,
         };
-
-        return projectProperties;
     }
 
     private async acquireDebuggers(platformOS: PlatformOS): Promise<void> {
