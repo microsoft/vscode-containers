@@ -10,6 +10,12 @@ import * as vscode from 'vscode';
 import { z } from 'zod';
 import { execAsync } from './execAsync';
 
+interface NetCoreCommonProjectInfo {
+    assemblyName: string;
+    targetFrameworks: string[];
+    assemblyRelativeOutputPath: string;
+}
+
 interface NetCoreContainerProjectInfo {
     enableSdkContainerSupport: true;
     assemblyContainerPath: string;
@@ -20,12 +26,6 @@ interface NetCoreNonContainerProjectInfo {
     enableSdkContainerSupport: false;
     assemblyContainerPath: never;
     imageName: never;
-}
-
-interface NetCoreCommonProjectInfo {
-    assemblyName: string;
-    targetFrameworks: string[];
-    assemblyRelativeOutputPath: string;
 }
 
 export type NetCoreProjectInfo = NetCoreCommonProjectInfo & (NetCoreContainerProjectInfo | NetCoreNonContainerProjectInfo);
