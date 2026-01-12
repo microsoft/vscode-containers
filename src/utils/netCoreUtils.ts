@@ -46,20 +46,6 @@ const RawNetCoreProjectInfoSchema = z.object({
         .refine(info => !info.EnableSdkContainerSupport || (info.ContainerWorkingDirectory && (info.ContainerRepository || info.ContainerImageName)), vscode.l10n.t('ContainerWorkingDirectory and either ContainerRepository or ContainerImageName must have values when EnableSdkContainerSupport is true'))
 });
 
-export interface BlazorManifestInfo {
-    inputManifestPath: string;
-    outputManifestPath: string;
-}
-
-const RawBlazorManifestInfoSchema = z.object({
-    Properties: z.object({
-        MSBuildProjectDirectory: z.string().min(1, vscode.l10n.t('MSBuildProjectDirectory must have a value')),
-        StaticWebAssetDevelopmentManifestPath: z.string().min(1, vscode.l10n.t('StaticWebAssetDevelopmentManifestPath must have a value')),
-        OutputPath: z.string().min(1, vscode.l10n.t('OutputPath must have a value')),
-        TargetName: z.string().min(1, vscode.l10n.t('TargetName must have a value')),
-    })
-});
-
 export async function getNetCoreProjectInfo(project: string, additionalProperties?: CommandLineArgs): Promise<NetCoreProjectInfo> {
     const args = composeArgs(
         withArg('build', '--no-restore'),
@@ -104,6 +90,20 @@ export async function getNetCoreProjectInfo(project: string, additionalPropertie
         throw new Error(vscode.l10n.t('Unable to determine project information for project \'{0}\': {1}', project, error.message));
     }
 }
+
+export interface BlazorManifestInfo {
+    inputManifestPath: string;
+    outputManifestPath: string;
+}
+
+const RawBlazorManifestInfoSchema = z.object({
+    Properties: z.object({
+        MSBuildProjectDirectory: z.string().min(1, vscode.l10n.t('MSBuildProjectDirectory must have a value')),
+        StaticWebAssetDevelopmentManifestPath: z.string().min(1, vscode.l10n.t('StaticWebAssetDevelopmentManifestPath must have a value')),
+        OutputPath: z.string().min(1, vscode.l10n.t('OutputPath must have a value')),
+        TargetName: z.string().min(1, vscode.l10n.t('TargetName must have a value')),
+    })
+});
 
 export async function getBlazorManifestInfo(project: string): Promise<BlazorManifestInfo> {
     const args = composeArgs(
