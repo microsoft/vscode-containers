@@ -10,14 +10,25 @@ import * as vscode from 'vscode';
 import { z } from 'zod';
 import { execAsync } from './execAsync';
 
-export interface NetCoreProjectInfo {
+interface NetCoreContainerProjectInfo {
+    enableSdkContainerSupport: true;
+    assemblyContainerPath: string;
+    imageName: string;
+}
+
+interface NetCoreNonContainerProjectInfo {
+    enableSdkContainerSupport: false;
+    assemblyContainerPath: never;
+    imageName: never;
+}
+
+interface NetCoreCommonProjectInfo {
     assemblyName: string;
     targetFrameworks: string[];
     assemblyRelativeOutputPath: string;
-    enableSdkContainerSupport: boolean;
-    assemblyContainerPath: string | undefined;
-    imageName: string | undefined;
 }
+
+export type NetCoreProjectInfo = NetCoreCommonProjectInfo & (NetCoreContainerProjectInfo | NetCoreNonContainerProjectInfo);
 
 const RawNetCoreProjectInfoSchema = z.object({
     Properties: z
@@ -64,23 +75,30 @@ export async function getNetCoreProjectInfo(project: string, additionalPropertie
 
         const assemblyName = `${rawInfo.Properties.AssemblyName}.dll`;
         const targetFrameworks = rawInfo.Properties.TargetFrameworks ?
-            rawInfo.Properties.TargetFrameworks.split(';') : [rawInfo.Properties.TargetFramework!]; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+            rawInfo.Properties.TargetFrameworks.split(';') : [rawInfo.Properties.TargetFramework!]; // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know it must be one of the two due to the schema refinement
         const enableSdkContainerSupport = !!rawInfo.Properties.EnableSdkContainerSupport;
 
-        return {
+        const commonInfo = {
             assemblyName: assemblyName,
             targetFrameworks: targetFrameworks,
             assemblyRelativeOutputPath: path.join(rawInfo.Properties.OutputPath, assemblyName),
-            enableSdkContainerSupport: enableSdkContainerSupport,
-            assemblyContainerPath:
-                enableSdkContainerSupport ?
-                    path.posix.join(rawInfo.Properties.ContainerWorkingDirectory!, assemblyName) : // eslint-disable-line @typescript-eslint/no-non-null-assertion
-                    undefined,
-            imageName:
-                enableSdkContainerSupport ?
-                    rawInfo.Properties.ContainerRepository || rawInfo.Properties.ContainerImageName :
-                    undefined,
         };
+
+        if (enableSdkContainerSupport) {
+            return {
+                ...commonInfo,
+                enableSdkContainerSupport: true,
+                assemblyContainerPath: path.posix.join(rawInfo.Properties.ContainerWorkingDirectory!, assemblyName), // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know this is set if enableSdkContainerSupport is true due to the schema refinement
+                imageName: rawInfo.Properties.ContainerRepository || rawInfo.Properties.ContainerImageName!,  // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know this is set if enableSdkContainerSupport is true due to the schema refinement
+            };
+        } else {
+            return {
+                ...commonInfo,
+                enableSdkContainerSupport: false,
+                assemblyContainerPath: undefined as never,
+                imageName: undefined as never,
+            };
+        }
     } catch (err) {
         const error = parseError(err);
         throw new Error(vscode.l10n.t('Unable to determine project information for project \'{0}\': {1}', project, error.message));
