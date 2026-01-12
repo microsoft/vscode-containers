@@ -22,8 +22,8 @@ export interface NetCoreProjectInfo {
 const RawNetCoreProjectInfoSchema = z.object({
     Properties: z
         .object({
-            AssemblyName: z.string().nonempty(vscode.l10n.t('AssemblyName must have a value')),
-            OutputPath: z.string().nonempty(vscode.l10n.t('OutputPath must have a value')),
+            AssemblyName: z.string().min(1, vscode.l10n.t('AssemblyName must have a value')),
+            OutputPath: z.string().min(1, vscode.l10n.t('OutputPath must have a value')),
             TargetFramework: z.string().optional(),
             TargetFrameworks: z.string().optional(),
             EnableSdkContainerSupport: z.stringbool().optional(),
@@ -42,10 +42,10 @@ export interface BlazorManifestInfo {
 
 const RawBlazorManifestInfoSchema = z.object({
     Properties: z.object({
-        MSBuildProjectDirectory: z.string().nonempty(vscode.l10n.t('MSBuildProjectDirectory must have a value')),
-        StaticWebAssetDevelopmentManifestPath: z.string().nonempty(vscode.l10n.t('StaticWebAssetDevelopmentManifestPath must have a value')),
-        OutputPath: z.string().nonempty(vscode.l10n.t('OutputPath must have a value')),
-        TargetName: z.string().nonempty(vscode.l10n.t('TargetName must have a value')),
+        MSBuildProjectDirectory: z.string().min(1, vscode.l10n.t('MSBuildProjectDirectory must have a value')),
+        StaticWebAssetDevelopmentManifestPath: z.string().min(1, vscode.l10n.t('StaticWebAssetDevelopmentManifestPath must have a value')),
+        OutputPath: z.string().min(1, vscode.l10n.t('OutputPath must have a value')),
+        TargetName: z.string().min(1, vscode.l10n.t('TargetName must have a value')),
     })
 });
 
