@@ -28,18 +28,14 @@ export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreS
     public async prompt(wizardContext: NetCoreScaffoldingWizardContext): Promise<void> {
         await this.ensureNetCoreBuildTasks(wizardContext);
 
-        const projectInfo = await getNetCoreProjectInfo('GetProjectProperties', wizardContext.artifact);
-
-        if (projectInfo.length < 2) {
-            throw new Error(vscode.l10n.t('Unable to determine project info for \'{0}\'', wizardContext.artifact));
-        }
+        const projectInfo = await getNetCoreProjectInfo(wizardContext.artifact);
 
         if (!wizardContext.netCoreAssemblyName) {
-            wizardContext.netCoreAssemblyName = projectInfo[0]; // Line 1 is the assembly name including ".dll"
+            wizardContext.netCoreAssemblyName = projectInfo.assemblyName;
         }
 
         if (!wizardContext.netCoreRuntimeBaseImage || !wizardContext.netCoreSdkBaseImage) {
-            this.targetFramework = projectInfo[1]; // Line 2 is the <TargetFramework> value, or first item from <TargetFrameworks>
+            this.targetFramework = projectInfo.targetFrameworks[0];
 
             const regexMatch = /net(coreapp)?([\d.]+)/i.exec(this.targetFramework);
 
