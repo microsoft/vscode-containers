@@ -40,17 +40,16 @@ const RawNetCoreProjectInfoSchema = z.object({
             EnableSdkContainerSupport: z.stringbool().optional(),
             ContainerWorkingDirectory: z.string().optional(),
             ContainerRepository: z.string().optional(),
-            ContainerImageName: z.string().optional(),
         })
         .refine(info => info.TargetFramework || info.TargetFrameworks, vscode.l10n.t('Either TargetFramework or TargetFrameworks must have a value'))
-        .refine(info => !info.EnableSdkContainerSupport || (info.ContainerWorkingDirectory && (info.ContainerRepository || info.ContainerImageName)), vscode.l10n.t('ContainerWorkingDirectory and either ContainerRepository or ContainerImageName must have values when EnableSdkContainerSupport is true'))
+        .refine(info => !info.EnableSdkContainerSupport || (info.ContainerWorkingDirectory && info.ContainerRepository), vscode.l10n.t('ContainerWorkingDirectory and ContainerRepository must have values when EnableSdkContainerSupport is true'))
 });
 
 export async function getNetCoreProjectInfo(project: string, additionalProperties?: CommandLineArgs): Promise<NetCoreProjectInfo> {
     const args = composeArgs(
         withArg('build', '--no-restore'),
         withArg('-target:ComputeContainerConfig'),
-        withArg('-getProperty:AssemblyName,TargetFramework,TargetFrameworks,OutputPath,EnableSdkContainerSupport,ContainerWorkingDirectory,ContainerRepository,ContainerImageName'),
+        withArg('-getProperty:AssemblyName,TargetFramework,TargetFrameworks,OutputPath,EnableSdkContainerSupport,ContainerWorkingDirectory,ContainerRepository'),
         withArg(...(additionalProperties ?? [])),
         withQuotedArg(project),
     )();
@@ -73,8 +72,8 @@ export async function getNetCoreProjectInfo(project: string, additionalPropertie
             return {
                 ...commonInfo,
                 enableSdkContainerSupport: true,
-                assemblyContainerPath: path.posix.join(rawInfo.Properties.ContainerWorkingDirectory!, assemblyName), // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know this is set if enableSdkContainerSupport is true due to the schema refinement
-                imageName: rawInfo.Properties.ContainerRepository || rawInfo.Properties.ContainerImageName!,  // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know this is set if enableSdkContainerSupport is true due to the schema refinement
+                assemblyContainerPath: path.posix.join(rawInfo.Properties.ContainerWorkingDirectory!, assemblyName), // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know this is set if EnableSdkContainerSupport is true due to the schema refinement
+                imageName: rawInfo.Properties.ContainerRepository!,  // eslint-disable-line @typescript-eslint/no-non-null-assertion -- we know this is set if EnableSdkContainerSupport is true due to the schema refinement
             };
         } else {
             return {
