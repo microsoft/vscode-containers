@@ -13,6 +13,7 @@ import { ContainerRefSchema } from '../common';
 const ActComposeInputSchema = ContainerRefSchema.extend({
     action: z.enum(['up', 'down', 'start', 'stop']).describe('The action to perform on the set of services'),
     // TODO: compose file path?
+    // TODO: up options?
 });
 
 export const actComposeTool: CopilotTool<typeof ActComposeInputSchema, z.ZodVoid> = {
@@ -35,6 +36,27 @@ export const actComposeTool: CopilotTool<typeof ActComposeInputSchema, z.ZodVoid
             case 'up':
                 void taskCRF.getCommandRunner()(
                     client.up({
+                        // TODO
+                    })
+                );
+                return;
+            case 'down':
+                void taskCRF.getCommandRunner()(
+                    client.down({
+                        // TODO
+                    })
+                );
+                return;
+            case 'start':
+                void taskCRF.getCommandRunner()(
+                    client.start({
+                        // TODO
+                    })
+                );
+                return;
+            case 'stop':
+                void taskCRF.getCommandRunner()(
+                    client.stop({
                         // TODO
                     })
                 );
