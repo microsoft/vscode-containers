@@ -61,7 +61,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
 
     public override async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
         if (isRegistryRoot(element)) {
-            await this.subscriptionProvider.signIn(undefined, { promptIfNeeded: true }); // TODO: try/catch instead of always signing in?
+            await this.subscriptionProvider.signIn(undefined, { promptIfNeeded: true });
             const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions();
             this.sendSubscriptionTelemetryIfNeeded();
 
