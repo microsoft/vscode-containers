@@ -11,9 +11,9 @@ import { ext } from '../../../extensionVariables';
 import { isComposeV2ableOrchestratorClient } from '../../../runtimes/clients/AutoConfigurableDockerComposeClient';
 
 const GetContainersConfigOutputSchema = z.object({
-    cliCommand: z.string().describe('The command-line string used to invoke the container CLI tool'),
-    orchestratorCommand: z.string().describe('The command-line string used to invoke the container orchestrator CLI tool'),
-    env: z.record(z.string(), z.string()).describe('Environment variables to set when invoking the container CLI tool'),
+    cliCommand: z.string().describe('The command-line string used to invoke the container CLI tool, for example, "docker".'),
+    orchestratorCommand: z.string().describe('The command-line string used to invoke the container orchestrator CLI tool, for example, "docker compose".'),
+    env: z.record(z.string(), z.string()).describe('Environment variables to set before invoking the container CLI tool'),
 });
 
 export const getContainersConfigTool: CopilotTool<z.ZodVoid, typeof GetContainersConfigOutputSchema> = {
