@@ -28,7 +28,11 @@ export class ImagesTreeItem extends LocalRootTreeItemBase<DatedDockerImage, Imag
         super(parent);
         this.sortBySettingInfo.properties.push({
             property: 'Size',
-            description: l10n.t('Sort by image size')
+            description: l10n.t('Sort by largest image size')
+        });
+        this.sortBySettingInfo.properties.push({
+            property: 'SizeReverse',
+            description: l10n.t('Sort by smallest image size')
         });
     }
 

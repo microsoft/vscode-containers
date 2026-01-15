@@ -31,13 +31,20 @@ export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceC
         const site = nonNullProp(context, 'site');
         const parsedSite = new vscAzureAppService.ParsedSite(site, context);
         const siteClient = await parsedSite.createClient(context);
-        const appUri: string = (await siteClient.getWebAppPublishCredential()).scmUri;
+        const publishCred = await siteClient.getWebAppPublishCredential();
+
+        let uri = vscode.Uri.parse(publishCred.scmUri);
+        if (!uri.path || uri.path === '/') {
+            uri = uri.with({ path: '/api/registry/webhook' });
+        }
+
+        const webhookTargetUri: string = uri.toString(true);
 
         if (isAzureRepository(this.tagItem.parent.wrappedItem)) {
             const creatingNewWebhook: string = vscode.l10n.t('Creating webhook for web app "{0}"...', context.newSiteName);
             ext.outputChannel.info(creatingNewWebhook);
             progress.report({ message: creatingNewWebhook });
-            const webhook = await this.createWebhookForApp(context, context.site, appUri);
+            const webhook = await this.createWebhookForApp(context, context.site, webhookTargetUri);
             ext.outputChannel.info(vscode.l10n.t('Created webhook "{0}" with scope "{1}", id: "{2}" and location: "{3}"', webhook.name, webhook.scope, webhook.id, webhook.location));
         } else if (isDockerHubRepository(this.tagItem.parent.wrappedItem)) {
             const registryName = this.tagItem.parent.parent.wrappedItem.label;
@@ -56,7 +63,7 @@ export class DockerWebhookCreateStep extends AzureWizardExecuteStep<IAppServiceC
                 .showInformationMessage(vscode.l10n.t('To set up a CI/CD webhook, open the page "{0}" and enter the URI to the created web app in your Docker Hub account', dockerhubUri), dockerhubPrompt)
                 .then(response => {
                     if (response) {
-                        void vscode.env.clipboard.writeText(appUri);
+                        void vscode.env.clipboard.writeText(webhookTargetUri);
                         void vscode.env.openExternal(vscode.Uri.parse(dockerhubUri));
                     }
                 });

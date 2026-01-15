@@ -13,7 +13,7 @@ dayjs.extend(relativeTime);
 
 export type CommonProperty = 'CreatedTime' | 'Size';
 export type CommonGroupBy = 'None';
-export type CommonSortBy = 'CreatedTime' | 'Label' | 'Size';
+export type CommonSortBy = 'CreatedTime' | 'CreatedTimeReverse' | 'Label' | 'LabelReverse' | 'Size' | 'SizeReverse';
 
 export const commonProperties: ITreePropertyInfo<Exclude<CommonProperty, 'Size'>>[] = [
     { property: 'CreatedTime', exampleValue: '2 hours ago' },
@@ -26,7 +26,9 @@ export const groupByNoneProperty: ITreePropertyInfo<CommonGroupBy> = {
 
 export const sortByProperties: ITreePropertyInfo<CommonSortBy>[] = [
     { property: 'CreatedTime', description: l10n.t('Sort by newest') },
-    { property: 'Label', description: l10n.t('Sort alphabetically by label') }
+    { property: 'CreatedTimeReverse', description: l10n.t('Sort by oldest') },
+    { property: 'Label', description: l10n.t('Sort alphabetically by label') },
+    { property: 'LabelReverse', description: l10n.t('Sort reverse alphabetically by label') }
 ];
 
 export function getCommonPropertyValue(item: { createdAt?: Date, size?: number }, property: CommonProperty): string {

@@ -111,31 +111,29 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
         const ridOS = await normalizeOsToRidOs();
         const ridArchitecture = await normalizeArchitectureToRidArchitecture();
         const additionalProperties = composeArgs(
-            withNamedArg('/p:ContainerRuntimeIdentifier', `"${ridOS}-${ridArchitecture}"`, { assignValue: true }), // We have to pre-quote the file paths because we cannot simultaneously use `assignValue` and `shouldQuote`
+            withNamedArg('-p:ContainerRuntimeIdentifier', `"${ridOS}-${ridArchitecture}"`, { assignValue: true }), // We have to pre-quote the RID because we cannot simultaneously use `assignValue` and `shouldQuote`
         )();
         const resolvedAppProject = resolveVariables(debugConfiguration.netCore?.appProject, folder);
 
-        const projectInfo = await getNetCoreProjectInfo('GetProjectProperties', resolvedAppProject, additionalProperties);
+        const projectInfo = await getNetCoreProjectInfo(resolvedAppProject, additionalProperties);
 
-        if (projectInfo.length < 6 || !projectInfo[5]) {
+        if (!projectInfo.enableSdkContainerSupport) {
             throw new Error(l10n.t("Your current project configuration or .NET SDK version doesn't support SDK Container build. Please choose a compatible project or update .NET SDK."));
         }
 
-        const projectProperties: NetSdkProjectProperties = {
-            assemblyName: projectInfo[0],
-            targetFramework: projectInfo[1],
-            appOutput: projectInfo[2],
-            containerWorkingDirectory: projectInfo[3],
-            isSdkContainerSupportEnabled: projectInfo[4] === 'true',
-            imageName: projectInfo[5],
+        return {
+            assemblyName: projectInfo.assemblyName,
+            targetFramework: projectInfo.targetFrameworks[0],
+            appOutput: projectInfo.assemblyRelativeOutputPath,
+            containerWorkingDirectory: projectInfo.assemblyContainerPath,
+            isSdkContainerSupportEnabled: projectInfo.enableSdkContainerSupport,
+            imageName: projectInfo.imageName,
         };
-
-        return projectProperties;
     }
 
     private async normalizeAppOutput(unnormalizedContainerWorkingDirectory: string, isSdkContainerSupportEnabled: boolean): Promise<string> {
         if (isSdkContainerSupportEnabled) {
-            return await getDockerOSType() === 'windows' // fourth is output path
+            return await getDockerOSType() === 'windows'
                 ? path.win32.normalize(unnormalizedContainerWorkingDirectory)
                 : path.posix.normalize(unnormalizedContainerWorkingDirectory);
         } else {

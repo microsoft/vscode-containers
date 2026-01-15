@@ -151,8 +151,14 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
             } else if (ti1 instanceof this.childType && ti2 instanceof this.childType) {
                 if (this.sortBySetting === 'CreatedTime' && ti2.createdTime !== ti1.createdTime) {
                     return ti2.createdTime - ti1.createdTime;
+                } else if (this.sortBySetting === 'CreatedTimeReverse' && ti2.createdTime !== ti1.createdTime) {
+                    return ti1.createdTime - ti2.createdTime;
                 } else if (this.sortBySetting === 'Size' && ti1.size !== undefined && ti2.size !== undefined) {
                     return ti2.size - ti1.size;
+                } else if (this.sortBySetting === 'SizeReverse' && ti1.size !== undefined && ti2.size !== undefined) {
+                    return ti1.size - ti2.size;
+                } else if (this.sortBySetting === 'LabelReverse') {
+                    return super.compareChildrenImpl(ti2, ti1);
                 }
             }
 
