@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Registry as AcrRegistry, RegistryListCredentialsResult } from '@azure/arm-containerregistry';
-import { VSCodeAzureSubscriptionProvider, type AzureSubscription } from '@microsoft/vscode-azext-azureauth';
+import { getMetricsForTelemetry, VSCodeAzureSubscriptionProvider, type AzureSubscription } from '@microsoft/vscode-azext-azureauth';
 import { callWithTelemetryAndErrorHandling, createSubscriptionContext, type ISubscriptionActionContext } from '@microsoft/vscode-azext-utils';
 import { CommonRegistryItem, getContextValue, isRegistry, isRegistryRoot, isRepository, isTag, RegistryV2DataProvider, registryV2Request, V2Registry, V2RegistryItem, V2Repository, V2Tag } from '@microsoft/vscode-docker-registries';
 import * as vscode from 'vscode';
@@ -61,11 +61,8 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
 
     public override async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
         if (isRegistryRoot(element)) {
-            if (!await this.subscriptionProvider.isSignedIn()) {
-                await this.subscriptionProvider.signIn();
-            }
-
-            const subscriptions = await this.subscriptionProvider.getSubscriptions();
+            await this.subscriptionProvider.signIn(undefined, { promptIfNeeded: true });
+            const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions();
             this.sendSubscriptionTelemetryIfNeeded();
 
             return subscriptions.map(sub => {
@@ -125,11 +122,11 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
                 parent: subscriptionItem,
                 type: 'commonregistry',
                 baseUrl: vscode.Uri.parse(`https://${registry.loginServer}`),
-                label: registry.name!,
+                label: registry.name!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
                 iconPath: vscode.Uri.joinPath(this.extensionContext.extensionUri, 'resources', 'azureRegistry.svg'),
                 subscription: subscriptionItem.subscription,
                 additionalContextValues: ['azureContainerRegistry'],
-                id: `${subscriptionItem.subscription.account.id}/${registry.id!}`,
+                id: `${subscriptionItem.subscription.account.id}/${registry.id!}`, // eslint-disable-line @typescript-eslint/no-non-null-assertion
                 registryProperties: registry
             };
         });
@@ -208,6 +205,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
             this.authenticationProviders.set(registryString, provider);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return this.authenticationProviders.get(registryString)!;
     }
 
@@ -223,20 +221,21 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
             context.telemetry.properties.isActivationEvent = 'true';
             context.errorHandling.suppressDisplay = true;
 
-            const subscriptions = await this.subscriptionProvider.getSubscriptions(false);
+            const {
+                totalAccounts,
+                visibleTenants,
+                visibleSubscriptions,
+                subscriptionIdList,
+                subscriptionIdListIsIncomplete,
+            } = await getMetricsForTelemetry(this.subscriptionProvider);
 
-            const tenantSet = new Set<string>();
-            const subscriptionSet = new Set<string>();
-            subscriptions.forEach(sub => {
-                tenantSet.add(sub.tenantId);
-                subscriptionSet.add(sub.subscriptionId);
-            });
-
-            // Number of tenants and subscriptions really belong in Measurements but for backwards compatibility
+            // These counts really belong in Measurements but for backwards compatibility
             // they will be put into Properties instead.
-            context.telemetry.properties.numtenants = tenantSet.size.toString();
-            context.telemetry.properties.numsubscriptions = subscriptionSet.size.toString();
-            context.telemetry.properties.subscriptions = JSON.stringify(Array.from(subscriptionSet));
+            context.telemetry.properties.numaccounts = totalAccounts.toString();
+            context.telemetry.properties.numtenants = visibleTenants.toString();
+            context.telemetry.properties.numsubscriptions = visibleSubscriptions.toString();
+            context.telemetry.properties.subscriptions = subscriptionIdList;
+            context.telemetry.properties.subscriptionidlistisincomplete = subscriptionIdListIsIncomplete.toString();
         });
     }
 }

@@ -1663,7 +1663,10 @@
                         }
                     ],
                     "default": "${containerCommand} build --pull --rm -f \"${dockerfile}\" -t ${tag} \"${context}\"",
-                    "description": "%vscode-containers.config.template.build.description%"
+                    "description": "%vscode-containers.config.template.build.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.run": {
                     "oneOf": [
@@ -1695,7 +1698,10 @@
                         }
                     ],
                     "default": "${containerCommand} run --rm -d ${exposedPorts} ${tag}",
-                    "description": "%vscode-containers.config.template.run.description%"
+                    "description": "%vscode-containers.config.template.run.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.runInteractive": {
                     "oneOf": [
@@ -1727,7 +1733,10 @@
                         }
                     ],
                     "default": "${containerCommand} run --rm -it ${exposedPorts} ${tag}",
-                    "description": "%vscode-containers.config.template.runInteractive.description%"
+                    "description": "%vscode-containers.config.template.runInteractive.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.attach": {
                     "oneOf": [
@@ -1759,7 +1768,10 @@
                         }
                     ],
                     "default": "${containerCommand} exec -it ${containerId} ${shellCommand}",
-                    "description": "%vscode-containers.config.template.attach.description%"
+                    "description": "%vscode-containers.config.template.attach.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.logs": {
                     "oneOf": [
@@ -1791,7 +1803,10 @@
                         }
                     ],
                     "default": "${containerCommand} logs --tail 1000 -f ${containerId}",
-                    "description": "%vscode-containers.config.template.logs.description%"
+                    "description": "%vscode-containers.config.template.logs.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.composeUp": {
                     "oneOf": [
@@ -1828,7 +1843,10 @@
                             "template": "${composeCommand} ${configurationFile} up ${detached} ${build}"
                         }
                     ],
-                    "description": "%vscode-containers.config.template.composeUp.description%"
+                    "description": "%vscode-containers.config.template.composeUp.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.composeUpSubset": {
                     "oneOf": [
@@ -1865,7 +1883,10 @@
                             "template": "${composeCommand} ${profileList} ${configurationFile} up ${detached} ${build} ${serviceList}"
                         }
                     ],
-                    "description": "%vscode-containers.config.template.composeUpSubset.description%"
+                    "description": "%vscode-containers.config.template.composeUpSubset.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.composeDown": {
                     "oneOf": [
@@ -1902,7 +1923,10 @@
                             "template": "${composeCommand} ${configurationFile} down"
                         }
                     ],
-                    "description": "%vscode-containers.config.template.composeDown.description%"
+                    "description": "%vscode-containers.config.template.composeDown.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.commands.composeDownSubset": {
                     "oneOf": [
@@ -1939,7 +1963,10 @@
                             "template": "${composeCommand} ${profileList} ${configurationFile} down ${serviceList}"
                         }
                     ],
-                    "description": "%vscode-containers.config.template.composeDownSubset.description%"
+                    "description": "%vscode-containers.config.template.composeDownSubset.description%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.containers.groupBy": {
                     "type": "string",
@@ -1965,11 +1992,17 @@
                         "Status",
                         "Tag",
                         "Label"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.containers.groupByLabel": {
                     "type": "string",
-                    "description": "%vscode-containers.config.containers.containers.groupByLabel%"
+                    "description": "%vscode-containers.config.containers.containers.groupByLabel%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.containers.description": {
                     "type": "array",
@@ -1999,7 +2032,10 @@
                             "Status",
                             "Tag"
                         ]
-                    }
+                    },
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.containers.label": {
                     "type": "string",
@@ -2023,6 +2059,9 @@
                         "State",
                         "Status",
                         "Tag"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.containers.sortBy": {
@@ -2031,7 +2070,12 @@
                     "description": "%vscode-containers.config.containers.containers.sortBy%",
                     "enum": [
                         "CreatedTime",
-                        "Label"
+                        "CreatedTimeReverse",
+                        "Label",
+                        "LabelReverse"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.contexts.description": {
@@ -2047,7 +2091,10 @@
                             "Description",
                             "DockerEndpoint"
                         ]
-                    }
+                    },
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.contexts.label": {
                     "type": "string",
@@ -2057,6 +2104,9 @@
                         "Name",
                         "Description",
                         "DockerEndpoint"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.contexts.showInStatusBar": {
@@ -2080,6 +2130,9 @@
                         "RepositoryNameShort",
                         "RepositoryNameAndTag",
                         "Tag"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.images.description": {
@@ -2103,7 +2156,10 @@
                             "Tag",
                             "Size"
                         ]
-                    }
+                    },
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.images.label": {
                     "type": "string",
@@ -2121,6 +2177,9 @@
                         "RepositoryNameAndTag",
                         "Tag",
                         "Size"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.images.sortBy": {
@@ -2129,8 +2188,14 @@
                     "description": "%vscode-containers.config.containers.images.sortBy%",
                     "enum": [
                         "CreatedTime",
+                        "CreatedTimeReverse",
                         "Label",
-                        "Size"
+                        "LabelReverse",
+                        "Size",
+                        "SizeReverse"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.images.checkForOutdatedImages": {
@@ -2148,6 +2213,9 @@
                         "NetworkId",
                         "NetworkName",
                         "None"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.networks.description": {
@@ -2165,7 +2233,10 @@
                             "NetworkId",
                             "NetworkName"
                         ]
-                    }
+                    },
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.networks.showBuiltInNetworks": {
                     "type": "boolean",
@@ -2181,6 +2252,9 @@
                         "NetworkDriver",
                         "NetworkId",
                         "NetworkName"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.networks.sortBy": {
@@ -2189,7 +2263,12 @@
                     "description": "%vscode-containers.config.containers.networks.sortBy%",
                     "enum": [
                         "CreatedTime",
-                        "Label"
+                        "CreatedTimeReverse",
+                        "Label",
+                        "LabelReverse"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.volumes.groupBy": {
@@ -2200,6 +2279,9 @@
                         "CreatedTime",
                         "VolumeName",
                         "None"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.volumes.description": {
@@ -2214,7 +2296,10 @@
                             "CreatedTime",
                             "VolumeName"
                         ]
-                    }
+                    },
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.volumes.label": {
                     "type": "string",
@@ -2223,6 +2308,9 @@
                     "enum": [
                         "CreatedTime",
                         "VolumeName"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.volumes.sortBy": {
@@ -2231,24 +2319,38 @@
                     "description": "%vscode-containers.config.containers.volumes.sortBy%",
                     "enum": [
                         "CreatedTime",
-                        "Label"
+                        "CreatedTimeReverse",
+                        "Label",
+                        "LabelReverse"
+                    ],
+                    "tags": [
+                        "advanced"
                     ]
                 },
                 "containers.imageBuildContextPath": {
                     "type": "string",
                     "default": "",
                     "description": "%vscode-containers.config.containers.imageBuildContextPath%",
-                    "scope": "machine-overridable"
+                    "scope": "machine-overridable",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.truncateLongRegistryPaths": {
                     "type": "boolean",
                     "default": false,
-                    "description": "%vscode-containers.config.containers.truncateLongRegistryPaths%"
+                    "description": "%vscode-containers.config.containers.truncateLongRegistryPaths%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.truncateMaxLength": {
                     "type": "number",
                     "default": 10,
-                    "description": "%vscode-containers.config.containers.truncateMaxLength%"
+                    "description": "%vscode-containers.config.containers.truncateMaxLength%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.environment": {
                     "type": "object",
@@ -2256,7 +2358,10 @@
                         "type": "string"
                     },
                     "description": "%vscode-containers.config.containers.environment%",
-                    "scope": "machine-overridable"
+                    "scope": "machine-overridable",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.deprecatedMaintainer": {
                     "scope": "resource",
@@ -2267,7 +2372,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.deprecatedMaintainer%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.deprecatedMaintainer%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.emptyContinuationLine": {
                     "scope": "resource",
@@ -2278,7 +2386,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.emptyContinuationLine%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.emptyContinuationLine%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.directiveCasing": {
                     "scope": "resource",
@@ -2289,7 +2400,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.directiveCasing%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.directiveCasing%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.instructionCasing": {
                     "scope": "resource",
@@ -2300,7 +2414,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionCasing%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionCasing%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.instructionCmdMultiple": {
                     "scope": "resource",
@@ -2311,7 +2428,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionCmdMultiple%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionCmdMultiple%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.instructionEntrypointMultiple": {
                     "scope": "resource",
@@ -2322,7 +2442,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionEntrypointMultiple%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionEntrypointMultiple%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.instructionHealthcheckMultiple": {
                     "scope": "resource",
@@ -2333,7 +2456,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionHealthcheckMultiple%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionHealthcheckMultiple%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.instructionJSONInSingleQuotes": {
                     "scope": "resource",
@@ -2344,7 +2470,10 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionJsonInSingleQuotes%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionJsonInSingleQuotes%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.diagnostics.instructionWorkdirRelative": {
                     "scope": "resource",
@@ -2355,13 +2484,19 @@
                         "warning",
                         "error"
                     ],
-                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionWorkdirRelative%"
+                    "description": "%vscode-containers.config.docker.languageserver.diagnostics.instructionWorkdirRelative%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "docker.languageserver.formatter.ignoreMultilineInstructions": {
                     "scope": "resource",
                     "type": "boolean",
                     "default": false,
-                    "description": "%vscode-containers.config.docker.languageserver.formatter.ignoreMultilineInstructions%"
+                    "description": "%vscode-containers.config.docker.languageserver.formatter.ignoreMultilineInstructions%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.composeBuild": {
                     "type": "boolean",
@@ -2376,11 +2511,17 @@
                 "containers.showRemoteWorkspaceWarning": {
                     "type": "boolean",
                     "default": true,
-                    "description": "%vscode-containers.config.containers.showRemoteWorkspaceWarning%"
+                    "description": "%vscode-containers.config.containers.showRemoteWorkspaceWarning%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.scaffolding.templatePath": {
                     "type": "string",
-                    "description": "%vscode-containers.config.containers.scaffolding.templatePath%"
+                    "description": "%vscode-containers.config.containers.scaffolding.templatePath%",
+                    "tags": [
+                        "advanced"
+                    ]
                 },
                 "containers.containerCommand": {
                     "type": "string",
@@ -3202,13 +3343,17 @@
     ],
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
-        "@cfworker/json-schema": "^4.1.1",
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.1",
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.8",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
         "@types/vscode": "1.105.0",
-        "@types/xml2js": "^0.4.11"
+        "@types/xml2js": "^0.4.11",
+        "@vscode/test-cli": "*",
+        "@vscode/test-electron": "*",
+        "@vscode/vsce": "*",
+        "esbuild": "*",
+        "esbuild-plugin-copy": "*"
     },
     "dependencies": {
         "@azure/arm-authorization": "^9.0.0",
@@ -3216,7 +3361,7 @@
         "@azure/storage-blob": "^12.14.0",
         "@microsoft/compose-language-service": "^0.4.0",
         "@microsoft/vscode-azext-azureappservice": "^4.0.0",
-        "@microsoft/vscode-azext-azureauth": "^5.1.1",
+        "@microsoft/vscode-azext-azureauth": "6.0.0-alpha.1",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.2",
