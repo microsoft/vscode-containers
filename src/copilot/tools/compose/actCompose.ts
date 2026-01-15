@@ -28,7 +28,7 @@ export const actComposeTool: CopilotTool<typeof ActComposeInputSchema, z.ZodVoid
         const client = await ext.orchestratorManager.getClient();
         const taskCRF = new TaskCommandRunnerFactory(
             {
-                taskName: vscode.l10n.t('Compose {0}'),
+                taskName: vscode.l10n.t('Compose {0}', input.action),
             }
         );
 
