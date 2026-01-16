@@ -3296,10 +3296,18 @@
                 ]
             }
         ],
-        "mcpServerDefinitionProviders": [
+        "languageModelTools": [
             {
-                "id": "vscode-containers.mcp",
-                "label": "%vscode-containers.copilot.mcp.label%"
+                "name": "container-tools_get-config",
+                "tags": [
+                    "containers"
+                ],
+                "toolReferenceName": "get_container_tools_config",
+                "displayName": "Get Container Tools Configuration",
+                "modelDescription": "",
+                "userDescription": "",
+                "canBeReferencedInPrompt": false,
+                "icon": "$(settings-gear)"
             }
         ]
     },
@@ -3366,7 +3374,6 @@
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.2",
         "@microsoft/vscode-docker-registries": "^0.4.1",
-        "@microsoft/vscode-inproc-mcp": "^0.2.0",
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
