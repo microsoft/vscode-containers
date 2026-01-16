@@ -12,6 +12,7 @@ import { ContainerRefSchema } from '../common';
 
 const ActComposeInputSchema = ContainerRefSchema.extend({
     action: z.enum(['up', 'down', 'start', 'stop']).describe('The action to perform on the set of services'),
+    composeFiles: z.array(z.string()).optional().describe('Paths to one or more Docker Compose files. If relative paths are given, they are treated as relative to the current workspace folder.'),
     // TODO: compose file path?
     // TODO: up options?
 });
