@@ -22,14 +22,10 @@ export class ContainersConfigTool implements AzExtLMTool<void> {
             orchestratorCommand = orchestratorClient.commandName;
         }
 
-        const result = {
-            containerCommand: containerClient.commandName,
-            orchestratorCommand: orchestratorCommand,
-            environment: envConfig
-        };
-
         return new vscode.LanguageModelToolResult([
-            new vscode.LanguageModelTextPart(JSON.stringify(result))
+            new vscode.LanguageModelTextPart(`Use the following base command for the container CLI: \`${containerClient.commandName}\``),
+            new vscode.LanguageModelTextPart(`Use the following base command for the container orchestrator (compose) CLI: \`${orchestratorCommand}\``),
+            new vscode.LanguageModelTextPart(`Use the following environment variables when running container commands: \`\`\`json\n${JSON.stringify(envConfig)}\n\`\`\``)
         ]);
     }
 }
