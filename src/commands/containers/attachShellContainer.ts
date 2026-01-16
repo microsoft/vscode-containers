@@ -14,14 +14,17 @@ import { getDockerOSType } from '../../utils/osUtils';
 import { selectAttachCommand } from '../selectCommandTemplate';
 
 export async function attachShellContainer(context: IActionContext, node?: ContainerTreeItem | string): Promise<void> {
+    let containerNameOrId: string;
+
     if (!node) {
         await ext.containersTree.refresh(context);
         node = await ext.containersTree.showTreeItemPicker<ContainerTreeItem>(ContainerTreeItem.runningContainerRegExp, {
             ...context,
             noItemFoundErrorMessage: l10n.t('No running containers are available to attach')
         });
+        containerNameOrId = node.containerName;
     } else if (typeof node === 'string') {
-        // TODO
+        containerNameOrId = node;
     }
 
     const osType: ContainerOS = await getDockerOSType();
@@ -43,7 +46,7 @@ export async function attachShellContainer(context: IActionContext, node?: Conta
             // If this succeeds, bash is present (exit code 0)
             await ext.runWithDefaults(client =>
                 // Since we're not interested in the output, just the exit code, we can pretend this is a `VoidCommandResponse`
-                client.execContainer({ container: node.containerId, interactive: true, command: command }) as Promise<VoidCommandResponse>
+                client.execContainer({ container: containerNameOrId, interactive: true, command: command }) as Promise<VoidCommandResponse>
             );
             shellCommand = 'bash';
         } catch {
@@ -53,14 +56,14 @@ export async function attachShellContainer(context: IActionContext, node?: Conta
 
     const terminalCommand = await selectAttachCommand(
         context,
-        node.containerName,
-        node.imageName,
-        node.containerId,
+        containerNameOrId,
+        typeof node === 'object' ? node.imageName : undefined,
+        containerNameOrId,
         shellCommand
     );
 
     const taskCRF = new TaskCommandRunnerFactory({
-        taskName: l10n.t('Shell: {0}', node.containerName),
+        taskName: l10n.t('Shell: {0}', containerNameOrId),
         alwaysRunNew: true,
         focus: true,
     });

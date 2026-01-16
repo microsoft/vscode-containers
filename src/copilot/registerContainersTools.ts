@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { registerMcpToolWithTelemetry } from '@microsoft/vscode-inproc-mcp/vscode';
+import { actComposeTool } from './tools/compose/actCompose';
+import { getContainersConfigTool } from './tools/config/getContainersConfig';
 import { actContainerTool } from './tools/containers/actContainer';
 import { inspectContainerTool } from './tools/containers/inspectContainer';
 import { listContainersTool } from './tools/containers/listContainers';
@@ -18,6 +20,12 @@ import { pruneTool } from './tools/system/prune';
 import { listVolumesTool } from './tools/volumes/listVolumes';
 
 export function registerContainersTools(mcpServer: never): void {
+    // Compose tools
+    registerMcpToolWithTelemetry(mcpServer, actComposeTool);
+
+    // Config tools
+    registerMcpToolWithTelemetry(mcpServer, getContainersConfigTool);
+
     // Container tools
     registerMcpToolWithTelemetry(mcpServer, actContainerTool);
     registerMcpToolWithTelemetry(mcpServer, inspectContainerTool);
