@@ -5,31 +5,28 @@
 
 import { DockerComposeClient, IContainerOrchestratorClient } from '@microsoft/vscode-container-client';
 import { RuntimeManager } from './RuntimeManager';
-import { isSlowConfigurableOrchestratorClient } from './clients/AutoConfigurableDockerComposeClient';
 
 export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchestratorClient> {
-    public readonly onOrchestratorRuntimeClientRegistered = this.runtimeClientRegisteredEmitter.event;
-
     public constructor() {
-        super('orchestratorClient');
+        super(DockerComposeClient.ClientId, 'orchestratorClient', 'composeCommand');
     }
 
-    public override async getClient(): Promise<IContainerOrchestratorClient> {
-        const orchestratorClient = await super.getClient();
+    protected override reconfigureClient(client: IContainerOrchestratorClient): void {
+        const commandName = this.getOverrideSettingValue() || client.defaultCommandName;
 
-        if (isSlowConfigurableOrchestratorClient(orchestratorClient)) {
-            // If it requires some slow configuration, we will perform that now
-            await orchestratorClient.slowConfigure();
+        if (isComposeV2ableOrchestratorClient(client)) {
+            // TODO: impl, normalizing `docker-compose` to `docker compose` and so on
+            client.composeV2 = true;
+        } else {
+            client.commandName = commandName;
         }
-
-        return orchestratorClient;
-    }
-
-    protected override getDefaultClient(): IContainerOrchestratorClient {
-        return this.runtimeClients.find(isDockerComposeClient);
     }
 }
 
-function isDockerComposeClient(maybeComposeClient: IContainerOrchestratorClient): maybeComposeClient is DockerComposeClient {
-    return maybeComposeClient.id === DockerComposeClient.ClientId;
+interface ComposeV2ableOrchestratorClient extends IContainerOrchestratorClient {
+    composeV2: boolean;
+}
+
+export function isComposeV2ableOrchestratorClient(maybeClient: IContainerOrchestratorClient): maybeClient is ComposeV2ableOrchestratorClient {
+    return 'composeV2' in maybeClient && typeof (maybeClient as ComposeV2ableOrchestratorClient).composeV2 === 'boolean';
 }

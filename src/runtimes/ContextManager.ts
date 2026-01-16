@@ -26,16 +26,10 @@ export class ContextManager implements IContextManager, vscode.Disposable {
     private readonly onContextChangedEmitter = new vscode.EventEmitter<ListContextItem | undefined>();
     public readonly onContextChanged = this.onContextChangedEmitter.event;
 
-    private readonly onContextChangedDisposable: vscode.Disposable;
-
     private lastContext: ListContextItem | undefined;
 
-    public constructor() {
-        this.onContextChangedDisposable = this.onContextChanged(() => { /* Noop for now */ });
-    }
-
     public dispose(): void {
-        this.onContextChangedDisposable.dispose();
+        this.onContextChangedEmitter.dispose();
     }
 
     public async getContexts(): Promise<ListContextItem[]> {

@@ -5,6 +5,7 @@
 
 import type { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { DockerClient, DockerComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
 import { registerMcpHttpProvider } from '@microsoft/vscode-inproc-mcp/vscode';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -18,10 +19,6 @@ import { registerDebugProvider } from './debugging/DebugHelper';
 import { DockerExtensionApi } from './DockerExtensionApi';
 import { DockerfileCompletionItemProvider } from './dockerfileCompletionItemProvider';
 import { ext } from './extensionVariables';
-import { AutoConfigurableDockerClient } from './runtimes/clients/AutoConfigurableDockerClient';
-import { AutoConfigurableDockerComposeClient } from './runtimes/clients/AutoConfigurableDockerComposeClient';
-import { AutoConfigurablePodmanClient } from './runtimes/clients/AutoConfigurablePodmanClient';
-import { AutoConfigurablePodmanComposeClient } from './runtimes/clients/AutoConfigurablePodmanComposeClient';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
 import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
@@ -99,12 +96,6 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
 
         // Set up environment variables
         registerEnvironmentVariableContributions();
-
-        // Set up runtime managers
-        ctx.subscriptions.push(
-            ext.runtimeManager = new ContainerRuntimeManager(),
-            ext.orchestratorManager = new OrchestratorRuntimeManager()
-        );
 
         // Set up Container clients
         registerContainerClients();
@@ -199,35 +190,19 @@ function setEnvironmentVariableContributions(): void {
 }
 
 function registerContainerClients(): void {
-    // Create the clients
-    const dockerClient = new AutoConfigurableDockerClient();
-    const podmanClient = new AutoConfigurablePodmanClient();
-    const dockerComposeClient = new AutoConfigurableDockerComposeClient();
-    const podmanComposeClient = new AutoConfigurablePodmanComposeClient();
+    // Set up the runtime managers
+    ext.context.subscriptions.push(
+        ext.runtimeManager = new ContainerRuntimeManager(),
+        ext.orchestratorManager = new OrchestratorRuntimeManager()
+    );
 
     // Register the clients
     ext.context.subscriptions.push(
-        ext.runtimeManager.registerRuntimeClient(dockerClient),
-        ext.runtimeManager.registerRuntimeClient(podmanClient),
-        ext.orchestratorManager.registerRuntimeClient(dockerComposeClient),
-        ext.orchestratorManager.registerRuntimeClient(podmanComposeClient),
+        ext.runtimeManager.registerRuntimeClient(new DockerClient()),
+        ext.runtimeManager.registerRuntimeClient(new PodmanClient()),
+        ext.orchestratorManager.registerRuntimeClient(new DockerComposeClient()),
+        ext.orchestratorManager.registerRuntimeClient(new PodmanComposeClient()),
     );
-
-    // Register an event to watch for changes to config, reconfigure if needed
-    registerEvent('vscode-containers.command.changed', vscode.workspace.onDidChangeConfiguration, (actionContext: IActionContext, e: vscode.ConfigurationChangeEvent) => {
-        actionContext.telemetry.suppressAll = true;
-        actionContext.errorHandling.suppressDisplay = true;
-
-        if (e.affectsConfiguration(`${configPrefix}.containerCommand`)) {
-            dockerClient.reconfigure();
-            podmanClient.reconfigure();
-        }
-
-        if (e.affectsConfiguration(`${configPrefix}.composeCommand`)) {
-            dockerComposeClient.reconfigure();
-            podmanComposeClient.reconfigure();
-        }
-    });
 }
 
 //#region Language services
