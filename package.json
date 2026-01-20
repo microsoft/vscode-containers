@@ -3304,7 +3304,7 @@
                 ],
                 "toolReferenceName": "containerToolsConfig",
                 "displayName": "%vscode-containers.copilot.containersConfigTool.displayName%",
-                "modelDescription": "Gets the configuration the user has set for the container and container orchestrator (compose) CLI, including commands to use and any environment variables that will be set. This should be called before running container CLI commands to ensure the right command is run.",
+                "modelDescription": "Gets the configuration the user has set for the container and container orchestrator (compose) CLIs, including the correct base commands to use and any environment variables that will be set. This tool **MUST** be called before generating or running any container or container orchestrator CLI commands, to ensure the correct base command is used.",
                 "userDescription": "%vscode-containers.copilot.containersConfigTool.userDescription%",
                 "canBeReferencedInPrompt": true,
                 "icon": "$(settings-gear)"
