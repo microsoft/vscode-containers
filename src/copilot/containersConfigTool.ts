@@ -31,7 +31,7 @@ export class ContainersConfigTool implements AzExtLMTool<void> {
 
         if (Object.keys(envConfig).length > 0) {
             context.telemetry.properties.hasEnvConfig = 'true';
-            results.push(new vscode.LanguageModelTextPart(`The following environment variables will be set automatically for new terminals created by the agent: \`\`\`json\n${JSON.stringify(envConfig)}\n\`\`\``));
+            results.push(new vscode.LanguageModelTextPart(`The following environment variables will be set automatically for new terminals created by the agent:\n\`\`\`json\n${JSON.stringify(envConfig)}\n\`\`\``));
         }
 
         return new vscode.LanguageModelToolResult(results);

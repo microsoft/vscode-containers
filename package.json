@@ -3302,11 +3302,11 @@
                 "tags": [
                     "containers"
                 ],
-                "toolReferenceName": "get_container_tools_config",
-                "displayName": "Get Container Tools Configuration",
-                "modelDescription": "",
-                "userDescription": "",
-                "canBeReferencedInPrompt": false,
+                "toolReferenceName": "containerToolsConfig",
+                "displayName": "%vscode-containers.copilot.containersConfigTool.displayName%",
+                "modelDescription": "Gets the configuration the user has set for the container and container orchestrator (compose) CLI, including commands to use and any environment variables that will be set. This should be called before running container CLI commands to ensure the right command is run.",
+                "userDescription": "%vscode-containers.copilot.containersConfigTool.userDescription%",
+                "canBeReferencedInPrompt": true,
                 "icon": "$(settings-gear)"
             }
         ]
