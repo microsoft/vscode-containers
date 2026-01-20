@@ -3386,9 +3386,5 @@
         "vscode-tas-client": "^0.1.75",
         "xml2js": "^0.6.0",
         "zod": "~4"
-    },
-    "overrides": {
-        "iconv-lite": "^0.7.0",
-        "mime-types": "^3.0.0"
     }
 }
