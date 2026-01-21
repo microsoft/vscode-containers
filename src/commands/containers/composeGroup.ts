@@ -6,15 +6,22 @@
 import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as path from 'path';
-import { l10n } from 'vscode';
+import { l10n, Uri, workspace } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
+import { selectComposeLogsCommand } from '../selectCommandTemplate';
 
 export async function composeGroupLogs(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    // Since we're not interested in the output, we can pretend this is a `VoidCommandResponse`
-    return composeGroup<LogsCommandOptions>(context, (client, options) => client.logs(options) as Promise<VoidCommandResponse>, node, { follow: true, tail: 1000 });
+    return composeGroup<LogsCommandOptions>(context, (client, options) => {
+        const workingDirectory = getComposeWorkingDirectory(node);
+        let folder;
+        if (workingDirectory) {
+            folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory));
+        }
+        return selectComposeLogsCommand(context, folder, options.files?.join('" -f "'), options.projectName, options.environmentFile);
+    }, node, { follow: true, tail: 1000 });
 }
 
 export async function composeGroupStart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
