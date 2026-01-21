@@ -3296,10 +3296,18 @@
                 ]
             }
         ],
-        "mcpServerDefinitionProviders": [
+        "languageModelTools": [
             {
-                "id": "vscode-containers.mcp",
-                "label": "%vscode-containers.copilot.mcp.label%"
+                "name": "container-tools_get-config",
+                "tags": [
+                    "containers"
+                ],
+                "toolReferenceName": "containerToolsConfig",
+                "displayName": "%vscode-containers.copilot.containersConfigTool.displayName%",
+                "modelDescription": "Gets the configuration the user has set for the container and container orchestrator (compose) CLIs, including the correct base commands to use and any environment variables that will be set. This tool **MUST** be called before generating or running any container or container orchestrator CLI commands, to ensure the correct base command is used.",
+                "userDescription": "%vscode-containers.copilot.containersConfigTool.userDescription%",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(settings-gear)"
             }
         ]
     },
@@ -3366,7 +3374,6 @@
         "@microsoft/vscode-azext-utils": "^4.0.0",
         "@microsoft/vscode-container-client": "^0.5.2",
         "@microsoft/vscode-docker-registries": "^0.4.1",
-        "@microsoft/vscode-inproc-mcp": "^0.2.0",
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
@@ -3379,9 +3386,5 @@
         "vscode-tas-client": "^0.1.75",
         "xml2js": "^0.6.0",
         "zod": "~4"
-    },
-    "overrides": {
-        "iconv-lite": "^0.7.0",
-        "mime-types": "^3.0.0"
     }
 }
