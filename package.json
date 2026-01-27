@@ -393,7 +393,7 @@
                 },
                 {
                     "command": "vscode-containers.askCopilot",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i && !chat.disableAIFeatures",
                     "group": "containers_1_general@3.5"
                 },
                 {
@@ -478,7 +478,7 @@
                 },
                 {
                     "command": "vscode-containers.askCopilot",
-                    "when": "view == vscode-containers.views.images && viewItem == image",
+                    "when": "view == vscode-containers.views.images && viewItem == image && !chat.disableAIFeatures",
                     "group": "images_2_general@1.5"
                 },
                 {
