@@ -5,15 +5,14 @@
 
 import type { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { registerMcpHttpProvider } from '@microsoft/vscode-inproc-mcp/vscode';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
 import { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelector, LanguageClient, LanguageClientOptions, Middleware, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import * as tas from 'vscode-tas-client';
 import { registerCommands } from './commands/registerCommands';
-import { configPrefix, extensionVersion, McpServerId, McpServerLabel } from './constants';
-import { registerContainersTools } from './copilot/registerContainersTools';
+import { configPrefix } from './constants';
+import { registerContainersLMTools } from './copilot/registerContainersLMTools';
 import { registerDebugProvider } from './debugging/DebugHelper';
 import { DockerExtensionApi } from './DockerExtensionApi';
 import { DockerfileCompletionItemProvider } from './dockerfileCompletionItemProvider';
@@ -131,18 +130,13 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
         registerDebugProvider(ctx);
         registerTaskProviders(ctx);
 
+        registerContainersLMTools();
+
         activateDockerfileLanguageClient(ctx);
         activateComposeLanguageClient(ctx);
 
         registerFileListeners();
         registerRuntimeTelemetryHandler(ctx);
-
-        registerMcpHttpProvider(ctx, {
-            id: McpServerId,
-            serverLabel: McpServerLabel,
-            serverVersion: extensionVersion.value,
-            registerTools: (server) => registerContainersTools(server as never),
-        });
     });
 
     // Migrate settings

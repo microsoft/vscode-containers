@@ -14,11 +14,11 @@ import * as tar from 'tar';
  */
 export function tarUnpackStream(destination: NodeJS.WritableStream): NodeJS.WritableStream {
     let entryCounter = 0;
-    return new tar.Parse({
+    return new tar.Unpack({
         filter: () => {
             return entryCounter < 1;
         },
-        onentry: (entry: tar.ReadEntryClass) => {
+        onReadEntry: (entry) => {
             entryCounter++;
             entry.pipe(destination);
         }
@@ -41,7 +41,7 @@ export function tarUnpackStream(destination: NodeJS.WritableStream): NodeJS.Writ
  */
 export function tarPackStream(source: Buffer, sourceFileName: string, atime: Date = new Date(), mtime: Date = new Date(), ctime: Date = new Date(), mode?: number, gid?: number, uid?: number): NodeJS.ReadableStream {
     const tarPack = new tar.Pack({ portable: true });
-    const readEntry = new tar.ReadEntry({
+    const readEntry = new tar.ReadEntry(new tar.Header({
         path: sourceFileName,
         type: 'File',
         size: source.length,
@@ -51,12 +51,12 @@ export function tarPackStream(source: Buffer, sourceFileName: string, atime: Dat
         mode,
         gid,
         uid,
-    });
+    }));
 
-    const sourceStream = stream.Readable.from(source);
-    sourceStream.pipe(readEntry);
     tarPack.add(readEntry);
+    readEntry.write(source);
+    readEntry.end();
     tarPack.end();
 
-    return tarPack;
+    return stream.Readable.from(tarPack);
 }
