@@ -17,7 +17,7 @@ resources:
     - repository: azExtTemplates
       type: github
       name: microsoft/vscode-azuretools
-      ref: bmw/pipelinesv2
+      ref: bmw/pipelinesv2_2
       endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
 
 variables:
@@ -28,9 +28,10 @@ variables:
 
 # Use those templates
 extends:
-  template: azure-pipelines/v2/1es-release-extension.yml@azExtTemplates
+  template: azure-pipelines/v2/1es-mb-release-extension.yml@azExtTemplates
   parameters:
+    packageToPublish: vscode-containers
     publishVersion: ${{ parameters.publishVersion }}
     dryRun: ${{ parameters.dryRun }}
     extensionReleaseServiceConnection: ${{ variables.extensionReleaseServiceConnection }}
-    packageToPublish: vscode-containers
+    releaseApprovalEnvironment: VSCodeDockerExtensionPublish
