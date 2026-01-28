@@ -1,0 +1,6 @@
+Hello World!
+
+This is a test file created to verify cross-repository PR functionality.
+
+Testing from: microsoft/vscode-containers
+Created on: 2026-01-28
