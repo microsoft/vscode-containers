@@ -29,6 +29,8 @@ resources:
 variables:
   # Pick up shared AZCode variables
   - template: azdo-pipelines/azcode.variables.yml@azExtTemplates
+  - name: TeamName
+    value: "Container Tools Team" # Required by MicroBuild template
 
 extends:
   template: azdo-pipelines/1es-mb-release-extension.yml@azExtTemplates # Use the extension release template
