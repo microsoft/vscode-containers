@@ -21,17 +21,17 @@ resources:
     - repository: azExtTemplates
       type: github
       name: microsoft/vscode-azuretools
-      ref: bmw/pipelinesv2_2
+      ref: bmw/pipelinesv2_2 # TODO: update to final branch
       endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
 
 variables:
   # Required by MicroBuild template
   - name: TeamName
     value: "Container Tools Team"
-  - template: azure-pipelines/v2/azcode.variables.yml@azExtTemplates
+  - template: azdo-pipelines/azcode.variables.yml@azExtTemplates
 
 # Use those templates
 extends:
-  template: azure-pipelines/v2/1es-mb-main.yml@azExtTemplates
+  template: azdo-pipelines/1es-mb-main.yml@azExtTemplates
   parameters:
     testARMServiceConnection: ${{ variables.testARMServiceConnection }}
