@@ -1,3 +1,8 @@
+## 2.4.1 - 3 February 2026
+### Fixed
+* Extension telemetry was not being sent. [#367](https://github.com/microsoft/vscode-containers/issues/367)
+* Extension is now being built as an ESM module, allowing for code splitting and faster load times. [#366](https://github.com/microsoft/vscode-containers/issues/366)
+
 ## 2.4.0 - 26 January 2026
 ### Added
 * The ability to search and filter containers and images has been added. VS Code has a built-in filtering feature, but it is not well-known, and due to implementation details was not practical for the Container Explorer views. [#253](https://github.com/microsoft/vscode-containers/pull/253)
