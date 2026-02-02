@@ -5,13 +5,13 @@
 
 import { autoEsbuildOrWatch, autoSelectEsbuildConfig } from '@microsoft/vscode-azext-eng/esbuild';
 
-const baseConfig = autoSelectEsbuildConfig();
+const { extensionConfig, telemetryConfig } = autoSelectEsbuildConfig();
 
 /** @type {import('esbuild').BuildOptions} */
 const finalConfig = {
-    ...baseConfig,
+    ...extensionConfig,
     entryPoints: [
-        ...baseConfig.entryPoints,
+        ...extensionConfig.entryPoints,
         {
             in: './node_modules/dockerfile-language-server-nodejs/lib/server.js',
             out: 'dockerfile-language-server-nodejs/lib/server',
@@ -23,4 +23,4 @@ const finalConfig = {
     ],
 };
 
-await autoEsbuildOrWatch(finalConfig);
+await autoEsbuildOrWatch({ extensionConfig: finalConfig, telemetryConfig });
