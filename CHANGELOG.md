@@ -1,7 +1,6 @@
 ## 2.4.1 - 3 February 2026
 ### Fixed
 * Extension telemetry was not being sent. [#367](https://github.com/microsoft/vscode-containers/issues/367)
-* Extension is now being built as an ESM module, allowing for code splitting and faster load times. [#366](https://github.com/microsoft/vscode-containers/issues/366)
 * "Ask Copilot" option will no longer show when `chat.disableAIFeatures` is set to `true`. [#357](https://github.com/microsoft/vscode-containers/issues/357)
 
 ## 2.4.0 - 26 January 2026
