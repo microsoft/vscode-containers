@@ -1,6 +1,6 @@
 {
     "name": "vscode-containers",
-    "version": "2.4.0-alpha",
+    "version": "2.4.6-alpha",
     "publisher": "ms-azuretools",
     "displayName": "Container Tools",
     "description": "Makes it easy to create, manage, and debug containerized applications.",
@@ -393,7 +393,7 @@
                 },
                 {
                     "command": "vscode-containers.askCopilot",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i && !config.chat.disableAIFeatures",
                     "group": "containers_1_general@3.5"
                 },
                 {
@@ -478,7 +478,7 @@
                 },
                 {
                     "command": "vscode-containers.askCopilot",
-                    "when": "view == vscode-containers.views.images && viewItem == image",
+                    "when": "view == vscode-containers.views.images && viewItem == image && !config.chat.disableAIFeatures",
                     "group": "images_2_general@1.5"
                 },
                 {
@@ -3296,10 +3296,18 @@
                 ]
             }
         ],
-        "mcpServerDefinitionProviders": [
+        "languageModelTools": [
             {
-                "id": "vscode-containers.mcp",
-                "label": "%vscode-containers.copilot.mcp.label%"
+                "name": "container-tools_get-config",
+                "tags": [
+                    "containers"
+                ],
+                "toolReferenceName": "containerToolsConfig",
+                "displayName": "%vscode-containers.copilot.containersConfigTool.displayName%",
+                "modelDescription": "Gets the configuration the user has set for the container and container orchestrator (compose) CLIs, including the correct base commands to use and any environment variables that will be set. This tool **MUST** be called before generating or running any container or container orchestrator CLI commands, to ensure the correct base command is used.",
+                "userDescription": "%vscode-containers.copilot.containersConfigTool.userDescription%",
+                "canBeReferencedInPrompt": true,
+                "icon": "$(settings-gear)"
             }
         ]
     },
@@ -3343,7 +3351,7 @@
     ],
     "devDependencies": {
         "@azure/arm-appservice": "^15.0.0",
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.8",
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.11",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
@@ -3363,10 +3371,9 @@
         "@microsoft/vscode-azext-azureappservice": "^4.0.0",
         "@microsoft/vscode-azext-azureauth": "6.0.0-alpha.1",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
-        "@microsoft/vscode-azext-utils": "^4.0.0",
+        "@microsoft/vscode-azext-utils": "^4.0.4",
         "@microsoft/vscode-container-client": "^0.5.2",
         "@microsoft/vscode-docker-registries": "^0.4.1",
-        "@microsoft/vscode-inproc-mcp": "^0.2.0",
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
@@ -3374,14 +3381,10 @@
         "gradle-to-js": "^2.0.1",
         "handlebars": "^4.7.7",
         "semver": "^7.5.2",
-        "tar": "^6.2.1",
+        "tar": "^7.5.7",
         "vscode-languageclient": "^9.0.1",
         "vscode-tas-client": "^0.1.75",
         "xml2js": "^0.6.0",
         "zod": "~4"
-    },
-    "overrides": {
-        "iconv-lite": "^0.7.0",
-        "mime-types": "^3.0.0"
     }
 }

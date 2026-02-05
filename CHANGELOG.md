@@ -1,3 +1,21 @@
+## 2.4.1 - 3 February 2026
+### Fixed
+* Extension telemetry was not being sent. [#367](https://github.com/microsoft/vscode-containers/issues/367)
+* "Ask Copilot" option will no longer show when `chat.disableAIFeatures` is set to `true`. [#357](https://github.com/microsoft/vscode-containers/issues/357)
+
+## 2.4.0 - 26 January 2026
+### Added
+* The ability to search and filter containers and images has been added. VS Code has a built-in filtering feature, but it is not well-known, and due to implementation details was not practical for the Container Explorer views. [#253](https://github.com/microsoft/vscode-containers/pull/253)
+* The ability to reverse-sort the views by name, created time, and (for images only) size has been added. [#317](https://github.com/microsoft/vscode-containers/issues/317)
+
+### Changed
+* Most of the extension settings have been marked as "advanced". As a result, they are not shown by default in the settings editor, but can be shown by clicking the filter icon and choosing "Advanced", or putting `@tag:advanced` in the settings search bar. [#296](https://github.com/microsoft/vscode-containers/issues/296)
+* The underlying Azure authentication library has been updated, affecting the Registries view when Azure is connected. This should not change functionality, but should be faster, especially for those with many accounts and/or Azure tenants. [#311](https://github.com/microsoft/vscode-containers/pull/311)
+* For .NET scaffolding and debugging scenarios, we have made an underlying implementation change to simplify our code. However, this change will cause unsupported .NET versions (versions 7 and below) to stop working. It is strongly recommended to upgrade to the latest .NET versions, both for security and support. [#195](https://github.com/microsoft/vscode-containers/issues/195)
+
+### Fixed
+* When deploying from Azure Container Registry to Azure App Service, the webhook created for auto-redeployment is fixed and working again. [#332](https://github.com/microsoft/vscode-containers/issues/332)
+
 ## 2.3.0 - 10 November 2025
 ### Added
 * Copilot tools for container management are now available! Easily interact with containers through chat. [#256](https://github.com/microsoft/vscode-containers/issues/256)
