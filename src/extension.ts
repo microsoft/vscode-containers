@@ -268,7 +268,7 @@ function activateDockerfileLanguageClient(ctx: vscode.ExtensionContext): void {
                 "dist",
                 "dockerfile-language-server-nodejs",
                 "lib",
-                "server.js"
+                "server.mjs"
             )
         );
 
@@ -330,7 +330,7 @@ function activateComposeLanguageClient(ctx: vscode.ExtensionContext): void {
                 "dist",
                 "compose-language-service",
                 "lib",
-                "server.js"
+                "server.mjs"
             )
         );
 
