@@ -17,7 +17,7 @@ const finalConfig = {
             out: 'dockerfile-language-server-nodejs/lib/server',
         },
         {
-            in: './node_modules/@microsoft/compose-language-service/lib/server.js',
+            in: './node_modules/@microsoft/compose-language-service/dist/esm/server.js',
             out: 'compose-language-service/lib/server',
         },
     ],
