@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
+import type { TelemetryEvent } from '@microsoft/compose-language-service/client';
+import { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } from '@microsoft/compose-language-service/vscode';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -29,10 +30,8 @@ import { ActivityMeasurementService } from './telemetry/ActivityMeasurementServi
 import { registerFileListeners } from './telemetry/registerFileListeners';
 import { registerRuntimeTelemetryHandler } from './telemetry/registerRuntimeTelemetryHandler';
 import { registerTrees } from './tree/registerTrees';
-import { AlternateYamlLanguageServiceClientFeature } from './utils/AlternateYamlLanguageServiceClientFeature';
 import { AzExtLogOutputChannelWrapper } from './utils/AzExtLogOutputChannelWrapper';
 import { logDockerEnvironment, logSystemInfo } from './utils/diagnostics';
-import { DocumentSettingsClientFeature } from './utils/DocumentSettingsClientFeature';
 import { getLanguageClient } from './utils/lazyPackages';
 import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
