@@ -6,11 +6,6 @@
 import { ext } from '../extensionVariables';
 import { Lazy } from './lazy';
 
-const armAuthLazy = new Lazy(async () => await import('@azure/arm-authorization'));
-export async function getArmAuth() {
-    return await armAuthLazy.value;
-}
-
 const armContainerRegistryLazy = new Lazy(async () => await import('@azure/arm-containerregistry'));
 export async function getArmContainerRegistry() {
     return await armContainerRegistryLazy.value;
@@ -24,6 +19,11 @@ export async function getStorageBlob() {
 const handlebarsLazy = new Lazy(async () => await import('handlebars'));
 export async function getHandlebars() {
     return await handlebarsLazy.value;
+}
+
+const tarLazy = new Lazy(async () => await import('tar'));
+export async function getTar() {
+    return await tarLazy.value;
 }
 
 // This file is really most important for these next two functions, which ensure that the extension variables are registered before the package is used

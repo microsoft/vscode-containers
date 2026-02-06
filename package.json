@@ -3351,13 +3351,13 @@
         "vscode.yaml"
     ],
     "devDependencies": {
-        "@azure/arm-appservice": "^15.0.0",
+        "@azure/arm-appservice": "*",
+        "@azure/arm-authorization": "*",
         "@microsoft/vscode-azext-eng": "1.0.0-alpha.12",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
         "@types/vscode": "1.105.0",
-        "@types/xml2js": "^0.4.11",
         "@vscode/test-cli": "*",
         "@vscode/test-electron": "*",
         "@vscode/vsce": "*",
@@ -3365,7 +3365,6 @@
         "esbuild-plugin-copy": "*"
     },
     "dependencies": {
-        "@azure/arm-authorization": "^9.0.0",
         "@azure/arm-containerregistry": "^10.1.0",
         "@azure/storage-blob": "^12.14.0",
         "@microsoft/compose-language-service": "^0.4.0",
@@ -3378,6 +3377,7 @@
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
+        "fast-xml-parser": "^5.3.4",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
         "handlebars": "^4.7.7",
@@ -3385,7 +3385,6 @@
         "tar": "^7.5.7",
         "vscode-languageclient": "^9.0.1",
         "vscode-tas-client": "^0.1.75",
-        "xml2js": "^0.6.0",
         "zod": "~4"
     }
 }
