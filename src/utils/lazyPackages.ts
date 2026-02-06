@@ -26,7 +26,11 @@ export async function getHandlebars() {
     return await handlebarsLazy.value;
 }
 
-const languageClientLazy = new Lazy(async () => await import('vscode-languageclient/node'));
+const languageClientLazy = new Lazy(async () => {
+    const module = await import('vscode-languageclient/node');
+    // The module is CJS; when bundled to ESM by esbuild the exports end up on `default`. Fall back to the module itself for unbundled usage.
+    return (module as unknown as typeof module & { default?: typeof module }).default ?? module;
+});
 export async function getLanguageClient() {
     return await languageClientLazy.value;
 }
