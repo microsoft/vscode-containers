@@ -22,6 +22,5 @@ const finalConfig = {
         },
     ],
 };
-finalConfig.minify = false; // TODO: remove
 
 await autoEsbuildOrWatch({ extensionConfig: finalConfig, telemetryConfig });
