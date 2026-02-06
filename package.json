@@ -3383,7 +3383,7 @@
         "handlebars": "^4.7.7",
         "semver": "^7.5.2",
         "tar": "^7.5.7",
-        "vscode-languageclient": "^9.0.1",
+        "vscode-languageclient": "^10.0.0-next.19",
         "vscode-tas-client": "^0.1.75",
         "xml2js": "^0.6.0",
         "zod": "~4"
