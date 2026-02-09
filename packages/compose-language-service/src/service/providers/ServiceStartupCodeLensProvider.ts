@@ -11,14 +11,14 @@ import { isMap, isPair, isScalar } from 'yaml';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
 
 export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams & ExtendedParams, CodeLens[] | undefined, never, never> {
-    public on(params: CodeLensParams & ExtendedParams, token: CancellationToken): CodeLens[] | undefined {
+    public on(params: CodeLensParams & ExtendedParams, token: CancellationToken): Promise<CodeLens[] | undefined> {
         const ctx = getCurrentContext();
         ctx.telemetry.properties.isActivationEvent = 'true'; // This happens automatically so we'll treat it as isActivationEvent === true
 
         const results: CodeLens[] = [];
 
         if (!params.document.yamlDocument.value.has('services')) {
-            return undefined;
+            return Promise.resolve(undefined);
         }
 
         // First add the run-all from the main "services" node
@@ -47,7 +47,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
 
         // Check for cancellation
         if (token.isCancellationRequested) {
-            return undefined;
+            return Promise.resolve(undefined);
         }
 
         // Then add the run-single for each service
@@ -56,7 +56,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
             for (const service of serviceMap.items) {
                 // Within each loop we'll check for cancellation (though this is expected to be very fast)
                 if (token.isCancellationRequested) {
-                    return undefined;
+                    return Promise.resolve(undefined);
                 }
 
                 if (isScalar(service.key) && typeof service.key.value === 'string' && service.key.range) {
@@ -75,6 +75,6 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
             }
         }
 
-        return results;
+        return Promise.resolve(results);
     }
 }

@@ -5,8 +5,7 @@
 
 const vscode = require('vscode');
 const { LanguageClient, TransportKind } = require('vscode-languageclient/node');
-const { DocumentSettingsClientFeature } = require('./DocumentSettingsClientFeature');
-const { AlternateYamlLanguageServiceClientFeature } = require('./AlternateYamlLanguageServiceClientFeature');
+const { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } = require('../../../dist/cjs/vscode/index');
 
 async function activate(context) {
     const serverModule = context.asAbsolutePath('../../../dist/cjs/server.js');
@@ -23,8 +22,8 @@ async function activate(context) {
         },
     };
 
-    const serverOutputChannel = vscode.window.createOutputChannel('Compose Language Service');
-    const clientOutputChannel = vscode.window.createOutputChannel('Compose Client Extension');
+    const serverOutputChannel = vscode.window.createOutputChannel('Compose Language Service', { log: true });
+    const clientOutputChannel = vscode.window.createOutputChannel('Compose Client Extension', { log: true });
 
     const clientOptions = {
         documentSelector: [

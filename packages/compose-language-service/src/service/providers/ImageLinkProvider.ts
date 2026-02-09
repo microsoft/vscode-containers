@@ -15,7 +15,7 @@ const dockerHubNamespacedImageRegex = /^(?<namespace>[a-z0-9]+)\/(?<imageName>[.
 const mcrImageRegex = /^mcr.microsoft.com\/(?<namespace>([a-z0-9]+\/)+)(?<imageName>[.\w-]+)(?<tag>:[.\w-]+)?$/i;
 
 export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & ExtendedParams, DocumentLink[] | undefined, never, never> {
-    public on(params: DocumentLinkParams & ExtendedParams, token: CancellationToken): DocumentLink[] | undefined {
+    public on(params: DocumentLinkParams & ExtendedParams, token: CancellationToken): Promise<DocumentLink[] | undefined> {
         const ctx = getCurrentContext();
         ctx.telemetry.properties.isActivationEvent = 'true'; // This happens automatically so we'll treat it as isActivationEvent === true
 
@@ -27,7 +27,7 @@ export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & Extende
             for (const service of serviceMap.items) {
                 // Within each loop we'll check for cancellation (though this is expected to be very fast)
                 if (token.isCancellationRequested) {
-                    return undefined;
+                    return Promise.resolve(undefined);
                 }
 
                 if (isMap(service.value)) {
@@ -47,7 +47,7 @@ export class ImageLinkProvider extends ProviderBase<DocumentLinkParams & Extende
 
         ctx.telemetry.properties.imageTypes = Array.from(imageTypes.values()).sort().join(',');
 
-        return results;
+        return Promise.resolve(results);
     }
 
     private static getLinkForImage(image: string, imageTypes: Set<string>): { uri: string, start: number, length: number } | undefined {

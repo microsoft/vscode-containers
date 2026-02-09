@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as util from 'util';
-import { Connection, Disposable } from 'vscode-languageserver';
-import { initEvent, TelemetryEvent } from '../../../client/TelemetryEvent';
+import type { Connection, Disposable } from 'vscode-languageserver';
+import { initEvent, type TelemetryEvent } from '../../../common/TelemetryEvent';
 import { logNormal } from './logNormal';
 
 // One minute flush interval by default

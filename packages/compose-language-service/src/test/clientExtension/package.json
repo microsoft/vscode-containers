@@ -11,7 +11,7 @@
     ],
     "main": "./extension.js",
     "dependencies": {
-        "vscode-languageclient": "^9.0.1"
+        "vscode-languageclient": "^10.0.0-next.19"
     },
     "devDependencies": {
         "@types/vscode": "1.105.0"

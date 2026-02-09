@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as async from 'async_hooks';
-import { Connection, ErrorCodes, ResponseError } from 'vscode-languageserver';
-import type { ComposeLanguageClientCapabilities } from '../../client/ClientCapabilities';
-import { TelemetryEvent } from '../../client/TelemetryEvent';
+import { type Connection, ErrorCodes, ResponseError } from 'vscode-languageserver';
+import type { ComposeLanguageClientCapabilities } from '../../common/ComposeLanguageClientCapabilities';
+import type { TelemetryEvent } from '../../common/TelemetryEvent';
 
 const als = new async.AsyncLocalStorage<ActionContext>();
 

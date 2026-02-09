@@ -8,7 +8,7 @@ import { Connection, DidOpenTextDocumentNotification, DidOpenTextDocumentParams,
 import { DocumentUri } from 'vscode-languageserver-textdocument';
 import { createConnection } from 'vscode-languageserver/node';
 import { Document } from 'yaml';
-import { initEvent } from '../client/TelemetryEvent';
+import { initEvent } from '../common/TelemetryEvent';
 import { ComposeLanguageService } from '../service/ComposeLanguageService';
 import { ActionContext } from '../service/utils/ActionContext';
 

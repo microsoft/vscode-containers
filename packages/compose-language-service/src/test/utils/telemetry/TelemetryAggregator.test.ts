@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import { TelemetryEventNotification } from 'vscode-languageserver-protocol';
-import { initEvent, TelemetryEvent } from '../../../client/TelemetryEvent';
+import { initEvent, TelemetryEvent } from '../../../common/TelemetryEvent';
 import { TelemetryAggregator } from '../../../service/utils/telemetry/TelemetryAggregator';
 import { TestConnection } from '../../TestConnection';
 

@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/compose-language-service",
     "author": "Microsoft Corporation",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "publisher": "ms-azuretools",
     "description": "Language service for Docker Compose documents",
     "license": "MIT",
@@ -17,9 +17,25 @@
         "vscode",
         "docker"
     ],
-    "module": "dist/esm/server.js",
     "main": "dist/cjs/server.js",
     "types": "dist/esm/server.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/esm/server.js",
+            "require": "./dist/cjs/server.js",
+            "types": "./dist/esm/server.d.ts"
+        },
+        "./client": {
+            "import": "./dist/esm/client/index.js",
+            "require": "./dist/cjs/client/index.js",
+            "types": "./dist/esm/client/index.d.ts"
+        },
+        "./vscode": {
+            "import": "./dist/esm/vscode/index.js",
+            "require": "./dist/cjs/vscode/index.js",
+            "types": "./dist/esm/vscode/index.d.ts"
+        }
+    },
     "bin": {
         "docker-compose-langserver": "./bin/docker-compose-langserver"
     },
@@ -35,11 +51,14 @@
         "node": ">=22"
     },
     "devDependencies": {
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.8",
-        "@types/node": "22.x"
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.12",
+        "@types/node": "22.x",
+        "@types/vscode": "1.105.0",
+        "vscode-languageclient": "^10.0.0-next.19"
     },
     "dependencies": {
-        "vscode-languageserver": "^9.0.1",
+        "vscode-languageserver": "^10.0.0-next.16",
+        "vscode-languageserver-protocol": "^3.17.6-next.16",
         "vscode-languageserver-textdocument": "^1.0.12",
         "yaml": "^2.8.2"
     },

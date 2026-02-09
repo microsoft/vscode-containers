@@ -9,10 +9,10 @@ import { ExtendedParams } from '../ExtendedParams';
 import { ProviderBase } from './ProviderBase';
 
 export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingParams & ExtendedParams, TextEdit[] | undefined, never, never> {
-    public on(params: DocumentFormattingParams & ExtendedParams, token: CancellationToken): TextEdit[] | undefined {
+    public on(params: DocumentFormattingParams & ExtendedParams, token: CancellationToken): Promise<TextEdit[] | undefined> {
         if (params.document.yamlDocument.value.errors.length) {
             // Won't return formatting info unless the document is syntactically correct
-            return undefined;
+            return Promise.resolve(undefined);
         }
 
         const options: ToStringOptions = {
@@ -32,9 +32,9 @@ export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingP
 
         // It's heavy-handed but the replacement is for the entire document
         // TODO is this terrible?
-        return [TextEdit.replace(
+        return Promise.resolve([TextEdit.replace(
             range,
             formatted
-        )];
+        )]);
     }
 }

@@ -19,12 +19,13 @@ import {
     TextDocumentSyncKind,
 }
     from 'vscode-languageserver';
-import { AlternateYamlLanguageServiceClientCapabilities } from '../client/AlternateYamlLanguageServiceClientCapabilities';
-import { ComposeLanguageClientCapabilities } from '../client/ClientCapabilities';
-import { DocumentSettingsNotificationParams, DocumentSettingsNotification } from '../client/DocumentSettings';
-import { initEvent } from '../client/TelemetryEvent';
+import type { AlternateYamlLanguageServiceClientCapabilities } from '../common/AlternateYamlLanguageServiceClientCapabilities';
+import type { ComposeLanguageClientCapabilities } from '../common/ComposeLanguageClientCapabilities';
+import { type DocumentSettingsNotificationParams, DocumentSettingsNotification } from '../common/DocumentSettingsClientCapabilities';
+import { initEvent } from '../common/TelemetryEvent';
+import type { TextDocumentParams } from '../common/TextDocumentParams';
 import { ComposeDocument } from './ComposeDocument';
-import { ExtendedParams, TextDocumentParams } from './ExtendedParams';
+import type { ExtendedParams } from './ExtendedParams';
 import { MultiCompletionProvider } from './providers/completion/MultiCompletionProvider';
 import { DiagnosticProvider } from './providers/DiagnosticProvider';
 import { DocumentFormattingProvider } from './providers/DocumentFormattingProvider';
@@ -149,7 +150,7 @@ export class ComposeLanguageService implements Disposable {
         // End of LSP listeners
 
         // Hook up one additional notification handler
-        this.connection.onNotification(DocumentSettingsNotification.method, (params: DocumentSettingsNotificationParams) => this.onDidChangeDocumentSettings(params));
+        this.connection.onNotification(DocumentSettingsNotification.type, (params: DocumentSettingsNotificationParams) => this.onDidChangeDocumentSettings(params));
 
         // Start the document listener
         this.documentManager.listen(this.connection);

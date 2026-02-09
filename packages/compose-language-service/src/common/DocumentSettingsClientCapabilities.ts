@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { NotificationType, RequestType } from 'vscode-languageserver-protocol';
-import { TextDocumentParams } from '../service/ExtendedParams';
+import type { TextDocumentParams } from './TextDocumentParams';
 
 export type DocumentSettingsClientCapabilities = {
     readonly request: boolean,
@@ -27,7 +27,7 @@ export type DocumentSettingsParams = TextDocumentParams;
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DocumentSettingsRequest {
     export const method = '$/textDocument/documentSettings' as const;
-    export const type = new RequestType<DocumentSettingsParams, DocumentSettings | null, never>(method);
+    export const type = new RequestType<DocumentSettingsParams, DocumentSettings | null | undefined, never>(method);
 }
 
 export type DocumentSettingsNotificationParams = DocumentSettingsParams & DocumentSettings;
