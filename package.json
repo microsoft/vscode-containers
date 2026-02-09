@@ -3372,7 +3372,7 @@
         "@microsoft/vscode-azext-azureauth": "6.0.0-alpha.1",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
         "@microsoft/vscode-azext-utils": "^4.0.4",
-        "@microsoft/vscode-container-client": "^0.5.2",
+        "@microsoft/vscode-container-client": "^0.5.3",
         "@microsoft/vscode-docker-registries": "^0.4.1",
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
