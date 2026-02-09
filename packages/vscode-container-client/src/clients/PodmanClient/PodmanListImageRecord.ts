@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 
 export const PodmanListImageRecordSchema = z.object({
     Id: z.string(),
-    Names: z.array(z.string()).optional(),
+    Names: z.optional(z.array(z.string())),
     Size: z.number(),
-    Labels: z.record(z.string(), z.string()).optional().nullable(),
+    Labels: z.nullish(z.record(z.string(), z.string())),
     Created: z.number(),
 });
 

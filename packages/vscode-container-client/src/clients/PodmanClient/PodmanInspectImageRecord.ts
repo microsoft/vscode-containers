@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { toArray } from '@microsoft/vscode-processutils';
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 import { ImageNameInfo, InspectImagesItem, PortBinding } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { parseDockerLikeEnvironmentVariables } from '../DockerClientBase/parseDockerLikeEnvironmentVariables';
 
 const PodmanInspectImageConfigSchema = z.object({
-    Entrypoint: z.union([z.array(z.string()), z.string(), z.null()]).optional(),
-    Cmd: z.union([z.array(z.string()), z.string(), z.null()]).optional(),
-    Env: z.array(z.string()).optional(),
-    ExposedPorts: z.record(z.string(), z.unknown()).nullable().optional(),
-    Volumes: z.record(z.string(), z.unknown()).nullable().optional(),
-    WorkingDir: z.string().nullable().optional(),
-    User: z.string().nullable().optional(),
+    Entrypoint: z.optional(z.union([z.array(z.string()), z.string(), z.null()])),
+    Cmd: z.optional(z.union([z.array(z.string()), z.string(), z.null()])),
+    Env: z.optional(z.array(z.string())),
+    ExposedPorts: z.nullish(z.record(z.string(), z.unknown())),
+    Volumes: z.nullish(z.record(z.string(), z.unknown())),
+    WorkingDir: z.nullish(z.string()),
+    User: z.nullish(z.string()),
 });
 
 export const PodmanInspectImageRecordSchema = z.object({
@@ -27,9 +27,9 @@ export const PodmanInspectImageRecordSchema = z.object({
     RepoDigests: z.array(z.string()),
     Architecture: z.string(),
     Os: z.string(),
-    Labels: z.record(z.string(), z.string()).nullable(),
+    Labels: z.nullable(z.record(z.string(), z.string())),
     Created: z.string(),
-    User: z.string().optional(),
+    User: z.optional(z.string()),
 });
 
 type PodmanInspectImageRecord = z.infer<typeof PodmanInspectImageRecordSchema>;

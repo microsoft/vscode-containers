@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { toArray } from '@microsoft/vscode-processutils';
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 import { InspectContainersItem, InspectContainersItemBindMount, InspectContainersItemMount, InspectContainersItemNetwork, InspectContainersItemVolumeMount, PortBinding } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
@@ -12,8 +12,8 @@ import { normalizeIpAddress } from './normalizeIpAddress';
 import { parseDockerLikeEnvironmentVariables } from './parseDockerLikeEnvironmentVariables';
 
 const DockerInspectContainerPortHostSchema = z.object({
-    HostIp: z.string().optional(),
-    HostPort: z.string().optional(),
+    HostIp: z.optional(z.string()),
+    HostPort: z.optional(z.string()),
 });
 
 const DockerInspectContainerBindMountSchema = z.object({
@@ -45,29 +45,29 @@ const DockerInspectContainerNetworkSchema = z.object({
 
 const DockerInspectContainerConfigSchema = z.object({
     Image: z.string(),
-    Status: z.string().optional(),
+    Status: z.optional(z.string()),
     Entrypoint: z.union([z.array(z.string()), z.string(), z.null()]),
     Cmd: z.union([z.array(z.string()), z.string(), z.null()]),
-    Env: z.union([z.array(z.string()), z.null()]).optional(),
-    Labels: z.union([z.record(z.string(), z.string()), z.null()]).optional(),
-    WorkingDir: z.union([z.string(), z.null()]).optional(),
+    Env: z.optional(z.union([z.array(z.string()), z.null()])),
+    Labels: z.optional(z.union([z.record(z.string(), z.string()), z.null()])),
+    WorkingDir: z.optional(z.union([z.string(), z.null()])),
 });
 
 const DockerInspectContainerHostConfigSchema = z.object({
-    PublishAllPorts: z.union([z.boolean(), z.null()]).optional(),
-    Isolation: z.string().optional(),
+    PublishAllPorts: z.optional(z.union([z.boolean(), z.null()])),
+    Isolation: z.optional(z.string()),
 });
 
 const DockerInspectContainerNetworkSettingsSchema = z.object({
-    Networks: z.record(z.string(), DockerInspectContainerNetworkSchema).nullable().optional(),
-    IPAddress: z.string().optional(),
-    Ports: z.record(z.string(), z.array(DockerInspectContainerPortHostSchema).nullable().optional()).nullable().optional(),
+    Networks: z.nullish(z.record(z.string(), DockerInspectContainerNetworkSchema)),
+    IPAddress: z.optional(z.string()),
+    Ports: z.nullish(z.record(z.string(), z.nullish(z.array(DockerInspectContainerPortHostSchema)))),
 });
 
 const DockerInspectContainerStateSchema = z.object({
-    Status: z.string().optional(),
-    StartedAt: z.string().optional(),
-    FinishedAt: z.string().optional(),
+    Status: z.optional(z.string()),
+    StartedAt: z.optional(z.string()),
+    FinishedAt: z.optional(z.string()),
 });
 
 export const DockerInspectContainerRecordSchema = z.object({

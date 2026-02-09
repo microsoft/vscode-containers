@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { CancellationTokenLike } from '@microsoft/vscode-processutils';
-import type { z } from 'zod/v4';
+import type { z } from 'zod/mini';
 
 /**
  * Represents a tool that can be used by Copilot
@@ -50,7 +50,7 @@ export interface CopilotTool<TInSchema extends ToolIOSchema, TOutSchema extends 
 /**
  * Enforce some rules about tool schema
  */
-export type ToolIOSchema = z.ZodVoid | z.ZodObject;
+export type ToolIOSchema = z.ZodMiniVoid | z.ZodMiniObject;
 
 /**
  * Type for the function that executes the tool

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { z } from 'zod/v4';
+import type { z } from 'zod/mini';
 import { ConsentGuidance, CopilotTool, Executor, ToolAnnotations, ToolExecutionExtras, ToolIOSchema } from '../contracts/CopilotTool';
 
 /**

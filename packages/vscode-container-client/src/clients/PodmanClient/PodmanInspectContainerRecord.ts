@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { toArray } from '@microsoft/vscode-processutils';
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 import { InspectContainersItem, InspectContainersItemBindMount, InspectContainersItemMount, InspectContainersItemNetwork, InspectContainersItemVolumeMount, PortBinding } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
@@ -12,8 +12,8 @@ import { normalizeIpAddress } from '../DockerClientBase/normalizeIpAddress';
 import { parseDockerLikeEnvironmentVariables } from '../DockerClientBase/parseDockerLikeEnvironmentVariables';
 
 const PodmanInspectContainerPortHostSchema = z.object({
-    HostIp: z.string().optional(),
-    HostPort: z.string().optional(),
+    HostIp: z.optional(z.string()),
+    HostPort: z.optional(z.string()),
 });
 
 const PodmanInspectContainerBindMountSchema = z.object({
@@ -47,26 +47,26 @@ const PodmanInspectContainerConfigSchema = z.object({
     Image: z.string(),
     Entrypoint: z.union([z.array(z.string()), z.string(), z.null()]),
     Cmd: z.union([z.array(z.string()), z.string(), z.null()]),
-    Env: z.array(z.string()).nullable().optional(),
-    Labels: z.record(z.string(), z.string()).nullable().optional(),
-    WorkingDir: z.string().nullable().optional(),
+    Env: z.nullish(z.array(z.string())),
+    Labels: z.nullish(z.record(z.string(), z.string())),
+    WorkingDir: z.nullish(z.string()),
 });
 
 const PodmanInspectContainerHostConfigSchema = z.object({
-    PublishAllPorts: z.boolean().nullable().optional(),
-    Isolation: z.string().optional(),
+    PublishAllPorts: z.nullish(z.boolean()),
+    Isolation: z.optional(z.string()),
 });
 
 const PodmanInspectContainerNetworkSettingsSchema = z.object({
-    Networks: z.record(z.string(), PodmanInspectNetworkSchema).nullable().optional(),
-    IPAddress: z.string().optional(),
-    Ports: z.record(z.string(), z.array(PodmanInspectContainerPortHostSchema)).nullable().optional(),
+    Networks: z.nullish(z.record(z.string(), PodmanInspectNetworkSchema)),
+    IPAddress: z.optional(z.string()),
+    Ports: z.nullish(z.record(z.string(), z.array(PodmanInspectContainerPortHostSchema))),
 });
 
 const PodmanInspectContainerStateSchema = z.object({
-    Status: z.string().optional(),
-    StartedAt: z.string().optional(),
-    FinishedAt: z.string().optional(),
+    Status: z.optional(z.string()),
+    StartedAt: z.optional(z.string()),
+    FinishedAt: z.optional(z.string()),
 });
 
 export const PodmanInspectContainerRecordSchema = z.object({

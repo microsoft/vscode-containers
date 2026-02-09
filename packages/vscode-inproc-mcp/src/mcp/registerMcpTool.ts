@@ -5,7 +5,7 @@
 
 import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { z } from 'zod/v4';
+import type { z } from 'zod/mini';
 import type { CopilotTool, ToolIOSchema } from '../contracts/CopilotTool';
 import { McpTool } from './McpTool';
 import { isEmptyObjectSchema, isVoidishSchema } from './schema/schemaTypeChecks';
@@ -41,7 +41,7 @@ export function registerMcpTool<TInSchema extends ToolIOSchema, TOutSchema exten
         normalizedInputSchema = undefined;
     } else if (isEmptyObjectSchema(mcpTool.inputSchema)) {
         // Input cannot be an empty object or the LLM will not know what to do with it, so error out if that was passed in
-        throw new Error('MCP tools cannot have an empty object input schema. Use ZodVoid for no input, or define a non-empty object schema.');
+        throw new Error('MCP tools cannot have an empty object input schema. Use ZodMiniVoid for no input, or define a non-empty object schema.');
     } else {
         normalizedInputSchema = mcpTool.inputSchema;
     }
@@ -61,7 +61,7 @@ export function registerMcpTool<TInSchema extends ToolIOSchema, TOutSchema exten
             inputSchema: normalizedInputSchema,
             outputSchema: normalizedOutputSchema,
         },
-        async (input, extra) => {
+        async (input: unknown, extra: RequestHandlerExtra<never, never>) => {
             // If the input is void, MCP SDK will call with (extra) instead of (undefined, extra)
             // We won't want that, so detect that case and call appropriately
             if (inputIsRequestHandlerExtra(input)) {

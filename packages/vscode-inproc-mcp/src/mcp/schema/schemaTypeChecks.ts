@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 import type { ToolIOSchema } from '../../contracts/CopilotTool';
 
-export function isVoidishSchema(schema: ToolIOSchema | undefined): schema is undefined | z.ZodVoid {
-    return schema === undefined || schema instanceof z.ZodVoid;
+export function isVoidishSchema(schema: ToolIOSchema | undefined): schema is undefined | z.ZodMiniVoid {
+    return schema === undefined || schema instanceof z.ZodMiniVoid;
 }
 
 export function isEmptyObjectSchema(schema: ToolIOSchema): boolean {
-    return schema instanceof z.ZodObject && Object.keys(schema.shape).length === 0;
+    return schema instanceof z.ZodMiniObject && Object.keys(schema.shape).length === 0;
 }

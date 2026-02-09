@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 
 /**
  * The type of container OS

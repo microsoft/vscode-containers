@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-inproc-mcp",
     "author": "Microsoft Corporation",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Library support for building MCP servers, primarily for use in VS Code.",
     "license": "See LICENSE in the project root for license information.",
     "repository": {

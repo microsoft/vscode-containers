@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationTokenLike } from '@microsoft/vscode-processutils';
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 import { CopilotToolBase } from '../base/CopilotToolBase';
 import type { ToolExecutionExtras, ToolIOSchema } from '../contracts/CopilotTool';
 import { getErrorMessage } from '../utils/getErrorMessage';
@@ -91,7 +91,7 @@ export class McpTool<TInSchema extends ToolIOSchema, TOutSchema extends ToolIOSc
                 }
 
                 return {
-                    content: result.map(item => ({
+                    content: result.map((item: unknown) => ({
                         type: 'text',
                         text: JSON.stringify(item),
                     })),

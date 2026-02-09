@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 import { InspectVolumesItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 
@@ -12,8 +12,8 @@ export const DockerInspectVolumeRecordSchema = z.object({
     Driver: z.string(),
     Mountpoint: z.string(),
     Scope: z.string(),
-    Labels: z.record(z.string(), z.string()).nullish(),
-    Options: z.record(z.string(), z.unknown()).nullish(),
+    Labels: z.nullish(z.record(z.string(), z.string())),
+    Options: z.nullish(z.record(z.string(), z.unknown())),
     CreatedAt: z.string(),
 });
 

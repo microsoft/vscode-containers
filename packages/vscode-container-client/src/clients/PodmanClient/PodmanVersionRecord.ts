@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 
 export const PodmanVersionRecordSchema = z.object({
     Client: z.object({
         APIVersion: z.string(),
     }),
-    Server: z.object({
+    Server: z.optional(z.object({
         APIVersion: z.string(),
-    }).optional(),
+    })),
 });

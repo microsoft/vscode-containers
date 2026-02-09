@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { z } from 'zod/v4';
+import * as z from 'zod/mini';
 
 export const DockerVolumeRecordSchema = z.object({
     Name: z.string(),
@@ -11,6 +11,6 @@ export const DockerVolumeRecordSchema = z.object({
     Labels: z.string(),
     Mountpoint: z.string(),
     Scope: z.string(),
-    CreatedAt: z.string().optional(),
-    Size: z.string().optional(),
+    CreatedAt: z.optional(z.string()),
+    Size: z.optional(z.string()),
 });
