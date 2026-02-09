@@ -3368,7 +3368,7 @@
         "@azure/arm-authorization": "^9.0.0",
         "@azure/arm-containerregistry": "^10.1.0",
         "@azure/storage-blob": "^12.14.0",
-        "@microsoft/compose-language-service": "^0.4.0",
+        "@microsoft/compose-language-service": "^0.5.0",
         "@microsoft/vscode-azext-azureappservice": "^4.0.0",
         "@microsoft/vscode-azext-azureauth": "6.0.0-alpha.1",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
@@ -3383,7 +3383,7 @@
         "handlebars": "^4.7.7",
         "semver": "^7.5.2",
         "tar": "^7.5.7",
-        "vscode-languageclient": "^9.0.1",
+        "vscode-languageclient": "^10.0.0-next.19",
         "vscode-tas-client": "^0.1.75",
         "xml2js": "^0.6.0",
         "zod": "~4"

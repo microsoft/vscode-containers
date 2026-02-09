@@ -26,6 +26,15 @@ export async function getHandlebars() {
     return await handlebarsLazy.value;
 }
 
+const languageClientLazy = new Lazy(async () => {
+    const module = await import('vscode-languageclient/node');
+    // The module is CJS; when bundled to ESM by esbuild the exports end up on `default`. Fall back to the module itself for unbundled usage.
+    return (module as unknown as typeof module & { default?: typeof module }).default ?? module;
+});
+export async function getLanguageClient() {
+    return await languageClientLazy.value;
+}
+
 // This file is really most important for these next two functions, which ensure that the extension variables are registered before the package is used
 const azExtAzureUtilsLazy = new Lazy(async () => {
     const azExtAzureUtils = await import('@microsoft/vscode-azext-azureutils');
