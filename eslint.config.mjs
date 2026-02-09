@@ -13,6 +13,7 @@ export default defineConfig([
         'handlebars',
         '@microsoft/vscode-azext-azure*',
         'tar',
+        'vscode-languageclient*',
         '!@microsoft/vscode-azext-azureauth',
     ]),
 ]);
