@@ -7,7 +7,7 @@ import { parseError } from '@microsoft/vscode-azext-utils';
 import { CommandLineArgs, composeArgs, withArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { z } from 'zod/mini';
+import * as z from 'zod/mini';
 import { execAsync } from './execAsync';
 
 interface NetCoreCommonProjectInfo {
