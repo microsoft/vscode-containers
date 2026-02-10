@@ -9,10 +9,10 @@ import { defineConfig } from 'eslint/config';
 export default defineConfig([
     azExtEslintRecommended,
     lazyImportRuleConfig([
-        '@modelcontextprotocol/*',
         '@azure/*',
         'handlebars',
         '@microsoft/vscode-azext-azure*',
+        'tar',
         'vscode-languageclient*',
         '!@microsoft/vscode-azext-azureauth',
     ]),

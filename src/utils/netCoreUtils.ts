@@ -7,7 +7,7 @@ import { parseError } from '@microsoft/vscode-azext-utils';
 import { CommandLineArgs, composeArgs, withArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { z } from 'zod';
+import * as z from 'zod/mini';
 import { execAsync } from './execAsync';
 
 interface NetCoreCommonProjectInfo {
@@ -33,16 +33,18 @@ export type NetCoreProjectInfo = NetCoreCommonProjectInfo & (NetCoreContainerPro
 const RawNetCoreProjectInfoSchema = z.object({
     Properties: z
         .object({
-            AssemblyName: z.string().min(1, vscode.l10n.t('AssemblyName must have a value')),
-            OutputPath: z.string().min(1, vscode.l10n.t('OutputPath must have a value')),
-            TargetFramework: z.string().optional(),
-            TargetFrameworks: z.string().optional(),
-            EnableSdkContainerSupport: z.stringbool().optional(),
-            ContainerWorkingDirectory: z.string().optional(),
-            ContainerRepository: z.string().optional(),
+            AssemblyName: z.string().check(z.minLength(1, vscode.l10n.t('AssemblyName must have a value'))),
+            OutputPath: z.string().check(z.minLength(1, vscode.l10n.t('OutputPath must have a value'))),
+            TargetFramework: z.optional(z.string()),
+            TargetFrameworks: z.optional(z.string()),
+            EnableSdkContainerSupport: z.optional(z.stringbool()),
+            ContainerWorkingDirectory: z.optional(z.string()),
+            ContainerRepository: z.optional(z.string()),
         })
-        .refine(info => info.TargetFramework || info.TargetFrameworks, vscode.l10n.t('Either TargetFramework or TargetFrameworks must have a value'))
-        .refine(info => !info.EnableSdkContainerSupport || (info.ContainerWorkingDirectory && info.ContainerRepository), vscode.l10n.t('ContainerWorkingDirectory and ContainerRepository must have values when EnableSdkContainerSupport is true'))
+        .check(
+            z.refine(info => info.TargetFramework || info.TargetFrameworks, vscode.l10n.t('Either TargetFramework or TargetFrameworks must have a value')),
+            z.refine(info => !info.EnableSdkContainerSupport || (info.ContainerWorkingDirectory && info.ContainerRepository), vscode.l10n.t('ContainerWorkingDirectory and ContainerRepository must have values when EnableSdkContainerSupport is true')),
+        ),
 });
 
 export async function getNetCoreProjectInfo(project: string, additionalProperties?: CommandLineArgs): Promise<NetCoreProjectInfo> {
@@ -96,10 +98,10 @@ export interface BlazorManifestInfo {
 
 const RawBlazorManifestInfoSchema = z.object({
     Properties: z.object({
-        MSBuildProjectDirectory: z.string().min(1, vscode.l10n.t('MSBuildProjectDirectory must have a value')),
-        StaticWebAssetDevelopmentManifestPath: z.string().min(1, vscode.l10n.t('StaticWebAssetDevelopmentManifestPath must have a value')),
-        OutputPath: z.string().min(1, vscode.l10n.t('OutputPath must have a value')),
-        TargetName: z.string().min(1, vscode.l10n.t('TargetName must have a value')),
+        MSBuildProjectDirectory: z.string().check(z.minLength(1, vscode.l10n.t('MSBuildProjectDirectory must have a value'))),
+        StaticWebAssetDevelopmentManifestPath: z.string().check(z.minLength(1, vscode.l10n.t('StaticWebAssetDevelopmentManifestPath must have a value'))),
+        OutputPath: z.string().check(z.minLength(1, vscode.l10n.t('OutputPath must have a value'))),
+        TargetName: z.string().check(z.minLength(1, vscode.l10n.t('TargetName must have a value'))),
     })
 });
 

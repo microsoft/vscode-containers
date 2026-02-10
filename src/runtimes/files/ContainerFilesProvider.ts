@@ -69,7 +69,7 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
         const containerOS = dockerUri.options?.containerOS || await getDockerOSType();
 
         const accumulator = new AccumulatorStream();
-        const targetStream = containerOS === 'windows' ? accumulator : tarUnpackStream(accumulator);
+        const targetStream = containerOS === 'windows' ? accumulator : await tarUnpackStream(accumulator);
 
         const generator = ext.streamWithDefaults(
             client => client.readFile({
@@ -133,7 +133,7 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
                         operatingSystem: containerOS,
                     }),
                     {
-                        stdInPipe: tarPackStream(Buffer.from(content), path.basename(uri.path), nowDate, nowDate, nowDate, mode, gid, uid),
+                        stdInPipe: await tarPackStream(Buffer.from(content), path.basename(uri.path), nowDate, nowDate, nowDate, mode, gid, uid),
                     },
                 );
             });

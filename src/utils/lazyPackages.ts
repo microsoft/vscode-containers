@@ -6,11 +6,6 @@
 import { ext } from '../extensionVariables';
 import { Lazy } from './lazy';
 
-const armAuthLazy = new Lazy(async () => await import('@azure/arm-authorization'));
-export async function getArmAuth() {
-    return await armAuthLazy.value;
-}
-
 const armContainerRegistryLazy = new Lazy(async () => await import('@azure/arm-containerregistry'));
 export async function getArmContainerRegistry() {
     return await armContainerRegistryLazy.value;
@@ -21,16 +16,17 @@ export async function getStorageBlob() {
     return await storageBlobLazy.value;
 }
 
-const handlebarsLazy = new Lazy(async () => await import('handlebars'));
+const handlebarsLazy = new Lazy(async () => getDefaultExport(await import('handlebars')));
 export async function getHandlebars() {
     return await handlebarsLazy.value;
 }
 
-const languageClientLazy = new Lazy(async () => {
-    const module = await import('vscode-languageclient/node');
-    // The module is CJS; when bundled to ESM by esbuild the exports end up on `default`. Fall back to the module itself for unbundled usage.
-    return (module as unknown as typeof module & { default?: typeof module }).default ?? module;
-});
+const tarLazy = new Lazy(async () => await import('tar'));
+export async function getTar() {
+    return await tarLazy.value;
+}
+
+const languageClientLazy = new Lazy(async () => getDefaultExport(await import('vscode-languageclient/node')));
 export async function getLanguageClient() {
     return await languageClientLazy.value;
 }
@@ -52,4 +48,14 @@ const azExtAppServiceLazy = new Lazy(async () => {
 });
 export async function getAzExtAppService() {
     return await azExtAppServiceLazy.value;
+}
+
+/**
+ * Gets the default export out of a module, if it exists, otherwise returns the module itself. This is necessary to support CJS modules, as well as bundled and unbundled usage.
+ * @param module The module to get the default export for
+ * @returns The module's default, if it exists, otherwise the module
+ */
+function getDefaultExport<T>(module: T | { default: T }): T {
+    // The module is CJS; when bundled to ESM by esbuild the exports end up on `default`. Fall back to the module itself for unbundled usage.
+    return (module as unknown as { default?: T }).default ?? (module as T);
 }

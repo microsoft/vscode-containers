@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as stream from 'stream';
-import * as tar from 'tar';
+import { getTar } from './lazyPackages';
 
 /**
  * Write tarball data containing a single file to this stream, and
@@ -12,7 +12,9 @@ import * as tar from 'tar';
  * @param destination The destination stream to unpack to
  * @returns A stream to write tarball data into
  */
-export function tarUnpackStream(destination: NodeJS.WritableStream): NodeJS.WritableStream {
+export async function tarUnpackStream(destination: NodeJS.WritableStream): Promise<NodeJS.WritableStream> {
+    const tar = await getTar();
+
     let entryCounter = 0;
     return new tar.Unpack({
         filter: () => {
@@ -39,7 +41,9 @@ export function tarUnpackStream(destination: NodeJS.WritableStream): NodeJS.Writ
  * @param uid Optional unix user id specifier
  * @returns A stream to read tarball data from
  */
-export function tarPackStream(source: Buffer, sourceFileName: string, atime: Date = new Date(), mtime: Date = new Date(), ctime: Date = new Date(), mode?: number, gid?: number, uid?: number): NodeJS.ReadableStream {
+export async function tarPackStream(source: Buffer, sourceFileName: string, atime: Date = new Date(), mtime: Date = new Date(), ctime: Date = new Date(), mode?: number, gid?: number, uid?: number): Promise<NodeJS.ReadableStream> {
+    const tar = await getTar();
+
     const tarPack = new tar.Pack({ portable: true });
     const readEntry = new tar.ReadEntry(new tar.Header({
         path: sourceFileName,
