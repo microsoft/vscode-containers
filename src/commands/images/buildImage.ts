@@ -100,6 +100,7 @@ export async function buildImage(context: IActionContext, dockerFileUri: vscode.
             taskName: client.displayName,
             workspaceFolder: rootFolder,
             focus: true,
+            close: true,
         });
 
         await taskCRF.getCommandRunner()(terminalCommand);
