@@ -16,9 +16,9 @@ export async function getStorageBlob() {
     return await storageBlobLazy.value;
 }
 
-const handlebarsLazy = new Lazy(async () => await import('handlebars'));
+const handlebarsLazy = new Lazy(async () => getDefaultExport(await import('handlebars')));
 export async function getHandlebars() {
-    return getDefaultExport(await handlebarsLazy.value);
+    return await handlebarsLazy.value;
 }
 
 const tarLazy = new Lazy(async () => await import('tar'));
@@ -26,9 +26,7 @@ export async function getTar() {
     return await tarLazy.value;
 }
 
-const languageClientLazy = new Lazy(async () => {
-    return getDefaultExport(await import('vscode-languageclient/node'));
-});
+const languageClientLazy = new Lazy(async () => getDefaultExport(await import('vscode-languageclient/node')));
 export async function getLanguageClient() {
     return await languageClientLazy.value;
 }
