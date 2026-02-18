@@ -1809,6 +1809,46 @@
                         "advanced"
                     ]
                 },
+                "containers.commands.composeLogs": {
+                    "oneOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "properties": {
+                                    "template": {
+                                        "type": "string",
+                                        "description": "%vscode-containers.config.template.composeLogs.template%"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "description": "%vscode-containers.config.template.composeLogs.label%"
+                                    },
+                                    "match": {
+                                        "type": "string",
+                                        "description": "%vscode-containers.config.template.composeLogs.match%"
+                                    }
+                                },
+                                "required": [
+                                    "label",
+                                    "template"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "default": [
+                        {
+                            "label": "Compose Logs",
+                            "template": "${composeCommand} ${configurationFile} ${projectName} logs --tail 1000 -f"
+                        }
+                    ],
+                    "description": "%vscode-containers.config.template.composeLogs.description%",
+                    "tags": [
+                        "advanced"
+                    ]
+                },
                 "containers.commands.composeUp": {
                     "oneOf": [
                         {
