@@ -24,7 +24,7 @@ export class AccumulatorStream extends stream.Writable {
     public constructor(options?: AccumulatorOptions) {
         super({
             ...options,
-            write: (chunk: Buffer, encoding: never, callback: (err?: Error) => void) => {
+            write: (chunk: Buffer, _encoding: unknown, callback: (err?: Error) => void) => {
                 this.chunks.push(chunk);
                 callback();
             },
