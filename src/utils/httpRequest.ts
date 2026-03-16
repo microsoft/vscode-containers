@@ -153,7 +153,7 @@ export async function streamToFile(downloadUrl: string, fileName: string): Promi
             errorText = error.toString();
         }
 
-        throw new Error(`Failed to download ${downloadUrl}: ${errorText}`);
+        throw new Error(`Failed to download ${downloadUrl}: ${errorText}`, { cause: error });
     }
 }
 
