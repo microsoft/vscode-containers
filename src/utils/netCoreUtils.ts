@@ -87,7 +87,7 @@ export async function getNetCoreProjectInfo(project: string, additionalPropertie
         }
     } catch (err) {
         const error = parseError(err);
-        throw new Error(vscode.l10n.t('Unable to determine project information for project \'{0}\': {1}', project, error.message));
+        throw new Error(vscode.l10n.t('Unable to determine project information for project \'{0}\': {1}', project, error.message), { cause: err });
     }
 }
 
@@ -123,6 +123,6 @@ export async function getBlazorManifestInfo(project: string): Promise<BlazorMani
         };
     } catch (err) {
         const error = parseError(err);
-        throw new Error(vscode.l10n.t('Unable to determine Blazor project information for project \'{0}\': {1}', project, error.message));
+        throw new Error(vscode.l10n.t('Unable to determine Blazor project information for project \'{0}\': {1}', project, error.message), { cause: err });
     }
 }
