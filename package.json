@@ -39,6 +39,7 @@
         "onLanguage:dockerfile",
         "onLanguage:dockercompose"
     ],
+    "type": "module",
     "main": "main.mjs",
     "module": "main.mjs",
     "contributes": {
@@ -3353,7 +3354,7 @@
     "devDependencies": {
         "@azure/arm-appservice": "*",
         "@azure/arm-authorization": "*",
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.12",
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.14",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
