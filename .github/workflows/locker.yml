@@ -3,24 +3,63 @@ on:
   schedule:
     - cron: 0 5 * * * # 10:00pm PT
   workflow_dispatch:
+    inputs:
+      days:
+        description: 'Number of days of inactivity before locking a closed issue (default: 28)'
+        required: false
+        default: '28'
+
+permissions:
+  issues: write
 
 jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Actions
-        uses: actions/checkout@v2
+      - name: Lock Inactive Closed Issues
+        uses: actions/github-script@v7
+        env:
+          DAYS: ${{ github.event.inputs.days || '28' }}
         with:
-          repository: "microsoft/vscode-github-triage-actions"
-          path: ./actions
-          ref: stable
-      - name: Install Actions
-        run: npm install --production --prefix ./actions
-      - name: Run Locker
-        uses: ./actions/locker
-        with:
-          app_id: ${{ secrets.AZURETOOLS_VSCODE_BOT_APP_ID }}
-          app_installation_id: ${{ secrets.AZURETOOLS_VSCODE_BOT_APP_INSTALLATION_ID }}
-          app_private_key: ${{ secrets.AZURETOOLS_VSCODE_BOT_APP_PRIVATE_KEY }}
-          daysSinceClose: 45
-          daysSinceUpdate: 7
+          script: |
+            const days = parseInt(process.env.DAYS);
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+
+            core.info(`Locking closed issues with no activity since ${cutoffDate.toISOString()} (${days} days)`);
+
+            // Fetch all closed, unlocked issues (search API supports is:unlocked to skip already-locked issues)
+            const issues = await github.paginate(github.rest.search.issuesAndPullRequests, {
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:issue is:closed is:unlocked`,
+              per_page: 100,
+            });
+
+            core.info(`Found ${issues.length} closed unlocked issue(s) to evaluate`);
+
+            let lockedCount = 0;
+
+            for (const issue of issues) {
+              // Skip pull requests (search may return them if the query matches)
+              if (issue.pull_request) {
+                continue;
+              }
+
+              // updated_at reflects the most recent activity (comments, label changes, state changes)
+              const lastActivity = new Date(issue.updated_at);
+              if (lastActivity >= cutoffDate) {
+                continue;
+              }
+
+              core.info(`Locking issue #${issue.number}: last activity on ${issue.updated_at}`);
+
+              await github.rest.issues.lock({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                lock_reason: 'resolved',
+              });
+
+              lockedCount++;
+            }
+
+            core.info(`Done. Locked ${lockedCount} issue(s).`);

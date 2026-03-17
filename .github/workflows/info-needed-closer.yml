@@ -3,27 +3,128 @@ on:
   schedule:
     - cron: 30 5 * * * # 10:30pm PT
   workflow_dispatch:
+    inputs:
+      days:
+        description: 'Number of days without activity before closing (default: 14)'
+        required: false
+        default: '14'
+
+permissions:
+  issues: write
+  contents: read
 
 jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Actions
-        uses: actions/checkout@v2
+      - name: Close Info Needed Issues
+        uses: actions/github-script@v7
+        env:
+          DAYS: ${{ github.event.inputs.days || '14' }}
         with:
-          repository: "microsoft/vscode-github-triage-actions"
-          path: ./actions
-          ref: stable
-      - name: Install Actions
-        run: npm install --production --prefix ./actions
-      - name: Run Info Needed Closer
-        uses: ./actions/needs-more-info-closer
-        with:
-          app_id: ${{ secrets.AZURETOOLS_VSCODE_BOT_APP_ID }}
-          app_installation_id: ${{ secrets.AZURETOOLS_VSCODE_BOT_APP_INSTALLATION_ID }}
-          app_private_key: ${{ secrets.AZURETOOLS_VSCODE_BOT_APP_PRIVATE_KEY }}
-          label: info-needed
-          closeDays: 14
-          closeComment: "This issue has been closed automatically because it needs more information and has not had recent activity. See also our [issue reporting](https://aka.ms/azcodeissuereporting) guidelines.\n\nHappy Coding!"
-          pingDays: 80
-          pingComment: "Hey @${assignee}, this issue might need further attention.\n\n@${author}, you can help us out by closing this issue if the problem no longer exists, or adding more information."
+          script: |
+            const days = parseInt(process.env.DAYS);
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+
+            core.info(`Closing issues with 'info-needed' label inactive for more than ${days} days (cutoff: ${cutoffDate.toISOString()})`);
+
+            // Cache of permission lookups to avoid redundant API calls for the same user
+            const permissionCache = {};
+
+            async function hasWriteAccess(username) {
+              if (permissionCache[username] !== undefined) {
+                return permissionCache[username];
+              }
+              try {
+                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  username,
+                });
+                // 'admin', 'maintain', and 'write' all grant write access
+                const result = data.permission === 'admin' || data.permission === 'maintain' || data.permission === 'write';
+                permissionCache[username] = result;
+                return result;
+              } catch (err) {
+                // User is not a collaborator or permission lookup failed
+                permissionCache[username] = false;
+                return false;
+              }
+            }
+
+            // Fetch all open issues with the 'info-needed' label
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'info-needed',
+              per_page: 100,
+            });
+
+            core.info(`Found ${issues.length} open issue(s) with 'info-needed' label`);
+
+            let closedCount = 0;
+
+            for (const issue of issues) {
+              // Skip locked issues and pull requests
+              if (issue.locked) {
+                core.info(`Issue #${issue.number}: locked, skipping`);
+                continue;
+              }
+              if (issue.pull_request) {
+                continue;
+              }
+
+              // Fetch only the most recent comment for the issue
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                per_page: 1,
+                sort: 'created',
+                direction: 'desc',
+              });
+
+              if (comments.length === 0) {
+                core.info(`Issue #${issue.number}: no comments, skipping`);
+                continue;
+              }
+
+              const lastComment = comments[0];
+              const lastCommentDate = new Date(lastComment.created_at);
+
+              // Skip issues with recent comment activity
+              if (lastCommentDate >= cutoffDate) {
+                core.info(`Issue #${issue.number}: last comment on ${lastComment.created_at} is within the activity window, skipping`);
+                continue;
+              }
+
+              // Only close if the last comment was made by someone with write access
+              const commenter = lastComment.user?.login;
+              if (!commenter || !(await hasWriteAccess(commenter))) {
+                core.info(`Issue #${issue.number}: last comment by ${commenter} does not have write access, skipping`);
+                continue;
+              }
+
+              core.info(`Closing issue #${issue.number}: last write-access comment by ${commenter} on ${lastComment.created_at}`);
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: 'This issue has been closed automatically because it needs more information and has not had recent activity. See also our <a href="https://aka.ms/azcodeissuereporting">issue reporting</a> guidelines.\n\nHappy Coding!',
+              });
+
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'not_planned',
+              });
+
+              closedCount++;
+            }
+
+            core.info(`Done. Closed ${closedCount} issue(s).`);
