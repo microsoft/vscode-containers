@@ -3381,7 +3381,7 @@
         "fast-xml-parser": "^5.5.7",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
-        "handlebars": "^4.7.8",
+        "handlebars": "^4.7.9",
         "semver": "^7.5.2",
         "tar": "^7.5.11",
         "vscode-languageclient": "^10.0.0-next.19",
