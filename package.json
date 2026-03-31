@@ -3354,7 +3354,7 @@
     "devDependencies": {
         "@azure/arm-appservice": "*",
         "@azure/arm-authorization": "*",
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.16",
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.14",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
@@ -3387,9 +3387,5 @@
         "vscode-languageclient": "^10.0.0-next.19",
         "vscode-tas-client": "^0.1.75",
         "zod": "~4"
-    },
-    "overrides": {
-        "diff": "^8.0.3",
-        "serialize-javascript": "^7.0.5"
     }
 }
