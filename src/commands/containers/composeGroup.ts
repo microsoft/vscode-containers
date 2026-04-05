@@ -5,9 +5,11 @@
 
 import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { CommandLineArgs, quoted } from '@microsoft/vscode-processutils';
 import * as path from 'path';
 import { l10n } from 'vscode';
 import { ext } from '../../extensionVariables';
+import { isComposeV2ableOrchestratorClient } from '../../runtimes/clients/AutoConfigurableDockerComposeClient';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
@@ -31,6 +33,10 @@ export async function composeGroupRestart(context: IActionContext, node: Contain
 
 export async function composeGroupDown(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
     return composeGroup(context, (client, options) => client.down(options), node);
+}
+
+export async function composeGroupPull(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
+    return composeGroup(context, (client, options) => Promise.resolve(getComposeGroupPullCommand(client, options)), node);
 }
 
 type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit<TOptions, keyof CommonOrchestratorCommandOptions>;
@@ -73,6 +79,37 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     });
 
     await taskCRF.getCommandRunner()(composeCommandCallback(client, options));
+}
+
+function getComposeGroupPullCommand(client: IContainerOrchestratorClient, options: CommonOrchestratorCommandOptions): VoidCommandResponse {
+    const args: CommandLineArgs = [];
+
+    if (isComposeV2ableOrchestratorClient(client) && client.composeV2) {
+        args.push('compose');
+    }
+
+    for (const composeFile of options.files ?? []) {
+        args.push('-f', quoted(composeFile));
+    }
+
+    if (options.projectName) {
+        args.push('--project-name', quoted(options.projectName));
+    }
+
+    if (options.environmentFile) {
+        args.push('--env-file', quoted(options.environmentFile));
+    }
+
+    for (const profile of options.profiles ?? []) {
+        args.push('--profile', quoted(profile));
+    }
+
+    args.push('pull');
+
+    return {
+        command: client.commandName,
+        args,
+    };
 }
 
 function getComposeWorkingDirectory(node: ContainerGroupTreeItem): string | undefined {
