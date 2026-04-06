@@ -11,8 +11,9 @@ import { ext } from '../../extensionVariables';
 import { runWithDefaults } from '../../runtimes/runners/runWithDefaults';
 import { execAsync } from '../../utils/execAsync';
 
-// Matches an `up`, `down`, or `pull` and everything after it--so that it can be replaced with `config --services`, to get a service list using all of the files originally part of the compose command
-const composeCommandReplaceRegex = /(\b(up|down|pull)\b).*$/i;
+// Matches an `up`, `down`, or `pull` subcommand token and everything after it--so that it can be replaced with `config --services`, to get a service list using all of the files originally part of the compose command.
+// The token must appear at the start of the command or after whitespace so paths/quoted arguments containing words like `pull` are not mistaken for the compose subcommand.
+const composeCommandReplaceRegex = /(?<!\S)(up|down|pull)\b.*$/i;
 
 type SubsetType = 'services' | 'profiles';
 
