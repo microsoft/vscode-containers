@@ -7,6 +7,7 @@ import { AzExtTreeDataProvider, AzExtTreeItem, IActionContext } from "@microsoft
 import { DockerHubRegistryDataProvider, GenericRegistryV2DataProvider, GitHubRegistryDataProvider } from "@microsoft/vscode-docker-registries";
 import * as vscode from 'vscode';
 import { registerCommand } from '../commands/registerCommands';
+import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
 import { OpenUrlTreeItem } from './OpenUrlTreeItem';
 import { RefreshManager } from './RefreshManager';
@@ -20,7 +21,7 @@ import { UnifiedRegistryTreeDataProvider } from "./registries/UnifiedRegistryTre
 import { VolumesTreeItem } from "./volumes/VolumesTreeItem";
 
 export function registerTrees(): void {
-    const showCollapseAll = vscode.workspace.getConfiguration('containers').get<boolean>('showCollapseAll', true);
+    const showCollapseAll = vscode.workspace.getConfiguration(configPrefix).get<boolean>('showCollapseAll', true);
 
     ext.containersRoot = new ContainersTreeItem(undefined);
     const containersLoadMore = 'vscode-containers.containers.loadMore';
@@ -73,6 +74,23 @@ export function registerTrees(): void {
 
     // Register the refresh manager
     ext.context.subscriptions.push(new RefreshManager());
+
+    // showCollapseAll is baked into TreeView at creation time and cannot be updated afterward.
+    // Prompt for a reload when the setting changes so the new value takes effect.
+    ext.context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(async (e) => {
+            if (e.affectsConfiguration(`${configPrefix}.showCollapseAll`)) {
+                const reload = vscode.l10n.t('Reload Window');
+                const result = await vscode.window.showInformationMessage(
+                    vscode.l10n.t('Reload the window for the new Container Tools settings to take effect.'),
+                    reload
+                );
+                if (result === reload) {
+                    await vscode.commands.executeCommand('workbench.action.reloadWindow');
+                }
+            }
+        })
+    );
 }
 
 function registerRegistryDataProviders(urtdp: UnifiedRegistryTreeDataProvider): void {
