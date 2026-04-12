@@ -2569,6 +2569,11 @@
                         "Docker Compose",
                         "Podman Compose"
                     ]
+                },
+                "containers.showCollapseAll": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "%vscode-containers.config.containers.showCollapseAll%"
                 }
             }
         },

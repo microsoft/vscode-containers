@@ -20,50 +20,52 @@ import { UnifiedRegistryTreeDataProvider } from "./registries/UnifiedRegistryTre
 import { VolumesTreeItem } from "./volumes/VolumesTreeItem";
 
 export function registerTrees(): void {
+    const showCollapseAll = vscode.workspace.getConfiguration('containers').get<boolean>('showCollapseAll', true);
+
     ext.containersRoot = new ContainersTreeItem(undefined);
     const containersLoadMore = 'vscode-containers.containers.loadMore';
     ext.containersTree = new AzExtTreeDataProvider(ext.containersRoot, containersLoadMore);
-    ext.containersTreeView = vscode.window.createTreeView('vscode-containers.views.containers', { treeDataProvider: ext.containersTree, canSelectMany: true });
+    ext.containersTreeView = vscode.window.createTreeView('vscode-containers.views.containers', { treeDataProvider: ext.containersTree, canSelectMany: true, showCollapseAll });
     ext.context.subscriptions.push(ext.containersTreeView);
     registerCommand(containersLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.containersTree.loadMore(node, context));
 
     ext.networksRoot = new NetworksTreeItem(undefined);
     const networksLoadMore = 'vscode-containers.networks.loadMore';
     ext.networksTree = new AzExtTreeDataProvider(ext.networksRoot, networksLoadMore);
-    ext.networksTreeView = vscode.window.createTreeView('vscode-containers.views.networks', { treeDataProvider: ext.networksTree, canSelectMany: true });
+    ext.networksTreeView = vscode.window.createTreeView('vscode-containers.views.networks', { treeDataProvider: ext.networksTree, canSelectMany: true, showCollapseAll });
     ext.context.subscriptions.push(ext.networksTreeView);
     registerCommand(networksLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.networksTree.loadMore(node, context));
 
     ext.imagesRoot = new ImagesTreeItem(undefined);
     const imagesLoadMore = 'vscode-containers.images.loadMore';
     ext.imagesTree = new AzExtTreeDataProvider(ext.imagesRoot, imagesLoadMore);
-    ext.imagesTreeView = vscode.window.createTreeView('vscode-containers.views.images', { treeDataProvider: ext.imagesTree, canSelectMany: true });
+    ext.imagesTreeView = vscode.window.createTreeView('vscode-containers.views.images', { treeDataProvider: ext.imagesTree, canSelectMany: true, showCollapseAll });
     ext.context.subscriptions.push(ext.imagesTreeView);
     registerCommand(imagesLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.imagesTree.loadMore(node, context));
 
     const urtdp = new UnifiedRegistryTreeDataProvider(ext.context.globalState);
     ext.registriesRoot = urtdp;
-    ext.registriesTreeView = vscode.window.createTreeView('vscode-containers.views.registries', { treeDataProvider: urtdp, showCollapseAll: true });
+    ext.registriesTreeView = vscode.window.createTreeView('vscode-containers.views.registries', { treeDataProvider: urtdp, showCollapseAll });
     ext.registriesTree = urtdp;
     registerRegistryDataProviders(urtdp);
 
     ext.volumesRoot = new VolumesTreeItem(undefined);
     const volumesLoadMore = 'vscode-containers.volumes.loadMore';
     ext.volumesTree = new AzExtTreeDataProvider(ext.volumesRoot, volumesLoadMore);
-    ext.volumesTreeView = vscode.window.createTreeView('vscode-containers.views.volumes', { treeDataProvider: ext.volumesTree, canSelectMany: true });
+    ext.volumesTreeView = vscode.window.createTreeView('vscode-containers.views.volumes', { treeDataProvider: ext.volumesTree, canSelectMany: true, showCollapseAll });
     ext.context.subscriptions.push(ext.volumesTreeView);
     registerCommand(volumesLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.volumesTree.loadMore(node, context));
 
     ext.contextsRoot = new ContextsTreeItem(undefined);
     const contextsLoadMore = 'vscode-containers.contexts.loadMore';
     ext.contextsTree = new AzExtTreeDataProvider(ext.contextsRoot, contextsLoadMore);
-    ext.contextsTreeView = vscode.window.createTreeView('vscode-containers.views.dockerContexts', { treeDataProvider: ext.contextsTree, canSelectMany: false });
+    ext.contextsTreeView = vscode.window.createTreeView('vscode-containers.views.dockerContexts', { treeDataProvider: ext.contextsTree, canSelectMany: false, showCollapseAll });
     ext.context.subscriptions.push(ext.contextsTreeView);
     registerCommand(contextsLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.contextsTree.loadMore(node, context));
 
     const helpRoot = new HelpsTreeItem(undefined);
     const helpTreeDataProvider = new AzExtTreeDataProvider(helpRoot, 'vscode-containers.help.loadMore');
-    const helpTreeView = vscode.window.createTreeView('vscode-containers.views.help', { treeDataProvider: helpTreeDataProvider, canSelectMany: false });
+    const helpTreeView = vscode.window.createTreeView('vscode-containers.views.help', { treeDataProvider: helpTreeDataProvider, canSelectMany: false, showCollapseAll });
     ext.context.subscriptions.push(helpTreeView);
 
     // Allows OpenUrlTreeItem to open URLs
