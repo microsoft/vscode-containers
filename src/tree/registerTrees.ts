@@ -71,7 +71,6 @@ export function registerTrees(): void {
 
     // Register the refresh manager
     ext.context.subscriptions.push(new RefreshManager());
-
 }
 
 function registerRegistryDataProviders(urtdp: UnifiedRegistryTreeDataProvider): void {
