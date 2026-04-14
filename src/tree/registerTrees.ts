@@ -63,7 +63,7 @@ export function registerTrees(): void {
 
     const helpRoot = new HelpsTreeItem(undefined);
     const helpTreeDataProvider = new AzExtTreeDataProvider(helpRoot, 'vscode-containers.help.loadMore');
-    const helpTreeView = vscode.window.createTreeView('vscode-containers.views.help', { treeDataProvider: helpTreeDataProvider, canSelectMany: false, showCollapseAll: true });
+    const helpTreeView = vscode.window.createTreeView('vscode-containers.views.help', { treeDataProvider: helpTreeDataProvider, canSelectMany: false });
     ext.context.subscriptions.push(helpTreeView);
 
     // Allows OpenUrlTreeItem to open URLs
