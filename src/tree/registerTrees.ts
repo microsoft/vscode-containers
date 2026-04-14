@@ -7,7 +7,6 @@ import { AzExtTreeDataProvider, AzExtTreeItem, IActionContext } from "@microsoft
 import { DockerHubRegistryDataProvider, GenericRegistryV2DataProvider, GitHubRegistryDataProvider } from "@microsoft/vscode-docker-registries";
 import * as vscode from 'vscode';
 import { registerCommand } from '../commands/registerCommands';
-import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
 import { OpenUrlTreeItem } from './OpenUrlTreeItem';
 import { RefreshManager } from './RefreshManager';
@@ -21,52 +20,50 @@ import { UnifiedRegistryTreeDataProvider } from "./registries/UnifiedRegistryTre
 import { VolumesTreeItem } from "./volumes/VolumesTreeItem";
 
 export function registerTrees(): void {
-    const showCollapseAll = vscode.workspace.getConfiguration(configPrefix).get<boolean>('showCollapseAll', true);
-
     ext.containersRoot = new ContainersTreeItem(undefined);
     const containersLoadMore = 'vscode-containers.containers.loadMore';
     ext.containersTree = new AzExtTreeDataProvider(ext.containersRoot, containersLoadMore);
-    ext.containersTreeView = vscode.window.createTreeView('vscode-containers.views.containers', { treeDataProvider: ext.containersTree, canSelectMany: true, showCollapseAll });
+    ext.containersTreeView = vscode.window.createTreeView('vscode-containers.views.containers', { treeDataProvider: ext.containersTree, canSelectMany: true, showCollapseAll: true });
     ext.context.subscriptions.push(ext.containersTreeView);
     registerCommand(containersLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.containersTree.loadMore(node, context));
 
     ext.networksRoot = new NetworksTreeItem(undefined);
     const networksLoadMore = 'vscode-containers.networks.loadMore';
     ext.networksTree = new AzExtTreeDataProvider(ext.networksRoot, networksLoadMore);
-    ext.networksTreeView = vscode.window.createTreeView('vscode-containers.views.networks', { treeDataProvider: ext.networksTree, canSelectMany: true, showCollapseAll });
+    ext.networksTreeView = vscode.window.createTreeView('vscode-containers.views.networks', { treeDataProvider: ext.networksTree, canSelectMany: true, showCollapseAll: true });
     ext.context.subscriptions.push(ext.networksTreeView);
     registerCommand(networksLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.networksTree.loadMore(node, context));
 
     ext.imagesRoot = new ImagesTreeItem(undefined);
     const imagesLoadMore = 'vscode-containers.images.loadMore';
     ext.imagesTree = new AzExtTreeDataProvider(ext.imagesRoot, imagesLoadMore);
-    ext.imagesTreeView = vscode.window.createTreeView('vscode-containers.views.images', { treeDataProvider: ext.imagesTree, canSelectMany: true, showCollapseAll });
+    ext.imagesTreeView = vscode.window.createTreeView('vscode-containers.views.images', { treeDataProvider: ext.imagesTree, canSelectMany: true, showCollapseAll: true });
     ext.context.subscriptions.push(ext.imagesTreeView);
     registerCommand(imagesLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.imagesTree.loadMore(node, context));
 
     const urtdp = new UnifiedRegistryTreeDataProvider(ext.context.globalState);
     ext.registriesRoot = urtdp;
-    ext.registriesTreeView = vscode.window.createTreeView('vscode-containers.views.registries', { treeDataProvider: urtdp, showCollapseAll });
+    ext.registriesTreeView = vscode.window.createTreeView('vscode-containers.views.registries', { treeDataProvider: urtdp, showCollapseAll: true });
     ext.registriesTree = urtdp;
     registerRegistryDataProviders(urtdp);
 
     ext.volumesRoot = new VolumesTreeItem(undefined);
     const volumesLoadMore = 'vscode-containers.volumes.loadMore';
     ext.volumesTree = new AzExtTreeDataProvider(ext.volumesRoot, volumesLoadMore);
-    ext.volumesTreeView = vscode.window.createTreeView('vscode-containers.views.volumes', { treeDataProvider: ext.volumesTree, canSelectMany: true, showCollapseAll });
+    ext.volumesTreeView = vscode.window.createTreeView('vscode-containers.views.volumes', { treeDataProvider: ext.volumesTree, canSelectMany: true, showCollapseAll: true });
     ext.context.subscriptions.push(ext.volumesTreeView);
     registerCommand(volumesLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.volumesTree.loadMore(node, context));
 
     ext.contextsRoot = new ContextsTreeItem(undefined);
     const contextsLoadMore = 'vscode-containers.contexts.loadMore';
     ext.contextsTree = new AzExtTreeDataProvider(ext.contextsRoot, contextsLoadMore);
-    ext.contextsTreeView = vscode.window.createTreeView('vscode-containers.views.dockerContexts', { treeDataProvider: ext.contextsTree, canSelectMany: false, showCollapseAll });
+    ext.contextsTreeView = vscode.window.createTreeView('vscode-containers.views.dockerContexts', { treeDataProvider: ext.contextsTree, canSelectMany: false, showCollapseAll: true });
     ext.context.subscriptions.push(ext.contextsTreeView);
     registerCommand(contextsLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.contextsTree.loadMore(node, context));
 
     const helpRoot = new HelpsTreeItem(undefined);
     const helpTreeDataProvider = new AzExtTreeDataProvider(helpRoot, 'vscode-containers.help.loadMore');
-    const helpTreeView = vscode.window.createTreeView('vscode-containers.views.help', { treeDataProvider: helpTreeDataProvider, canSelectMany: false, showCollapseAll });
+    const helpTreeView = vscode.window.createTreeView('vscode-containers.views.help', { treeDataProvider: helpTreeDataProvider, canSelectMany: false, showCollapseAll: true });
     ext.context.subscriptions.push(helpTreeView);
 
     // Allows OpenUrlTreeItem to open URLs
@@ -75,22 +72,6 @@ export function registerTrees(): void {
     // Register the refresh manager
     ext.context.subscriptions.push(new RefreshManager());
 
-    // showCollapseAll is baked into TreeView at creation time and cannot be updated afterward.
-    // Prompt for a reload when the setting changes so the new value takes effect.
-    ext.context.subscriptions.push(
-        vscode.workspace.onDidChangeConfiguration(async (e) => {
-            if (e.affectsConfiguration(`${configPrefix}.showCollapseAll`)) {
-                const reload = vscode.l10n.t('Reload Window');
-                const result = await vscode.window.showInformationMessage(
-                    vscode.l10n.t('Reload the window for the new Container Tools settings to take effect.'),
-                    reload
-                );
-                if (result === reload) {
-                    await vscode.commands.executeCommand('workbench.action.reloadWindow');
-                }
-            }
-        })
-    );
 }
 
 function registerRegistryDataProviders(urtdp: UnifiedRegistryTreeDataProvider): void {

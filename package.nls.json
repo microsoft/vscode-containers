@@ -127,7 +127,6 @@
     "vscode-containers.tasks.dotnet-container-sdk.dockerRun.description": "Options for running the container used for debugging.",
     "vscode-containers.tasks.dotnet-container-sdk.dockerRun.containerName": "Name of the container used for debugging.",
     "vscode-containers.config.containers.promptForRegistryWhenPushingImages": "Prompt for registry selection if the image is not explicitly tagged.",
-    "vscode-containers.config.containers.showCollapseAll": "Show the Collapse All button in the Containers, Images, Networks, Volumes, Registries, Contexts, and Help tree views.",
     "vscode-containers.config.template.build.template": "The command template.",
     "vscode-containers.config.template.build.label": "The label displayed to the user.",
     "vscode-containers.config.template.build.match": "The regular expression for choosing the right template. Checked against container name, container's image name, etc.",
