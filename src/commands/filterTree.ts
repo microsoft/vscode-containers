@@ -35,10 +35,11 @@ function loadPersistedTreeFilter(treePrefix: TreePrefix): void {
         getFilterMementoKey(treePrefix)
     );
 
-    if (persistedFilter) {
+    if (persistedFilter !== undefined) {
+        const normalizedFilter = persistedFilter.toLowerCase();
         treeFilters.set(treePrefix, {
-            filterText: persistedFilter.toLowerCase(),
-            isActive: true,
+            filterText: normalizedFilter,
+            isActive: normalizedFilter.length > 0,
         });
     } else {
         treeFilters.delete(treePrefix);
