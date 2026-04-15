@@ -14,6 +14,7 @@ interface TreeFilterState {
 }
 
 const treeFilters = new Map<TreePrefix, TreeFilterState>();
+const filterMementoKeyPrefix = "vscode-containers.filters";
 
 // Only support filtering for containers and images
 const contextKeys: Partial<Record<TreePrefix, string>> = {
@@ -25,16 +26,48 @@ export function getTreeFilter(treePrefix: TreePrefix): TreeFilterState {
     return treeFilters.get(treePrefix) || { filterText: "", isActive: false };
 }
 
-function setTreeFilter(treePrefix: TreePrefix, filterText: string): void {
-    treeFilters.set(treePrefix, {
-        filterText: filterText.toLowerCase(),
-        isActive: filterText.length > 0,
-    });
-    setFilterContextValue(treePrefix, filterText.length > 0);
+function getFilterMementoKey(treePrefix: TreePrefix): string {
+    return `${filterMementoKeyPrefix}.${treePrefix}`;
 }
 
-function clearTreeFilter(treePrefix: TreePrefix): void {
-    treeFilters.set(treePrefix, { filterText: "", isActive: false });
+function loadPersistedTreeFilter(treePrefix: TreePrefix): void {
+    const persistedFilter = ext.context.workspaceState.get<string>(
+        getFilterMementoKey(treePrefix)
+    );
+
+    if (persistedFilter) {
+        treeFilters.set(treePrefix, {
+            filterText: persistedFilter.toLowerCase(),
+            isActive: true,
+        });
+    } else {
+        treeFilters.delete(treePrefix);
+    }
+}
+
+async function setTreeFilter(
+    treePrefix: TreePrefix,
+    filterText: string
+): Promise<void> {
+    const normalizedFilterText = filterText.toLowerCase();
+
+    treeFilters.set(treePrefix, {
+        filterText: normalizedFilterText,
+        isActive: normalizedFilterText.length > 0,
+    });
+    await ext.context.workspaceState.update(
+        getFilterMementoKey(treePrefix),
+        normalizedFilterText || undefined
+    );
+    setFilterContextValue(treePrefix, normalizedFilterText.length > 0);
+}
+
+async function clearTreeFilter(treePrefix: TreePrefix): Promise<void> {
+    treeFilters.delete(treePrefix);
+    await ext.context.workspaceState.update(
+        getFilterMementoKey(treePrefix),
+        undefined
+    );
     setFilterContextValue(treePrefix, false);
 }
 
@@ -47,8 +80,10 @@ function setFilterContextValue(treePrefix: TreePrefix, value: boolean): void {
 
 export function setInitialFilterContextValues(): void {
     for (const treePrefix of Object.keys(contextKeys) as TreePrefix[]) {
+        loadPersistedTreeFilter(treePrefix);
         const filter = getTreeFilter(treePrefix);
         setFilterContextValue(treePrefix, filter.isActive);
+        updateTreeViewTitle(treePrefix);
     }
 }
 
@@ -121,25 +156,25 @@ async function filterTreeView(
         ];
     }
 
-    quickPick.onDidAccept(() => {
+    quickPick.onDidAccept(async () => {
         const value = quickPick.value.trim();
         const selectedItem = quickPick.selectedItems[0];
 
         // Check if "Clear Filter" was selected
         if (selectedItem?.label === clearFilterLabel) {
-            clearTreeFilter(treePrefix);
+            await clearTreeFilter(treePrefix);
             context.telemetry.properties.action = "clearFilter";
         } else if (value) {
-            setTreeFilter(treePrefix, value);
+            await setTreeFilter(treePrefix, value);
             context.telemetry.properties.action = "applyFilter";
             context.telemetry.properties.filterLength = value.length.toString();
         } else {
-            clearTreeFilter(treePrefix);
+            await clearTreeFilter(treePrefix);
             context.telemetry.properties.action = "clearFilter";
         }
 
         quickPick.hide();
-        void refreshTreeView(treePrefix);
+        await refreshTreeView(treePrefix);
     });
 
     quickPick.onDidHide(() => {
@@ -223,15 +258,15 @@ export async function filterImagesTree(context: IActionContext): Promise<void> {
 export async function clearContainersFilter(
     context: IActionContext
 ): Promise<void> {
-    clearTreeFilter("containers");
+    await clearTreeFilter("containers");
     context.telemetry.properties.action = "clearFilter";
-    void refreshTreeView("containers");
+    await refreshTreeView("containers");
 }
 
 export async function clearImagesFilter(
     context: IActionContext
 ): Promise<void> {
-    clearTreeFilter("images");
+    await clearTreeFilter("images");
     context.telemetry.properties.action = "clearFilter";
-    void refreshTreeView("images");
+    await refreshTreeView("images");
 }
