@@ -157,25 +157,32 @@ async function filterTreeView(
         ];
     }
 
-    quickPick.onDidAccept(async () => {
-        const value = quickPick.value.trim();
-        const selectedItem = quickPick.selectedItems[0];
+    quickPick.onDidAccept(() => {
+        void (async () => {
+            const value = quickPick.value.trim();
+            const selectedItem = quickPick.selectedItems[0];
 
-        // Check if "Clear Filter" was selected
-        if (selectedItem?.label === clearFilterLabel) {
-            await clearTreeFilter(treePrefix);
-            context.telemetry.properties.action = "clearFilter";
-        } else if (value) {
-            await setTreeFilter(treePrefix, value);
-            context.telemetry.properties.action = "applyFilter";
-            context.telemetry.properties.filterLength = value.length.toString();
-        } else {
-            await clearTreeFilter(treePrefix);
-            context.telemetry.properties.action = "clearFilter";
-        }
+            // Check if "Clear Filter" was selected
+            if (selectedItem?.label === clearFilterLabel) {
+                await clearTreeFilter(treePrefix);
+                context.telemetry.properties.action = "clearFilter";
+            } else if (value) {
+                await setTreeFilter(treePrefix, value);
+                context.telemetry.properties.action = "applyFilter";
+                context.telemetry.properties.filterLength =
+                    value.length.toString();
+            } else {
+                await clearTreeFilter(treePrefix);
+                context.telemetry.properties.action = "clearFilter";
+            }
 
-        quickPick.hide();
-        await refreshTreeView(treePrefix);
+            quickPick.hide();
+            await refreshTreeView(treePrefix);
+        })().catch((error) => {
+            void vscode.window.showErrorMessage(
+                vscode.l10n.t("Failed to apply filter: {0}", String(error))
+            );
+        });
     });
 
     quickPick.onDidHide(() => {
