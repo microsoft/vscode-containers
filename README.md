@@ -1,4 +1,4 @@
-## Container Tools for Visual Studio Code  [![Version](https://img.shields.io/visual-studio-marketplace/v/ms-azuretools.vscode-containers)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers) [![Installs](https://img.shields.io/visual-studio-marketplace/i/ms-azuretools.vscode-containers)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers)
+## Container Tools for Visual Studio Code
 
 The Container Tools extension makes it easy to build, manage, and deploy containerized applications from Visual Studio Code. It also provides one-click debugging of Node.js, Python, and .NET inside a container.
 
