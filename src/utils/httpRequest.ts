@@ -25,7 +25,7 @@ export async function httpRequest<T>(
         requestOptions.body = new URLSearchParams(options.form);
     }
 
-    if (!!requestOptions.body && requestOptions.duplex === undefined) {
+    if (requestOptions.body !== undefined && requestOptions.duplex === undefined) {
         // Node's built-in fetch implementation (via undici) requires `duplex: 'half'`
         // when sending a request body in this code path, otherwise Node throws an error.
         requestOptions.duplex = 'half';
