@@ -5,6 +5,7 @@
 
 import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import { before } from 'mocha';
 
 before('Global setup', function () {
     console.log('Global setup');

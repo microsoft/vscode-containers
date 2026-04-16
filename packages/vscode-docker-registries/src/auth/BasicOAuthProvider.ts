@@ -74,13 +74,16 @@ export class BasicOAuthProvider extends BasicAuthProvider implements Authenticat
 
         const match = wwwAuthenticateHeaderRegex.exec(wwwAuthenticateHeader);
 
-        if (!match?.groups?.realm || !match?.groups?.service || !match?.groups?.scope) {
+        if (match?.groups?.realm && match?.groups?.service && match?.groups?.scope) {
+            this.oAuthEndpoint = match.groups.realm;
+            this.oAuthService = match.groups.service;
+            this.defaultScopes = match.groups.scope.split(' ');
+        } else if (!/Basic\s+/i.test(wwwAuthenticateHeader)) {
             throw new Error(vscode.l10n.t('Unable to parse WWW-Authenticate header: "{0}"', wwwAuthenticateHeader));
         }
+        // For Basic challenges, oAuthEndpoint/oAuthService remain undefined,
+        // so getSession will use Basic auth directly.
 
-        this.oAuthEndpoint = match.groups.realm;
-        this.oAuthService = match.groups.service;
-        this.defaultScopes = match.groups.scope.split(' ');
         this._didFallback = true;
     }
 

@@ -1,3 +1,8 @@
+## 0.4.2 - 16 April 2026
+### Fixed
+* Fixed an issue where some requests would fail. [#354](https://github.com/microsoft/vscode-docker-extensibility/issues/354)
+* Fixed incorrect handling of basic auth `WWW-Authenticate` headers. [#355](https://github.com/microsoft/vscode-docker-extensibility/issues/355)
+
 ## 0.4.1 - 14 October 2025
 ### Fixed
 * Better error messages in the tree when errors occur. [#310](https://github.com/microsoft/vscode-docker-extensibility/pull/310)
