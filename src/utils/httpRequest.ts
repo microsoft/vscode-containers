@@ -19,7 +19,7 @@ export async function httpRequest<T>(
     signRequest?: (request: RequestOptionsLike) => Promise<void>,
     errorHandling: ErrorHandling = ErrorHandling.ThrowOnError
 ): Promise<HttpResponse<T>> {
-    const requestOptions: RequestInit = { ...options };
+    const requestOptions: RequestInit = { ...options, headers: { ...options?.headers } };
     if (options?.form) {
         // URLSearchParams is a silly way to say "it's form data"
         requestOptions.body = new URLSearchParams(options.form);
@@ -109,7 +109,7 @@ export const enum HttpStatusCode {
 }
 
 export interface RequestOptionsLike {
-    headers?: { [key: string]: readonly string[] | string };
+    headers?: { [key: string]: string };
     method?: RequestMethod; // This is an enum type because it enforces the above valid options on callers (which do not directly use node-fetch's Request object)
     form?: { [key: string]: string };
     body?: string;
