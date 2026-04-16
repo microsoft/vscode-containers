@@ -59,6 +59,7 @@ export const registries: ImageRegistry[] = [
             const tokenResponse = await httpRequest<{ token: string }>(url.toString(), authRequestOptions);
             const token = (await tokenResponse.json()).token;
 
+            request.headers ??= {};
             request.headers['Authorization'] = bearerAuthHeader(token);
         }
     },

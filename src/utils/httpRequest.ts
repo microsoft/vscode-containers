@@ -26,7 +26,8 @@ export async function httpRequest<T>(
     }
 
     if (!!requestOptions.body && requestOptions.duplex === undefined) {
-        // node-fetch requires the "duplex" option to be set to "half" in order to send a body
+        // Node's built-in fetch implementation (via undici) requires `duplex: 'half'`
+        // when sending a request body in this code path, otherwise Node throws an error.
         requestOptions.duplex = 'half';
     }
 
