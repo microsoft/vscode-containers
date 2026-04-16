@@ -16,22 +16,26 @@ export const enum ErrorHandling {
 export async function httpRequest<T>(
     url: string,
     options?: RequestOptionsLike,
-    signRequest?: (request: RequestLike) => Promise<RequestLike>,
+    signRequest?: (request: RequestOptionsLike) => Promise<void>,
     errorHandling: ErrorHandling = ErrorHandling.ThrowOnError
 ): Promise<HttpResponse<T>> {
-    const requestOptions: RequestInit = options;
+    const requestOptions: RequestInit = { ...options, headers: { ...options?.headers } };
     if (options?.form) {
         // URLSearchParams is a silly way to say "it's form data"
         requestOptions.body = new URLSearchParams(options.form);
     }
 
-    let request = new Request(url, requestOptions ?? {});
-
-    if (signRequest) {
-        request = await signRequest(request) as Request;
+    if (requestOptions.body !== undefined && requestOptions.duplex === undefined) {
+        // Node's built-in fetch implementation (via undici) requires `duplex: 'half'`
+        // when sending a request body in this code path, otherwise Node throws an error.
+        requestOptions.duplex = 'half';
     }
 
-    const response = await fetch(request);
+    if (signRequest) {
+        await signRequest(requestOptions as RequestOptionsLike);
+    }
+
+    const response = await fetch(url, requestOptions);
 
     if (errorHandling === ErrorHandling.ReturnErrorResponse || response.ok) {
         return new HttpResponse(response, url);
@@ -109,12 +113,6 @@ export interface RequestOptionsLike {
     method?: RequestMethod; // This is an enum type because it enforces the above valid options on callers (which do not directly use node-fetch's Request object)
     form?: { [key: string]: string };
     body?: string;
-}
-
-export interface RequestLike {
-    url: string;
-    headers: HeadersLike;
-    method: string; // This is a string because node-fetch's Request defines it as such
 }
 
 export interface HeadersLike {
