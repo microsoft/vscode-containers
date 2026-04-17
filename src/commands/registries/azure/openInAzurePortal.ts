@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IActionContext, createSubscriptionContext } from '@microsoft/vscode-azext-utils';
+import { IActionContext, ISubscriptionContext, createSubscriptionContext } from '@microsoft/vscode-azext-utils';
 import { isRepository } from '@microsoft/vscode-docker-registries';
 import { ext } from '../../../extensionVariables';
 import { AzureRegistry, AzureRepository, AzureSubscriptionRegistryItem, isAzureRegistry, isAzureSubscriptionRegistryItem } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
@@ -21,7 +21,7 @@ export async function openInAzurePortal(context: IActionContext, node?: UnifiedR
 
     const azureRegistryItem = node.wrappedItem;
     const azExtAzureUtils = await getAzExtAzureUtils();
-    let subscriptionContext = undefined;
+    let subscriptionContext: ISubscriptionContext | undefined;
     if (isAzureSubscriptionRegistryItem(azureRegistryItem)) {
         subscriptionContext = createSubscriptionContext(azureRegistryItem.subscription);
         await azExtAzureUtils.openInPortal(subscriptionContext, `/subscriptions/${subscriptionContext.subscriptionId}`);

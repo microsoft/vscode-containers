@@ -6,13 +6,13 @@
 import { ImageNameInfo } from '@microsoft/vscode-container-client';
 import { URL } from 'url';
 import { ociClientId } from '../../../constants';
-import { HttpErrorResponse, IOAuthContext, RequestLike, RequestOptionsLike, bearerAuthHeader, getWwwAuthenticateContext, httpRequest } from '../../../utils/httpRequest';
+import { HttpErrorResponse, IOAuthContext, RequestOptionsLike, bearerAuthHeader, getWwwAuthenticateContext, httpRequest } from '../../../utils/httpRequest';
 import { NormalizedImageNameInfo } from '../NormalizedImageNameInfo';
 
 export interface ImageRegistry {
     isMatch: (imageNameInfo: ImageNameInfo) => boolean;
     baseUrl: string;
-    signRequest?(request: RequestLike, scope: string): Promise<RequestLike>;
+    signRequest?(request: RequestOptionsLike, scope: string): Promise<void>;
 }
 
 let dockerHubAuthContext: IOAuthContext | undefined;
@@ -24,7 +24,7 @@ export const registries: ImageRegistry[] = [
             return !!imageNameInfo.originalName && normalizedImageNameInfo.normalizedRegistry === 'docker.io' && normalizedImageNameInfo.normalizedNamespace === 'library';
         },
         baseUrl: 'https://registry-1.docker.io/v2/library',
-        signRequest: async (request: RequestLike, scope: string): Promise<RequestLike> => {
+        signRequest: async (request: RequestOptionsLike, scope: string): Promise<void> => {
             if (!dockerHubAuthContext) {
                 try {
                     const options: RequestOptionsLike = {
@@ -59,8 +59,8 @@ export const registries: ImageRegistry[] = [
             const tokenResponse = await httpRequest<{ token: string }>(url.toString(), authRequestOptions);
             const token = (await tokenResponse.json()).token;
 
-            request.headers.set('Authorization', bearerAuthHeader(token));
-            return request;
+            request.headers ??= {};
+            request.headers['Authorization'] = bearerAuthHeader(token);
         }
     },
     {

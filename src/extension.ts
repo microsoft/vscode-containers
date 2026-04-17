@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { TelemetryEvent } from '@microsoft/compose-language-service/lib/client/TelemetryEvent';
+import type { TelemetryEvent } from '@microsoft/compose-language-service/client';
+import { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } from '@microsoft/compose-language-service/vscode';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { DockerClient, DockerComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
-import { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelector, LanguageClient, LanguageClientOptions, Middleware, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import type { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelector, LanguageClient, LanguageClientOptions, Middleware, ServerOptions } from 'vscode-languageclient/node';
 import * as tas from 'vscode-tas-client';
 import { registerCommands } from './commands/registerCommands';
 import { configPrefix } from './constants';
@@ -26,19 +27,18 @@ import { ActivityMeasurementService } from './telemetry/ActivityMeasurementServi
 import { registerFileListeners } from './telemetry/registerFileListeners';
 import { registerRuntimeTelemetryHandler } from './telemetry/registerRuntimeTelemetryHandler';
 import { registerTrees } from './tree/registerTrees';
-import { AlternateYamlLanguageServiceClientFeature } from './utils/AlternateYamlLanguageServiceClientFeature';
 import { AzExtLogOutputChannelWrapper } from './utils/AzExtLogOutputChannelWrapper';
 import { logDockerEnvironment, logSystemInfo } from './utils/diagnostics';
-import { DocumentSettingsClientFeature } from './utils/DocumentSettingsClientFeature';
+import { getLanguageClient } from './utils/lazyPackages';
 import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
 
 let dockerfileLanguageClient: LanguageClient;
 let composeLanguageClient: LanguageClient;
 
-const DOCUMENT_SELECTOR: DocumentSelector = [
+const DOCUMENT_SELECTOR = [
     { language: 'dockerfile', scheme: 'file' }
-];
+] satisfies DocumentSelector;
 
 function initializeExtensionVariables(ctx: vscode.ExtensionContext): void {
     ext.context = ctx;
@@ -221,11 +221,11 @@ namespace Configuration {
         return result;
     }
 
-    export function initialize(ctx: vscode.ExtensionContext): void {
+    export function initialize(ctx: vscode.ExtensionContext, didChangeConfigurationNotification: typeof DidChangeConfigurationNotification): void {
         ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration(
             async (e: vscode.ConfigurationChangeEvent) => {
                 // notify the language server that settings have change
-                void dockerfileLanguageClient.sendNotification(DidChangeConfigurationNotification.type, {
+                void dockerfileLanguageClient.sendNotification(didChangeConfigurationNotification.type, {
                     settings: null
                 });
             }
@@ -238,12 +238,15 @@ function activateDockerfileLanguageClient(ctx: vscode.ExtensionContext): void {
     // Don't wait
     void callWithTelemetryAndErrorHandling('vscode-containers.languageclient.activate', async (context: IActionContext) => {
         context.telemetry.properties.isActivationEvent = 'true';
+
+        const { DidChangeConfigurationNotification, LanguageClient, TransportKind } = await getLanguageClient();
+
         const serverModule = ctx.asAbsolutePath(
             path.join(
                 "dist",
                 "dockerfile-language-server-nodejs",
                 "lib",
-                "server.js"
+                "server.mjs"
             )
         );
 
@@ -286,7 +289,7 @@ function activateDockerfileLanguageClient(ctx: vscode.ExtensionContext): void {
 
         ctx.subscriptions.push(dockerfileLanguageClient);
         await dockerfileLanguageClient.start();
-        Configuration.initialize(ctx);
+        Configuration.initialize(ctx, DidChangeConfigurationNotification);
     });
 }
 
@@ -300,12 +303,14 @@ function activateComposeLanguageClient(ctx: vscode.ExtensionContext): void {
             throw new UserCancelledError('languageServiceDisabled');
         }
 
+        const { LanguageClient, TransportKind } = await getLanguageClient();
+
         const serverModule = ctx.asAbsolutePath(
             path.join(
                 "dist",
                 "compose-language-service",
                 "lib",
-                "server.js"
+                "server.mjs"
             )
         );
 
