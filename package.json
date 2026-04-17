@@ -1,6 +1,6 @@
 {
     "name": "vscode-containers",
-    "version": "2.4.5-alpha",
+    "version": "2.4.6-alpha",
     "publisher": "ms-azuretools",
     "displayName": "Container Tools",
     "description": "Makes it easy to create, manage, and debug containerized applications.",
@@ -39,7 +39,9 @@
         "onLanguage:dockerfile",
         "onLanguage:dockercompose"
     ],
-    "main": "main",
+    "type": "module",
+    "main": "main.mjs",
+    "module": "main.mjs",
     "contributes": {
         "menus": {
             "commandPalette": [
@@ -393,7 +395,7 @@
                 },
                 {
                     "command": "vscode-containers.askCopilot",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /container$/i && !config.chat.disableAIFeatures",
                     "group": "containers_1_general@3.5"
                 },
                 {
@@ -478,7 +480,7 @@
                 },
                 {
                     "command": "vscode-containers.askCopilot",
-                    "when": "view == vscode-containers.views.images && viewItem == image",
+                    "when": "view == vscode-containers.views.images && viewItem == image && !config.chat.disableAIFeatures",
                     "group": "images_2_general@1.5"
                 },
                 {
@@ -3350,13 +3352,13 @@
         "vscode.yaml"
     ],
     "devDependencies": {
-        "@azure/arm-appservice": "^15.0.0",
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.8",
+        "@azure/arm-appservice": "*",
+        "@azure/arm-authorization": "*",
+        "@microsoft/vscode-azext-eng": "1.0.0-alpha.14",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
         "@types/vscode": "1.105.0",
-        "@types/xml2js": "^0.4.11",
         "@vscode/test-cli": "*",
         "@vscode/test-electron": "*",
         "@vscode/vsce": "*",
@@ -3364,27 +3366,26 @@
         "esbuild-plugin-copy": "*"
     },
     "dependencies": {
-        "@azure/arm-authorization": "^9.0.0",
         "@azure/arm-containerregistry": "^10.1.0",
         "@azure/storage-blob": "^12.14.0",
-        "@microsoft/compose-language-service": "^0.4.0",
+        "@microsoft/compose-language-service": "^0.5.0",
         "@microsoft/vscode-azext-azureappservice": "^4.0.0",
-        "@microsoft/vscode-azext-azureauth": "6.0.0-alpha.1",
+        "@microsoft/vscode-azext-azureauth": "^6.0.0-alpha.2",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
-        "@microsoft/vscode-azext-utils": "^4.0.0",
-        "@microsoft/vscode-container-client": "^0.5.2",
-        "@microsoft/vscode-docker-registries": "^0.4.1",
+        "@microsoft/vscode-azext-utils": "^4.0.4",
+        "@microsoft/vscode-container-client": "^0.5.3",
+        "@microsoft/vscode-docker-registries": "^0.4.2",
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
+        "fast-xml-parser": "^5.5.7",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
-        "handlebars": "^4.7.7",
+        "handlebars": "^4.7.9",
         "semver": "^7.5.2",
-        "tar": "^7.5.4",
-        "vscode-languageclient": "^9.0.1",
+        "tar": "^7.5.11",
+        "vscode-languageclient": "^10.0.0-next.19",
         "vscode-tas-client": "^0.1.75",
-        "xml2js": "^0.6.0",
         "zod": "~4"
     }
 }
