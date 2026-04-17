@@ -9,13 +9,12 @@ import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import * as readline from 'readline';
-import * as tar from 'tar';
 import * as vscode from 'vscode';
 import { ext } from '../../../../extensionVariables';
 import { AzureRegistry, AzureRegistryItem } from "../../../../tree/registries/Azure/AzureRegistryDataProvider";
 import { UnifiedRegistryItem } from "../../../../tree/registries/UnifiedRegistryTreeDataProvider";
 import { createArmContainerRegistryClient, getResourceGroupFromId } from "../../../../utils/azureUtils";
-import { getStorageBlob } from '../../../../utils/lazyPackages';
+import { getStorageBlob, getTar } from '../../../../utils/lazyPackages';
 import { delay } from '../../../../utils/promiseUtils';
 import { Item, quickPickDockerFileItem, quickPickYamlFileItem } from '../../../../utils/quickPickFile';
 import { quickPickWorkspaceFolder } from '../../../../utils/quickPickWorkspaceFolder';
@@ -139,6 +138,8 @@ async function quickPickImageName(context: IActionContext, rootFolder: vscode.Wo
 }
 
 async function uploadSourceCode(client: ContainerRegistryManagementClient, registryName: string, resourceGroupName: string, rootFolder: vscode.Uri, tarFilePath: string): Promise<string> {
+    const tar = await getTar();
+
     ext.outputChannel.info(vscode.l10n.t('   Sending source code to temp file'));
     const source: string = rootFolder.fsPath;
     let items = await fse.readdir(source);
