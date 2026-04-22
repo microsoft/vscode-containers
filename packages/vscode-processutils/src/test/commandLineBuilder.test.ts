@@ -6,7 +6,7 @@
 import { expect } from 'chai';
 import * as crypto from 'crypto';
 import { describe, it } from 'mocha';
-import { ShellQuotedString, ShellQuoting } from 'vscode';
+import { ShellQuotedString, ShellQuoting } from '../typings/ShellQuoting';
 
 import { range } from '../utils/range';
 import {

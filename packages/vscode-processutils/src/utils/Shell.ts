@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as os from 'os';
-import { ShellQuotedString, ShellQuoting } from 'vscode';
+import { ShellQuotedString, ShellQuoting } from '../typings/ShellQuoting';
 import { IShell } from '../contracts/Shell';
 import { CommandLineArgs } from './commandLineBuilder';
 

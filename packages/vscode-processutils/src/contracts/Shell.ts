@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ShellQuotedString, ShellQuoting } from 'vscode';
+import { ShellQuotedString, ShellQuoting } from '../typings/ShellQuoting';
 import { CommandLineArgs } from '../utils/commandLineBuilder';
 
 export interface IShell {

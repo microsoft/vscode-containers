@@ -7,14 +7,4 @@
     "include": [
         "src/**/*.ts"
     ],
-    "tsx": {
-        "compilerOptions": {
-            "baseUrl": "./",
-            "paths": {
-                "vscode": [
-                    "./vscode"
-                ]
-            }
-        }
-    }
 }

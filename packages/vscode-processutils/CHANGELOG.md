@@ -1,3 +1,7 @@
+## 0.2.2 - 22 April 2026
+### Changed
+* Removed runtime imports of `'vscode'`. [#358](https://github.com/microsoft/vscode-docker-extensibility/pull/358)
+
 ## 0.2.1 - 13 October 2025
 ### Added
 * Added a `CancellationTokenLike.toAbortSignal()` helper method.

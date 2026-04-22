@@ -6,6 +6,7 @@
 export * from './typings/CancellationTokenLike';
 export * from './typings/DisposableLike';
 export * from './typings/EventLike';
+export * from './typings/ShellQuoting';
 export * from './utils/AccumulatorStream';
 export * from './utils/CancellationError';
 export * from './utils/ChildProcessError';

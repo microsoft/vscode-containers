@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-processutils",
     "author": "Microsoft Corporation",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "Library support for building command lines and running external processes, primarily for use in VS Code.",
     "license": "See LICENSE in the project root for license information.",
     "repository": {
@@ -28,17 +28,11 @@
         "tree-kill": "^1.2.2",
         "which": "^5.0.0"
     },
-    "engines": {
-        "vscode": "^1.105.0"
-    },
     "devDependencies": {
         "@types/which": "^3.0.4",
         "vscode-jsonrpc": "^8.0.1"
     },
     "mocha": {
-        "require": [
-            "./src/test/tsconfig-paths-bootstrap.mjs"
-        ],
         "node-option": [
             "import=tsx"
         ],
