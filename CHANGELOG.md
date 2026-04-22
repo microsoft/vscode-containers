@@ -1,3 +1,14 @@
+## 2.4.2 - 23 April 2026
+### Added
+* Added Collapse All button to most of the tree views in the explorer. [#443](https://github.com/microsoft/vscode-containers/pull/443)
+
+### Changed
+* The extension is now bundled as an ESM module. [#366](https://github.com/microsoft/vscode-containers/issues/366)
+* The deprecated OpenJDK image in scaffolded Dockerfiles has been updated to one from Microsoft Container Registry. [#384](https://github.com/microsoft/vscode-containers/issues/384)
+
+### Fixed
+* Fixed some errors when interacting with container registries. [#370](https://github.com/microsoft/vscode-containers/issues/370), [#435](https://github.com/microsoft/vscode-containers/issues/435), [#440](https://github.com/microsoft/vscode-containers/issues/440)
+
 ## 2.4.1 - 3 February 2026
 ### Fixed
 * Extension telemetry was not being sent. [#367](https://github.com/microsoft/vscode-containers/issues/367)
