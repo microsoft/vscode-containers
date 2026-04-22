@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-container-client",
     "author": "Microsoft Corporation",
-    "version": "0.5.3",
+    "version": "0.5.4",
     "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
     "license": "See LICENSE in the project root for license information.",
     "repository": {
@@ -25,18 +25,12 @@
         "testintegration": "mocha --grep \"(integration)\"",
         "testintegrationcov": "npx nyc --reporter=html mocha --grep \"(integration)\""
     },
-    "engines": {
-        "vscode": "^1.105.0"
-    },
     "dependencies": {
-        "@microsoft/vscode-processutils": "^0.2.1",
+        "@microsoft/vscode-processutils": "^0.2.2",
         "dayjs": "^1.11.2",
         "zod": "^4.1.13"
     },
     "mocha": {
-        "require": [
-            "./src/test/tsconfig-paths-bootstrap.mjs"
-        ],
         "node-option": [
             "import=tsx"
         ],

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { FileType, ShellQuotedString } from 'vscode';
+import { ShellQuotedString } from '@microsoft/vscode-processutils';
+import { FileType } from '../typings/FileType';
 import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from './CommandRunner';
 import { ContainerOS, EventAction, EventType } from './ZodEnums';
 

@@ -7,7 +7,7 @@ import { Bash, escaped, Powershell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import * as crypto from 'crypto';
 import { describe, it } from 'mocha';
-import { ShellQuoting } from 'vscode';
+import { ShellQuoting } from '@microsoft/vscode-processutils';
 
 import {
     DockerClient,

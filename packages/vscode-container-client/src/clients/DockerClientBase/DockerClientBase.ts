@@ -18,7 +18,7 @@ import {
     withVerbatimArg
 } from '@microsoft/vscode-processutils';
 import * as readline from 'readline';
-import { ShellQuotedString, ShellQuoting } from 'vscode';
+import { ShellQuotedString, ShellQuoting } from '@microsoft/vscode-processutils';
 import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from '../../contracts/CommandRunner';
 import {
     BuildImageCommandOptions,

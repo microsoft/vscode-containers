@@ -9,7 +9,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import * as stream from 'stream';
-import { FileType } from 'vscode';
+import { FileType } from '../typings/FileType';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';

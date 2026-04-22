@@ -12,6 +12,7 @@ export * from './commandRunners/wslStream';
 export * from './contracts/CommandRunner';
 export * from './contracts/ContainerClient';
 export * from './contracts/ContainerOrchestratorClient';
+export * from './typings/FileType';
 export * from './utils/CommandNotSupportedError';
 export * from './utils/getNativeArchitecture';
 export * from './utils/parseDockerLikeImageName';

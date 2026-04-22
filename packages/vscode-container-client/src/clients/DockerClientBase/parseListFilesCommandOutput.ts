@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from 'path';
-import * as vscode from 'vscode';
+import { FileType } from '../../typings/FileType';
 import { ListFilesCommandOptions, ListFilesItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 
@@ -14,11 +14,11 @@ const DateFormats = [
     'MM/DD/YYYY hh:mm A', // Windows format
 ];
 
-const SupportedFileTypes = [vscode.FileType.Directory, vscode.FileType.File];
+const SupportedFileTypes: readonly FileType[] = [FileType.Directory, FileType.File];
 
 type FileMode = {
     mode?: number;
-    fileType: vscode.FileType;
+    fileType: FileType;
 };
 
 export function parseListFilesCommandLinuxOutput(
@@ -39,7 +39,7 @@ export function parseListFilesCommandLinuxOutput(
         /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
         // Ignore relative directory items...
-        if (fileType === vscode.FileType.Directory && (name === '.' || name === '..')) {
+        if (fileType === FileType.Directory && (name === '.' || name === '..')) {
             continue;
         }
 
@@ -74,12 +74,12 @@ export function parseListFilesCommandWindowsOutput(
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         const name = match.groups!.name;
         const fileType = parseWindowsType(match.groups!.type);
-        const size = fileType === vscode.FileType.Directory ? 0 : Number.parseInt(match.groups!.size, 10);
+        const size = fileType === FileType.Directory ? 0 : Number.parseInt(match.groups!.size, 10);
         const mtime = dayjs(match.groups!.mtime, DateFormats).valueOf();
         /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
         // Ignore relative directory items...
-        if (fileType === vscode.FileType.Directory && (name === '.' || name === '..')) {
+        if (fileType === FileType.Directory && (name === '.' || name === '..')) {
             continue;
         }
 
@@ -106,28 +106,28 @@ function parseLinuxType(fullModeHex: string): FileMode {
     const mode = fullMode & 0xfff;
     switch (fileType) {
         case 4:
-            return { mode, fileType: vscode.FileType.Directory };
+            return { mode, fileType: FileType.Directory };
         case 8:
-            return { mode, fileType: vscode.FileType.File };
+            return { mode, fileType: FileType.File };
         case 10:
-            return { mode, fileType: vscode.FileType.SymbolicLink };
+            return { mode, fileType: FileType.SymbolicLink };
         default:
-            return { mode, fileType: vscode.FileType.Unknown };
+            return { mode, fileType: FileType.Unknown };
     }
 }
 
-function parseWindowsType(type: string | undefined): vscode.FileType {
+function parseWindowsType(type: string | undefined): FileType {
     switch (type?.toUpperCase()) {
         case '<DIR>':
-            return vscode.FileType.Directory;
+            return FileType.Directory;
         case '':
         case undefined:
             // Blank or undefined type is a file
-            return vscode.FileType.File;
+            return FileType.File;
         case '<SYMLINKD>':
         case '<SYMLINK>':
-            return vscode.FileType.SymbolicLink;
+            return FileType.SymbolicLink;
         default:
-            return vscode.FileType.Unknown;
+            return FileType.Unknown;
     }
 }
