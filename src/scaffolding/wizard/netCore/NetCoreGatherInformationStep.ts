@@ -54,10 +54,12 @@ export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreS
                 wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-preview`;
                 wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-preview`;
             }
-            // append '-nanoserver-ltsc2022' for windows base images for .NET 8+'s new naming convention
+            // append '-nanoserver-<ltsc-version>' for windows base images for .NET 8+'s new naming convention
+            // .NET 11+ requires ltsc2025; .NET 8-10 use ltsc2022
             if (wizardContext.netCorePlatformOS === 'Windows') {
-                wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-nanoserver-ltsc2022`;
-                wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-nanoserver-ltsc2022`;
+                const ltscVersion = netCoreVersion.major >= NetCorePreviewVersion ? 'ltsc2025' : 'ltsc2022';
+                wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-nanoserver-${ltscVersion}`;
+                wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-nanoserver-${ltscVersion}`;
             }
 
             // change default user to adapt to Debian 12

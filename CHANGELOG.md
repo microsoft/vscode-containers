@@ -8,6 +8,7 @@
 
 ### Fixed
 * Fixed some errors when interacting with container registries. [#370](https://github.com/microsoft/vscode-containers/issues/370), [#435](https://github.com/microsoft/vscode-containers/issues/435), [#440](https://github.com/microsoft/vscode-containers/issues/440)
+* For .NET 11+ Windows containers, the scaffolded base image now uses `-nanoserver-ltsc2025` (previously `-nanoserver-ltsc2022`). .NET 8-10 continue to use `-nanoserver-ltsc2022`.
 
 ## 2.4.1 - 3 February 2026
 ### Fixed
