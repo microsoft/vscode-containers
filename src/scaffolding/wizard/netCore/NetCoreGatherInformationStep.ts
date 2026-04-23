@@ -21,6 +21,7 @@ const netSdkImage = 'mcr.microsoft.com/dotnet/sdk';
 const cSharpConfigId = 'csharp';
 const cSharpPromptSetting = 'suppressBuildAssetsNotification';
 const NetCorePreviewVersion = 11;
+const NetCoreLtsc2025Version = 11;
 
 export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreScaffoldingWizardContext> {
     private targetFramework: string;
@@ -54,10 +55,12 @@ export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreS
                 wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-preview`;
                 wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-preview`;
             }
-            // append '-nanoserver-ltsc2022' for windows base images for .NET 8+'s new naming convention
+            // append '-nanoserver-ltsc*' for windows base images for .NET 8+'s new naming convention
+            // ltsc2025 images can run on Windows 11 24H2+ and Windows Server 2025.
             if (wizardContext.netCorePlatformOS === 'Windows') {
-                wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-nanoserver-ltsc2022`;
-                wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-nanoserver-ltsc2022`;
+                const ltscVersion = netCoreVersion.major >= NetCoreLtsc2025Version ? 'ltsc2025' : 'ltsc2022';
+                wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-nanoserver-${ltscVersion}`;
+                wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-nanoserver-${ltscVersion}`;
             }
 
             // change default user to adapt to Debian 12
