@@ -21,6 +21,7 @@ const netSdkImage = 'mcr.microsoft.com/dotnet/sdk';
 const cSharpConfigId = 'csharp';
 const cSharpPromptSetting = 'suppressBuildAssetsNotification';
 const NetCorePreviewVersion = 11;
+const NetCoreLtsc2025Version = 11;
 
 export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreScaffoldingWizardContext> {
     private targetFramework: string;
@@ -57,7 +58,7 @@ export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreS
             // append '-nanoserver-<ltsc-version>' for windows base images for .NET 8+'s new naming convention
             // .NET 11+ requires ltsc2025; .NET 8-10 use ltsc2022
             if (wizardContext.netCorePlatformOS === 'Windows') {
-                const ltscVersion = netCoreVersion.major >= NetCorePreviewVersion ? 'ltsc2025' : 'ltsc2022';
+                const ltscVersion = netCoreVersion.major >= NetCoreLtsc2025Version ? 'ltsc2025' : 'ltsc2022';
                 wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-nanoserver-${ltscVersion}`;
                 wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-nanoserver-${ltscVersion}`;
             }
