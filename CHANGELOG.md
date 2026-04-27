@@ -1,3 +1,7 @@
+## 2.4.3 - 27 April 2026
+### Changed
+* Disabled code splitting to try to improve code loading performance. [#457](https://github.com/microsoft/vscode-containers/issues/457)
+
 ## 2.4.2 - 23 April 2026
 ### Added
 * Added Collapse All button to most of the tree views in the explorer. [#443](https://github.com/microsoft/vscode-containers/pull/443)
