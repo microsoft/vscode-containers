@@ -23,4 +23,6 @@ const finalConfig = {
     ],
 };
 
+finalConfig.splitting = false;
+
 await autoEsbuildOrWatch({ extensionConfig: finalConfig, telemetryConfig });
