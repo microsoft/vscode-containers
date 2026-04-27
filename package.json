@@ -1,6 +1,6 @@
 {
     "name": "vscode-containers",
-    "version": "2.4.6-alpha",
+    "version": "2.4.3",
     "publisher": "ms-azuretools",
     "displayName": "Container Tools",
     "description": "Makes it easy to create, manage, and debug containerized applications.",
@@ -3378,7 +3378,7 @@
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
         "dockerfile-language-server-nodejs": "^0.15.0",
-        "fast-xml-parser": "^5.5.7",
+        "fast-xml-parser": "^5.7.1",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
         "handlebars": "^4.7.9",
