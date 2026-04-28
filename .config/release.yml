@@ -23,7 +23,7 @@ resources:
     - repository: azExtTemplates
       type: github
       name: microsoft/vscode-azuretools
-      ref: bmw/pipelinesv2_2 # TODO: update to final branch
+      ref: azext-pt/v1
       endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
 
 variables:
