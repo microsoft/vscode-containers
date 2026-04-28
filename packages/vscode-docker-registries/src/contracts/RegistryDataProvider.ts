@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { RegistryItem } from './RegistryItem';
 import { LoginInformation } from './BasicCredentials';
 

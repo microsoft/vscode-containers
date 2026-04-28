@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { AuthenticationProvider } from '../../contracts/AuthenticationProvider';
 import { isBasicOAuthProvider } from '../../auth/BasicOAuthProvider';
 import { HeadersLike, RequestLike, httpRequest } from '../../utils/httpRequest';
