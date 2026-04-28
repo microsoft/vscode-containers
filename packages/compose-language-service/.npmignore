@@ -6,7 +6,7 @@ dist/*/test/**
 src
 tsconfig.json
 .github
-.azure-pipelines
+.config
 *.tgz
 .gitattributes
 *.map
