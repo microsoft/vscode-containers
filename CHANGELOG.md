@@ -1,3 +1,7 @@
+## 2.4.4 - 4 May 2026
+### Changed
+* Reverted back to CJS to improve code loading performance. [#461](https://github.com/microsoft/vscode-containers/issues/461)
+
 ## 2.4.3 - 27 April 2026
 ### Changed
 * Disabled code splitting to try to improve code loading performance. [#457](https://github.com/microsoft/vscode-containers/issues/457)
