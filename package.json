@@ -39,9 +39,7 @@
         "onLanguage:dockerfile",
         "onLanguage:dockercompose"
     ],
-    "type": "module",
-    "main": "main.mjs",
-    "module": "main.mjs",
+    "main": "main.js",
     "contributes": {
         "menus": {
             "commandPalette": [
