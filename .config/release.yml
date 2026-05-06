@@ -40,3 +40,4 @@ extends:
     dryRun: ${{ parameters.dryRun }}
     releaseServiceConnection: ${{ variables.extensionReleaseServiceConnection }}
     releaseApprovalEnvironment: VSCodeDockerExtensionPublish
+    npmRegistry: ${{ variables.npmRegistry }}
