@@ -12,7 +12,7 @@ import { ext } from '../extensionVariables';
 import { isComposeV2ableOrchestratorClient } from '../runtimes/clients/AutoConfigurableDockerComposeClient';
 import { resolveVariables } from '../utils/resolveVariables';
 
-type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset';
+type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset' | 'composePull' | 'composePullSubset';
 
 type TemplatePicker = (items: IAzureQuickPickItem<CommandTemplate>[], options: IAzureQuickPickOptions) => Promise<IAzureQuickPickItem<CommandTemplate>>;
 
@@ -78,7 +78,7 @@ export async function selectLogsCommand(context: IActionContext, containerName: 
     );
 }
 
-export async function selectComposeCommand(context: IActionContext, folder: vscode.WorkspaceFolder, composeCommand: 'up' | 'down' | 'upSubset' | 'downSubset', configurationFile?: string, detached?: boolean, build?: boolean): Promise<VoidCommandResponse> {
+export async function selectComposeCommand(context: IActionContext, folder: vscode.WorkspaceFolder, composeCommand: 'up' | 'down' | 'upSubset' | 'downSubset' | 'pull' | 'pullSubset', configurationFile?: string, detached?: boolean, build?: boolean): Promise<VoidCommandResponse> {
     let template: TemplateCommand;
 
     switch (composeCommand) {
@@ -90,6 +90,12 @@ export async function selectComposeCommand(context: IActionContext, folder: vsco
             break;
         case 'downSubset':
             template = 'composeDownSubset';
+            break;
+        case 'pull':
+            template = 'composePull';
+            break;
+        case 'pullSubset':
+            template = 'composePullSubset';
             break;
         case 'upSubset':
         default:
