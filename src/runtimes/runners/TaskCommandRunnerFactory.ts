@@ -15,6 +15,7 @@ interface TaskCommandRunnerOptions {
     alwaysRunNew?: boolean;
     rejectOnError?: boolean;
     focus?: boolean;
+    close?: boolean; // When true, auto-close the terminal when the task completes. Default is false.
     env?: never; // Environment is not needed and should not be used, because VSCode adds it already (due to using `ExtensionContext.environmentVariableCollection`)
 }
 
@@ -57,10 +58,15 @@ async function executeAsTask(options: TaskCommandRunnerOptions, command: string,
         task.definition.idRandomizer = Math.random();
     }
 
-    if (options.focus) {
-        task.presentationOptions = {
-            focus: true,
-        };
+    if (options.focus || options.close) {
+        const presentationOptions: vscode.TaskPresentationOptions = {};
+        if (options.focus) {
+            presentationOptions.focus = true;
+        }
+        if (options.close) {
+            presentationOptions.close = true;
+        }
+        task.presentationOptions = presentationOptions;
     }
 
     const taskExecution = await vscode.tasks.executeTask(task);
