@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IActionContext, nonNullProp, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { DialogResponses, IActionContext, nonNullProp, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { parseDockerLikeImageName } from '@microsoft/vscode-container-client';
 import { CommonRegistry, CommonTag, isDockerHubRegistry, LoginInformation } from '@microsoft/vscode-docker-registries';
 import * as semver from 'semver';
@@ -11,7 +11,6 @@ import * as vscode from 'vscode';
 import { isAzureRegistry } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
 import { getFullImageNameFromRegistryTagItem } from '../../../tree/registries/registryTreeUtils';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
-import { installExtension } from '../../../utils/installExtension';
 import { registryExperience } from '../../../utils/registryExperience';
 import { addImageTaggingTelemetry } from '../../images/tagImage';
 
@@ -38,17 +37,25 @@ export async function deployImageToAca(context: IActionContext, node?: UnifiedRe
         node = await registryExperience<CommonTag>(context, { contextValueFilter: { include: /commontag/i } });
     }
 
-    const commandOptions: Partial<DeployImageToAcaOptionsContract> = {
-        image: getFullImageNameFromRegistryTagItem(node.wrappedItem),
-    };
+    let image = getFullImageNameFromRegistryTagItem(node.wrappedItem);
 
-    addImageTaggingTelemetry(context, commandOptions.image, '');
+    addImageTaggingTelemetry(context, image, '');
 
     const registry: UnifiedRegistryItem<CommonRegistry> = node.parent.parent as unknown as UnifiedRegistryItem<CommonRegistry>;
 
+    let commandOptions: DeployImageToAcaOptionsContract;
+
     if (isAzureRegistry(registry.wrappedItem)) {
         // No additional work to do; ACA can handle this on its own
+        commandOptions = {
+            image,
+            registryName: nonNullProp(parseDockerLikeImageName(image), 'registry'),
+        };
     } else {
+        if (typeof registry.provider.getLoginInformation !== 'function') {
+            throw new Error(vscode.l10n.t('The registry "{0}" does not support Azure Container Apps deployments.', registry.wrappedItem.label));
+        }
+
         const logInInfo: LoginInformation = await registry.provider.getLoginInformation(registry.wrappedItem);
 
         if (!logInInfo?.username || !logInInfo?.secret) {
@@ -57,16 +64,18 @@ export async function deployImageToAca(context: IActionContext, node?: UnifiedRe
 
         if (isDockerHubRegistry(registry.wrappedItem)) {
             // Ensure Docker Hub images are prefixed with 'docker.io/...'
-            if (!/^docker\.io\//i.test(commandOptions.image)) {
-                commandOptions.image = 'docker.io/' + commandOptions.image;
+            if (!/^docker\.io\//i.test(image)) {
+                image = 'docker.io/' + image;
             }
         }
 
-        commandOptions.username = logInInfo.username;
-        commandOptions.secret = logInInfo.secret;
+        commandOptions = {
+            image,
+            registryName: nonNullProp(parseDockerLikeImageName(image), 'registry'),
+            username: logInInfo.username,
+            secret: logInInfo.secret,
+        };
     }
-
-    commandOptions.registryName = nonNullProp(parseDockerLikeImageName(commandOptions.image), 'registry');
 
     // Don't wait
     void vscode.commands.executeCommand('containerApps.deployImageApi', commandOptions);
@@ -83,16 +92,39 @@ function isAcaExtensionInstalled(): boolean {
     const acaVersion = semver.coerce(acaExtension.packageJSON.version);
     const minVersion = semver.coerce(minimumAcaExtensionVersion);
 
+    if (!acaVersion || !minVersion) {
+        return false;
+    }
+
     return semver.gte(acaVersion, minVersion);
 }
 
 async function openAcaInstallPage(context: IActionContext): Promise<void> {
-    const message = vscode.l10n.t(
-        'Version {0} or higher of the Azure Container Apps extension is required to deploy to Azure Container Apps. Would you like to install it now?',
-        minimumAcaExtensionVersion
-    );
+    const existingExtension = vscode.extensions.getExtension(acaExtensionId);
+    const isUpdate = !!existingExtension;
 
-    await installExtension(context, acaExtensionId, message);
+    const message = isUpdate
+        ? vscode.l10n.t(
+            'The Azure Container Apps extension must be updated to version {0} or higher to deploy to Azure Container Apps. Would you like to update it now?',
+            minimumAcaExtensionVersion
+        )
+        : vscode.l10n.t(
+            'Version {0} or higher of the Azure Container Apps extension is required to deploy to Azure Container Apps. Would you like to install it now?',
+            minimumAcaExtensionVersion
+        );
+
+    const action: vscode.MessageItem = {
+        title: isUpdate ? vscode.l10n.t('Update') : vscode.l10n.t('Install'),
+    };
+
+    const result = await context.ui.showWarningMessage(message, { modal: true }, action, DialogResponses.cancel);
+
+    if (result === action) {
+        await vscode.commands.executeCommand('extension.open', acaExtensionId);
+        await vscode.commands.executeCommand('workbench.extensions.installExtension', acaExtensionId);
+    } else {
+        throw new UserCancelledError('installAcaExtensionDeclined');
+    }
 
     throw new UserCancelledError('installAcaExtensionAccepted');
 }
