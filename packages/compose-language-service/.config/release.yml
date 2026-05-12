@@ -48,4 +48,3 @@ extends:
     approverAliases: ${{ variables.npmReleaseApproverAliases }}
     gitHubServiceConnection: ${{ variables.gitHubServiceConnection }}
     releaseApprovalEnvironment: VSCodeDockerExtensionPublish
-    npmFeed: ${{ variables.npmFeed }}
