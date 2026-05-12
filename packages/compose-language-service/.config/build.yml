@@ -25,6 +25,8 @@ resources:
       endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
 
 variables:
+  # Pick up shared AZCode variables
+  - template: azdo-pipelines/azcode.variables.yml@azExtTemplates
   - name: TeamName
     value: "Container Tools Team" # Required for MicroBuild signing and telemetry
 
@@ -32,3 +34,4 @@ extends:
   template: azdo-pipelines/1es-mb-main.yml@azExtTemplates # Use the main build template
   parameters:
     signType: none
+    npmFeed: ${{ variables.npmFeed }}
