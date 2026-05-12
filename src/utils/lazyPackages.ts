@@ -41,15 +41,6 @@ export async function getAzExtAzureUtils() {
     return await azExtAzureUtilsLazy.value;
 }
 
-const azExtAppServiceLazy = new Lazy(async () => {
-    const appSvc = await import('@microsoft/vscode-azext-azureappservice');
-    appSvc.registerAppServiceExtensionVariables(ext);
-    return appSvc;
-});
-export async function getAzExtAppService() {
-    return await azExtAppServiceLazy.value;
-}
-
 /**
  * Gets the default export out of a module, if it exists, otherwise returns the module itself. This is necessary to support CJS modules, as well as bundled and unbundled usage.
  * @param module The module to get the default export for
