@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DialogResponses, IActionContext, nonNullProp, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { parseDockerLikeImageName } from '@microsoft/vscode-container-client';
+import { DialogResponses, IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { CommonRegistry, CommonTag, isDockerHubRegistry, LoginInformation } from '@microsoft/vscode-docker-registries';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
@@ -21,6 +20,8 @@ const minimumAppServiceExtensionVersion = '0.27.0';
 interface DeployImageToAppServiceOptionsContract {
     image: string;
     registryName: string;
+    repositoryName: string;
+    tag: string;
     username?: string;
     secret?: string;
     acrResourceGroup?: string;
@@ -43,6 +44,8 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
     addImageTaggingTelemetry(context, image, '');
 
     const registry: UnifiedRegistryItem<CommonRegistry> = node.parent.parent as unknown as UnifiedRegistryItem<CommonRegistry>;
+    const repositoryName = node.wrappedItem.parent.label;
+    const tag = node.wrappedItem.label;
 
     let commandOptions: DeployImageToAppServiceOptionsContract;
 
@@ -51,7 +54,9 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
         const azureRegistry = registry.wrappedItem as AzureRegistry;
         commandOptions = {
             image,
-            registryName: nonNullProp(parseDockerLikeImageName(image), 'registry'),
+            registryName: registry.wrappedItem.baseUrl.authority,
+            repositoryName,
+            tag,
             acrResourceGroup: getResourceGroupFromAzureRegistryItem(azureRegistry),
             acrResourceId: azureRegistry.registryProperties.id,
             acrResourceName: azureRegistry.registryProperties.name,
@@ -77,7 +82,9 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
 
         commandOptions = {
             image,
-            registryName: nonNullProp(parseDockerLikeImageName(image), 'registry'),
+            registryName: registry.wrappedItem.baseUrl.authority,
+            repositoryName,
+            tag,
             username: logInInfo.username,
             secret: logInInfo.secret,
         };
