@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { RegistryListCredentialsResult } from '@azure/arm-containerregistry';
-import { createSubscriptionContext, DialogResponses, IActionContext, nonNullProp, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { createSubscriptionContext, IActionContext, nonNullProp } from '@microsoft/vscode-azext-utils';
 import { parseDockerLikeImageName } from '@microsoft/vscode-container-client';
 import { CommonRegistry, CommonTag, isDockerHubRegistry } from '@microsoft/vscode-docker-registries';
-import * as semver from 'semver';
 import * as vscode from 'vscode';
 import { AzureRegistry, AzureRegistryDataProvider, isAzureRegistry } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
 import { getFullImageNameFromRegistryTagItem, getResourceGroupFromAzureRegistryItem } from '../../../tree/registries/registryTreeUtils';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
+import { isExtensionInstalledAndVersionCompatible, openExtensionInstallPage } from '../../../utils/installExtension';
 import { registryExperience } from '../../../utils/registryExperience';
 import { addImageTaggingTelemetry } from '../../images/tagImage';
 
@@ -38,8 +38,8 @@ interface DeployImageToAppServiceOptionsContract {
 
 export async function deployImageToAzure(context: IActionContext, node?: UnifiedRegistryItem<CommonTag>): Promise<void> {
     // Assert installation of the App Service extension
-    if (!isAppServiceExtensionInstalled()) {
-        await openAppServiceInstallPage(context);
+    if (!isExtensionInstalledAndVersionCompatible(appServiceExtensionId, minimumAppServiceExtensionVersion)) {
+        await openExtensionInstallPage(context, appServiceExtensionId, minimumAppServiceExtensionVersion, 'Azure App Service', 'installAppServiceExtension');
     }
 
     if (!node) {
@@ -112,51 +112,4 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
 
     // Don't wait
     void vscode.commands.executeCommand('appService.deployImageApi', commandOptions);
-}
-
-function isAppServiceExtensionInstalled(): boolean {
-    const appServiceExtension = vscode.extensions.getExtension(appServiceExtensionId);
-
-    if (!appServiceExtension?.packageJSON?.version) {
-        return false;
-    }
-
-    const appServiceVersion = semver.parse(appServiceExtension.packageJSON.version) ?? semver.coerce(appServiceExtension.packageJSON.version);
-    const minVersion = semver.parse(minimumAppServiceExtensionVersion) ?? semver.coerce(minimumAppServiceExtensionVersion);
-
-    if (!appServiceVersion || !minVersion) {
-        return false;
-    }
-
-    return semver.gte(appServiceVersion, minVersion);
-}
-
-async function openAppServiceInstallPage(context: IActionContext): Promise<void> {
-    const existingExtension = vscode.extensions.getExtension(appServiceExtensionId);
-    const isUpdate = !!existingExtension;
-
-    const message = isUpdate
-        ? vscode.l10n.t(
-            'The Azure App Service extension must be updated to version {0} or higher to deploy to Azure App Service. Would you like to update it now?',
-            minimumAppServiceExtensionVersion
-        )
-        : vscode.l10n.t(
-            'Version {0} or higher of the Azure App Service extension is required to deploy to Azure App Service. Would you like to install it now?',
-            minimumAppServiceExtensionVersion
-        );
-
-    const action: vscode.MessageItem = {
-        title: isUpdate ? vscode.l10n.t('Update') : vscode.l10n.t('Install'),
-    };
-
-    const result = await context.ui.showWarningMessage(message, { modal: true }, action, DialogResponses.cancel);
-
-    if (result === action) {
-        await vscode.commands.executeCommand('extension.open', appServiceExtensionId);
-        await vscode.commands.executeCommand('workbench.extensions.installExtension', appServiceExtensionId);
-    } else {
-        throw new UserCancelledError('installAppServiceExtensionDeclined');
-    }
-
-    throw new UserCancelledError('installAppServiceExtensionAccepted');
 }
