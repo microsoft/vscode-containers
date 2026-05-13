@@ -89,8 +89,8 @@ function isAcaExtensionInstalled(): boolean {
         return false;
     }
 
-    const acaVersion = semver.coerce(acaExtension.packageJSON.version);
-    const minVersion = semver.coerce(minimumAcaExtensionVersion);
+    const acaVersion = semver.parse(acaExtension.packageJSON.version) ?? semver.coerce(acaExtension.packageJSON.version);
+    const minVersion = semver.parse(minimumAcaExtensionVersion) ?? semver.coerce(minimumAcaExtensionVersion);
 
     if (!acaVersion || !minVersion) {
         return false;

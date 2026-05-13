@@ -119,8 +119,8 @@ function isAppServiceExtensionInstalled(): boolean {
         return false;
     }
 
-    const appServiceVersion = semver.coerce(appServiceExtension.packageJSON.version);
-    const minVersion = semver.coerce(minimumAppServiceExtensionVersion);
+    const appServiceVersion = semver.parse(appServiceExtension.packageJSON.version) ?? semver.coerce(appServiceExtension.packageJSON.version);
+    const minVersion = semver.parse(minimumAppServiceExtensionVersion) ?? semver.coerce(minimumAppServiceExtensionVersion);
 
     if (!appServiceVersion || !minVersion) {
         return false;
