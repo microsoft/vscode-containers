@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DialogResponses, IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { CommonRegistry, CommonTag, isDockerHubRegistry, LoginInformation } from '@microsoft/vscode-docker-registries';
+import type { RegistryListCredentialsResult } from '@azure/arm-containerregistry';
+import { createSubscriptionContext, DialogResponses, IActionContext, nonNullProp, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { CommonRegistry, CommonTag, isDockerHubRegistry } from '@microsoft/vscode-docker-registries';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
-import { AzureRegistry, isAzureRegistry } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
+import { AzureRegistry, AzureRegistryDataProvider, isAzureRegistry } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
 import { getFullImageNameFromRegistryTagItem, getResourceGroupFromAzureRegistryItem } from '../../../tree/registries/registryTreeUtils';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
 import { registryExperience } from '../../../utils/registryExperience';
@@ -15,6 +16,13 @@ import { addImageTaggingTelemetry } from '../../images/tagImage';
 
 const appServiceExtensionId = 'ms-azuretools.vscode-azureappservice';
 const minimumAppServiceExtensionVersion = '0.27.0';
+
+interface AcrRegistryPropertiesContract {
+    name: string;
+    id: string;
+    location: string;
+    resourceGroup: string;
+}
 
 // The interface of the command options passed to the Azure App Service extension's deployImageToAppService command
 interface DeployImageToAppServiceOptionsContract {
@@ -24,9 +32,7 @@ interface DeployImageToAppServiceOptionsContract {
     tag: string;
     username?: string;
     secret?: string;
-    acrResourceGroup?: string;
-    acrResourceId?: string;
-    acrResourceName?: string;
+    acrRegistry?: AcrRegistryPropertiesContract;
 }
 
 export async function deployImageToAzure(context: IActionContext, node?: UnifiedRegistryItem<CommonTag>): Promise<void> {
@@ -50,16 +56,28 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
     let commandOptions: DeployImageToAppServiceOptionsContract;
 
     if (isAzureRegistry(registry.wrappedItem)) {
-        // No additional work to do; App Service extension can handle ACR on its own
         const azureRegistry = registry.wrappedItem as AzureRegistry;
+
+        let adminCredentials: RegistryListCredentialsResult | undefined;
+        if (azureRegistry.registryProperties.adminUserEnabled) {
+            const provider = registry.provider as unknown as AzureRegistryDataProvider;
+            const subscriptionContext = { ...context, ...createSubscriptionContext(azureRegistry.subscription) };
+            adminCredentials = await provider.tryGetAdminCredentials(azureRegistry, subscriptionContext);
+        }
+
         commandOptions = {
             image,
             registryName: registry.wrappedItem.baseUrl.authority,
             repositoryName,
             tag,
-            acrResourceGroup: getResourceGroupFromAzureRegistryItem(azureRegistry),
-            acrResourceId: azureRegistry.registryProperties.id,
-            acrResourceName: azureRegistry.registryProperties.name,
+            username: adminCredentials?.username,
+            secret: adminCredentials?.passwords?.[0]?.value,
+            acrRegistry: {
+                ...azureRegistry.registryProperties,
+                name: nonNullProp(azureRegistry.registryProperties, 'name'),
+                id: nonNullProp(azureRegistry.registryProperties, 'id'),
+                resourceGroup: getResourceGroupFromAzureRegistryItem(azureRegistry),
+            },
         };
     } else {
         if (typeof registry.provider.getLoginInformation !== 'function') {
@@ -67,7 +85,7 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
             throw new Error(vscode.l10n.t('The registry "{0}" does not support Azure App Service deployments.', registry.wrappedItem.label));
         }
 
-        const logInInfo: LoginInformation = await registry.provider.getLoginInformation(registry.wrappedItem);
+        const logInInfo = await registry.provider.getLoginInformation(registry.wrappedItem);
 
         if (!logInInfo?.username || !logInInfo?.secret) {
             throw new Error(vscode.l10n.t('No credentials found for registry "{0}".', registry.wrappedItem.label));
