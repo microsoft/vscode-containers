@@ -5,7 +5,7 @@
 
 import { autoEsbuildOrWatch, autoSelectEsbuildConfig } from '@microsoft/vscode-azext-eng/esbuild';
 
-const { extensionConfig, telemetryConfig } = autoSelectEsbuildConfig(true);
+const { extensionConfig, telemetryConfig } = autoSelectEsbuildConfig();
 
 /** @type {import('esbuild').BuildOptions} */
 const finalConfig = {

@@ -3,23 +3,31 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// This is the extension entrypoint, which imports extension.bundle.mjs, the actual extension code.
+"use strict";
+
+// This is the extension entrypoint, which imports extension.bundle.js, the actual extension code.
 //
-// This is in a separate file so we can properly measure extension.bundle.mjs load time.
+// This is in a separate file so we can properly measure extension.bundle.js load time.
 
 const perfStats = {
     loadStartTime: Date.now(),
     loadEndTime: undefined
 };
 
-const extension = await import("./dist/extension.bundle.mjs");
+Object.defineProperty(exports, "__esModule", { value: true });
 
-export async function activate(ctx) {
+const extension = require('./dist/extension.bundle');
+
+async function activate(ctx) {
     return await extension.activateInternal(ctx, perfStats);
 }
 
-export async function deactivate(ctx) {
+async function deactivate(ctx) {
     return await extension.deactivateInternal(ctx);
 }
+
+// Export as entrypoints for vscode
+exports.activate = activate;
+exports.deactivate = deactivate;
 
 perfStats.loadEndTime = Date.now();
