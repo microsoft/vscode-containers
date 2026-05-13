@@ -50,7 +50,7 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
     addImageTaggingTelemetry(context, image, '');
 
     const registry: UnifiedRegistryItem<CommonRegistry> = node.parent.parent as unknown as UnifiedRegistryItem<CommonRegistry>;
-    const repositoryName = node.wrappedItem.parent.label;
+    const repositoryName = node.wrappedItem.parent.label.toLowerCase();
     const tag = node.wrappedItem.label;
 
     let commandOptions: DeployImageToAppServiceOptionsContract;
