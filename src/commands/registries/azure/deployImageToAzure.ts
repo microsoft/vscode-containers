@@ -5,6 +5,7 @@
 
 import type { RegistryListCredentialsResult } from '@azure/arm-containerregistry';
 import { createSubscriptionContext, DialogResponses, IActionContext, nonNullProp, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { parseDockerLikeImageName } from '@microsoft/vscode-container-client';
 import { CommonRegistry, CommonTag, isDockerHubRegistry } from '@microsoft/vscode-docker-registries';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
@@ -50,8 +51,9 @@ export async function deployImageToAzure(context: IActionContext, node?: Unified
     addImageTaggingTelemetry(context, image, '');
 
     const registry: UnifiedRegistryItem<CommonRegistry> = node.parent.parent as unknown as UnifiedRegistryItem<CommonRegistry>;
-    const repositoryName = node.wrappedItem.parent.label.toLowerCase();
-    const tag = node.wrappedItem.label;
+    const parsedImage = parseDockerLikeImageName(image);
+    const repositoryName = nonNullProp(parsedImage, 'image');
+    const tag = nonNullProp(parsedImage, 'tag');
 
     let commandOptions: DeployImageToAppServiceOptionsContract;
 
