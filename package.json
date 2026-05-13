@@ -3350,8 +3350,6 @@
         "vscode.yaml"
     ],
     "devDependencies": {
-        "@azure/arm-appservice": "*",
-        "@azure/arm-authorization": "*",
         "@microsoft/vscode-azext-eng": "1.0.0-alpha.14",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
@@ -3367,7 +3365,6 @@
         "@azure/arm-containerregistry": "^10.1.0",
         "@azure/storage-blob": "^12.14.0",
         "@microsoft/compose-language-service": "^0.5.0",
-        "@microsoft/vscode-azext-azureappservice": "^4.0.0",
         "@microsoft/vscode-azext-azureauth": "^6.0.0-alpha.2",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
         "@microsoft/vscode-azext-utils": "^4.0.4",

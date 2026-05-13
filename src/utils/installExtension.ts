@@ -4,30 +4,60 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DialogResponses, IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import * as semver from 'semver';
 import * as vscode from 'vscode';
 
-export async function installExtension(context: IActionContext, extensionId: string, message: string): Promise<void> {
+export function isExtensionInstalledAndVersionCompatible(extensionId: string, minimumVersion: string): boolean {
     const extension = vscode.extensions.getExtension(extensionId);
-    if (extension) {
-        // Extension is already installed
-        return;
+
+    if (!extension?.packageJSON?.version) {
+        return false;
     }
 
-    const install: vscode.MessageItem = {
-        title: vscode.l10n.t('Install')
+    const extensionVersion = semver.parse(extension.packageJSON.version) ?? semver.coerce(extension.packageJSON.version);
+    const minVersion = semver.parse(minimumVersion) ?? semver.coerce(minimumVersion);
+
+    if (!extensionVersion || !minVersion) {
+        return false;
+    }
+
+    return semver.gte(extensionVersion, minVersion);
+}
+
+export async function openExtensionInstallPage(
+    context: IActionContext,
+    extensionId: string,
+    minimumVersion: string,
+    extensionDisplayName: string,
+    cancelledErrorBase: string,
+): Promise<void> {
+    const existingExtension = vscode.extensions.getExtension(extensionId);
+    const isUpdate = !!existingExtension;
+
+    const message = isUpdate
+        ? vscode.l10n.t(
+            'The {0} extension must be updated to version {1} or higher to deploy to {0}. Would you like to update it now?',
+            extensionDisplayName,
+            minimumVersion
+        )
+        : vscode.l10n.t(
+            'Version {0} or higher of the {1} extension is required to deploy to {1}. Would you like to install it now?',
+            minimumVersion,
+            extensionDisplayName
+        );
+
+    const action: vscode.MessageItem = {
+        title: isUpdate ? vscode.l10n.t('Update') : vscode.l10n.t('Install'),
     };
 
-    const cancel = DialogResponses.cancel;
+    const result = await context.ui.showWarningMessage(message, { modal: true }, action, DialogResponses.cancel);
 
-    const result = await context.ui.showWarningMessage(message, { modal: true }, install, cancel);
-
-    if (result === install) {
-        // Open the extension marketplace page
+    if (result === action) {
         await vscode.commands.executeCommand('extension.open', extensionId);
-
-        // Start the installation of the extension--consent is implied since they clicked "Install"
         await vscode.commands.executeCommand('workbench.extensions.installExtension', extensionId);
     } else {
-        throw new UserCancelledError('installExtensionDeclined');
+        throw new UserCancelledError(`${cancelledErrorBase}Declined`);
     }
+
+    throw new UserCancelledError(`${cancelledErrorBase}Accepted`);
 }

@@ -3,69 +3,113 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IAppServiceWizardContext } from "@microsoft/vscode-azext-azureappservice"; // These are only dev-time imports so don't need to be lazy
-import { AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, IActionContext, createSubscriptionContext, nonNullProp } from "@microsoft/vscode-azext-utils";
-import { CommonTag } from '@microsoft/vscode-docker-registries';
-import { Uri, env, l10n, window } from "vscode";
-import { ext } from "../../../extensionVariables";
+import type { RegistryListCredentialsResult } from '@azure/arm-containerregistry';
+import { createSubscriptionContext, IActionContext, nonNullProp } from '@microsoft/vscode-azext-utils';
+import { parseDockerLikeImageName } from '@microsoft/vscode-container-client';
+import { CommonRegistry, CommonTag, isDockerHubRegistry } from '@microsoft/vscode-docker-registries';
+import * as vscode from 'vscode';
+import { AzureRegistry, AzureRegistryDataProvider, isAzureRegistry } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
+import { getFullImageNameFromRegistryTagItem, getResourceGroupFromAzureRegistryItem } from '../../../tree/registries/registryTreeUtils';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
-import { getAzExtAppService, getAzExtAzureUtils } from '../../../utils/lazyPackages';
-import { registryExperience, subscriptionExperience } from '../../../utils/registryExperience';
-import { DockerAssignAcrPullRoleStep } from './DockerAssignAcrPullRoleStep';
-import { DockerSiteCreateStep } from './DockerSiteCreateStep';
-import { DockerWebhookCreateStep } from './DockerWebhookCreateStep';
-import { WebSitesPortPromptStep } from './WebSitesPortPromptStep';
+import { isExtensionInstalledAndVersionCompatible, openExtensionInstallPage } from '../../../utils/installExtension';
+import { registryExperience } from '../../../utils/registryExperience';
+import { addImageTaggingTelemetry } from '../../images/tagImage';
 
-export interface IAppServiceContainerWizardContext extends IAppServiceWizardContext {
-    webSitesPort?: number;
+const appServiceExtensionId = 'ms-azuretools.vscode-azureappservice';
+const minimumAppServiceExtensionVersion = '0.27.0';
+
+interface AcrRegistryPropertiesContract {
+    name: string;
+    id: string;
+    location: string;
+    resourceGroup: string;
+}
+
+// The interface of the command options passed to the Azure App Service extension's deployImageToAppService command
+interface DeployImageToAppServiceOptionsContract {
+    image: string;
+    registryName: string;
+    repositoryName: string;
+    tag: string;
+    username?: string;
+    secret?: string;
+    acrRegistry?: AcrRegistryPropertiesContract;
 }
 
 export async function deployImageToAzure(context: IActionContext, node?: UnifiedRegistryItem<CommonTag>): Promise<void> {
-    if (!node) {
-        node = await registryExperience<CommonTag>(context, { contextValueFilter: { include: 'commontag' } });
+    // Assert installation of the App Service extension
+    if (!isExtensionInstalledAndVersionCompatible(appServiceExtensionId, minimumAppServiceExtensionVersion)) {
+        await openExtensionInstallPage(context, appServiceExtensionId, minimumAppServiceExtensionVersion, 'Azure App Service', 'installAppServiceExtension');
     }
 
-    const azExtAzureUtils = await getAzExtAzureUtils();
-    const vscAzureAppService = await getAzExtAppService();
-    const promptSteps: AzureWizardPromptStep<IAppServiceWizardContext>[] = [];
+    if (!node) {
+        node = await registryExperience<CommonTag>(context, { contextValueFilter: { include: /commontag/i } });
+    }
 
-    const subscriptionItem = await subscriptionExperience(context);
-    const subscriptionContext = createSubscriptionContext(subscriptionItem.wrappedItem.subscription);
-    const wizardContext: IActionContext & Partial<IAppServiceContainerWizardContext> = {
-        ...context,
-        ...subscriptionContext,
-        newSiteOS: vscAzureAppService.WebsiteOS.linux,
-        newSiteKind: vscAzureAppService.AppKind.app
-    };
+    let image = getFullImageNameFromRegistryTagItem(node.wrappedItem);
 
-    promptSteps.push(new vscAzureAppService.SiteNameStep());
-    promptSteps.push(new azExtAzureUtils.ResourceGroupListStep());
-    vscAzureAppService.CustomLocationListStep.addStep(wizardContext, promptSteps);
-    promptSteps.push(new WebSitesPortPromptStep());
-    promptSteps.push(new vscAzureAppService.AppServicePlanListStep());
+    addImageTaggingTelemetry(context, image, '');
 
-    // Get site config before running the wizard so that any problems with the tag tree item are shown at the beginning of the process
-    const executeSteps: AzureWizardExecuteStep<IAppServiceContainerWizardContext>[] = [
-        new DockerSiteCreateStep(node),
-        new DockerAssignAcrPullRoleStep(node),
-        new DockerWebhookCreateStep(node),
-    ];
+    const registry: UnifiedRegistryItem<CommonRegistry> = node.parent.parent as unknown as UnifiedRegistryItem<CommonRegistry>;
+    const parsedImage = parseDockerLikeImageName(image);
+    const repositoryName = nonNullProp(parsedImage, 'image');
+    const tag = nonNullProp(parsedImage, 'tag');
 
-    const title = l10n.t('Create new web app');
-    const wizard = new AzureWizard(wizardContext, { title, promptSteps, executeSteps });
-    await wizard.prompt();
-    await wizard.execute();
+    let commandOptions: DeployImageToAppServiceOptionsContract;
 
-    const site = nonNullProp(wizardContext, 'site');
-    const siteUri: string = `https://${site.defaultHostName}`;
-    const createdNewWebApp: string = l10n.t('Successfully created web app "{0}": {1}', site.name, siteUri);
-    ext.outputChannel.info(createdNewWebApp);
+    if (isAzureRegistry(registry.wrappedItem)) {
+        const azureRegistry = registry.wrappedItem as AzureRegistry;
 
-    const openSite: string = l10n.t('Open Site');
-    // don't wait
-    void window.showInformationMessage(createdNewWebApp, ...[openSite]).then((selection) => {
-        if (selection === openSite) {
-            void env.openExternal(Uri.parse(siteUri));
+        let adminCredentials: RegistryListCredentialsResult | undefined;
+        if (azureRegistry.registryProperties.adminUserEnabled) {
+            const provider = registry.provider as unknown as AzureRegistryDataProvider;
+            const subscriptionContext = { ...context, ...createSubscriptionContext(azureRegistry.subscription) };
+            adminCredentials = await provider.tryGetAdminCredentials(azureRegistry, subscriptionContext);
         }
-    });
+
+        commandOptions = {
+            image,
+            registryName: registry.wrappedItem.baseUrl.authority,
+            repositoryName,
+            tag,
+            username: adminCredentials?.username,
+            secret: adminCredentials?.passwords?.[0]?.value,
+            acrRegistry: {
+                ...azureRegistry.registryProperties,
+                name: nonNullProp(azureRegistry.registryProperties, 'name'),
+                id: nonNullProp(azureRegistry.registryProperties, 'id'),
+                resourceGroup: getResourceGroupFromAzureRegistryItem(azureRegistry),
+            },
+        };
+    } else {
+        if (typeof registry.provider.getLoginInformation !== 'function') {
+            context.errorHandling.suppressReportIssue = true;
+            throw new Error(vscode.l10n.t('The registry "{0}" does not support Azure App Service deployments.', registry.wrappedItem.label));
+        }
+
+        const logInInfo = await registry.provider.getLoginInformation(registry.wrappedItem);
+
+        if (!logInInfo?.username || !logInInfo?.secret) {
+            throw new Error(vscode.l10n.t('No credentials found for registry "{0}".', registry.wrappedItem.label));
+        }
+
+        if (isDockerHubRegistry(registry.wrappedItem)) {
+            // Ensure Docker Hub images are prefixed with 'docker.io/...'
+            if (!/^docker\.io\//i.test(image)) {
+                image = 'docker.io/' + image;
+            }
+        }
+
+        commandOptions = {
+            image,
+            registryName: registry.wrappedItem.baseUrl.authority,
+            repositoryName,
+            tag,
+            username: logInInfo.username,
+            secret: logInInfo.secret,
+        };
+    }
+
+    // Don't wait
+    void vscode.commands.executeCommand('appService.deployImageApi', commandOptions);
 }
