@@ -53,6 +53,7 @@ export async function deployImageToAca(context: IActionContext, node?: UnifiedRe
         };
     } else {
         if (typeof registry.provider.getLoginInformation !== 'function') {
+            context.errorHandling.suppressReportIssue = true;
             throw new Error(vscode.l10n.t('The registry "{0}" does not support Azure Container Apps deployments.', registry.wrappedItem.label));
         }
 
