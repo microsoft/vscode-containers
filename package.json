@@ -3350,7 +3350,7 @@
         "vscode.yaml"
     ],
     "devDependencies": {
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.14",
+        "@microsoft/vscode-azext-eng": "1.1.0-alpha.1",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
@@ -3359,13 +3359,14 @@
         "@vscode/test-electron": "*",
         "@vscode/vsce": "*",
         "esbuild": "*",
-        "esbuild-plugin-copy": "*"
+        "esbuild-plugin-copy": "*",
+        "tsx": "*"
     },
     "dependencies": {
         "@azure/arm-containerregistry": "^10.1.0",
         "@azure/storage-blob": "^12.14.0",
         "@microsoft/compose-language-service": "^0.5.0",
-        "@microsoft/vscode-azext-azureauth": "^6.0.0-alpha.2",
+        "@microsoft/vscode-azext-azureauth": "^6.0.0-alpha.8",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
         "@microsoft/vscode-azext-utils": "^4.0.4",
         "@microsoft/vscode-container-client": "^0.5.3",
