@@ -20,6 +20,7 @@ export type CommandLineCurryFn = (cmdLineArgs?: CommandLineArgs) => CommandLineA
  */
 export function composeArgs(...cmdLineArgFns: Array<CommandLineCurryFn>): CommandLineCurryFn {
     return (cmdLineArgs: CommandLineArgs = []) => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         return cmdLineArgFns.reduce<CommandLineArgs>(
             (commandLineArgs: CommandLineArgs, cmdLineArgsFn) => cmdLineArgsFn(commandLineArgs),
             cmdLineArgs || [],

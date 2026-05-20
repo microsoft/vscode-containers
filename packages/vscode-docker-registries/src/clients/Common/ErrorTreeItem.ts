@@ -21,7 +21,7 @@ export function getErrorTreeItem(error: unknown, parent: CommonRegistryItem | un
             label: error.message,
             type: 'commonerror',
             additionalContextValues: ['registryConnectError'],
-        } as RegistryConnectError];
+        } satisfies RegistryConnectError];
     }
 
     let message: string | undefined;
