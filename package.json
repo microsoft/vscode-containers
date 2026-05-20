@@ -3350,7 +3350,7 @@
         "vscode.yaml"
     ],
     "devDependencies": {
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.14",
+        "@microsoft/vscode-azext-eng": "1.1.0-alpha.1",
         "@types/fs-extra": "^11.0.1",
         "@types/node": "22.x",
         "@types/semver": "^7.3.13",
