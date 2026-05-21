@@ -370,6 +370,16 @@
                     "group": "navigation@10"
                 },
                 {
+                    "command": "vscode-containers.oci.exploreImage",
+                    "when": "view == vscode-containers.views.ociLayout",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "vscode-containers.oci.refresh",
+                    "when": "view == vscode-containers.views.ociLayout",
+                    "group": "navigation@9"
+                },
+                {
                     "command": "vscode-containers.help",
                     "when": "view == vscode-containers.views.containers || view == vscode-containers.views.images || view == vscode-containers.views.volumes || view == vscode-containers.views.networks",
                     "group": "navigation@10"
@@ -500,6 +510,11 @@
                     "command": "vscode-containers.images.copyFullTag",
                     "when": "view == vscode-containers.views.images && viewItem == image",
                     "group": "images_2_general@5"
+                },
+                {
+                    "command": "vscode-containers.oci.exportImage",
+                    "when": "view == vscode-containers.views.images && viewItem == image",
+                    "group": "images_2_general@6"
                 },
                 {
                     "command": "vscode-containers.images.remove",
@@ -2363,6 +2378,22 @@
                         "advanced"
                     ]
                 },
+                "containers.oci.exportPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "%vscode-containers.config.containers.oci.exportPath%",
+                    "scope": "machine-overridable"
+                },
+                "containers.oci.jsonDetectionMaxBytes": {
+                    "type": "number",
+                    "default": 8388608,
+                    "minimum": 1,
+                    "description": "%vscode-containers.config.containers.oci.jsonDetectionMaxBytes%",
+                    "scope": "resource",
+                    "tags": [
+                        "advanced"
+                    ]
+                },
                 "docker.languageserver.diagnostics.deprecatedMaintainer": {
                     "scope": "resource",
                     "type": "string",
@@ -2824,6 +2855,23 @@
                 "category": "%vscode-containers.commands.category.images%"
             },
             {
+                "command": "vscode-containers.oci.exploreImage",
+                "title": "%vscode-containers.commands.oci.exploreImage%",
+                "category": "%vscode-containers.commands.category.oci%",
+                "icon": "$(search)"
+            },
+            {
+                "command": "vscode-containers.oci.refresh",
+                "title": "%vscode-containers.commands.oci.refresh%",
+                "category": "%vscode-containers.commands.category.oci%",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "vscode-containers.oci.exportImage",
+                "title": "%vscode-containers.commands.oci.exportImage%",
+                "category": "%vscode-containers.commands.category.oci%"
+            },
+            {
                 "command": "vscode-containers.images.filter",
                 "title": "%vscode-containers.commands.images.filter%",
                 "category": "%vscode-containers.commands.category.images%",
@@ -3118,6 +3166,12 @@
                     "id": "vscode-containers.views.registries",
                     "name": "%vscode-containers.views.registries%",
                     "icon": "resources/ContainerTools.svg"
+                },
+                {
+                    "id": "vscode-containers.views.ociLayout",
+                    "name": "%vscode-containers.views.ociLayout%",
+                    "icon": "resources/ContainerTools.svg",
+                    "visibility": "collapsed"
                 },
                 {
                     "id": "vscode-containers.views.networks",

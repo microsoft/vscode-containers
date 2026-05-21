@@ -52,6 +52,8 @@ import { createNetwork } from "./networks/createNetwork";
 import { inspectNetwork } from "./networks/inspectNetwork";
 import { pruneNetworks } from "./networks/pruneNetworks";
 import { removeNetwork } from "./networks/removeNetwork";
+import { exploreImage } from "./oci/exploreImage";
+import { exportImageToLayout } from "./oci/exportImageToLayout";
 import { openDockerDownloadPage } from "./openDockerDownloadPage";
 import { pruneSystem } from "./pruneSystem";
 import { registerWorkspaceCommand } from "./registerWorkspaceCommand";
@@ -168,6 +170,9 @@ export function registerCommands(): void {
     registerWorkspaceCommand('vscode-containers.images.runInteractive', runImageInteractive);
     registerCommand('vscode-containers.images.tag', tagImage);
     registerCommand('vscode-containers.images.copyFullTag', copyFullTag);
+
+    registerCommand('vscode-containers.oci.exploreImage', exploreImage);
+    registerWorkspaceCommand('vscode-containers.oci.exportImage', exportImageToLayout);
 
     registerCommand('vscode-containers.networks.configureExplorer', configureNetworksExplorer);
     registerCommand('vscode-containers.networks.create', createNetwork);

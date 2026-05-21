@@ -88,8 +88,10 @@ export class RefreshManager extends vscode.Disposable {
     private setupRefreshOnInterval(): void {
         const timer = setInterval(async () => {
             for (const view of AllTreePrefixes) {
-                // Skip the registries view, which does not need to be refreshed on an interval
-                if (view === 'registries') {
+                // Skip views that do not need to be refreshed on an interval:
+                // - registries: remote calls, refreshed on demand
+                // - oci: local on-disk snapshot, refreshed on demand
+                if (view === 'registries' || view === 'oci') {
                     continue;
                 }
                 await this.refresh(view, 'interval');
@@ -181,6 +183,10 @@ export class RefreshManager extends vscode.Disposable {
         this.autoRefreshDisposables.push(
             vscode.workspace.onDidChangeConfiguration(async (e: vscode.ConfigurationChangeEvent) => {
                 for (const view of AllTreePrefixes) {
+                    // OCI settings (e.g. jsonDetectionMaxBytes) do not affect tree contents
+                    if (view === 'oci') {
+                        continue;
+                    }
                     if (e.affectsConfiguration(`${configPrefix}.${view}`)) {
                         await this.refresh(view, 'config');
                     }
@@ -267,9 +273,11 @@ export class RefreshManager extends vscode.Disposable {
         this.autoRefreshDisposables.push(
             ext.runtimeManager.contextManager.onContextChanged(async () => {
                 for (const view of AllTreePrefixes) {
-                    // Refresh all except contexts, which would already have been refreshed
-                    // And registries, which does not need to be refreshed on context change
-                    if (view === 'contexts' || view === 'registries') {
+                    // Skip views unaffected by container runtime context changes:
+                    // - contexts: already refreshed by the context change itself
+                    // - registries: independent of container runtime context
+                    // - oci: local on-disk snapshot, independent of runtime context
+                    if (view === 'contexts' || view === 'registries' || view === 'oci') {
                         continue;
                     }
                     await this.refresh(view, 'contextChange');
@@ -310,6 +318,9 @@ export class RefreshManager extends vscode.Disposable {
                         break;
                     case 'contexts':
                         callback = () => ext.contextsRoot.refresh(context);
+                        break;
+                    case 'oci':
+                        callback = () => ext.ociRoot.refresh(context);
                         break;
                     default:
                         throw new RangeError(`Unexpected view type: ${target}`);

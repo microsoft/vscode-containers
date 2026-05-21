@@ -7,6 +7,7 @@ The Container Tools extension makes it easy to build, manage, and deploy contain
 **Check out the [Working with containers](https://aka.ms/AA7arez) topic on the Visual Studio Code documentation site to get started**.
 
 ## Why do I have this extension?
+
 If you didn't install it directly, you probably got it as part of the [Docker Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker). The extension pack is optional and can be uninstalled at any time. The Container Tools extension replaces the language service, container management, and debugging functionality previously provided by the Docker extension. See [here](https://aka.ms/vscode-container-tools-learn-more) for additional information.
 
 ## Installation
@@ -55,7 +56,6 @@ Many of the most common container commands are built right into the Command Pale
 
 You can run container commands to manage [images](https://docs.docker.com/engine/reference/commandline/image/), [networks](https://docs.docker.com/engine/reference/commandline/network/), [volumes](https://docs.docker.com/engine/reference/commandline/volume/), [container registries](https://docs.docker.com/engine/reference/commandline/push/), and [Docker Compose](https://docs.docker.com/compose/reference/overview/). In addition, the **Containers: Prune System** command will remove stopped containers, dangling images, and unused networks and volumes.
 
-
 ### Docker Compose
 
 [Docker Compose](https://docs.docker.com/compose/) lets you define and run multi-container applications. Our [Compose Language Service](https://github.com/microsoft/compose-language-service) in the Container Tools extension gives you IntelliSense and tab completions when authoring `compose.yaml` files. Press `Ctrl+Space` to see a list of valid Compose directives.
@@ -81,6 +81,29 @@ You can display the content and push, pull, or delete images from [Docker Hub](h
 ![Azure Container Registry content](resources/readme/container-registry.png)
 
 An image in an Azure Container Registry can be deployed to Azure App Service directly from VS Code. See [Deploy images to Azure App Service](https://aka.ms/AA7arf8) to get started. For more information about how to authenticate to and work with registries, see [Using container registries](https://aka.ms/AA7arf9).
+
+### Working with OCI image layouts
+
+The extension can browse and produce [OCI image layouts](https://github.com/opencontainers/image-spec/blob/main/image-layout.md) directly on disk. This is useful for inspecting image manifests, configs, and individual blobs without running a container, and for staging images for tools that consume OCI layouts (e.g. `oras`, `cosign`, build pipelines).
+
+The **OCI Layout Explorer** view appears in the Container Explorer and lets you:
+
+- Browse an OCI layout's index, manifests, configs, and blobs.
+- Open individual layout files (`index.json`, `oci-layout`, manifests, configs) in the editor.
+
+The following commands are available from the Command Palette under the **OCI Layout** category and from the relevant context menus:
+
+- **Explore Image as OCI Layout...** – Pick an OCI layout folder on disk, an image from the local container runtime (Docker/Podman), or an image from a connected registry, then load it into the OCI Layout Explorer.
+- **Export to OCI Layout...** – Available on images in the Container Explorer. Exports the selected local image as an OCI layout in the configured directory.
+- **Refresh** / **Open File** – Refresh the layout view, or open a layout file in the editor.
+
+The `containers.oci.exportPath` setting controls where exported layouts are stored (supports `${workspaceFolder}` substitution). If unset, exports are written under a temporary directory.
+
+When you open an OCI descriptor file (`index.json`, `oci-layout`, or any `blobs/<algo>/<digest>` blob) as text, the extension automatically sets the document language to JSON if the content parses as JSON. This gives you syntax highlighting, folding, and outline support without renaming the file. The size threshold for this detection is controlled by `containers.oci.jsonDetectionMaxBytes` (default 8 MB); files larger than this stay in their default language.
+
+Inside descriptor files, `sha256:...`/`sha512:...` digests become navigable: hovering one shows a preview of the referenced descriptor (kind, media type, size, platform), and Ctrl+click (or Go to Definition) opens the matching blob under `blobs/<algo>/<digest>`.
+
+> Note: when **Podman** is the active runtime, the extension uses `podman save --format oci-dir` (and `podman pull` for registry mode) to write the layout directly — the `oras` CLI is not required. For all other runtimes (e.g. Docker), the extension uses the configured `containers.containerCommand` to save the image and then the [`oras`](https://oras.land/) CLI (which must be on the system `PATH`) to convert it into an OCI layout. Registry copies in non-Podman mode reuse the credentials written by the extension when you log in to a registry.
 
 ### Debugging services running inside a container
 

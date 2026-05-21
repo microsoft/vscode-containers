@@ -18,6 +18,7 @@ import { registerDebugProvider } from './debugging/DebugHelper';
 import { DockerExtensionApi } from './DockerExtensionApi';
 import { DockerfileCompletionItemProvider } from './dockerfileCompletionItemProvider';
 import { ext } from './extensionVariables';
+import { registerOciSupport } from './oci/ociDescriptorSupport';
 import { AutoConfigurableDockerClient } from './runtimes/clients/AutoConfigurableDockerClient';
 import { AutoConfigurableDockerComposeClient } from './runtimes/clients/AutoConfigurableDockerComposeClient';
 import { AutoConfigurablePodmanClient } from './runtimes/clients/AutoConfigurablePodmanClient';
@@ -123,6 +124,7 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
 
         registerTrees();
         registerCommands();
+        registerOciSupport();
 
         // Set up docker context status bar items
         registerDockerContextStatusBarEvent(ctx);

@@ -14,6 +14,7 @@ import { ContainersTreeItem } from './tree/containers/ContainersTreeItem';
 import { ContextsTreeItem } from './tree/contexts/ContextsTreeItem';
 import { ImagesTreeItem } from './tree/images/ImagesTreeItem';
 import { NetworksTreeItem } from './tree/networks/NetworksTreeItem';
+import { OciLayoutTreeItem } from './tree/oci/OciLayoutTreeItem';
 import { AzureRegistryDataProvider } from './tree/registries/Azure/AzureRegistryDataProvider';
 import { UnifiedRegistryItem, UnifiedRegistryTreeDataProvider } from './tree/registries/UnifiedRegistryTreeDataProvider';
 import { VolumesTreeItem } from './tree/volumes/VolumesTreeItem';
@@ -61,6 +62,10 @@ export namespace ext {
     export let contextsTree: AzExtTreeDataProvider;
     export let contextsTreeView: TreeView<AzExtTreeItem>;
     export let contextsRoot: ContextsTreeItem;
+
+    export let ociTree: AzExtTreeDataProvider;
+    export let ociTreeView: TreeView<AzExtTreeItem>;
+    export let ociRoot: OciLayoutTreeItem;
 
     // Container runtime related items
     export let runtimeManager: ContainerRuntimeManager;

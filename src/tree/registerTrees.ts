@@ -15,6 +15,7 @@ import { ContextsTreeItem } from './contexts/ContextsTreeItem';
 import { HelpsTreeItem } from './help/HelpsTreeItem';
 import { ImagesTreeItem } from "./images/ImagesTreeItem";
 import { NetworksTreeItem } from "./networks/NetworksTreeItem";
+import { OciLayoutTreeItem } from "./oci/OciLayoutTreeItem";
 import { AzureRegistryDataProvider } from "./registries/Azure/AzureRegistryDataProvider";
 import { UnifiedRegistryTreeDataProvider } from "./registries/UnifiedRegistryTreeDataProvider";
 import { VolumesTreeItem } from "./volumes/VolumesTreeItem";
@@ -46,6 +47,13 @@ export function registerTrees(): void {
     ext.registriesTreeView = vscode.window.createTreeView('vscode-containers.views.registries', { treeDataProvider: urtdp, showCollapseAll: true });
     ext.registriesTree = urtdp;
     registerRegistryDataProviders(urtdp);
+
+    ext.ociRoot = new OciLayoutTreeItem(undefined);
+    const ociLoadMore = 'vscode-containers.oci.loadMore';
+    ext.ociTree = new AzExtTreeDataProvider(ext.ociRoot, ociLoadMore);
+    ext.ociTreeView = vscode.window.createTreeView('vscode-containers.views.ociLayout', { treeDataProvider: ext.ociTree, showCollapseAll: true });
+    ext.context.subscriptions.push(ext.ociTreeView);
+    registerCommand(ociLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.ociTree.loadMore(node, context));
 
     ext.volumesRoot = new VolumesTreeItem(undefined);
     const volumesLoadMore = 'vscode-containers.volumes.loadMore';
