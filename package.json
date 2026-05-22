@@ -2398,6 +2398,40 @@
                         "advanced"
                     ]
                 },
+                "containers.oci.customLabels": {
+                    "type": "array",
+                    "default": [],
+                    "description": "%vscode-containers.config.containers.oci.customLabels%",
+                    "scope": "resource",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "label"
+                        ],
+                        "properties": {
+                            "label": {
+                                "type": "string",
+                                "description": "%vscode-containers.config.containers.oci.customLabels.label%"
+                            },
+                            "mediaType": {
+                                "type": "string",
+                                "description": "%vscode-containers.config.containers.oci.customLabels.mediaType%"
+                            },
+                            "predicateType": {
+                                "type": "string",
+                                "description": "%vscode-containers.config.containers.oci.customLabels.predicateType%"
+                            },
+                            "artifactType": {
+                                "type": "string",
+                                "description": "%vscode-containers.config.containers.oci.customLabels.artifactType%"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "tags": [
+                        "advanced"
+                    ]
+                },
                 "docker.languageserver.diagnostics.deprecatedMaintainer": {
                     "scope": "resource",
                     "type": "string",

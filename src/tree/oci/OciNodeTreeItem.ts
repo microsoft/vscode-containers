@@ -5,6 +5,7 @@
 
 import { AzExtParentTreeItem, AzExtTreeItem, IActionContext } from "@microsoft/vscode-azext-utils";
 import { l10n, MarkdownString, ThemeIcon, TreeItemCollapsibleState, Uri } from "vscode";
+import { toOciBlobUri } from "../../oci/ociBlobContentProvider";
 import { getKindDisplayLabel, LayoutNode } from "../../oci/ociLayout";
 import { ToolTipParentTreeItem } from "../ToolTipTreeItem";
 
@@ -29,7 +30,9 @@ export class OciNodeTreeItem extends ToolTipParentTreeItem {
 
         if (node.filePath) {
             this.commandId = 'vscode.open';
-            this.commandArgs = [Uri.file(node.filePath)];
+            this.commandArgs = [
+                node.kind === 'layer' ? Uri.file(node.filePath) : toOciBlobUri(node.filePath),
+            ];
         }
     }
 

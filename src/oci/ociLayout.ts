@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { l10n } from 'vscode';
 import { OCI_METADATA_FILENAME } from './constants';
+import { CustomLabelRule, matchCustomLabel } from './customLabels';
 
 type JsonObject = Record<string, unknown>;
 
@@ -263,7 +264,27 @@ function getInTotoDisplayLabel(node: LayoutNode): string | null {
     return withPlatformLabel(baseLabel, node.platform);
 }
 
-function getHumanReadableName(node: LayoutNode): string {
+function getNodePredicateType(node: LayoutNode): string | null {
+    if (node.json && typeof (node.json as Record<string, unknown>).predicateType === 'string') {
+        return String((node.json as Record<string, unknown>).predicateType);
+    }
+
+    return getPredicateTypeAnnotation(node.annotations);
+}
+
+function getHumanReadableName(node: LayoutNode, customLabelRules: CustomLabelRule[]): string {
+    const customLabel = matchCustomLabel(
+        {
+            mediaType: node.mediaType,
+            predicateType: getNodePredicateType(node),
+            artifactType: node.artifactType,
+        },
+        customLabelRules
+    );
+    if (customLabel) {
+        return withPlatformLabel(customLabel, node.platform) || customLabel;
+    }
+
     const inTotoLabel = getInTotoDisplayLabel(node);
     if (inTotoLabel) {
         return inTotoLabel;
@@ -443,7 +464,7 @@ function createDescriptorNode(
     return key;
 }
 
-export function parseLayout(rootPath: string): ParsedLayout {
+export function parseLayout(rootPath: string, customLabelRules: CustomLabelRule[] = []): ParsedLayout {
     const layoutPath = path.join(rootPath, 'oci-layout');
     const indexPath = path.join(rootPath, 'index.json');
 
@@ -554,7 +575,7 @@ export function parseLayout(rootPath: string): ParsedLayout {
     const nodes = Array.from(nodesByKey.values()).map((node) => {
         const enrichedNode = {
             ...node,
-            displayName: getHumanReadableName(node),
+            displayName: getHumanReadableName(node, customLabelRules),
         };
 
         return {

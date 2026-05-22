@@ -8,6 +8,7 @@ import { PodmanClient } from "@microsoft/vscode-container-client";
 import * as vscode from "vscode";
 import { ext } from "../../extensionVariables";
 import { OCI_ROOT_PATH_STATE_KEY, ORAS_COMMAND } from "../../oci/constants";
+import { loadCustomLabelRules } from "../../oci/customLabels";
 import { parseLayout } from "../../oci/ociLayout";
 import { findOnPath } from "../../utils/findOnPath";
 import { OciNodeTreeItem } from "./OciNodeTreeItem";
@@ -42,7 +43,7 @@ export class OciLayoutTreeItem extends AzExtParentTreeItem {
         }
 
         try {
-            const layout = parseLayout(rootPath);
+            const layout = parseLayout(rootPath, loadCustomLabelRules());
             children.push(
                 ...layout.roots.map(
                     (key, index) => new OciNodeTreeItem(this, layout.nodesByKey[key], layout.nodesByKey, index)

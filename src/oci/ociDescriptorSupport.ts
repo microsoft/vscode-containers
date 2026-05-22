@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
+import { OCI_BLOB_SCHEME, OciBlobContentProvider, toOciBlobUri } from './ociBlobContentProvider';
 
 const DEFAULT_JSON_DETECTION_MAX_BYTES = 8 * 1024 * 1024;
 const JSON_DETECTION_MAX_BYTES_SETTING = 'oci.jsonDetectionMaxBytes';
@@ -65,7 +66,7 @@ function isJsonDocumentContent(text: string): boolean {
 }
 
 async function ensureJsonLanguageForOciDocument(document: vscode.TextDocument): Promise<void> {
-    if (document.uri.scheme !== 'file') {
+    if (document.uri.scheme !== 'file' && document.uri.scheme !== OCI_BLOB_SCHEME) {
         return;
     }
 
@@ -73,13 +74,15 @@ async function ensureJsonLanguageForOciDocument(document: vscode.TextDocument): 
         return;
     }
 
-    try {
-        const stat = await vscode.workspace.fs.stat(document.uri);
-        if (stat.size > getJsonDetectionMaxBytes()) {
+    if (document.uri.scheme === 'file') {
+        try {
+            const stat = await vscode.workspace.fs.stat(document.uri);
+            if (stat.size > getJsonDetectionMaxBytes()) {
+                return;
+            }
+        } catch {
             return;
         }
-    } catch {
-        return;
     }
 
     if (!isJsonDocumentContent(document.getText())) {
@@ -264,7 +267,9 @@ function resolveBlobUri(
         return undefined;
     }
 
-    return vscode.Uri.file(target);
+    // Match the source document's scheme so navigation stays in the pretty-
+    // printed virtual view when that's where the user is.
+    return document.uri.scheme === OCI_BLOB_SCHEME ? toOciBlobUri(target) : vscode.Uri.file(target);
 }
 
 class OciDescriptorDefinitionProvider implements vscode.DefinitionProvider {
@@ -372,9 +377,16 @@ export function registerOciSupport(): void {
         { language: 'json', scheme: 'file', pattern: '**/index.json' },
         { language: 'json', scheme: 'file', pattern: '**/oci-layout' },
         { language: 'json', scheme: 'file', pattern: '**/blobs/*/*' },
+        { language: 'json', scheme: OCI_BLOB_SCHEME, pattern: '**/index.json' },
+        { language: 'json', scheme: OCI_BLOB_SCHEME, pattern: '**/oci-layout' },
+        { language: 'json', scheme: OCI_BLOB_SCHEME, pattern: '**/blobs/*/*' },
     ];
 
     ext.context.subscriptions.push(
+        vscode.workspace.registerTextDocumentContentProvider(
+            OCI_BLOB_SCHEME,
+            new OciBlobContentProvider()
+        ),
         vscode.workspace.onDidOpenTextDocument((document) => {
             void ensureJsonLanguageForOciDocument(document);
         }),
