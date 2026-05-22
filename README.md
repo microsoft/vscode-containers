@@ -99,9 +99,19 @@ The following commands are available from the Command Palette under the **OCI La
 
 The `containers.oci.exportPath` setting controls where exported layouts are stored (supports `${workspaceFolder}` substitution). If unset, exports are written under a temporary directory.
 
-When you open an OCI descriptor file (`index.json`, `oci-layout`, or any `blobs/<algo>/<digest>` blob) as text, the extension automatically sets the document language to JSON if the content parses as JSON. This gives you syntax highlighting, folding, and outline support without renaming the file. The size threshold for this detection is controlled by `containers.oci.jsonDetectionMaxBytes` (default 8 MB); files larger than this stay in their default language.
+When you open an OCI descriptor file (`index.json`, `oci-layout`, or any `blobs/<algo>/<digest>` blob) as text, the extension automatically sets the document language to JSON if the content parses as JSON. This gives you syntax highlighting, folding, and outline support without renaming the file. The size threshold for this detection is controlled by `containers.oci.jsonDetectionMaxSizeMB` (default 8 MB); files larger than this stay in their default language.
 
 Inside descriptor files, `sha256:...`/`sha512:...` digests become navigable: hovering one shows a preview of the referenced descriptor (kind, media type, size, platform), and Ctrl+click (or Go to Definition) opens the matching blob under `blobs/<algo>/<digest>`.
+
+You can customize how nodes are labeled in the OCI Layout Explorer with the `containers.oci.customLabels` setting. Each rule may match on `mediaType`, `predicateType`, and/or `artifactType` — all specified fields must match (matching is case-insensitive and `*` is the only wildcard), the first matching rule wins, and platform information (e.g. `linux/amd64`) is appended automatically. `predicateType` is read from `predicateType` on in-toto attestation blobs and from the `in-toto.io/predicate-type` annotation on attestation manifests.
+
+```jsonc
+"containers.oci.customLabels": [
+    { "predicateType": "https://slsa.dev/provenance/*", "label": "SLSA Provenance" },
+    { "mediaType": "application/vnd.cncf.notary.signature*", "label": "Notary signature" },
+    { "artifactType": "application/vnd.example.sbom+json", "label": "Example SBOM" }
+]
+```
 
 > Note: when **Podman** is the active runtime, the extension uses `podman save --format oci-dir` (and `podman pull` for registry mode) to write the layout directly — the `oras` CLI is not required. For all other runtimes (e.g. Docker), the extension uses the configured `containers.containerCommand` to save the image and then the [`oras`](https://oras.land/) CLI (which must be on the system `PATH`) to convert it into an OCI layout. Registry copies in non-Podman mode reuse the credentials written by the extension when you log in to a registry.
 

@@ -11,8 +11,9 @@ import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
 import { OCI_BLOB_SCHEME, OciBlobContentProvider, toOciBlobUri } from './ociBlobContentProvider';
 
-const DEFAULT_JSON_DETECTION_MAX_BYTES = 8 * 1024 * 1024;
-const JSON_DETECTION_MAX_BYTES_SETTING = 'oci.jsonDetectionMaxBytes';
+const DEFAULT_JSON_DETECTION_MAX_SIZE_MB = 8;
+const JSON_DETECTION_MAX_SIZE_MB_SETTING = 'oci.jsonDetectionMaxSizeMB';
+const BYTES_PER_MB = 1024 * 1024;
 
 // Matches "<algorithm>:<hash>" for the digest formats we care about.
 const DIGEST_PATTERN = /\b(sha256|sha384|sha512):([a-fA-F0-9]+)\b/g;
@@ -28,13 +29,14 @@ interface DescriptorInfo {
 function getJsonDetectionMaxBytes(): number {
     const configured = vscode.workspace
         .getConfiguration(configPrefix)
-        .get<number>(JSON_DETECTION_MAX_BYTES_SETTING, DEFAULT_JSON_DETECTION_MAX_BYTES);
+        .get<number>(JSON_DETECTION_MAX_SIZE_MB_SETTING, DEFAULT_JSON_DETECTION_MAX_SIZE_MB);
 
-    if (typeof configured !== 'number' || !Number.isFinite(configured) || configured <= 0) {
-        return DEFAULT_JSON_DETECTION_MAX_BYTES;
-    }
+    const sizeMb =
+        typeof configured === 'number' && Number.isFinite(configured) && configured > 0
+            ? configured
+            : DEFAULT_JSON_DETECTION_MAX_SIZE_MB;
 
-    return Math.floor(configured);
+    return Math.floor(sizeMb * BYTES_PER_MB);
 }
 
 function isLikelyOciDescriptorPath(fsPath: string): boolean {

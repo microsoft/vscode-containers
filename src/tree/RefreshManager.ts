@@ -183,8 +183,12 @@ export class RefreshManager extends vscode.Disposable {
         this.autoRefreshDisposables.push(
             vscode.workspace.onDidChangeConfiguration(async (e: vscode.ConfigurationChangeEvent) => {
                 for (const view of AllTreePrefixes) {
-                    // OCI settings (e.g. jsonDetectionMaxBytes) do not affect tree contents
                     if (view === 'oci') {
+                        // Only OCI settings that affect tree contents (e.g. customLabels) trigger a refresh;
+                        // others like jsonDetectionMaxSizeMB do not.
+                        if (e.affectsConfiguration(`${configPrefix}.oci.customLabels`)) {
+                            await this.refresh(view, 'config');
+                        }
                         continue;
                     }
                     if (e.affectsConfiguration(`${configPrefix}.${view}`)) {

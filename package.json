@@ -2388,11 +2388,11 @@
                     "description": "%vscode-containers.config.containers.oci.exportPath%",
                     "scope": "machine-overridable"
                 },
-                "containers.oci.jsonDetectionMaxBytes": {
+                "containers.oci.jsonDetectionMaxSizeMB": {
                     "type": "number",
-                    "default": 8388608,
+                    "default": 8,
                     "minimum": 1,
-                    "description": "%vscode-containers.config.containers.oci.jsonDetectionMaxBytes%",
+                    "description": "%vscode-containers.config.containers.oci.jsonDetectionMaxSizeMB%",
                     "scope": "resource",
                     "tags": [
                         "advanced"
