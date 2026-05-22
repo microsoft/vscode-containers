@@ -10,7 +10,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { ext } from '../extensionVariables';
 import { TaskCommandRunnerFactory } from '../runtimes/runners/TaskCommandRunnerFactory';
-import { OCI_METADATA_FILENAME } from './constants';
+import { OCI_METADATA_FILENAME, ORAS_COMMAND } from './constants';
 import { resolveExportDir } from './exportPath';
 
 interface ExportMetadata {
@@ -33,8 +33,6 @@ interface ParsedRegistryReference {
     repository: string;
     referenceSuffix: string;
 }
-
-const ORAS_COMMAND = 'oras';
 
 function writeExportMetadata(
     outputDir: string,
@@ -269,7 +267,7 @@ async function exportFromDaemon(
             await convertArchiveToOciLayout(tarPath, outputDir, referenceTag, referenceTag);
         }
 
-        writeExportMetadata(outputDir, reference, source, 'oras');
+        writeExportMetadata(outputDir, reference, source, ORAS_COMMAND);
     } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -312,7 +310,7 @@ async function exportFromRegistry(
         vscode.l10n.t('Copy {0} to OCI layout', registryReference)
     );
 
-    writeExportMetadata(outputDir, reference, 'registry', 'oras');
+    writeExportMetadata(outputDir, reference, 'registry', ORAS_COMMAND);
 }
 
 export async function exportImageToOciLayout(

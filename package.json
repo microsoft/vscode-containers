@@ -76,6 +76,10 @@
                     "when": "never"
                 },
                 {
+                    "command": "vscode-containers.oci.showPrerequisitesHelp",
+                    "when": "never"
+                },
+                {
                     "command": "vscode-containers.containers.composeGroup.logs",
                     "when": "config.containers.containers.groupBy == 'Compose Project Name'"
                 },
@@ -2869,6 +2873,11 @@
             {
                 "command": "vscode-containers.oci.exportImage",
                 "title": "%vscode-containers.commands.oci.exportImage%",
+                "category": "%vscode-containers.commands.category.oci%"
+            },
+            {
+                "command": "vscode-containers.oci.showPrerequisitesHelp",
+                "title": "%vscode-containers.commands.oci.showPrerequisitesHelp%",
                 "category": "%vscode-containers.commands.category.oci%"
             },
             {

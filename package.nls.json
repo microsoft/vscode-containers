@@ -268,6 +268,7 @@
     "vscode-containers.commands.oci.exploreImage": "Explore Image as OCI Layout...",
     "vscode-containers.commands.oci.refresh": "Refresh",
     "vscode-containers.commands.oci.exportImage": "Export to OCI Layout...",
+    "vscode-containers.commands.oci.showPrerequisitesHelp": "Show OCI Layout Prerequisites",
     "vscode-containers.commands.openDockerDownloadPage": "Learn More About Installing Docker Desktop",
     "vscode-containers.commands.networks.configureExplorer": "Configure Explorer...",
     "vscode-containers.commands.networks.create": "Create...",
