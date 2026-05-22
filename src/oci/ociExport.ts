@@ -17,7 +17,7 @@ interface ExportMetadata {
     reference: string;
     exportedAt: string;
     source: 'docker-daemon' | 'registry';
-    tool: 'docker-save' | 'oras' | 'podman-save';
+    tool: 'oras' | 'podman-save';
 }
 
 function isPodman(client: IContainersClient): boolean {
@@ -225,25 +225,54 @@ async function convertArchiveToOciLayout(
     );
 }
 
-async function exportFromDaemon(
+async function orasCopyFromRegistry(reference: string, outputDir: string): Promise<void> {
+    fs.mkdirSync(outputDir, { recursive: true });
+
+    const registryReference = toNormalizedRegistryReference(reference);
+    if (registryReference !== reference) {
+        ext.outputChannel.info(
+            vscode.l10n.t('Normalized registry reference: {0} -> {1}', reference, registryReference)
+        );
+    }
+
+    const destinationTag = getReferenceTag(registryReference) ?? 'latest';
+
+    await runTask(
+        ORAS_COMMAND,
+        [
+            'cp',
+            '--recursive',
+            registryReference,
+            '--to-oci-layout',
+            asTaggedLayoutRef(outputDir, destinationTag),
+        ],
+        vscode.l10n.t('Copy {0} to OCI layout', registryReference)
+    );
+}
+
+async function dockerSaveAndConvert(
     client: IContainersClient,
     reference: string,
     outputDir: string,
-    source: ExportMetadata['source']
+    persistentTarPath?: string
 ): Promise<void> {
-    if (isPodman(client)) {
-        // Podman can write an OCI image layout directly; no archive or oras needed.
-        // podman save creates the target directory itself, so don't pre-create it.
-        await podmanSaveToOciLayout(client.commandName, reference, outputDir);
-        writeExportMetadata(outputDir, reference, source, 'podman-save');
-        return;
+    fs.mkdirSync(outputDir, { recursive: true });
+
+    let tarPath: string;
+    let tempDir: string | undefined;
+
+    if (persistentTarPath) {
+        tarPath = persistentTarPath;
+        fs.mkdirSync(path.dirname(tarPath), { recursive: true });
+        if (fs.existsSync(tarPath)) {
+            fs.rmSync(tarPath, { force: true });
+        }
+    } else {
+        tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oci-export-'));
+        tarPath = path.join(tempDir, 'image.tar');
     }
 
-    fs.mkdirSync(outputDir, { recursive: true });
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oci-export-'));
-
     try {
-        const tarPath = path.join(tempDir, 'image.tar');
         const referenceTag = getReferenceTag(reference) ?? 'latest';
 
         await dockerSaveToTar(client.commandName, reference, tarPath);
@@ -266,11 +295,51 @@ async function exportFromDaemon(
             await dockerSaveToTar(client.commandName, reference, tarPath, localPlatform);
             await convertArchiveToOciLayout(tarPath, outputDir, referenceTag, referenceTag);
         }
-
-        writeExportMetadata(outputDir, reference, source, ORAS_COMMAND);
     } finally {
-        fs.rmSync(tempDir, { recursive: true, force: true });
+        if (tempDir) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        }
     }
+}
+
+async function exportFromDaemon(
+    client: IContainersClient,
+    reference: string,
+    outputDir: string,
+    source: ExportMetadata['source'],
+    persistentTarPath?: string
+): Promise<void> {
+    if (isPodman(client)) {
+        // Podman writes an OCI image layout directly from its local store.
+        await podmanSaveToOciLayout(client.commandName, reference, outputDir);
+        writeExportMetadata(outputDir, reference, source, 'podman-save');
+        return;
+    }
+
+    try {
+        await dockerSaveAndConvert(client, reference, outputDir, persistentTarPath);
+        writeExportMetadata(outputDir, reference, source, ORAS_COMMAND);
+        return;
+    } catch (saveError) {
+        const message = saveError instanceof Error ? saveError.message : String(saveError);
+        ext.outputChannel.warn(
+            vscode.l10n.t(
+                'docker save / oras conversion failed ({0}); falling back to pulling {1} from its registry\u2026',
+                message,
+                reference
+            )
+        );
+    }
+
+    // Clear any partial output from the failed docker-save attempt before
+    // retrying via the registry; if the registry also can't serve the
+    // reference, orasCopyFromRegistry throws and the export fails.
+    if (fs.existsSync(outputDir)) {
+        fs.rmSync(outputDir, { recursive: true, force: true });
+    }
+
+    await orasCopyFromRegistry(reference, outputDir);
+    writeExportMetadata(outputDir, reference, source, ORAS_COMMAND);
 }
 
 async function exportFromRegistry(
@@ -287,29 +356,7 @@ async function exportFromRegistry(
         return;
     }
 
-    fs.mkdirSync(outputDir, { recursive: true });
-    const registryReference = toNormalizedRegistryReference(reference);
-
-    if (registryReference !== reference) {
-        ext.outputChannel.info(
-            vscode.l10n.t('Normalized registry reference: {0} -> {1}', reference, registryReference)
-        );
-    }
-
-    const destinationTag = getReferenceTag(registryReference) ?? 'latest';
-
-    await runTask(
-        ORAS_COMMAND,
-        [
-            'cp',
-            '--recursive',
-            registryReference,
-            '--to-oci-layout',
-            asTaggedLayoutRef(outputDir, destinationTag),
-        ],
-        vscode.l10n.t('Copy {0} to OCI layout', registryReference)
-    );
-
+    await orasCopyFromRegistry(reference, outputDir);
     writeExportMetadata(outputDir, reference, 'registry', ORAS_COMMAND);
 }
 
@@ -340,7 +387,10 @@ export async function exportImageToOciLayout(
     if (source === 'registry') {
         await exportFromRegistry(client, reference, outputDir);
     } else {
-        await exportFromDaemon(client, reference, outputDir, source);
+        const persistentTarPath = configuredDir
+            ? path.join(configuredDir, `${imageDirName}.tar`)
+            : undefined;
+        await exportFromDaemon(client, reference, outputDir, source, persistentTarPath);
     }
 
     return outputDir;
