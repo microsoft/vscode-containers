@@ -12,7 +12,7 @@ import { ext } from '../extensionVariables';
 import { isComposeV2ableOrchestratorClient } from '../runtimes/clients/AutoConfigurableDockerComposeClient';
 import { resolveVariables } from '../utils/resolveVariables';
 
-type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset';
+type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset' | 'composeLogs';
 
 type TemplatePicker = (items: IAzureQuickPickItem<CommandTemplate>[], options: IAzureQuickPickOptions) => Promise<IAzureQuickPickItem<CommandTemplate>>;
 
@@ -75,6 +75,29 @@ export async function selectLogsCommand(context: IActionContext, containerName: 
         [containerName, imageName],
         undefined,
         { 'containerId': containerId, 'containerCommand': await ext.runtimeManager.getCommand() }
+    );
+}
+
+export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder, configurationFile?: string, projectName?: string, envFile?: string): Promise<VoidCommandResponse> {
+    const orchestratorClient = await ext.orchestratorManager.getClient();
+    let fullComposeCommand: string;
+    if (isComposeV2ableOrchestratorClient(orchestratorClient) && orchestratorClient.composeV2) {
+        fullComposeCommand = `${orchestratorClient.commandName} compose`;
+    } else {
+        fullComposeCommand = orchestratorClient.commandName;
+    }
+
+    return await selectCommandTemplate(
+        context,
+        'composeLogs',
+        [folder.name, configurationFile],
+        folder,
+        {
+            'configurationFile': configurationFile ? `-f "${configurationFile}"` : '',
+            'projectName': projectName ? `-p "${projectName}"` : '',
+            'environmentFile': envFile ? `--env-file "${envFile}"` : '',
+            'composeCommand': fullComposeCommand
+        }
     );
 }
 
