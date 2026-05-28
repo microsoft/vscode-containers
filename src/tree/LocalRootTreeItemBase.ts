@@ -65,7 +65,7 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
     public descriptionSetting: TProperty[];
     protected failedToConnect: boolean = false;
 
-    private _currentItems: TItem[] | undefined;
+    protected _currentItems: TItem[] | undefined;
     private _cachedItems: TItem[] | undefined;
     private _currentDockerStatus: DockerStatus;
 

@@ -54,6 +54,14 @@ export class ContainersTreeItem extends LocalRootTreeItemBase<DockerContainerInf
         return this.groupBySetting === 'None' ? l10n.t('container') : l10n.t('container group');
     }
 
+    public get description(): string | undefined {
+        const runningCount = this._currentItems?.filter(i => i.state.toLowerCase() === 'running').length;
+        if (runningCount > 0) {
+            return l10n.t('({0} running)', runningCount);
+        }
+        return undefined;
+    }
+
     public async getItems(context: IActionContext): Promise<DockerContainerInfo[]> {
         const rawResults = await ext.runWithDefaults(client =>
             client.listContainers({ all: true })
