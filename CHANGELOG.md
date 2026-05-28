@@ -1,3 +1,7 @@
+## 2.4.5 - 28 May 2026
+### Changed
+* Deployments to Azure App Service are now performed through the [Azure App Service extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), simplifying the deployment flow and reducing duplicated code. [#473](https://github.com/microsoft/vscode-containers/pull/473)
+
 ## 2.4.4 - 4 May 2026
 ### Changed
 * Reverted back to CJS to improve code loading performance. [#461](https://github.com/microsoft/vscode-containers/issues/461)
