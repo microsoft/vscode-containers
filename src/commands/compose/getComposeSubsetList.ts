@@ -11,8 +11,9 @@ import { ext } from '../../extensionVariables';
 import { runWithDefaults } from '../../runtimes/runners/runWithDefaults';
 import { execAsync } from '../../utils/execAsync';
 
-// Matches an `up` or `down` and everything after it--so that it can be replaced with `config --services`, to get a service list using all of the files originally part of the compose command
-const composeCommandReplaceRegex = /(\b(up|down)\b).*$/i;
+// Matches an `up`, `down`, or `pull` subcommand token and everything after it--so that it can be replaced with `config --services`, to get a service list using all of the files originally part of the compose command.
+// The token must appear at the start of the command or after whitespace so paths/quoted arguments containing words like `pull` are not mistaken for the compose subcommand.
+const composeCommandReplaceRegex = /(?<!\S)(up|down|pull)\b.*$/i;
 
 type SubsetType = 'services' | 'profiles';
 
@@ -21,7 +22,7 @@ export async function getDefaultCommandComposeProfilesOrServices(context: IActio
     const profiles = await getDefaultCommandServiceSubsets(workspaceFolder, composeCommand, 'profiles');
 
     if (preselectedServices?.length && preselectedProfiles?.length) {
-        throw new Error(vscode.l10n.t('Cannot specify both services and profiles to start/stop. Please choose one or the other.'));
+        throw new Error(vscode.l10n.t('Cannot specify both services and profiles. Please choose one or the other.'));
     }
 
     // If there are any profiles, we need to ask the user whether they want profiles or services, since they are mutually exclusive to use
@@ -43,7 +44,7 @@ export async function getDefaultCommandComposeProfilesOrServices(context: IActio
             }
         ];
 
-        useProfiles = 'profiles' === (await context.ui.showQuickPick(profilesOrServices, { placeHolder: vscode.l10n.t('Do you want to start/stop services or profiles?') })).data;
+        useProfiles = 'profiles' === (await context.ui.showQuickPick(profilesOrServices, { placeHolder: vscode.l10n.t('Do you want to select services or profiles?') })).data;
     }
 
     return {
@@ -57,7 +58,7 @@ export async function getComposeProfilesOrServices(context: IActionContext, work
     const profiles = await getServiceSubsets(workspaceFolder, composeCommand, 'profiles');
 
     if (preselectedServices?.length && preselectedProfiles?.length) {
-        throw new Error(vscode.l10n.t('Cannot specify both services and profiles to start/stop. Please choose one or the other.'));
+        throw new Error(vscode.l10n.t('Cannot specify both services and profiles. Please choose one or the other.'));
     }
 
     // If there any profiles, we need to ask the user whether they want profiles or services, since they are mutually exclusive to use
@@ -79,7 +80,7 @@ export async function getComposeProfilesOrServices(context: IActionContext, work
             }
         ];
 
-        useProfiles = 'profiles' === (await context.ui.showQuickPick(profilesOrServices, { placeHolder: vscode.l10n.t('Do you want to start/stop services or profiles?') })).data;
+        useProfiles = 'profiles' === (await context.ui.showQuickPick(profilesOrServices, { placeHolder: vscode.l10n.t('Do you want to select services or profiles?') })).data;
     }
 
     return {
@@ -168,8 +169,8 @@ export async function getComposeServiceList(context: IActionContext, workspaceFo
 
 async function pickSubsets(context: IActionContext, type: SubsetType, allChoices: string[], previousChoices: string[]): Promise<string[]> {
     const label = type === 'profiles' ?
-        vscode.l10n.t('Choose profiles to start/stop') :
-        vscode.l10n.t('Choose services to start/stop');
+        vscode.l10n.t('Choose profiles') :
+        vscode.l10n.t('Choose services');
 
     const pickChoices: IAzureQuickPickItem<string>[] = allChoices.map(s => ({
         label: s,

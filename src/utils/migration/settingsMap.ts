@@ -15,6 +15,8 @@ export const settingsMap: Record<string, string> = {
     "docker.commands.composeUp": "containers.commands.composeUp",
     "docker.commands.composeUpSubset": "containers.commands.composeUpSubset",
     "docker.commands.composeDown": "containers.commands.composeDown",
+    "docker.commands.composePull": "containers.commands.composePull",
+    "docker.commands.composePullSubset": "containers.commands.composePullSubset",
     "docker.containers.groupBy": "containers.containers.groupBy",
     "docker.containers.groupByLabel": "containers.containers.groupByLabel",
     "docker.containers.description": "containers.containers.description",

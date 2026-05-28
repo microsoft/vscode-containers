@@ -14,7 +14,9 @@ import { quickPickWorkspaceFolder } from '../../utils/quickPickWorkspaceFolder';
 import { selectComposeCommand } from '../selectCommandTemplate';
 import { getComposeProfileList, getComposeProfilesOrServices, getComposeServiceList, getDefaultCommandComposeProfilesOrServices } from './getComposeSubsetList';
 
-async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSubset' | 'downSubset')[], message: string, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
+type ComposeCommand = 'up' | 'down' | 'upSubset' | 'downSubset' | 'pull' | 'pullSubset';
+
+async function compose(context: IActionContext, commands: ComposeCommand[], message: string, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
     if (!vscode.workspace.isTrusted) {
         throw new UserCancelledError('enforceTrust');
     }
@@ -67,9 +69,9 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
             if (!terminalCommand.args?.length) {
                 // Add the service list if needed
                 terminalCommand.command = await addServicesOrProfilesIfNeeded(context, folder, terminalCommand.command, preselectedServices, preselectedProfiles);
-            } else if (command === 'upSubset' || command === 'downSubset') {
+            } else if (command === 'upSubset' || command === 'downSubset' || command === 'pullSubset') {
                 // If there are arguments, it means we're using a default command (based on the logic in selectCommandTemplate.ts)
-                // So, we only want to add profile/service list for the upSubset or downSubset command
+                // So, we only want to add profile/service list for the subset commands
                 terminalCommand = await addDefaultCommandServicesOrProfilesIfNeeded(context, folder, terminalCommand, preselectedServices, preselectedProfiles);
             }
 
@@ -100,6 +102,14 @@ export async function composeDown(context: IActionContext, dockerComposeFileUri?
 
 export async function composeDownSubset(context: IActionContext, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
     return await compose(context, ['downSubset'], vscode.l10n.t('Choose compose file to take down'), dockerComposeFileUri, selectedComposeFileUris, preselectedServices, preselectedProfiles);
+}
+
+export async function composePull(context: IActionContext, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[]): Promise<void> {
+    return await compose(context, ['pull'], vscode.l10n.t('Choose compose file to pull images for'), dockerComposeFileUri, selectedComposeFileUris);
+}
+
+export async function composePullSubset(context: IActionContext, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
+    return await compose(context, ['pullSubset'], vscode.l10n.t('Choose compose file to pull selected services from'), dockerComposeFileUri, selectedComposeFileUris, preselectedServices, preselectedProfiles);
 }
 
 export async function composeRestart(context: IActionContext, dockerComposeFileUri?: vscode.Uri, selectedComposeFileUris?: vscode.Uri[]): Promise<void> {
