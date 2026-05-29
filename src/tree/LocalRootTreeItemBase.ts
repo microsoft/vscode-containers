@@ -65,9 +65,13 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
     public descriptionSetting: TProperty[];
     protected failedToConnect: boolean = false;
 
-    protected _currentItems: TItem[] | undefined;
+    private _currentItems: TItem[] | undefined;
     private _cachedItems: TItem[] | undefined;
     private _currentDockerStatus: DockerStatus;
+
+    protected get currentItems(): TItem[] | undefined {
+        return this._currentItems;
+    }
 
     public constructor(parent: AzExtParentTreeItem | undefined) {
         super(parent);

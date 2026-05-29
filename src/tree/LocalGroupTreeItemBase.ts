@@ -10,8 +10,12 @@ import { CommonProperty } from "./settings/CommonProperties";
 export abstract class LocalGroupTreeItemBase<TItem extends AnyContainerObject, TProperty extends string | CommonProperty> extends AzExtParentTreeItem {
     public declare readonly parent: LocalRootTreeItemBase<TItem, TProperty>;
     public readonly group: string;
-    protected _items: TItem[];
+    private _items: TItem[];
     private _childTreeItems: AzExtTreeItem[];
+
+    protected get items(): TItem[] {
+        return this._items;
+    }
 
     public constructor(parent: LocalRootTreeItemBase<TItem, TProperty>, group: string, items: TItem[]) {
         super(parent);

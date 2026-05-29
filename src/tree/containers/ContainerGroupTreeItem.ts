@@ -34,9 +34,9 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
     }
 
     public get description(): string | undefined {
-        const runningCount = this._items.filter(i => i.state.toLowerCase() === 'running').length;
+        const runningCount = this.items.filter(i => i.state.toLowerCase() === 'running').length;
         if (runningCount > 0) {
-            return l10n.t('({0}/{1} running)', runningCount, this._items.length);
+            return l10n.t('({0}/{1} running)', runningCount, this.items.length);
         }
         return undefined;
     }
