@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AzExtTreeItem, IActionContext } from "@microsoft/vscode-azext-utils";
-import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
+import { ThemeIcon, TreeItemCollapsibleState, l10n } from "vscode";
 import { LocalGroupTreeItemBase } from "../LocalGroupTreeItemBase";
 import { LocalRootTreeItemBase } from "../LocalRootTreeItemBase";
 import { getCommonGroupIcon } from "../settings/CommonProperties";
@@ -31,6 +31,14 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
         }
 
         return 'containerGroup';
+    }
+
+    public get description(): string | undefined {
+        const runningCount = this.items.filter(i => i.state.toLowerCase() === 'running').length;
+        if (runningCount > 0) {
+            return l10n.t('({0}/{1} running)', runningCount, this.items.length);
+        }
+        return undefined;
     }
 
     public get iconPath(): ThemeIcon {
