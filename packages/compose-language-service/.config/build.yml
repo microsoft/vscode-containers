@@ -35,3 +35,4 @@ extends:
   parameters:
     signType: none
     npmFeed: ${{ variables.npmFeed }}
+    feedBaseUrl: ${{ variables.feedBaseUrl }}
