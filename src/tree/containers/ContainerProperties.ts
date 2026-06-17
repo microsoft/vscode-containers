@@ -20,7 +20,7 @@ export const containerProperties: ITreePropertyInfo<ContainerProperty>[] = [
     { property: 'Ports', exampleValue: '8080' },
     { property: 'State', exampleValue: 'exited' },
     { property: 'Status', exampleValue: 'Exited (0) 2 hours ago' },
-    { property: 'Compose Project Name', description: l10n.t('Value used to associate containers launched by a compose up command') },
+    { property: 'Compose Project Name', description: l10n.t('Value used to associate containers launched by a compose up command or a Docker Swarm stack') },
     { property: 'Label', exampleValue: 'com.microsoft.created-by=visual-studio-code' },
 ];
 
@@ -64,7 +64,7 @@ export function getContainerPropertyValue(item: ListContainersItem, property: Co
             // This normalizes things like "10 seconds" and "Less than a second" to "Less than a minute", meaning the refreshes don't happen constantly
             return item.status?.replace(/(\d+ seconds?)|(Less than a second)/i, l10n.t('Less than a minute'));
         case 'Compose Project Name':
-            return getLabelGroup(item, 'com.docker.compose.project', NonComposeGroupName);
+            return getComposeProjectGroup(item);
         case 'Image':
             return item.image.originalName;
         case 'Label':
@@ -76,6 +76,21 @@ export function getContainerPropertyValue(item: ListContainersItem, property: Co
 
 export const NonComposeGroupName = l10n.t('Individual Containers');
 export const NonLabelGroupName = l10n.t('Others');
+
+// The label Docker Compose adds to containers it creates, containing the compose project name
+export const composeProjectLabel = 'com.docker.compose.project';
+
+// The label Docker Swarm adds to containers it creates as part of a stack, containing the stack namespace (name)
+export const swarmStackNamespaceLabel = 'com.docker.stack.namespace';
+
+export function getComposeProjectGroup(container: ListContainersItem): string {
+    // Containers launched by `docker compose up` are grouped by their compose project name.
+    // Containers launched by `docker stack deploy` (Docker Swarm) are grouped by their stack namespace.
+    // Either way, this gives a meaningful group name for orchestrated containers, falling back to the
+    // non-compose group name for standalone containers.
+    return getLabelGroup(container, composeProjectLabel, '')
+        || getLabelGroup(container, swarmStackNamespaceLabel, NonComposeGroupName);
+}
 
 export function getLabelGroup(container: ListContainersItem, label: string | undefined, defaultGroupName: string): string {
     if (!label) {
