@@ -8,6 +8,7 @@ import assert from 'assert';
 import { CommandTemplate, selectCommandTemplate } from '../../commands/selectCommandTemplate';
 
 const DefaultPickIndex = 0;
+type TemplateCommand = Parameters<typeof selectCommandTemplate>[1];
 
 suite("(unit) selectCommandTemplate", () => {
     test("One constrained from settings (match)", async () => {
@@ -333,13 +334,61 @@ suite("(unit) selectCommandTemplate", () => {
         assert.equal(result.context.telemetry.properties.isDefaultCommand, 'true', 'Wrong value for isDefaultCommand');
         assert.equal(result.context.telemetry.properties.isCommandRegexMatched, 'false', 'Wrong value for isCommandRegexMatched');
     });
+
+    test('Compose pull templates are selectable', async () => {
+        const result = await runWithCommandSetting(
+            [
+                {
+                    label: 'compose pull',
+                    template: 'compose pull test',
+                },
+            ],
+            [
+                {
+                    label: 'fallback',
+                    template: 'fallback',
+                },
+            ],
+            [],
+            ['test'],
+            'composePull'
+        );
+
+        assert.equal(result.command, 'compose pull test', 'Incorrect command selected');
+        assert.deepEqual(result.args, [], 'Incorrect args selected');
+    });
+
+    test('Compose pull subset templates are selectable', async () => {
+        const result = await runWithCommandSetting(
+            [
+                {
+                    label: 'compose pull subset',
+                    template: 'compose pull test-service',
+                },
+            ],
+            [
+                {
+                    label: 'fallback',
+                    template: 'fallback',
+                },
+            ],
+            [],
+            ['test'],
+            'composePullSubset'
+        );
+
+        assert.equal(result.command, 'compose pull test-service', 'Incorrect command selected');
+        assert.deepEqual(result.args, [], 'Incorrect args selected');
+    });
 });
 
 async function runWithCommandSetting(
     userTemplates: CommandTemplate[] | string,
     overriddenDefaultTemplates: CommandTemplate[],
     pickInputs: number[],
-    matchContext: string[]): Promise<{ command: string, context: IActionContext }> {
+    matchContext: string[],
+    templateCommand: TemplateCommand = 'build'):
+    Promise<{ command: string, args: string[], context: IActionContext }> {
 
     const tempContext: IActionContext = {
         telemetry: { properties: {}, measurements: {}, },
@@ -361,7 +410,7 @@ async function runWithCommandSetting(
         return { globalValue: userTemplates, defaultValue: overriddenDefaultTemplates };
     };
 
-    const cmdResult = await selectCommandTemplate(tempContext, 'build', matchContext, undefined, {}, picker, settingsGetter);
+    const cmdResult = await selectCommandTemplate(tempContext, templateCommand, matchContext, undefined, {}, picker, settingsGetter);
 
     if (pickInputs.length !== 0) {
         // selectCommandTemplate never asked for an input we have (fail)
@@ -370,6 +419,7 @@ async function runWithCommandSetting(
 
     return {
         command: cmdResult.command,
+        args: cmdResult.args?.map(a => typeof a === 'string' ? a : a.value) ?? [],
         context: tempContext,
     };
 }
