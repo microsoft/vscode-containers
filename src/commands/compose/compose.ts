@@ -77,6 +77,7 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
             const taskCRF = new TaskCommandRunnerFactory({
                 taskName: client.displayName,
                 workspaceFolder: folder,
+                close: true,
             });
 
             await taskCRF.getCommandRunner()(terminalCommand);
