@@ -71,7 +71,7 @@ export class ImagesTreeItem extends LocalRootTreeItemBase<DatedDockerImage, Imag
             // If `includeDangling` is true, the `dangling` option is not used
             // If `includeDangling` is false, explicitly exclude the images using `dangling` option `false`
             dangling: includeDangling ? undefined : false,
-            all: true,
+all: includeDangling,
         };
 
         const result = await ext.runWithDefaults(client =>
