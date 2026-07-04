@@ -66,9 +66,12 @@ export class ImagesTreeItem extends LocalRootTreeItemBase<DatedDockerImage, Imag
     public async getItems(context: IActionContext): Promise<DatedDockerImage[]> {
         const includeDangling = ext.context.globalState.get(danglingImagesMementoKey, false);
         const options: ListImagesCommandOptions = {
-            // Dangling images are included by default, so if `includeDangling` is true, use `dangling` option `undefined`
+            // Since Docker v29.0.0, dangling images are not included by default, so the `all` option was added
+            // The `all` option should also display intermediate images, but the default BuildKit does not create them
+            // If `includeDangling` is true, the `dangling` option is not used
             // If `includeDangling` is false, explicitly exclude the images using `dangling` option `false`
             dangling: includeDangling ? undefined : false,
+            all: true,
         };
 
         const result = await ext.runWithDefaults(client =>
