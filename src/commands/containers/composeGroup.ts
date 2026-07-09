@@ -102,11 +102,13 @@ async function getComposeGroupLabels(node: ContainerGroupTreeItem): Promise<{ [k
     return inspectResult?.[0]?.labels;
 }
 
+// Exported only for unit testing; not intended to be called outside this module.
 export function getComposeWorkingDirectory(labels: { [key: string]: string }): string | undefined {
     // The `com.docker.compose.project.working_dir` label gives the working directory in which to execute the compose command
     return labels['com.docker.compose.project.working_dir'] || undefined;
 }
 
+// Exported only for unit testing; not intended to be called outside this module.
 export function getComposeFiles(labels: { [key: string]: string }): string[] | undefined {
     // The `com.docker.compose.project.config_files` label gives all the compose files (within the working directory) used to up this container
 
@@ -118,11 +120,13 @@ export function getComposeFiles(labels: { [key: string]: string }): string[] | u
         ?.map(f => path.isAbsolute(f) ? f : path.parse(f).base);
 }
 
+// Exported only for unit testing; not intended to be called outside this module.
 export function getComposeProjectName(labels: { [key: string]: string }): string | undefined {
     // The `com.docker.compose.project` label gives the project name
     return labels['com.docker.compose.project'] || undefined;
 }
 
+// Exported only for unit testing; not intended to be called outside this module.
 export function getComposeEnvFile(labels: { [key: string]: string }): string | undefined {
     // The `com.docker.compose.project.environment_file` label gives the environment file absolute path
     return labels['com.docker.compose.project.environment_file'] || undefined;

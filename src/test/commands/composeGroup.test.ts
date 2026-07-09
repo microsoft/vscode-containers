@@ -52,6 +52,45 @@ suite("(unit) composeGroup", () => {
             assert.deepStrictEqual(result, ['docker-compose.base.yml', 'docker-compose.local.yml']);
         });
 
+        // Node's `path` resolves to `path.win32` only on Windows, so absolute/relative
+        // Windows-path handling in getComposeFiles is only correct on a Windows host
+        // (which is also the only host where a Windows docker engine emits such labels).
+        if (process.platform === 'win32') {
+            test("Returns all files when multiple absolute Windows config files are present", () => {
+                // Regression test for https://github.com/microsoft/vscode-containers/issues/522
+                const labels = {
+                    'com.docker.compose.project.config_files': 'C:\\path\\docker-compose.base.yml,C:\\path\\docker-compose.local.yml',
+                };
+
+                const result = getComposeFiles(labels);
+
+                assert.deepStrictEqual(result, [
+                    'C:\\path\\docker-compose.base.yml',
+                    'C:\\path\\docker-compose.local.yml',
+                ]);
+            });
+
+            test("Returns a single absolute Windows file unchanged", () => {
+                const labels = {
+                    'com.docker.compose.project.config_files': 'C:\\path\\docker-compose.yml',
+                };
+
+                const result = getComposeFiles(labels);
+
+                assert.deepStrictEqual(result, ['C:\\path\\docker-compose.yml']);
+            });
+
+            test("Reduces relative Windows paths to their basename", () => {
+                const labels = {
+                    'com.docker.compose.project.config_files': 'subdir\\docker-compose.base.yml,subdir\\docker-compose.local.yml',
+                };
+
+                const result = getComposeFiles(labels);
+
+                assert.deepStrictEqual(result, ['docker-compose.base.yml', 'docker-compose.local.yml']);
+            });
+        }
+
         test("Returns undefined when the config files label is absent", () => {
             const result = getComposeFiles({});
 
