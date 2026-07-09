@@ -20,12 +20,12 @@ requests, and answering questions about this repository.
 - **Shared platform packages** (prefer these over hand-rolling equivalents):
   - `@microsoft/vscode-azext-utils` — `IActionContext`, `AzureWizard`, `registerCommand`,
     `callWithTelemetryAndErrorHandling`, `UserCancelledError`, `context.ui.*` prompts.
-  - `@microsoft/vscode-processutils` — locating executables (`which`) and building command lines
-    with correct quoting. Do not reimplement PATH/PATHEXT lookup or manual shell quoting.
+  - `@microsoft/vscode-processutils` — locating executables and building command lines with correct
+    quoting (`composeArgs` / `withArg` / `withQuotedArg`, `Shell`, `spawnStreamAsync`). Do not
+    reimplement PATH/PATHEXT lookup or manual shell quoting.
   - `@microsoft/vscode-container-client` — the container runtime client (`ext.runWithDefaults`).
-  - `@microsoft/vscode-docker-registries` / `@microsoft/vscode-docker-extensibility` — registry
-    data providers and the canonical **image-name parser**. Reuse the parser instead of writing new
-    image-reference parsing.
+    Prefer the structured fields it returns over re-parsing raw CLI output or image references by hand.
+  - `@microsoft/vscode-docker-registries` — registry data providers.
   - `@microsoft/vscode-azext-azureauth` / `-azureutils` — Azure auth and resource helpers.
 
 ## Build, lint, and test
@@ -58,8 +58,8 @@ npm test           # vscode-test (mocha: suite()/test() with node assert)
   `package.json` use `%key%` placeholders resolved in `package.nls.json`. Never concatenate
   user-facing sentences; use `l10n.t` positional args (`{0}`, `{1}`) instead.
 - **Commands:** implement as `async function name(context: IActionContext, ...args)` and register
-  through the wrappers in `src/commands/registerCommands.ts` (`registerCommand`,
-  `registerLocalCommand`, `registerWorkspaceCommand`). These wrap telemetry and error handling —
+  through the wrappers in `src/commands/` (`registerCommand`, `registerLocalCommand`,
+  `registerWorkspaceCommand`). These wrap telemetry and error handling —
   do **not** call `vscode.commands.registerCommand` directly for user commands.
 - **Cancellation & prompts:** use `context.ui.showQuickPick` / `showInputBox` / `showWarningMessage`
   for interactive prompts; they throw `UserCancelledError` on cancel, so there's no need to check
@@ -68,10 +68,10 @@ npm test           # vscode-test (mocha: suite()/test() with node assert)
 - **Multi-step flows:** model gather/prompt/execute sequences as an `AzureWizard` with prompt and
   execute steps (each with `shouldPrompt` / `shouldExecute`) rather than long imperative functions.
 - **Process execution:** pass arguments as an array, not a single concatenated command-line string.
-  Build command lines with the `composeArgs` / `withArg` / `withNamedArg` / `withFlagArg` helpers from
-  `@microsoft/vscode-container-client` (and follow existing domain arg-builder methods like
-  `withDockerBuildArg` when adding new ones) rather than string concatenation. Reuse the existing
-  `parseDockerLikeImageName` for image-name parsing instead of writing new parsing.
+  Build command lines with the `composeArgs` / `withArg` / `withQuotedArg` helpers from
+  `@microsoft/vscode-processutils` rather than string concatenation, and follow the existing
+  domain arg-builder methods when adding new ones. Don't hand-roll image-reference parsing; prefer
+  the structured fields the container client already returns over re-parsing raw strings.
 - **Parsing external tool output:** validate output from external commands (e.g. `docker info`,
   MSBuild `getProperty`) with a `zod` schema following the existing record-validation patterns, rather
   than casting raw JSON. Remember MSBuild returns booleans as the strings `"true"`/`"false"` (use
@@ -126,8 +126,7 @@ preferences; the priority is correctness, safety, cross-platform behavior, and r
 
 - **No blocking I/O on the extension host.** Flag synchronous file reads/parsing of
   potentially large inputs (e.g. reading and `JSON.parse`-ing a whole blob). Require async I/O and a
-  size guard (reuse an existing limit setting such as `containers.oci.jsonDetectionMaxSizeMB` where
-  appropriate) so the UI can't freeze.
+  reasonable size guard so the UI can't freeze.
 - **Falsy-coercion bugs.** Reject `value || fallback` and `!!value` patterns that mishandle
   legitimate `0` or `''`. Example: `size || null` turns a real `size: 0` into `null`; a
   `!!requestOptions.body` guard skips valid empty bodies. Require explicit checks
@@ -184,7 +183,8 @@ preferences; the priority is correctness, safety, cross-platform behavior, and r
 ### Naming & constants
 
 - Follow the naming conventions already used for parallel concepts (e.g. a new command mirrors the
-  existing `XForYCommand` / `XForYCommandOptions` pair; a new arg builder mirrors `withDockerBuildArg`).
+  existing `XForYCommand` / `XForYCommandOptions` pair; a new arg builder mirrors the existing
+  `withArg` / `withQuotedArg` helpers).
 - Don't name a class `*Helper` unless it implements the `*Helper` interface. Prefer pure exported
   functions in a `*Utils` module over a stateless class. Name methods for what they do
   (`getConfiguredLabelGroup`, not `getLabel`, when the value is looked up from settings).
@@ -194,10 +194,10 @@ preferences; the priority is correctness, safety, cross-platform behavior, and r
 
 ### Reuse & architecture
 
-- Prefer existing helpers and platform packages over new implementations: `which` and command-line
-  building from `@microsoft/vscode-processutils`; the image-name parser from
-  `@microsoft/vscode-docker-extensibility`; `AzureWizard` and task/`executeAsTask` helpers from the
-  azext packages.
+- Prefer existing helpers and platform packages over new implementations: command-line building and
+  quoting from `@microsoft/vscode-processutils`; registry data providers from
+  `@microsoft/vscode-docker-registries`; `AzureWizard` and related helpers from the azext packages.
+  Don't re-parse image references by hand when the container client already exposes the parsed fields.
 - Flag dead code and duplicated flows (e.g. two near-identical install/prompt helpers). Recommend
   extracting a shared helper so the paths can't drift.
 - Ensure new user commands go through the extension's command-registration + telemetry wrappers.
