@@ -67,8 +67,20 @@ npm test           # vscode-test (mocha: suite()/test() with node assert)
   than surfacing them as failures.
 - **Multi-step flows:** model gather/prompt/execute sequences as an `AzureWizard` with prompt and
   execute steps (each with `shouldPrompt` / `shouldExecute`) rather than long imperative functions.
-- **Process execution:** pass arguments as an array, not a single concatenated command-line string;
-  use the command-line builders in `@microsoft/vscode-processutils` when a string is unavoidable.
+- **Process execution:** pass arguments as an array, not a single concatenated command-line string.
+  Build command lines with the `composeArgs` / `withArg` / `withNamedArg` / `withFlagArg` helpers from
+  `@microsoft/vscode-container-client` (and follow existing domain arg-builder methods like
+  `withDockerBuildArg` when adding new ones) rather than string concatenation. Reuse the existing
+  `parseDockerLikeImageName` for image-name parsing instead of writing new parsing.
+- **Parsing external tool output:** validate output from external commands (e.g. `docker info`,
+  MSBuild `getProperty`) with a `zod` schema following the existing record-validation patterns, rather
+  than casting raw JSON. Remember MSBuild returns booleans as the strings `"true"`/`"false"` (use
+  `z.stringbool()`), so don't coerce them with `!!` or a bare truthiness check.
+- **Overrides & polymorphism:** mark overriding methods with `override`, call `super.method(...)` from
+  overrides that extend base behavior, and prefer subclass polymorphism over `if (isSomeVariant)`
+  type-conditional branches in a base class.
+- **Visibility:** don't `export` functions, constants, or types that are only used within their own
+  file. File-level constants use PascalCase.
 - **Shared state:** cross-cutting singletons live on the `ext` namespace (`src/extensionVariables.ts`).
   Run container commands via `ext.runWithDefaults` / `ext.streamWithDefaults`.
 - **Fire-and-forget:** prefix intentionally un-awaited promises with `void` (matching existing code)
@@ -90,6 +102,25 @@ npm test           # vscode-test (mocha: suite()/test() with node assert)
 When reviewing pull requests, focus on high-signal issues. Every item below reflects feedback that
 has actually recurred on this repository's PRs. Do **not** nitpick style, formatting, or subjective
 preferences; the priority is correctness, safety, cross-platform behavior, and reuse.
+
+### Review scope & avoiding false positives
+
+- **Verify before flagging.** Confirm a claim against the actual API/types before raising it. Library
+  APIs used here are real even if unfamiliar (e.g. `z.stringbool()` exists in the installed Zod
+  version) — don't assert a method "doesn't exist" or "is deprecated" without checking the pinned
+  version. A confidently wrong comment is worse than none.
+- **Don't repeat a rejected point.** If a maintainer has explained why something is intentional, don't
+  restate the same objection.
+- **Respect intentional decisions.** Deliberate `TODO:` markers, by-design pre-release/alpha
+  dependencies, and narrow type-assertion workarounds for known upstream type inconsistencies (e.g.
+  `as never` around the CJS/ESM MCP SDK types, where the alternative is a worse `@ts-ignore`) are
+  accepted here. Flag them only with a concrete, correct problem.
+- **Keep style opinions optional.** The maintainers frequently say "keep whichever you prefer." Phrase
+  genuinely subjective suggestions as optional nits, and don't block on them.
+- **Keep diffs focused.** Call out unrelated whitespace, import-reordering, or editor-artifact changes
+  (e.g. a stray `.vscode/extensions/...` entry) and ask that they be reverted. Prefer fixing the root
+  cause of an ESLint warning (add `void`, correct the types) and removing the suppression over adding
+  new `eslint-disable` comments; flag leftover commented-out code.
 
 ### Correctness & robustness (highest priority)
 
@@ -122,6 +153,23 @@ preferences; the priority is correctness, safety, cross-platform behavior, and r
 - **Consistency of derived values.** Fields derived from different sources must agree — e.g. a
   `repositoryName` taken from a tree label must match the normalized/lowercased image name used
   elsewhere. Derive related values from the same normalized source.
+- **Locale-independent casing.** For machine/protocol values (OS names, architectures, plugin names,
+  registry hosts, image references) use `toLowerCase()` / `toUpperCase()`, never the locale-aware
+  `toLocaleLowerCase()` / `toLocaleUpperCase()` — locale casing (e.g. the Turkish dotless "ı") can
+  corrupt these comparisons.
+- **Handle every case.** When switching on a closed set (e.g. `os.arch()` values, a discriminated
+  union, a platform enum), handle all members; normalize case before the switch so the logic is
+  reusable. Don't silently fall through on an unmapped value.
+- **Concurrency-safe caching.** Cache per-operation derived state in local variables on the stack, not
+  on shared class members. Multiple debug sessions (e.g. compound launch configurations) reuse the
+  same helper instance, so an instance field computed for one run can leak into another. Conversely,
+  VS Code configuration lookups are cheap (~tens of microseconds) — read settings on demand instead of
+  caching them behind change listeners.
+- **Stream lifecycle.** When writing a stream to a file (e.g. building a tar archive) before consuming
+  it, await the stream's `finish`/`close` before reading/uploading the file, or you may act on a
+  partially written file.
+- **Array membership.** Use `array.includes(x)` or a `Set`'s `.has(x)`, not the `x in array` operator
+  (which tests indices/property names, not values).
 
 ### Types
 
@@ -129,6 +177,20 @@ preferences; the priority is correctness, safety, cross-platform behavior, and r
   `Partial` removes compile-time enforcement and makes refactors error-prone.
 - Understand `satisfies` (asserts the value is *narrower* than a type) vs `as` (asserts it is
   *wider*/compatible). Don't suggest `satisfies` where an `as` widening is actually required.
+- Prefer precise/narrow types over `string` where the set of values is known — e.g. return
+  `'amd64' | '386' | 'arm64' | ...` so callers get IntelliSense and exhaustiveness. Add `| string`
+  only to *intentionally* allow unknown values. Define shared types before the code that uses them.
+
+### Naming & constants
+
+- Follow the naming conventions already used for parallel concepts (e.g. a new command mirrors the
+  existing `XForYCommand` / `XForYCommandOptions` pair; a new arg builder mirrors `withDockerBuildArg`).
+- Don't name a class `*Helper` unless it implements the `*Helper` interface. Prefer pure exported
+  functions in a `*Utils` module over a stateless class. Name methods for what they do
+  (`getConfiguredLabelGroup`, not `getLabel`, when the value is looked up from settings).
+- Pull reused string literals and regexes into top-level constants defined with the others, and
+  reference existing constants (e.g. `ext.dockerHubRegistryDataProvider.label`) instead of hard-coding
+  duplicate strings like `'Docker Hub'`.
 
 ### Reuse & architecture
 
@@ -139,6 +201,31 @@ preferences; the priority is correctness, safety, cross-platform behavior, and r
 - Flag dead code and duplicated flows (e.g. two near-identical install/prompt helpers). Recommend
   extracting a shared helper so the paths can't drift.
 - Ensure new user commands go through the extension's command-registration + telemetry wrappers.
+- **Code locality / coupling.** Keep domain-specific helpers near their domain (e.g. Docker-specific
+  helpers under `runtimes/docker/utils`, task code under `src/tasks`) rather than in generic
+  `src/utils`. Keep client **contracts** (e.g. `ContainerClient.ts`) self-contained: define the types
+  the contract exposes in the contract file instead of importing them from a client implementation —
+  duplicate a small type if needed rather than coupling the contract to an implementation.
+
+### Extension activation & performance
+
+- Don't slow extension activation. Push non-critical diagnostics/background work off the activation
+  path and `void` it rather than awaiting.
+- Check the cheap condition before the expensive one — e.g. read a boolean setting before querying the
+  Docker context (which can take ~a second and talks to the engine).
+
+### package.json contributions & settings
+
+- Omit a setting's `"default"` when `undefined` is a meaningful "user hasn't chosen" sentinel (it's
+  still falsy but distinguishable from an explicit value).
+- Add settings that affect command execution to the `restrictedConfigurations` list so their
+  workspace-local values are ignored in untrusted workspaces.
+- When a command exists both on a tree item and in the command palette, hide the tree-item variant
+  from the palette (`"when": "never"` under `menus.commandPalette`) and reuse the existing `category`
+  so users don't see confusing duplicates.
+- Give each contribution its own `package.nls.json` key even when the value duplicates another.
+- User-facing terminology: spell terms out ("Software Bill of Materials"); use an acronym ("SBOM",
+  all caps) only where space is tight.
 
 ### Documentation & user-facing claims
 
@@ -146,6 +233,16 @@ preferences; the priority is correctness, safety, cross-platform behavior, and r
   `${workspaceFolder}` substitution), verify the code actually implements it. Otherwise require the
   claim be removed or the behavior implemented — and keep README and `package.nls.json` in sync.
 - User-facing strings must be localized via `l10n.t`.
+- Add a short explanatory comment for non-obvious code (e.g. mapping Node's `mipsel` to Go's `mipsle`,
+  or other surprising transformations). Use a JSDoc `@see` tag to point at an external reference when
+  one motivates the code.
+
+### Scaffolding
+
+- Don't bake host/platform-specific values into scaffolded output when they reduce portability; infer
+  them at runtime instead. When a scaffolded base-image tag is platform-specific, choose one broadly
+  compatible with supported OS/runtime versions (e.g. prefer `-ltsc2022` over `-ltsc2025`, which needs
+  Windows 11 24H2), and consider which runtime versions the tag actually exists for.
 
 ### Tests
 
