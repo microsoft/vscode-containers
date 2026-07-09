@@ -24,6 +24,8 @@ reviewing pull requests, treat them as follows.
   bugfix PRs unless explicitly asked to. Leave curation to the maintainers.
 
 ## Versioning (`package.json` / `package-lock.json`)
-- The extension `version` must increase **monotonically** across all channels, including
-  pre-releases. Never decrease it (e.g. `2.4.9-alpha` → `2.4.5`); marketplace publishing and upgrade
-  ordering reject lower versions. Version bumps are part of the maintainers' release process.
+- Published marketplace versions must increase **monotonically** across channels, including
+  pre-releases; marketplace publishing and upgrade ordering reject lower published versions.
+  In-repo `package.json` / `package-lock.json` versions may legitimately decrease between releases
+  when not publishing, so do not flag an in-repo version decrease by itself. Version bumps are part of
+  the maintainers' release process.

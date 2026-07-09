@@ -267,5 +267,7 @@ leave line-by-line review comments on their diffs:
 - Version bumps (`package.json` / `package-lock.json`), `CHANGELOG.md` curation, and `NOTICE.html`
   regeneration are part of the maintainers' release process. Ordinary feature/bugfix PRs generally
   should not touch these.
-- The `version` must increase monotonically across channels (including pre-releases). Flag any
-  version **decrease** (e.g. `2.4.9-alpha` → `2.4.5`) — marketplaces and upgrade ordering reject it.
+- Published marketplace versions must increase monotonically across channels (including
+  pre-releases); marketplaces and upgrade ordering reject lower published versions. In-repo
+  `package.json` / `package-lock.json` versions may legitimately decrease between releases when not
+  publishing, so do not flag an in-repo version decrease by itself.
