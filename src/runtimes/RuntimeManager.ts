@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClientIdentity } from '@microsoft/vscode-container-client';
+import { ClientIdentity, WslcClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
+import { isWindows } from '../utils/osUtils';
 import { TimeoutPromiseSource } from '../utils/promiseUtils';
 
 export abstract class RuntimeManager<TClient extends ClientIdentity> extends vscode.Disposable {
@@ -64,6 +65,10 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
     protected abstract getDefaultClient(): TClient;
 
     protected waitForClientToBeRegistered(clientId: string): Promise<TClient> {
+        if (clientId === WslcClient.ClientId && !isWindows()) {
+            return Promise.reject(new Error(vscode.l10n.t('WSLC is only available on Windows.')));
+        }
+
         if (this._runtimeClients.has(clientId)) {
             // If it's already registered, resolve immediately
             return Promise.resolve(this._runtimeClients.get(clientId));

@@ -1,3 +1,7 @@
+## 2.5.0 - Unreleased
+### Added
+* Added support for `wslc` (Windows Subsystem for Linux Container CLI) as an alternative container runtime. Windows-only.
+
 ## 2.4.5 - 28 May 2026
 ### Changed
 * Deployments to Azure App Service are now performed through the [Azure App Service extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), simplifying the deployment flow and reducing duplicated code. [#473](https://github.com/microsoft/vscode-containers/pull/473)

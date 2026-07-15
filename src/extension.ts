@@ -22,6 +22,7 @@ import { AutoConfigurableDockerClient } from './runtimes/clients/AutoConfigurabl
 import { AutoConfigurableDockerComposeClient } from './runtimes/clients/AutoConfigurableDockerComposeClient';
 import { AutoConfigurablePodmanClient } from './runtimes/clients/AutoConfigurablePodmanClient';
 import { AutoConfigurablePodmanComposeClient } from './runtimes/clients/AutoConfigurablePodmanComposeClient';
+import { AutoConfigurableWslcClient } from './runtimes/clients/AutoConfigurableWslcClient';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
 import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
@@ -34,6 +35,7 @@ import { AzExtLogOutputChannelWrapper } from './utils/AzExtLogOutputChannelWrapp
 import { logDockerEnvironment, logSystemInfo } from './utils/diagnostics';
 import { getLanguageClient } from './utils/lazyPackages';
 import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
+import { isWindows } from './utils/osUtils';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
 
 let dockerfileLanguageClient: LanguageClient;
@@ -198,6 +200,8 @@ function registerContainerClients(): void {
     const podmanClient = new AutoConfigurablePodmanClient();
     const dockerComposeClient = new AutoConfigurableDockerComposeClient();
     const podmanComposeClient = new AutoConfigurablePodmanComposeClient();
+    // WSLC is only available on Windows; only register the client on Windows hosts.
+    const wslcClient = isWindows() ? new AutoConfigurableWslcClient() : undefined;
 
     // Register the clients
     ext.context.subscriptions.push(
@@ -207,6 +211,12 @@ function registerContainerClients(): void {
         ext.orchestratorManager.registerRuntimeClient(podmanComposeClient),
     );
 
+    if (wslcClient) {
+        ext.context.subscriptions.push(
+            ext.runtimeManager.registerRuntimeClient(wslcClient),
+        );
+    }
+
     // Register an event to watch for changes to config, reconfigure if needed
     registerEvent('vscode-containers.command.changed', vscode.workspace.onDidChangeConfiguration, (actionContext: IActionContext, e: vscode.ConfigurationChangeEvent) => {
         actionContext.telemetry.suppressAll = true;
@@ -215,6 +225,7 @@ function registerContainerClients(): void {
         if (e.affectsConfiguration(`${configPrefix}.containerCommand`)) {
             dockerClient.reconfigure();
             podmanClient.reconfigure();
+            wslcClient?.reconfigure();
         }
 
         if (e.affectsConfiguration(`${configPrefix}.composeCommand`)) {

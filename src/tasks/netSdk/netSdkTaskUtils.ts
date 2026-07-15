@@ -3,9 +3,11 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions } from "@microsoft/vscode-container-client";
+import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions, WslcClient } from "@microsoft/vscode-container-client";
 import { CommandLineArgs, composeArgs, withArg, withNamedArg } from '@microsoft/vscode-processutils';
+import * as crypto from 'crypto';
 import * as os from 'os';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { configPrefix } from "../../constants";
 import { vsDbgInstallBasePath } from "../../debugging/netcore/VsDbgHelper";
@@ -32,7 +34,7 @@ export type RidCpuArchitecture =
 export const NetSdkRunTaskType = 'dotnet-container-sdk';
 const NetSdkDefaultImageTag = 'dev'; // intentionally default to dev tag for phase 1 of this feature
 
-export async function getNetSdkBuildCommand(): Promise<{ command: string, args: CommandLineArgs }> {
+export async function getNetSdkBuildCommand(archiveOutputPath?: string): Promise<{ command: string, args: CommandLineArgs }> {
     const args = composeArgs(
         withArg('publish'),
         withNamedArg('--os', await normalizeOsToRidOs()),
@@ -40,10 +42,30 @@ export async function getNetSdkBuildCommand(): Promise<{ command: string, args: 
         withArg('/t:PublishContainer'),
         withNamedArg('--configuration', 'Debug'),
         withNamedArg('-p:ContainerImageTag', NetSdkDefaultImageTag, { assignValue: true }),
-        withNamedArg('-p:LocalRegistry', getLocalRegistry(), { assignValue: true }),
+        // wslc can't be a .NET SDK `LocalRegistry` target. When an archive path is provided (wslc),
+        // publish the image to that tar so it can be loaded separately; otherwise load it directly
+        // into the runtime via `LocalRegistry`.
+        archiveOutputPath
+            ? withNamedArg('-p:ContainerArchiveOutputPath', archiveOutputPath, { assignValue: true })
+            : withNamedArg('-p:LocalRegistry', getLocalRegistry(), { assignValue: true }),
     )();
 
     return { command: 'dotnet', args: args };
+}
+
+/**
+ * Builds the command that loads the tar archive produced by {@link getNetSdkBuildCommand} into
+ * the selected runtime. Only needed for wslc, which cannot be targeted directly by the .NET SDK's
+ * `LocalRegistry` property.
+ */
+export async function getNetSdkLoadCommand(archiveInputPath: string): Promise<{ command: string, args: CommandLineArgs }> {
+    const client = await ext.runtimeManager.getClient();
+    const args = composeArgs(
+        withArg('load'),
+        withNamedArg('--input', archiveInputPath),
+    )();
+
+    return { command: client.commandName, args: args };
 }
 
 export async function getNetSdkRunCommand(imageName: string): Promise<{ command: string, args: CommandLineArgs }> {
@@ -95,10 +117,7 @@ export async function normalizeArchitectureToRidArchitecture(): Promise<RidCpuAr
  * See https://learn.microsoft.com/en-us/dotnet/core/containers/publish-configuration#localregistry
  */
 function getLocalRegistry(): 'Docker' | 'Podman' | undefined {
-    const config = vscode.workspace.getConfiguration(configPrefix);
-    const containerClientId = config.get<string>('containerClient', '');
-
-    switch (containerClientId) {
+    switch (getSelectedContainerClientId()) {
         case DockerClient.ClientId:
             return 'Docker';
         case PodmanClient.ClientId:
@@ -106,6 +125,30 @@ function getLocalRegistry(): 'Docker' | 'Podman' | undefined {
         default:
             return undefined;
     }
+}
+
+function getSelectedContainerClientId(): string {
+    const config = vscode.workspace.getConfiguration(configPrefix);
+    return config.get<string>('containerClient', '');
+}
+
+/**
+ * Whether the wslc runtime is the selected container client. wslc cannot be a .NET SDK
+ * `LocalRegistry` target, so the build/run task publishes to a tar archive and loads it instead.
+ */
+export function isWslcRuntimeSelected(): boolean {
+    return getSelectedContainerClientId() === WslcClient.ClientId;
+}
+
+/**
+ * A unique temp path for the image tar archive the .NET SDK emits for wslc (via
+ * `ContainerArchiveOutputPath`) and that the subsequent `wslc load` step reads. A GUID is
+ * included to avoid collisions between concurrent or repeated task runs. The caller is
+ * responsible for deleting the file once the load completes.
+ */
+export function getNetSdkImageArchivePath(imageName: string): string {
+    const safeName = getImageNameWithTag(imageName, NetSdkDefaultImageTag).replace(/[^a-z0-9_.-]/gi, '_');
+    return path.join(os.tmpdir(), `${safeName}-${crypto.randomUUID()}.tar`);
 }
 
 /**

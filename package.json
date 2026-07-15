@@ -2545,12 +2545,14 @@
                     "enum": [
                         "",
                         "com.microsoft.visualstudio.containers.docker",
-                        "com.microsoft.visualstudio.containers.podman"
+                        "com.microsoft.visualstudio.containers.podman",
+                        "com.microsoft.visualstudio.containers.wslc"
                     ],
                     "enumItemLabels": [
                         "Default",
                         "Docker",
-                        "Podman"
+                        "Podman",
+                        "WSLC (Windows only, preview)"
                     ]
                 },
                 "containers.orchestratorClient": {
@@ -3369,7 +3371,7 @@
         "@microsoft/vscode-azext-azureauth": "^6.0.0-alpha.8",
         "@microsoft/vscode-azext-azureutils": "^4.0.0",
         "@microsoft/vscode-azext-utils": "^4.1.0",
-        "@microsoft/vscode-container-client": "^0.5.3",
+        "@microsoft/vscode-container-client": "^0.6.0",
         "@microsoft/vscode-docker-registries": "^0.4.2",
         "@microsoft/vscode-processutils": "^0.2.1",
         "dayjs": "^1.11.7",
