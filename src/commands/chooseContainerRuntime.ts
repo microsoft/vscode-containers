@@ -4,13 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, IContainerOrchestratorClient, IContainersClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
+import { DockerClient, DockerComposeClient, IContainerOrchestratorClient, IContainersClient, PodmanClient, PodmanComposeClient, WslcClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
+import { isWindows } from '../utils/osUtils';
 
 interface IContainerRuntimePair {
     containerClient: IContainersClient;
-    orchestratorClient: IContainerOrchestratorClient;
+    // wslc has no compose/orchestrator counterpart, so the orchestrator half is optional.
+    orchestratorClient?: IContainerOrchestratorClient;
 }
 
 export async function chooseContainerRuntime(context: IActionContext): Promise<void> {
@@ -18,6 +20,12 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
         { containerClient: new DockerClient(), orchestratorClient: new DockerComposeClient() },
         { containerClient: new PodmanClient(), orchestratorClient: new PodmanComposeClient() },
     ];
+
+    // WSLC is Windows-only and has no orchestrator counterpart; selecting it leaves the
+    // orchestrator (compose) setting unchanged.
+    if (isWindows()) {
+        runtimePairOptions.push({ containerClient: new WslcClient() });
+    }
 
     const configuration = vscode.workspace.getConfiguration(configPrefix);
     const oldContainerClientValue = configuration.get<string | undefined>('containerClient');
@@ -38,12 +46,21 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
 
     context.telemetry.properties.selectedRuntime = selectedRuntimePair.data.containerClient.displayName;
 
-    if (oldContainerClientValue === selectedRuntimePair.data.containerClient.id && oldOrchestratorClientValue === selectedRuntimePair.data.orchestratorClient.id) {
+    const selectedContainerClient = selectedRuntimePair.data.containerClient;
+    const selectedOrchestratorClient = selectedRuntimePair.data.orchestratorClient;
+
+    const containerClientUnchanged = oldContainerClientValue === selectedContainerClient.id;
+    // If the selected runtime has no orchestrator, the orchestrator setting is left as-is.
+    const orchestratorClientUnchanged = !selectedOrchestratorClient || oldOrchestratorClientValue === selectedOrchestratorClient.id;
+
+    if (containerClientUnchanged && orchestratorClientUnchanged) {
         // If there's no change, we don't need to do anything
         return;
     } else {
-        await configuration.update('containerClient', selectedRuntimePair.data.containerClient.id, vscode.ConfigurationTarget.Global);
-        await configuration.update('orchestratorClient', selectedRuntimePair.data.orchestratorClient.id, vscode.ConfigurationTarget.Global);
+        await configuration.update('containerClient', selectedContainerClient.id, vscode.ConfigurationTarget.Global);
+        if (selectedOrchestratorClient) {
+            await configuration.update('orchestratorClient', selectedOrchestratorClient.id, vscode.ConfigurationTarget.Global);
+        }
     }
 
     const reload: vscode.MessageItem = {
