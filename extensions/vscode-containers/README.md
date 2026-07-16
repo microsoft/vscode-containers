@@ -96,7 +96,7 @@ The Container Tools extension supports multiple container runtime options, such 
 
 ## Contributing
 
-See [the contribution guidelines](CONTRIBUTING.md) for ideas and guidance on how to improve the extension. Thank you!
+See [the contribution guidelines](../../CONTRIBUTING.md) for ideas and guidance on how to improve the extension. Thank you!
 
 ### Code of Conduct
 
@@ -108,4 +108,4 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](../../LICENSE.md)
