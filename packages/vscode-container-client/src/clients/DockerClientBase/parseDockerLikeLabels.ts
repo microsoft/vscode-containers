@@ -11,9 +11,27 @@ import { Labels } from "../../contracts/ContainerClient";
  * @returns A {@link Labels} record
  */
 export function parseDockerLikeLabels(rawLabels: string): Labels {
-    return rawLabels.split(',').reduce((labels, labelPair) => {
-        const index = labelPair.indexOf('=');
-        labels[labelPair.substring(0, index)] = labelPair.substring(index + 1);
-        return labels;
-    }, {} as Labels);
+    const labels: Labels = {};
+    let lastKey: string | undefined;
+
+    for (const fragment of rawLabels.split(',')) {
+        const index = fragment.indexOf('=');
+
+        if (index < 0) {
+            // No '=' means this fragment is a continuation of the previous label's
+            // value, which itself contained a comma (e.g. multiple compose config
+            // files in `com.docker.compose.project.config_files`). `docker ... ls`
+            // joins labels with commas and does not escape commas inside values, so
+            // we stitch the value back together here.
+            if (lastKey !== undefined) {
+                labels[lastKey] += `,${fragment}`;
+            }
+            continue;
+        }
+
+        lastKey = fragment.substring(0, index);
+        labels[lastKey] = fragment.substring(index + 1);
+    }
+
+    return labels;
 }
