@@ -31,6 +31,8 @@ catalogs:
 overrides:
   serialize-javascript: ^7.0.0
   diff: ^8.0.3
+  vscode-tas-client: 0.1.84
+  tas-client: 0.2.33
 
 pnpmfileChecksum: sha256-62F6JNOgsjOrgmBL/2W8+9Ke3NeBxaPYQHEiXgIKLhE=
 
@@ -111,8 +113,8 @@ importers:
         specifier: ^10.0.0-next.19
         version: 10.1.0
       vscode-tas-client:
-        specifier: ^0.1.75
-        version: 0.1.86
+        specifier: 0.1.84
+        version: 0.1.84
       zod:
         specifier: ~4
         version: 4.4.3
@@ -2384,9 +2386,8 @@ packages:
     resolution: {integrity: sha1-2JFea3F/gDannYOcqUSBmLACsKc=}
     engines: {node: '>=18'}
 
-  tas-client@0.3.2:
-    resolution: {integrity: sha1-L90AILrvJ773K74HE9t7bUMSSjs=}
-    engines: {node: '>=22'}
+  tas-client@0.2.33:
+    resolution: {integrity: sha1-RRvxFKimR0gDDOQGirfQeZWEAuY=}
 
   terminal-link@4.0.0:
     resolution: {integrity: sha1-Xz5QMpQg+tl9B9Yk998YUdgpY/E=}
@@ -2562,8 +2563,8 @@ packages:
     resolution: {integrity: sha1-z+LwmW2d/UDThU54ayghYE3+wG0=}
     hasBin: true
 
-  vscode-tas-client@0.1.86:
-    resolution: {integrity: sha1-aoWUrDqU7XYw6Oq82C6FJoz/VmI=}
+  vscode-tas-client@0.1.84:
+    resolution: {integrity: sha1-kGvc/YyeHcBDIda8AzUYT5EZlo4=}
     engines: {vscode: ^1.85.0}
 
   whatwg-encoding@3.1.1:
@@ -3247,7 +3248,7 @@ snapshots:
       dayjs: 1.11.21
       html-to-text: 9.0.5
       semver: 7.8.5
-      vscode-tas-client: 0.1.86
+      vscode-tas-client: 0.1.84
     transitivePeerDependencies:
       - tslib
 
@@ -5206,7 +5207,7 @@ snapshots:
       minizlib: 3.1.0
       yallist: 5.0.0
 
-  tas-client@0.3.2: {}
+  tas-client@0.2.33: {}
 
   terminal-link@4.0.0:
     dependencies:
@@ -5384,9 +5385,9 @@ snapshots:
     dependencies:
       vscode-languageserver-protocol: 3.17.2
 
-  vscode-tas-client@0.1.86:
+  vscode-tas-client@0.1.84:
     dependencies:
-      tas-client: 0.3.2
+      tas-client: 0.2.33
 
   whatwg-encoding@3.1.1:
     dependencies:

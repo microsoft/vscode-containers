@@ -9,6 +9,13 @@ overrides:
   # Force a non-vulnerable version of these dependencies
   serialize-javascript: ^7.0.0
   diff: ^8.0.3
+  # Pin the tas-client stack to the last known-good versions. tas-client >=0.3.x ships a UMD
+  # dist/tas-client.min.js while declaring "type":"module"; esbuild then wraps the UMD with its
+  # __esm helper (no local `module`), so the UMD's `module.exports = factory()` clobbers the
+  # extension bundle's top-level exports and drops activateInternal, breaking activation.
+  # 0.2.33 has no "type" field (CommonJS) and bundles correctly.
+  vscode-tas-client: 0.1.84
+  tas-client: 0.2.33
 publicHoistPattern:
   # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
   # NOTE: `typescript` is deliberately NOT hoisted here. The build compiler is TypeScript 7 (installed
