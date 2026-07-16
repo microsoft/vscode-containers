@@ -9,6 +9,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { DockerComposeClient } from '../clients/DockerComposeClient/DockerComposeClient';
+import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
+import { NerdctlComposeClient } from '../clients/NerdctlComposeClient/NerdctlComposeClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { PodmanComposeClient } from '../clients/PodmanComposeClient/PodmanComposeClient';
 import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
@@ -17,7 +19,7 @@ import { IContainersClient } from '../contracts/ContainerClient';
 import { IContainerOrchestratorClient } from '../contracts/ContainerOrchestratorClient';
 import { ICommandRunnerFactory } from '../contracts/CommandRunner';
 import { wslifyPath } from '../utils/wslifyPath';
-import { ClientType, validateContainerExists } from './ContainersClientE2E.test';
+import { ClientType, KeepAliveShellCommand, validateContainerExists } from './ContainersClientE2E.test';
 
 // Modify the below options to configure the tests
 const clientTypeToTest: ClientType = (process.env.CONTAINER_CLIENT_TYPE || 'docker') as ClientType;
@@ -47,6 +49,12 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
         } else if (clientTypeToTest === 'podman') {
             containerClient = new PodmanClient(); // Used for validating that the containers are created and removed correctly
             client = new PodmanComposeClient();
+        } else if (clientTypeToTest === 'finch') {
+            containerClient = new NerdctlClient('finch', 'Finch', 'Runs container commands using the Finch CLI'); // Used for validating that the containers are created and removed correctly
+            client = new NerdctlComposeClient('finch', 'Finch Compose', 'Runs orchestrator commands using the Finch Compose CLI');
+        } else if (clientTypeToTest === 'nerdctl') {
+            containerClient = new NerdctlClient('nerdctl', 'Nerdctl', 'Runs container commands using the nerdctl CLI'); // Used for validating that the containers are created and removed correctly
+            client = new NerdctlComposeClient('nerdctl', 'Nerdctl Compose', 'Runs orchestrator commands using the nerdctl compose CLI');
         } else {
             throw new Error('Invalid clientTypeToTest');
         }
@@ -120,7 +128,8 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             );
 
             expect(response).to.be.a('string');
-            expect(response).to.include('Docker Compose version');
+            // Docker: "Docker Compose version", Podman: "podman-compose version", Finch/nerdctl: "nerdctl Compose version"
+            expect(response).to.match(/(?:Docker|nerdctl) Compose version|podman-compose version/i);
         });
     });
 
@@ -191,6 +200,11 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
 
     describe('Start', function () {
         before('Start', async function () {
+            // --no-start flag is not supported by nerdctl/finch compose
+            if (clientTypeToTest === 'finch') {
+                this.skip();
+            }
+
             // Create services but make sure they're stopped
             await defaultRunner.getCommandRunner()(
                 client.up({
@@ -204,6 +218,11 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
         });
 
         it('StartCommand', async function () {
+            // --no-start flag is not supported by nerdctl/finch compose
+            if (clientTypeToTest === 'finch') {
+                this.skip();
+            }
+
             // Start the services
             await defaultRunner.getCommandRunner()(
                 client.start({
@@ -369,6 +388,11 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
         });
 
         it('ConfigImages', async function () {
+            // --images flag is only supported by Docker Compose
+            if (clientTypeToTest !== 'docker') {
+                this.skip();
+            }
+
             const images = await defaultRunner.getCommandRunner()(
                 client.config({
                     files: [composeFilePath],
@@ -381,6 +405,11 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
         });
 
         it('ConfigProfiles', async function () {
+            // --profiles flag is only supported by Docker Compose
+            if (clientTypeToTest !== 'docker') {
+                this.skip();
+            }
+
             // The test docker-compose.yml doesn't define profiles, but the command should still work
             const profiles = await defaultRunner.getCommandRunner()(
                 client.config({
@@ -394,6 +423,11 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
         });
 
         it('ConfigVolumes', async function () {
+            // --volumes flag is only supported by Docker Compose
+            if (clientTypeToTest !== 'docker') {
+                this.skip();
+            }
+
             // The test docker-compose.yml doesn't define volumes, but the command should still work
             const volumes = await defaultRunner.getCommandRunner()(
                 client.config({
@@ -416,11 +450,11 @@ services:
     image: alpine:latest
     volumes:
       - test-volume:/test-volume
-    tty: true # Will keep the container running
+    entrypoint: ["sh", "-c", "${KeepAliveShellCommand}"] # Responds to SIGTERM
 
   backend:
     image: alpine:latest
-    entrypoint: ["tail", "-f", "/dev/null"] # Another way to keep the container running
+    entrypoint: ["sh", "-c", "${KeepAliveShellCommand}"] # Responds to SIGTERM
 
 volumes:
   test-volume:

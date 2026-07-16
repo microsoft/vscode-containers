@@ -96,14 +96,40 @@ export class ShellStreamCommandRunnerFactory<TOptions extends ShellStreamCommand
         const dataStream: stream.PassThrough = new stream.PassThrough();
         const innerGenerator = commandResponse.parseStream(dataStream, !!this.options.strict);
 
+        const localAbortController = new AbortController();
+        const externalCancellationDisposable = this.options.cancellationToken?.onCancellationRequested(() => localAbortController.abort());
+        const cancellationToken = CancellationTokenLike.fromAbortSignal(localAbortController.signal);
+
         // The process promise will be awaited only after the innerGenerator finishes
-        const processPromise = spawnStreamAsync(command, args, { ...this.options, stdOutPipe: dataStream });
+        const processPromise = spawnStreamAsync(command, args, {
+            ...this.options,
+            cancellationToken,
+            stdOutPipe: dataStream,
+        });
 
-        for await (const element of innerGenerator) {
-            yield element;
+        let streamFullyConsumed = false;
+
+        try {
+            for await (const element of innerGenerator) {
+                yield element;
+            }
+
+            streamFullyConsumed = true;
+            await processPromise;
+        } finally {
+            externalCancellationDisposable?.dispose();
+            localAbortController.abort();
+            dataStream.end();
+
+            // If the consumer stopped iteration early, ensure the child process is
+            // fully terminated so test runs don't hang on open handles. We just
+            // aborted it above, so any rejection here is expected and intentionally
+            // ignored; errors from normal completion are surfaced by the awaited
+            // processPromise above.
+            if (!streamFullyConsumed) {
+                await processPromise.catch(() => { /* ignore abort/termination errors during cleanup */ });
+            }
         }
-
-        await processPromise;
     }
 
     protected getCommandAndArgs(commandResponse: CommandResponseBase): { command: string, args: CommandLineArgs } {

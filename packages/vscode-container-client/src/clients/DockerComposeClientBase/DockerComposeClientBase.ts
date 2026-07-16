@@ -29,7 +29,7 @@ import {
 } from '../../contracts/ContainerOrchestratorClient';
 import { ConfigurableClient } from '../ConfigurableClient';
 
-function withCommonOrchestratorArgs(options: CommonOrchestratorCommandOptions): CommandLineCurryFn {
+export function withCommonOrchestratorArgs(options: CommonOrchestratorCommandOptions): CommandLineCurryFn {
     return composeArgs(
         withNamedArg('--file', options.files),
         withNamedArg('--env-file', options.environmentFile),
@@ -38,7 +38,7 @@ function withCommonOrchestratorArgs(options: CommonOrchestratorCommandOptions): 
     );
 }
 
-function withComposeArg(composeV2: boolean): CommandLineCurryFn {
+export function withComposeArg(composeV2: boolean): CommandLineCurryFn {
     // If using Compose V2, then add the `compose` argument at the beginning
     // That way, the command is `docker compose` instead of `docker-compose`
     return withArg(composeV2 ? 'compose' : undefined);
