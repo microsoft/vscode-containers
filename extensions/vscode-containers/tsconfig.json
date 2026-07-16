@@ -1,19 +1,8 @@
 {
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "module": "es2022",
-        "moduleResolution": "bundler",
-        "target": "es2022",
         "outDir": "out",
-        "lib": [
-            "es2022"
-        ],
-        "sourceMap": true,
         "rootDir": "src",
-        "strict": true, /* enable all strict type-checking options */
-        "alwaysStrict": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
         "noUnusedLocals": false, // ESLint takes care of this for us
         "noUnusedParameters": false, // ESLint takes care of this for us
         "noImplicitAny": false, // TODO ~14 errors

@@ -10,29 +10,30 @@
             "type": "extensionHost",
             "request": "launch",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--extensionDevelopmentPath=${workspaceFolder}/extensions/vscode-containers",
             ],
             "env": {
                 "DEBUGTELEMETRY": "1",
             },
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.{js,mjs,cjs}",
+                "${workspaceFolder}/extensions/vscode-containers/dist/**/*.{js,mjs,cjs}",
             ],
-            "preLaunchTask": "Watch: ESBuild",
+            "preLaunchTask": "Extension: ESBuild+Watch",
         },
         {
             "name": "Run Tests",
             "type": "extensionHost",
             "request": "launch",
-            "testConfiguration": "${workspaceFolder}/.vscode-test.mjs",
+            "testConfiguration": "${workspaceFolder}/extensions/vscode-containers/.vscode-test.mjs",
             "env": {
                 "DEBUGTELEMETRY": "1",
+                "TSX_TSCONFIG_PATH": "${workspaceFolder}/extensions/vscode-containers/tsconfig.json", // Necessary only for F5 to get tsx to allow decorators
             },
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.{js,mjs,cjs}",
-                "${workspaceFolder}/src/test/**/*.{ts,mts,cts}", // We are using TSX so out files *are* the source files
+                "${workspaceFolder}/extensions/vscode-containers/dist/**/*.{js,mjs,cjs}",
+                "${workspaceFolder}/extensions/vscode-containers/src/test/**/*.{ts,mts,cts}", // We are using TSX so out files *are* the source files
             ],
-            "preLaunchTask": "Watch: ESBuild",
+            "preLaunchTask": "Extension: ESBuild+Watch",
         },
     ],
 }
