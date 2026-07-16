@@ -33,7 +33,7 @@ export class AlternateYamlLanguageServiceClientFeature implements StaticFeature,
                 basicCompletions: redhat || docker,
                 advancedCompletions: false, // The other extensions do not have advanced completions for Compose docs
                 hover: redhat || docker, // Compose spec has descriptions
-                imageLinks: docker, // Docker's extension supports Docker Hub, GHCR, MAR, and Quay.io
+                imageLinks: false, // Keep Compose image links local so private registries aren't incorrectly linked to Docker Hub (see #179)
                 serviceStartupCodeLens: false, // The other extensions do not provide any code lens
                 formatting: false, // The other extensions do support formatting, but we enable it regardless so that an explicitly-chosen formatter always works
             };
