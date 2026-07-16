@@ -42,18 +42,13 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
         }
 
         this._runtimeClients.set(client.id, client);
+        this.reconfigureClient(client);
 
         this.runtimeClientRegisteredEmitter.fire(client);
-
-        this.reconfigureClient(client);
 
         return new vscode.Disposable(() => {
             this._runtimeClients.delete(client.id);
         });
-    }
-
-    public get runtimeClients(): Array<TClient> {
-        return Array.from(this._runtimeClients.values());
     }
 
     public async getClient(): Promise<TClient> {
@@ -89,7 +84,7 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
         client.commandName = this.getOverrideSettingValue() || defaultCommandName;
     }
 
-    protected getOverrideSettingValue(): string | undefined {
+    private getOverrideSettingValue(): string | undefined {
         return vscode.workspace.getConfiguration(configPrefix).get<string | undefined>(this.overrideCommandSettingName);
     }
 
