@@ -18,6 +18,7 @@ const from = [
 
 const to = [
     './extensions/vscode-containers',
+    './extensions/vscode-docker',
 ];
 
 for (const fromFile of from) {

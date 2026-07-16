@@ -144,6 +144,12 @@ importers:
         specifier: 'catalog:'
         version: 4.23.0
 
+  extensions/vscode-docker:
+    devDependencies:
+      '@vscode/vsce':
+        specifier: 'catalog:'
+        version: 3.9.2
+
 packages:
 
   '@azu/format-text@1.0.2':
