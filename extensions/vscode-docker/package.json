@@ -18,22 +18,23 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/microsoft/vscode-docker"
+        "url": "https://github.com/microsoft/vscode-containers"
     },
-    "homepage": "https://github.com/Microsoft/vscode-docker/blob/main/README.md",
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/extensions/vscode-docker/README.md",
     "engines": {
         "vscode": "^1.92.0"
     },
     "scripts": {
         "build": "",
-        "package": "vsce package",
+        "package": "vsce package --no-dependencies",
         "lint": "",
-        "test": ""
+        "test": "",
+        "clean": "node ../../scripts/clean.mjs"
     },
     "extensionDependencies": [
         "ms-azuretools.vscode-containers"
     ],
     "devDependencies": {
-        "@vscode/vsce": "^3.9.1"
+        "@vscode/vsce": "catalog:"
     }
 }

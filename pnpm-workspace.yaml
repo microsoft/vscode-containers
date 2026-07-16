@@ -1,5 +1,6 @@
 packages:
   - extensions/vscode-containers
+  - extensions/vscode-docker
   # packages/* will be added in a later PR as the other repos are imported
 allowBuilds:
   "@vscode/vsce-sign": true

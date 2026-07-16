@@ -7,6 +7,7 @@ This is the repository for the Container Tools for Visual Studio Code extension.
 ## Extensions
 
 * [Container Tools for Visual Studio Code](extensions/vscode-containers/README.md) -- the VS Code extension for building, managing, and deploying containerized applications.
+* [Docker Extension Pack](extensions/vscode-docker/README.md) -- a thin extension pack that installs Container Tools, so existing users of the former "Docker" extension are migrated forward.
 
 ## Packages
 
