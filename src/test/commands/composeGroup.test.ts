@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import assert from 'assert';
+import { expect } from 'chai';
 import { getComposeEnvFile, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory } from '../../commands/containers/composeGroup';
 
 suite("(unit) composeGroup", () => {
@@ -16,7 +16,7 @@ suite("(unit) composeGroup", () => {
 
             const result = getComposeFiles(labels);
 
-            assert.deepStrictEqual(result, [
+            expect(result).to.deep.equal([
                 '/abs/path/docker-compose.base.yml',
                 '/abs/path/docker-compose.local.yml',
             ]);
@@ -29,7 +29,7 @@ suite("(unit) composeGroup", () => {
 
             const result = getComposeFiles(labels);
 
-            assert.deepStrictEqual(result, ['/a/one.yml', '/a/two.yml', '/a/three.yml']);
+            expect(result).to.deep.equal(['/a/one.yml', '/a/two.yml', '/a/three.yml']);
         });
 
         test("Returns a single absolute file unchanged", () => {
@@ -39,7 +39,7 @@ suite("(unit) composeGroup", () => {
 
             const result = getComposeFiles(labels);
 
-            assert.deepStrictEqual(result, ['/abs/path/docker-compose.yml']);
+            expect(result).to.deep.equal(['/abs/path/docker-compose.yml']);
         });
 
         test("Reduces relative paths to their basename", () => {
@@ -49,7 +49,7 @@ suite("(unit) composeGroup", () => {
 
             const result = getComposeFiles(labels);
 
-            assert.deepStrictEqual(result, ['docker-compose.base.yml', 'docker-compose.local.yml']);
+            expect(result).to.deep.equal(['docker-compose.base.yml', 'docker-compose.local.yml']);
         });
 
         // Node's `path` resolves to `path.win32` only on Windows, so absolute/relative
@@ -64,7 +64,7 @@ suite("(unit) composeGroup", () => {
 
                 const result = getComposeFiles(labels);
 
-                assert.deepStrictEqual(result, [
+                expect(result).to.deep.equal([
                     'C:\\path\\docker-compose.base.yml',
                     'C:\\path\\docker-compose.local.yml',
                 ]);
@@ -77,7 +77,7 @@ suite("(unit) composeGroup", () => {
 
                 const result = getComposeFiles(labels);
 
-                assert.deepStrictEqual(result, ['C:\\path\\docker-compose.yml']);
+                expect(result).to.deep.equal(['C:\\path\\docker-compose.yml']);
             });
 
             test("Reduces relative Windows paths to their basename", () => {
@@ -87,14 +87,14 @@ suite("(unit) composeGroup", () => {
 
                 const result = getComposeFiles(labels);
 
-                assert.deepStrictEqual(result, ['docker-compose.base.yml', 'docker-compose.local.yml']);
+                expect(result).to.deep.equal(['docker-compose.base.yml', 'docker-compose.local.yml']);
             });
         }
 
         test("Returns undefined when the config files label is absent", () => {
             const result = getComposeFiles({});
 
-            assert.strictEqual(result, undefined);
+            expect(result).to.be.undefined;
         });
     });
 
@@ -106,21 +106,21 @@ suite("(unit) composeGroup", () => {
         };
 
         test("getComposeProjectName returns the project name", () => {
-            assert.strictEqual(getComposeProjectName(labels), 'myproject');
+            expect(getComposeProjectName(labels)).to.equal('myproject');
         });
 
         test("getComposeWorkingDirectory returns the working directory", () => {
-            assert.strictEqual(getComposeWorkingDirectory(labels), '/abs/path');
+            expect(getComposeWorkingDirectory(labels)).to.equal('/abs/path');
         });
 
         test("getComposeEnvFile returns the environment file", () => {
-            assert.strictEqual(getComposeEnvFile(labels), '/abs/path/.env.local');
+            expect(getComposeEnvFile(labels)).to.equal('/abs/path/.env.local');
         });
 
         test("Accessors return undefined when their label is absent", () => {
-            assert.strictEqual(getComposeProjectName({}), undefined);
-            assert.strictEqual(getComposeWorkingDirectory({}), undefined);
-            assert.strictEqual(getComposeEnvFile({}), undefined);
+            expect(getComposeProjectName({})).to.be.undefined;
+            expect(getComposeWorkingDirectory({})).to.be.undefined;
+            expect(getComposeEnvFile({})).to.be.undefined;
         });
     });
 });
