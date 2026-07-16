@@ -4,25 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * Repo-level postinstall hook. Copies the root `LICENSE.md` and `NOTICE.html`
- * into each publishable workspace so their published/packaged artifacts include
- * the correct legal files without having to maintain per-package copies.
+ * Repo-level postinstall hook. Copies the root legal files into each publishable
+ * workspace so their published/packaged artifacts include the correct legal files
+ * without having to maintain per-package copies.
+ *
+ * The set of files differs per package: the main extension ships real code, so it
+ * needs both the license and the third-party NOTICE. The Docker extension pack
+ * ships no code, so it only needs the license.
  */
 
 import * as fs from 'fs/promises';
 
-const from = [
-    './LICENSE.md',
-    './NOTICE.html',
-];
+const copies = {
+    './extensions/vscode-containers': ['./LICENSE.md', './NOTICE.html'],
+    './extensions/vscode-docker': ['./LICENSE.md'],
+};
 
-const to = [
-    './extensions/vscode-containers',
-    './extensions/vscode-docker',
-];
-
-for (const fromFile of from) {
-    for (const toDir of to) {
+for (const [toDir, files] of Object.entries(copies)) {
+    for (const fromFile of files) {
         await fs.copyFile(fromFile, `${toDir}/${fromFile}`);
     }
 }
