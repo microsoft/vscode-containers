@@ -1,0 +1,54 @@
+packages:
+  - extensions/vscode-containers
+  # packages/* will be added in a later PR as the other repos are imported
+allowBuilds:
+  "@vscode/vsce-sign": true
+  esbuild: true
+  keytar: true
+overrides:
+  # Force a non-vulnerable version of these dependencies
+  serialize-javascript: ^7.0.0
+  diff: ^8.0.3
+  # Pin the tas-client stack to the last known-good versions. tas-client >=0.3.x ships a UMD
+  # dist/tas-client.min.js while declaring "type":"module"; esbuild then wraps the UMD with its
+  # __esm helper (no local `module`), so the UMD's `module.exports = factory()` clobbers the
+  # extension bundle's top-level exports and drops activateInternal, breaking activation.
+  # 0.2.33 has no "type" field (CommonJS) and bundles correctly.
+  vscode-tas-client: 0.1.84
+  tas-client: 0.2.33
+publicHoistPattern:
+  # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
+  # NOTE: `typescript` is deliberately NOT hoisted here. The build compiler is TypeScript 7 (installed
+  # under the `@typescript/native` alias in package.json), which has no compiler API; hoisting a
+  # `typescript` package would let typescript-eslint resolve its peer to the API-less TS 7 and break
+  # linting. Once TS 7.1 ships its API and typescript-eslint adopts it, `typescript` can be declared/
+  # hoisted normally again.
+  - "*eslint*"
+  - "mocha"
+  - "@types/mocha"
+  - "chai"
+  - "@types/chai"
+pnpmfile: scripts/pnpmfile.mjs
+# The Azure Artifacts proxy sits behind a load balancer that stamps a random backend shard
+# host (ms-feed-N.pkgs.visualstudio.com) into each package's dist.tarball. pnpm's supply-chain
+# verification pass re-derives the expected tarball URL from the registry and compares it to
+# that shard host, failing with ERR_PNPM_TARBALL_URL_MISMATCH. The shard host is
+# non-deterministic, so no lockfile content can satisfy the check. trustLockfile skips the
+# re-verification pass (minimumReleaseAge / trustPolicy / tarball URL) for the loaded lockfile;
+# those policies are still applied during resolution when the lockfile is (re)generated.
+trustLockfile: true
+supportedArchitectures:
+  os:
+    - current
+  cpu:
+    - current
+  libc:
+    - current
+catalog:
+  "@vscode/extension-telemetry": ^1.5.2
+  "@vscode/test-cli": ^0.0.12
+  "@vscode/test-electron": ^3.0.0
+  "@vscode/vsce": ^3.9.2
+  esbuild: ^0.28.1
+  esbuild-plugin-copy: ^2.1.1
+  tsx: ^4.22.4
