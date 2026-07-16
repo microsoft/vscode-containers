@@ -12,13 +12,17 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
     }
 
     protected override reconfigureClient(client: IContainerOrchestratorClient): void {
-        const commandName = this.getOverrideSettingValue() || client.defaultCommandName;
+        // Sets `commandName` to the override setting value or the client's default
+        super.reconfigureClient(client);
 
         if (isComposeV2ableOrchestratorClient(client)) {
-            // TODO: impl, normalizing `docker-compose` to `docker compose` and so on
+            // Compose V1 (`docker-compose`) is no longer supported, so these clients always run in V2 mode,
+            // where `compose` is appended as the first argument to the base command (e.g. `docker compose`).
             client.composeV2 = true;
-        } else {
-            client.commandName = commandName;
+
+            // Normalize a V1-style (`docker-compose`) or explicit V2 (`docker compose`) override down to the
+            // base command, since composeV2 appends `compose` itself and we'd otherwise get `docker-compose compose`.
+            client.commandName = client.commandName.replace(/[-\s]+compose\s*$/i, '');
         }
     }
 }
