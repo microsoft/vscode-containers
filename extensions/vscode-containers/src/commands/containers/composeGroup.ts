@@ -49,10 +49,12 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
         });
     }
 
-    const workingDirectory = getComposeWorkingDirectory(node);
-    const orchestratorFiles = getComposeFiles(node);
-    const projectName = getComposeProjectName(node);
-    const envFile = getComposeEnvFile(node);
+    const labels = await getComposeGroupLabels(node);
+
+    const workingDirectory = labels && getComposeWorkingDirectory(labels);
+    const orchestratorFiles = labels && getComposeFiles(labels);
+    const projectName = labels && getComposeProjectName(labels);
+    const envFile = labels && getComposeEnvFile(labels);
 
     if (!workingDirectory || !orchestratorFiles || !projectName) {
         context.errorHandling.suppressReportIssue = true;
@@ -75,32 +77,57 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     await taskCRF.getCommandRunner()(composeCommandCallback(client, options));
 }
 
-function getComposeWorkingDirectory(node: ContainerGroupTreeItem): string | undefined {
-    // Find a container with the `com.docker.compose.project.working_dir` label, which gives the working directory in which to execute the compose command
-    const container = (node.ChildTreeItems as ContainerTreeItem[]).find(c => c.labels?.['com.docker.compose.project.working_dir']);
-    return container?.labels?.['com.docker.compose.project.working_dir'];
+/**
+ * Gets the accurate label map for a compose container group.
+ *
+ * The tree's list-derived labels (from `docker container ls`) join all labels into
+ * a single comma-separated string with no escaping, which corrupts any label *value*
+ * that itself contains commas--most importantly `com.docker.compose.project.config_files`
+ * when a project was started with multiple `-f` files. The label *keys* survive that
+ * parsing, so we can still locate a container in the group from the list labels, but we
+ * must `inspect` it to recover the accurate, verbatim label values (compose files, etc).
+ */
+async function getComposeGroupLabels(node: ContainerGroupTreeItem): Promise<{ [key: string]: string } | undefined> {
+    // Find a container in the group that carries the compose project config files label
+    const container = (node.ChildTreeItems as ContainerTreeItem[]).find(c => c.labels?.['com.docker.compose.project.config_files']);
+
+    if (!container) {
+        return undefined;
+    }
+
+    const inspectResult = await ext.runWithDefaults(client =>
+        client.inspectContainers({ containers: [container.containerId] })
+    );
+
+    return inspectResult?.[0]?.labels;
 }
 
-function getComposeFiles(node: ContainerGroupTreeItem): string[] | undefined {
-    // Find a container with the `com.docker.compose.project.config_files` label, which gives all the compose files (within the working directory) used to up this container
-    const container = (node.ChildTreeItems as ContainerTreeItem[]).find(c => c.labels?.['com.docker.compose.project.config_files']);
+// Exported only for unit testing; not intended to be called outside this module.
+export function getComposeWorkingDirectory(labels: { [key: string]: string }): string | undefined {
+    // The `com.docker.compose.project.working_dir` label gives the working directory in which to execute the compose command
+    return labels['com.docker.compose.project.working_dir'] || undefined;
+}
+
+// Exported only for unit testing; not intended to be called outside this module.
+export function getComposeFiles(labels: { [key: string]: string }): string[] | undefined {
+    // The `com.docker.compose.project.config_files` label gives all the compose files (within the working directory) used to up this container
 
     // Paths may be subpaths, but working dir generally always directly contains the config files, so unless the file is already absolute, let's cut off the subfolder and get just the file name
     // (In short, the working dir may not be the same as the cwd when the docker-compose up command was called, BUT the files are relative to that cwd)
     // Note, it appears compose v2 *always* uses absolute paths, both for this and `working_dir`
-    return container?.labels?.['com.docker.compose.project.config_files']
+    return labels['com.docker.compose.project.config_files']
         ?.split(',')
         ?.map(f => path.isAbsolute(f) ? f : path.parse(f).base);
 }
 
-function getComposeProjectName(node: ContainerGroupTreeItem): string | undefined {
-    // Find a container with the `com.docker.compose.project` label, which gives the project name
-    const container = (node.ChildTreeItems as ContainerTreeItem[]).find(c => c.labels?.['com.docker.compose.project']);
-    return container?.labels?.['com.docker.compose.project'];
+// Exported only for unit testing; not intended to be called outside this module.
+export function getComposeProjectName(labels: { [key: string]: string }): string | undefined {
+    // The `com.docker.compose.project` label gives the project name
+    return labels['com.docker.compose.project'] || undefined;
 }
 
-function getComposeEnvFile(node: ContainerGroupTreeItem): string | undefined {
-    // Find a container with the `com.docker.compose.project.environment_file` label, which gives the environment file absolute path
-    const container = (node.ChildTreeItems as ContainerTreeItem[]).find(c => c.labels?.['com.docker.compose.project.environment_file']);
-    return container?.labels?.['com.docker.compose.project.environment_file'];
+// Exported only for unit testing; not intended to be called outside this module.
+export function getComposeEnvFile(labels: { [key: string]: string }): string | undefined {
+    // The `com.docker.compose.project.environment_file` label gives the environment file absolute path
+    return labels['com.docker.compose.project.environment_file'] || undefined;
 }
