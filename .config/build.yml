@@ -29,6 +29,14 @@ variables:
   - template: azdo-pipelines/azcode.variables.yml@azExtTemplates
   - name: TeamName
     value: "Container Tools Team" # Required for MicroBuild signing and telemetry
+  # Corepack downloads the pnpm binary itself before any feed auth is set up, and
+  # its default source (registry.npmjs.org) is unreachable from our agents. We
+  # instead pin the pnpm tarball to our anonymous proxy feed via a URL in
+  # package.json's "packageManager" field; Corepack only accepts a custom URL
+  # when this flag is set. (COREPACK_NPM_REGISTRY doesn't help: the proxy doesn't
+  # serve the per-version manifest endpoint Corepack needs to resolve a tarball.)
+  - name: COREPACK_ENABLE_UNSAFE_CUSTOM_URLS
+    value: "1"
 
 extends:
   template: azdo-pipelines/1es-mb-main.yml@azExtTemplates # Use the main build template
