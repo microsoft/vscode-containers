@@ -31,7 +31,7 @@ if (result) {
 ```
 
 ## License
-[MIT](LICENSE.md)
+[MIT](../../LICENSE.md)
 
 ## Contributing
 

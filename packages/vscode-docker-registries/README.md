@@ -23,7 +23,7 @@ You should _not_ implement a registry provider extension if:
 1. In your extension's `activate()` method, call into the Container Tools extension to register your provider. [Learn more](https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-docker-registries/src/contracts/DockerExtension.ts)
 
 ## License
-[MIT](LICENSE.md)
+[MIT](../../LICENSE.md)
 
 ## Contributing
 

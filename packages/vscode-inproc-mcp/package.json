@@ -13,9 +13,6 @@
         "url": "https://github.com/microsoft/vscode-containers/issues"
     },
     "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-inproc-mcp/README.md",
-    "publishConfig": {
-        "access": "public"
-    },
     "exports": {
         ".": {
             "import": "./dist/esm/index.js",
