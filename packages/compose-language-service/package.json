@@ -7,7 +7,8 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/microsoft/vscode-containers.git"
+        "url": "git+https://github.com/microsoft/vscode-containers.git",
+        "directory": "packages/compose-language-service"
     },
     "bugs": {
         "url": "https://github.com/microsoft/vscode-containers/issues"
@@ -53,8 +54,6 @@
     },
     "devDependencies": {
         "@microsoft/vscode-azext-eng": "^1.1.0-alpha.3",
-        "@types/chai-as-promised": "8.0.2",
-        "chai-as-promised": "8.0.2",
         "vscode-jsonrpc": "^9.0.1",
         "vscode-languageclient": "catalog:",
         "vscode-languageserver-types": "^3.18.0"

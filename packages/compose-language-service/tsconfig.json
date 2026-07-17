@@ -5,12 +5,10 @@
         "rootDir": "src",
         "inlineSources": false,
         // `types` arrays do not merge across `extends`; repeat `node` (from the base)
-        // alongside the extra ambient types this package needs (mocha for its tests,
-        // vscode for the client-side features under src/vscode).
+        // alongside `mocha` for this package's tests.
         "types": [
             "node",
             "mocha",
-            "vscode",
         ],
     },
     "exclude": [
