@@ -27,8 +27,13 @@ Judge each finding on two axes and only surface what earns its place:
   convention, and cite the exact helper/pattern the author should use instead. If you are
   guessing, downgrade it to an open question or drop it.
 
-Prefer **high signal, low noise**. A short review that names three real problems beats a long
-one padded with speculation.
+Prefer **high signal, low noise** -- but "low noise" means *no speculation*, not *few
+findings*. Be **thorough on the changed lines**: surface every substantive issue you can ground
+in the diff or a concrete convention, not just the top three. Maintainers review closely and
+raise many small, real points per PR; a review that grounds ten real issues is better than one
+that stops at three and leaves grounded problems uncommented. The bar for including a point is
+confidence, not scarcity: if you can name the exact line and the concrete fix, include it; if
+you are guessing, drop it or make it an open question.
 
 ## Higher scrutiny for agent-authored PRs
 
@@ -57,6 +62,18 @@ settings, or tests.
 ## Repo-specific patterns
 
 Apply these. Cite the concrete helper or convention the author should use.
+
+### Reuse before adding (check first)
+- This is the **single most common** maintainer request. Before accepting a new helper,
+  constant, URL, type, or utility the PR introduces, check whether one already exists and should
+  be reused instead: an existing constant/URL (e.g. a shared `dockerHubUrl`, `learnMore`
+  property), an existing helper doing the same job (e.g. `fse.readJSON` instead of `readFile` +
+  `JSON.parse`, `path.resolve`/`path.normalize` instead of hand-rolled separator logic, an
+  existing `addVolumeWithoutConflicts`-style helper), or an existing base class the new code
+  should extend rather than duplicate. Name the concrete existing thing to reuse.
+- Keep the public/extension **API surface minimal**: flag new parameters, options, or config
+  fields the caller did not ask for and that nothing yet consumes. Add options only when a real
+  caller needs them.
 
 ### Localization
 - **Every user-facing string must be localized** with `vscode.l10n.t('...')`. Flag any
@@ -151,11 +168,53 @@ Apply these. Cite the concrete helper or convention the author should use.
   build breaks.
 - Consider cmd, PowerShell, and git bash behavior on Windows.
 
+### Contracts / client / registry packages (imported extensibility)
+The monorepo is importing `vscode-docker-extensibility` (the `@microsoft/vscode-container-client`
+and `@microsoft/vscode-docker-registries` packages) and `compose-language-service`. For changes
+under those packages, apply these -- they are the patterns their maintainers raise most:
+- **Self-contained public contracts.** Define the types a contract exposes in the contract file;
+  do not couple a public API to implementation-only types. Re-export intended public symbols from
+  the package entrypoint, and share cross-cutting errors (e.g. `CancellationError`,
+  `CommandNotSupportedError`) rather than redefining them. Duplicate a small type before coupling
+  a contract to an implementation.
+- **CancellationToken ownership.** Public APIs should accept a `CancellationToken`, not a
+  `CancellationTokenSource` -- the caller that creates the `CTS` owns cancellation and disposal.
+  Long/streaming operations (including generators and parsers) should take and honor a token and
+  throw `CancellationError` on cancel.
+- **Schema-based parsing.** Validate and normalize external CLI/registry JSON with shared `zod`
+  schemas (`preprocess` around `JSON.parse`, `transform` for normalization) instead of ad-hoc
+  `JSON.parse` plus manual conversion; remember MSBuild returns `"true"`/`"false"` strings
+  (`z.stringbool()`), and fields like `Created` can be null.
+- **Command-runner stream lifecycle.** Runners that pipe or generate process output must drain or
+  close every stream copy (pipe copies cause back-pressure), await the process, and propagate a
+  process failure as a thrown error rather than silently returning empty output.
+- **Image/tag modeling.** Represent image references with the original text plus parsed optional
+  parts; treat Docker sentinels like `<none>` as missing data, and cover parser edge cases
+  (`alpine:5` is a tag, not a registry host) with tests. Prefer the client's parsed fields over
+  re-parsing references by hand.
+- **Registry connection state.** Connect/disconnect flows must keep persisted IDs, caches,
+  tree-provider state, and stored credentials in sync; re-adding a registry should be idempotent
+  (overwrite), and removal should clean up the stored session.
+- **Package export loadability.** Ensure an exported entrypoint's module format matches the
+  package `type` (no ESM `.js` behind a CommonJS package), and that everything a public
+  entrypoint imports is a real `dependency`/`peerDependency`, not a `devDependency`.
+
+### Dependencies / manifests
+- Do not change dependencies, the root manifest, or the lockfile unless the owning package
+  actually needs it; flag spurious dependency additions and stray root `devDependencies`.
+- Keep dependency bumps scoped to the intended package, and verify new deps satisfy the Node
+  engine in `.nvmrc` (e.g. a package requiring a newer Node than the repo targets).
+
 ### Comments / docs / tests
-- Comments explain **why**, not what; add a source link when porting logic from elsewhere.
+- Comments explain **why**, not what; add a source link (permalink) when porting logic from
+  elsewhere.
 - Replace "what does `true` mean" comments with a typed parameter.
 - Factor pure logic (version comparison, parsing) into unit-testable functions; use test data
   that is not already sorted so sorting logic is actually exercised.
+- Avoid tight wall-clock upper-bound assertions in timing tests (CI VMs stall); assert ordering
+  or use repeated samples if a bound is essential.
+- Preserve original line endings and avoid whole-file rewrites / formatting-only churn that
+  bury the real change and pollute `git blame`.
 
 ## General correctness (every PR)
 
