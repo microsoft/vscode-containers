@@ -4,15 +4,9 @@
         "outDir": "out",
         "rootDir": "../..",
         "declaration": false, // The extension is bundled by esbuild and never emits declarations
-        "noUnusedLocals": false, // ESLint takes care of this for us
-        "noUnusedParameters": false, // ESLint takes care of this for us
-        "noImplicitAny": false, // TODO ~14 errors
-        "noImplicitOverride": false, // TODO ~78 errors
-        "strictNullChecks": false, // TODO ~425 errors
         "paths": {
-            // Resolve the workspace-local packages and the compose-language-service subpath
-            // imports from source so the type checker and linter match esbuild (which bundles
-            // the same source).
+            // Resolve the workspace-local packages from source for the type-checker
+            // and linter, mirroring the esbuild aliases in esbuild.mjs.
             "@microsoft/vscode-container-client": [
                 "../../packages/vscode-container-client/src/index.ts"
             ],
@@ -27,8 +21,13 @@
             ],
             "@microsoft/compose-language-service/vscode": [
                 "../../packages/compose-language-service/src/vscode/index.ts"
-            ],
+            ]
         },
+        "noUnusedLocals": false, // ESLint takes care of this for us
+        "noUnusedParameters": false, // ESLint takes care of this for us
+        "noImplicitAny": false, // TODO ~14 errors
+        "noImplicitOverride": false, // TODO ~78 errors
+        "strictNullChecks": false, // TODO ~425 errors
     },
     "exclude": [
         "node_modules",
