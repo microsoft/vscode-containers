@@ -30,6 +30,7 @@
         "@microsoft/vscode-azext-eng": "^1.1.0-alpha.3",
         "@types/node": "22.x",
         "@types/vscode": "1.105.0",
-        "@typescript/native": "npm:typescript@7.0.2"
+        "@typescript/native": "npm:typescript@7.0.2",
+        "@vscode/vsce": "^3.9.2"
     }
 }
