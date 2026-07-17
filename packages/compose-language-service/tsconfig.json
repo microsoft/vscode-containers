@@ -1,27 +1,17 @@
 {
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "target": "es2022",
-        "lib": [
-            "es2022",
-        ],
-        "module": "es2022",
-        "moduleResolution": "bundler",
+        "outDir": "dist/esm",
+        "rootDir": "src",
+        "inlineSources": false,
+        // `types` arrays do not merge across `extends`; repeat `node` (from the base)
+        // alongside the extra ambient types this package needs (mocha for its tests,
+        // vscode for the client-side features under src/vscode).
         "types": [
             "node",
             "mocha",
             "vscode",
         ],
-        "sourceMap": true,
-        "inlineSources": false,
-        "declaration": true,
-        "outDir": "dist/esm",
-        "rootDir": "src",
-        "alwaysStrict": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "stripInternal": true,
     },
     "exclude": [
         "src/test/clientExtension",

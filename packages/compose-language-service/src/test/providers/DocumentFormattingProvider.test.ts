@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { DocumentFormattingRequest, DocumentUri, FormattingOptions, ResponseError } from 'vscode-languageserver-protocol';
+import { DocumentFormattingRequest, type DocumentUri, FormattingOptions, ResponseError } from 'vscode-languageserver-protocol';
 import { TestConnection } from '../TestConnection';
 
 describe('DocumentFormattingProvider', () => {

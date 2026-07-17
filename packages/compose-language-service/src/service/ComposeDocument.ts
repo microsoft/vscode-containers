@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ErrorCodes, Position, Range, ResponseError, TextDocumentIdentifier, TextDocumentsConfiguration } from 'vscode-languageserver';
-import { DocumentUri, TextDocument } from 'vscode-languageserver-textdocument';
-import { Document as YamlDocument, isDocument, Node as YamlNode, parseDocument, ScalarTag, Tags } from 'yaml';
-import { CRLF, DocumentSettings, DocumentSettingsRequest, LF } from '../common/DocumentSettingsClientCapabilities';
-import { ExtendedPositionParams, PositionInfo } from './ExtendedParams';
+import { ErrorCodes, Position, Range, ResponseError, type TextDocumentIdentifier, type TextDocumentsConfiguration } from 'vscode-languageserver';
+import { type DocumentUri, TextDocument } from 'vscode-languageserver-textdocument';
+import { type Document as YamlDocument, isDocument, type Node as YamlNode, parseDocument, type ScalarTag, type Tags } from 'yaml';
+import { CRLF, type DocumentSettings, DocumentSettingsRequest, LF } from '../common/DocumentSettingsClientCapabilities';
+import type { ExtendedPositionParams, PositionInfo } from './ExtendedParams';
 import { getCurrentContext } from './utils/ActionContext';
 import { Lazy } from './utils/Lazy';
 

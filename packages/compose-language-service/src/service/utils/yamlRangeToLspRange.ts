@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Range as LspRange } from 'vscode-languageserver';
-import { Range as YamlRange } from 'yaml';
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import type { Range as LspRange } from 'vscode-languageserver';
+import type { Range as YamlRange } from 'yaml';
+import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 export function yamlRangeToLspRange(document: TextDocument, yamlRange: YamlRange | [number, number]): LspRange {
     return {

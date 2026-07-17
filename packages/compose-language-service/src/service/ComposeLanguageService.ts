@@ -6,15 +6,15 @@
 import * as util from 'util';
 import {
     CancellationToken,
-    Connection,
-    Disposable,
+    type Connection,
+    type Disposable,
     ErrorCodes,
-    Event,
-    InitializeParams,
+    type Event,
+    type InitializeParams,
     ResponseError,
-    ServerCapabilities,
-    ServerRequestHandler,
-    TextDocumentChangeEvent,
+    type ServerCapabilities,
+    type ServerRequestHandler,
+    type TextDocumentChangeEvent,
     TextDocuments,
     TextDocumentSyncKind,
 }
@@ -31,9 +31,9 @@ import { DiagnosticProvider } from './providers/DiagnosticProvider';
 import { DocumentFormattingProvider } from './providers/DocumentFormattingProvider';
 import { ImageLinkProvider } from './providers/ImageLinkProvider';
 import { KeyHoverProvider } from './providers/KeyHoverProvider';
-import { ProviderBase } from './providers/ProviderBase';
+import type { ProviderBase } from './providers/ProviderBase';
 import { ServiceStartupCodeLensProvider } from './providers/ServiceStartupCodeLensProvider';
-import { ActionContext, runWithContext } from './utils/ActionContext';
+import { type ActionContext, runWithContext } from './utils/ActionContext';
 import { TelemetryAggregator } from './utils/telemetry/TelemetryAggregator';
 
 const DefaultCapabilities: ServerCapabilities = {

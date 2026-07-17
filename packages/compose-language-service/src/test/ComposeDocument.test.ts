@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { InitializeParams, Position, TextDocuments } from 'vscode-languageserver';
+import { type InitializeParams, Position, type TextDocuments } from 'vscode-languageserver';
 import type { ComposeLanguageClientCapabilities } from '../common/ComposeLanguageClientCapabilities';
-import { DocumentSettings, DocumentSettingsNotification, DocumentSettingsNotificationParams, DocumentSettingsRequest, LF } from '../common/DocumentSettingsClientCapabilities';
-import { ComposeDocument } from '../service/ComposeDocument';
-import { ExtendedPositionParams, PositionInfo } from '../service/ExtendedParams';
+import { type DocumentSettings, DocumentSettingsNotification, type DocumentSettingsNotificationParams, DocumentSettingsRequest, LF } from '../common/DocumentSettingsClientCapabilities';
+import type { ComposeDocument } from '../service/ComposeDocument';
+import type { ExtendedPositionParams, PositionInfo } from '../service/ExtendedParams';
 import { runWithContext } from '../service/utils/ActionContext';
 import { DefaultInitializeParams, TestConnection } from './TestConnection';
 

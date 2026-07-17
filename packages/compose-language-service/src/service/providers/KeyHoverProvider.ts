@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, Hover, HoverParams, MarkupKind, Position, Range } from 'vscode-languageserver';
+import { type CancellationToken, type Hover, type HoverParams, MarkupKind, Position, Range } from 'vscode-languageserver';
 import { KeyValueRegex } from '../ComposeDocument';
-import { ExtendedParams } from '../ExtendedParams';
+import type { ExtendedParams } from '../ExtendedParams';
 import { getCurrentContext } from '../utils/ActionContext';
 import { ProviderBase } from './ProviderBase';
 

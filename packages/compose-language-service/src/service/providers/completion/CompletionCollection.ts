@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CompletionItem } from 'vscode-languageserver';
-import { ExtendedCompletionParams } from '../../ExtendedParams';
+import type { CompletionItem } from 'vscode-languageserver';
+import type { ExtendedCompletionParams } from '../../ExtendedParams';
 
 interface ExtendedCompletionItem extends CompletionItem {
     /**

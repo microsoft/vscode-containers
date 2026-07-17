@@ -5,7 +5,7 @@
 
 import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import 'chai/register-should';
+import 'chai/register-should.js';
 
 before('Global setup', function () {
     console.log('Global setup');

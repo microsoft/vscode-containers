@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, DocumentFormattingParams, Range, TextEdit } from 'vscode-languageserver';
-import { ToStringOptions } from 'yaml';
-import { ExtendedParams } from '../ExtendedParams';
+import { type CancellationToken, type DocumentFormattingParams, Range, TextEdit } from 'vscode-languageserver';
+import type { ToStringOptions } from 'yaml';
+import type { ExtendedParams } from '../ExtendedParams';
 import { ProviderBase } from './ProviderBase';
 
 export class DocumentFormattingProvider extends ProviderBase<DocumentFormattingParams & ExtendedParams, TextEdit[] | undefined, never, never> {

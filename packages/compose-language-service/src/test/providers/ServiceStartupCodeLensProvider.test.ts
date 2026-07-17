@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { CodeLensRequest, CodeLens, DocumentUri, Range, ResponseError } from 'vscode-languageserver';
+import { CodeLensRequest, type CodeLens, type DocumentUri, Range, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../TestConnection';
 
 interface ExpectedServiceStartupCodeLens {

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { DocumentLinkRequest, DocumentUri, Range, ResponseError } from 'vscode-languageserver';
+import { DocumentLinkRequest, type DocumentUri, Range, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../TestConnection';
 
 interface ExpectedImageLink {

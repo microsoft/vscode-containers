@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { DocumentUri, Hover, HoverRequest, MarkupContent, Position, Range, ResponseError } from 'vscode-languageserver';
+import { type DocumentUri, type Hover, HoverRequest, MarkupContent, Position, Range, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../TestConnection';
 
 interface ExpectedHover {

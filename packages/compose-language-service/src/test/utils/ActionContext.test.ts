@@ -6,7 +6,7 @@
 import { expect } from 'chai';
 import { ResponseError } from 'vscode-jsonrpc';
 import { initEvent } from '../../common/TelemetryEvent';
-import { ActionContext, getCurrentContext, runWithContext } from '../../service/utils/ActionContext';
+import { type ActionContext, getCurrentContext, runWithContext } from '../../service/utils/ActionContext';
 
 describe('(Unit) ActionContext', () => {
     describe('Common scenarios', () => {

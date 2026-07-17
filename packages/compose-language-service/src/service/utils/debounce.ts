@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, DocumentUri } from 'vscode-languageserver';
+import type { Disposable, DocumentUri } from 'vscode-languageserver';
 
 export interface DebounceId {
     uri: DocumentUri;

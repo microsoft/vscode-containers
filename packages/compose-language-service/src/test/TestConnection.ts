@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PassThrough } from 'stream';
-import { Connection, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, Disposable, InitializeParams, TextDocumentItem } from 'vscode-languageserver';
-import { DocumentUri } from 'vscode-languageserver-textdocument';
+import { type Connection, DidOpenTextDocumentNotification, type DidOpenTextDocumentParams, type Disposable, type InitializeParams, TextDocumentItem } from 'vscode-languageserver';
+import type { DocumentUri } from 'vscode-languageserver-textdocument';
 import { createConnection } from 'vscode-languageserver/node';
 import { Document } from 'yaml';
 import { initEvent } from '../common/TelemetryEvent';
 import { ComposeLanguageService } from '../service/ComposeLanguageService';
-import { ActionContext } from '../service/utils/ActionContext';
+import type { ActionContext } from '../service/utils/ActionContext';
 
 export const DefaultInitializeParams: InitializeParams = {
     capabilities: {},

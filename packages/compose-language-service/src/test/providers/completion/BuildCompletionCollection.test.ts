@@ -5,7 +5,7 @@
 
 import { CompletionRequest, InsertTextFormat, InsertTextMode, Position, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../../TestConnection';
-import { ExpectedCompletionItem, requestCompletionsAndCompare, UnexpectedCompletionItem } from './requestCompletionsAndCompare';
+import { type ExpectedCompletionItem, requestCompletionsAndCompare, type UnexpectedCompletionItem } from './requestCompletionsAndCompare';
 
 // A subset of the completions that are provided by the BuildCompletionCollection
 const defaultExpected: ExpectedCompletionItem[] = [

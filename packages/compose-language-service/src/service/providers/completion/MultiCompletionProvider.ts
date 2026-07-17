@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, CompletionItem, CompletionParams, WorkDoneProgressReporter } from 'vscode-languageserver';
-import { ExtendedCompletionParams, ExtendedParams, ExtendedPositionParams } from '../../ExtendedParams';
+import type { CancellationToken, CompletionItem, CompletionParams, WorkDoneProgressReporter } from 'vscode-languageserver';
+import type { ExtendedCompletionParams, ExtendedParams, ExtendedPositionParams } from '../../ExtendedParams';
 import { getCurrentContext } from '../../utils/ActionContext';
 import { ProviderBase } from '../ProviderBase';
 import { BuildCompletionCollection } from './BuildCompletionCollection';
-import { CompletionCollection } from './CompletionCollection';
+import type { CompletionCollection } from './CompletionCollection';
 import { PortsCompletionCollection } from './PortsCompletionCollection';
 import { RootCompletionCollection } from './RootCompletionCollection';
 import { ServiceCompletionCollection } from './ServiceCompletionCollection';

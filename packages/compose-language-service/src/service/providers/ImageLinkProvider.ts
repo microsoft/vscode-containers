@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, DocumentLink, DocumentLinkParams } from 'vscode-languageserver';
+import { type CancellationToken, DocumentLink, type DocumentLinkParams } from 'vscode-languageserver';
 import { isMap, isScalar, Scalar } from 'yaml';
-import { ExtendedParams } from '../ExtendedParams';
+import type { ExtendedParams } from '../ExtendedParams';
 import { getCurrentContext } from '../utils/ActionContext';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
 import { ProviderBase } from './ProviderBase';

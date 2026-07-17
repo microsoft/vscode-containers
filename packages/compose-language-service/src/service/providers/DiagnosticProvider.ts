@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Diagnostic, DiagnosticSeverity, TextDocumentChangeEvent } from 'vscode-languageserver';
-import { ComposeDocument } from '../ComposeDocument';
-import { ExtendedParams } from '../ExtendedParams';
+import { Diagnostic, DiagnosticSeverity, type TextDocumentChangeEvent } from 'vscode-languageserver';
+import type { ComposeDocument } from '../ComposeDocument';
+import type { ExtendedParams } from '../ExtendedParams';
 import { getCurrentContext } from '../utils/ActionContext';
 import { debounce } from '../utils/debounce';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { ClientCapabilities, Diagnostic, DocumentUri, InitializeParams, PublishDiagnosticsNotification, PublishDiagnosticsParams, Range } from 'vscode-languageserver-protocol';
+import { type ClientCapabilities, type Diagnostic, type DocumentUri, type InitializeParams, PublishDiagnosticsNotification, type PublishDiagnosticsParams, Range } from 'vscode-languageserver-protocol';
 import { DefaultInitializeParams, TestConnection } from '../TestConnection';
 
 const DiagnosticClientCapabilities: ClientCapabilities = {

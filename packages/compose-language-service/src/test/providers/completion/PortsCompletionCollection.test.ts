@@ -5,7 +5,7 @@
 
 import { CompletionRequest, InsertTextFormat, Position, ResponseError } from 'vscode-languageserver';
 import { TestConnection } from '../../TestConnection';
-import { ExpectedCompletionItem, requestCompletionsAndCompare, UnexpectedCompletionItem } from './requestCompletionsAndCompare';
+import { type ExpectedCompletionItem, requestCompletionsAndCompare, type UnexpectedCompletionItem } from './requestCompletionsAndCompare';
 
 // Completions that are not allowed from PortsCompletionCollection
 const defaultUnexpected: UnexpectedCompletionItem[] = [

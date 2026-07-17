@@ -62,4 +62,5 @@ catalog:
   esbuild: ^0.28.1
   esbuild-plugin-copy: ^2.1.1
   tsx: ^4.22.4
+  vscode-languageclient: ^10.1.0
   zod: ^4.1.13

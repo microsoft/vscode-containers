@@ -6,8 +6,8 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 
 import { expect } from 'chai';
-import { CompletionItem, CompletionRequest, DocumentUri, InsertTextFormat, InsertTextMode, Position } from 'vscode-languageserver';
-import { TestConnection } from '../../TestConnection';
+import { type CompletionItem, CompletionRequest, type DocumentUri, type InsertTextFormat, type InsertTextMode, type Position } from 'vscode-languageserver';
+import type { TestConnection } from '../../TestConnection';
 
 export interface ExpectedCompletionItem {
     label: string;
