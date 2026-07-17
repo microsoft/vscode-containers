@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClientIdentity } from '../contracts/ContainerClient';
+import type { ClientIdentity } from '../contracts/ContainerClient';
 
 export abstract class ConfigurableClient implements ClientIdentity {
     public constructor(

@@ -12,7 +12,7 @@ import { ShellQuoting } from '@microsoft/vscode-processutils';
 import {
     DockerClient,
 } from '../clients/DockerClient/DockerClient';
-import { BuildImageCommandOptions, RunContainerCommandOptions } from '../contracts/ContainerClient';
+import type { BuildImageCommandOptions, RunContainerCommandOptions } from '../contracts/ContainerClient';
 
 describe('(unit) DockerClient', () => {
     const client = new DockerClient();

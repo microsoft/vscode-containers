@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { withNamedArg } from "@microsoft/vscode-processutils";
-import { ContainerPlatform } from "../../contracts/ContainerClient";
+import type { ContainerPlatform } from "../../contracts/ContainerClient";
 import { getNativeArchitecture } from "../../utils/getNativeArchitecture";
 import { normalizeContainerOS } from "../../utils/normalizeContainerOS";
 

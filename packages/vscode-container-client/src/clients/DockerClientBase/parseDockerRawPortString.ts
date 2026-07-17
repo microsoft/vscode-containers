@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { PortBinding } from '../../contracts/ContainerClient';
+import type { PortBinding } from '../../contracts/ContainerClient';
 import { normalizeIpAddress } from './normalizeIpAddress';
 
 const shortFormRegex = /^(?<containerPort>\d+)\/(?<protocol>tcp|udp)$/i;

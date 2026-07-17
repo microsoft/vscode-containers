@@ -6,7 +6,7 @@
 import {
     CancellationError,
     CancellationTokenLike,
-    CommandLineArgs,
+    type CommandLineArgs,
     composeArgs,
     toArray,
     withArg,
@@ -15,7 +15,7 @@ import {
     withVerbatimArg
 } from '@microsoft/vscode-processutils';
 import * as readline from 'readline';
-import {
+import type {
     EventItem,
     EventStreamCommandOptions,
     IContainersClient,

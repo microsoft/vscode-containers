@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { spawn, SpawnOptions } from 'child_process';
+import { spawn, type SpawnOptions } from 'child_process';
 import * as os from 'os';
 import treeKill from 'tree-kill';
 
 import { CancellationTokenLike } from '../typings/CancellationTokenLike';
 import { CancellationError } from './CancellationError';
 import { ChildProcessError } from './ChildProcessError';
-import { CommandLineArgs } from './commandLineBuilder';
+import type { CommandLineArgs } from './commandLineBuilder';
 import { getSafeExecPath } from './getSafeExecPath';
 import { Shell } from './Shell';
 

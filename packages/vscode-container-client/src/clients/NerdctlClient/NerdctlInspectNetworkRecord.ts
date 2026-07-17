@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { InspectNetworksItem } from '../../contracts/ContainerClient';
+import type { InspectNetworksItem } from '../../contracts/ContainerClient';
 import { dateStringSchema } from '../../contracts/ZodTransforms';
 
 // Nerdctl (nerdctl) network inspect output - Docker-compatible format

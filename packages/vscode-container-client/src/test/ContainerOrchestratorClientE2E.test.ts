@@ -13,13 +13,13 @@ import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { NerdctlComposeClient } from '../clients/NerdctlComposeClient/NerdctlComposeClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { PodmanComposeClient } from '../clients/PodmanComposeClient/PodmanComposeClient';
-import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
-import { WslShellCommandRunnerFactory, WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
-import { IContainersClient } from '../contracts/ContainerClient';
-import { IContainerOrchestratorClient } from '../contracts/ContainerOrchestratorClient';
-import { ICommandRunnerFactory } from '../contracts/CommandRunner';
+import { ShellStreamCommandRunnerFactory, type ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
+import { WslShellCommandRunnerFactory, type WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
+import type { IContainersClient } from '../contracts/ContainerClient';
+import type { IContainerOrchestratorClient } from '../contracts/ContainerOrchestratorClient';
+import type { ICommandRunnerFactory } from '../contracts/CommandRunner';
 import { wslifyPath } from '../utils/wslifyPath';
-import { ClientType, KeepAliveShellCommand, validateContainerExists } from './ContainersClientE2E.test';
+import { type ClientType, KeepAliveShellCommand, validateContainerExists } from './e2eShared';
 
 // Modify the below options to configure the tests
 const clientTypeToTest: ClientType = (process.env.CONTAINER_CLIENT_TYPE || 'docker') as ClientType;

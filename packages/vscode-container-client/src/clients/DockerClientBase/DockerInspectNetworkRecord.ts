@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { InspectNetworksItem, NetworkIpamConfig } from '../../contracts/ContainerClient';
+import type { InspectNetworksItem, NetworkIpamConfig } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 
 const DockerIpamConfigSchema = z.object({

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { withNamedArg } from "@microsoft/vscode-processutils";
-import { RunContainerExtraHost } from "../../contracts/ContainerClient";
+import type { RunContainerExtraHost } from "../../contracts/ContainerClient";
 
 export function formatAddHost(addHost: RunContainerExtraHost): string {
     return `${addHost.hostname}:${addHost.ip}`;

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LabelFilters } from "../../contracts/ContainerClient";
+import type { LabelFilters } from "../../contracts/ContainerClient";
 import { conditional } from "../../utils/conditional";
 import { withDockerFilterArg } from "./withDockerFilterArg";
 

@@ -13,11 +13,12 @@ import { FileType } from '../typings/FileType';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
-import { ShellStreamCommandRunnerFactory, ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
-import { WslShellCommandRunnerFactory, WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
-import { IContainersClient, ListContainersItem, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
-import { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
+import { ShellStreamCommandRunnerFactory, type ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
+import { WslShellCommandRunnerFactory, type WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
+import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
+import type { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
 import { wslifyPath } from '../utils/wslifyPath';
+import { type ClientType, validateContainerExists } from './e2eShared';
 
 /**
  * WARNING: This test suite will prune unused images, containers, networks, and volumes.
@@ -28,20 +29,6 @@ const clientTypeToTest: ClientType = (process.env.CONTAINER_CLIENT_TYPE || 'dock
 const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_WSL === 'true') || false; // Set to true if running in WSL
 
 // No need to modify below this
-
-export type ClientType = 'docker' | 'podman' | 'finch' | 'nerdctl';
-
-/**
- * Shell command that keeps a container alive while responding to SIGTERM for a
- * fast shutdown. Used by the orchestrator E2E compose files, where the process
- * runs under `sh -c` without a TTY.
- *
- * NOTE: This is intentionally NOT used with `runContainer` (see
- * {@link KeepAliveEntrypoint}). `runContainer` allocates a TTY for detached runs,
- * and a non-interactive `sh -c <loop>` exits once that pseudo-TTY is torn down
- * after the CLI detaches.
- */
-export const KeepAliveShellCommand = "trap 'exit 0' TERM; while true; do sleep 1; done";
 
 /**
  * Entrypoint/command that keeps a container alive when started via `runContainer`.
@@ -1273,20 +1260,6 @@ async function validateImageExists(client: IContainersClient, runner: ICommandRu
     );
 
     return images.find(i => i.image.originalName?.includes(imageRef));
-}
-
-export async function validateContainerExists(client: IContainersClient, runner: ICommandRunnerFactory, reference: { containerId?: string, containerName?: string }): Promise<ListContainersItem | undefined> {
-    const containers = await runner.getCommandRunner()(
-        client.listContainers({ all: true })
-    );
-
-    if (reference.containerId) {
-        return containers.find(c => c.id === reference.containerId);
-    } else if (reference.containerName) {
-        return containers.find(c => c.name === reference.containerName);
-    }
-
-    throw new Error('Either containerId or containerName must be provided');
 }
 
 async function validateNetworkExists(client: IContainersClient, runner: ICommandRunnerFactory, networkName: string): Promise<ListNetworkItem | undefined> {

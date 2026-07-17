@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { ListImagesItem } from '../../contracts/ContainerClient';
+import type { ListImagesItem } from '../../contracts/ContainerClient';
 import { dateStringWithFallbackSchema } from '../../contracts/ZodTransforms';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { tryParseSize } from '../DockerClientBase/tryParseSize';

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-    CommandLineArgs,
-    CommandLineCurryFn,
+    type CommandLineArgs,
+    type CommandLineCurryFn,
     composeArgs,
     stringStreamToGenerator,
     withArg,
@@ -13,8 +13,8 @@ import {
     withNamedArg,
     withVerbatimArg
 } from '@microsoft/vscode-processutils';
-import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from '../../contracts/CommandRunner';
-import {
+import type { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from '../../contracts/CommandRunner';
+import type {
     CheckOrchestratorInstallCommandOptions,
     CommonOrchestratorCommandOptions,
     ConfigCommandOptions,

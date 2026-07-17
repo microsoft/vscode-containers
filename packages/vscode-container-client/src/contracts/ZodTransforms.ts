@@ -5,7 +5,7 @@
 
 import * as z from 'zod/mini';
 import { dayjs } from '../utils/dayjs';
-import { Labels } from './ContainerClient';
+import type { Labels } from './ContainerClient';
 
 /**
  * Schema that transforms a date string to a Date object.

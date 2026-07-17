@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import dayjsinner from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+import utc from 'dayjs/plugin/utc.js';
 
 dayjsinner.extend(customParseFormat);
 dayjsinner.extend(utc);

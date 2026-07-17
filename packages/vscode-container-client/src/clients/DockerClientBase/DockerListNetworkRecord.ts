@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { ListNetworkItem } from '../../contracts/ContainerClient';
+import type { ListNetworkItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeLabels } from './parseDockerLikeLabels';
 

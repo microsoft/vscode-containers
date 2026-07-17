@@ -6,7 +6,7 @@
 import { NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import { NerdctlComposeClient } from '../clients/NerdctlComposeClient/NerdctlComposeClient';
-import {
+import type {
     CommonOrchestratorCommandOptions,
     DownCommandOptions,
     UpCommandOptions,

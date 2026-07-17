@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import { FileType } from '../../typings/FileType';
-import { ListFilesCommandOptions, ListFilesItem } from '../../contracts/ContainerClient';
+import type { ListFilesCommandOptions, ListFilesItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 
 const DateFormats = [

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { InspectNetworksItem } from '../../contracts/ContainerClient';
+import type { InspectNetworksItem } from '../../contracts/ContainerClient';
 
 export const PodmanInspectNetworkRecordSchema = z.object({
     id: z.optional(z.string()), // Not in v3

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { withNamedArg } from "@microsoft/vscode-processutils";
-import { Labels } from "../../contracts/ContainerClient";
+import type { Labels } from "../../contracts/ContainerClient";
 
 export function withDockerLabelsArg(labels?: Labels) {
     return withNamedArg(

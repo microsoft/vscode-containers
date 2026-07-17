@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as os from 'os';
-import { ShellQuotedString, ShellQuoting } from '../typings/ShellQuoting';
-import { IShell } from '../contracts/Shell';
-import { CommandLineArgs } from './commandLineBuilder';
+import { type ShellQuotedString, ShellQuoting } from '../typings/ShellQuoting';
+import type { IShell } from '../contracts/Shell';
+import type { CommandLineArgs } from './commandLineBuilder';
 
 /**
  * A {@link Shell} class applies quoting rules for a specific shell.

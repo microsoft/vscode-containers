@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-    CommandLineArgs,
+    type CommandLineArgs,
     composeArgs,
     withArg,
     withFlagArg,
     withNamedArg,
     withVerbatimArg
 } from '@microsoft/vscode-processutils';
-import { DownCommandOptions, IContainerOrchestratorClient, UpCommandOptions } from '../../contracts/ContainerOrchestratorClient';
+import type { DownCommandOptions, IContainerOrchestratorClient, UpCommandOptions } from '../../contracts/ContainerOrchestratorClient';
 import { DockerComposeClientBase, withCommonOrchestratorArgs, withComposeArg } from '../DockerComposeClientBase/DockerComposeClientBase';
 
 export class NerdctlComposeClient extends DockerComposeClientBase implements IContainerOrchestratorClient {

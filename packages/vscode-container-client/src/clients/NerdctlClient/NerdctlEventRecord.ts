@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { EventAction, EventActionSchema, EventType, EventTypeSchema } from '../../contracts/ZodEnums';
+import { type EventAction, EventActionSchema, type EventType, EventTypeSchema } from '../../contracts/ZodEnums';
 
 /**
  * Schema for the nested Event payload in containerd events.

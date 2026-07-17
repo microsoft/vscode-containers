@@ -7,7 +7,7 @@ import {
     byteStreamToGenerator,
     CancellationError,
     CancellationTokenLike,
-    CommandLineArgs,
+    type CommandLineArgs,
     composeArgs,
     stringStreamToGenerator,
     toArray,
@@ -18,9 +18,9 @@ import {
     withVerbatimArg
 } from '@microsoft/vscode-processutils';
 import * as readline from 'readline';
-import { ShellQuotedString, ShellQuoting } from '@microsoft/vscode-processutils';
-import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from '../../contracts/CommandRunner';
-import {
+import { type ShellQuotedString, ShellQuoting } from '@microsoft/vscode-processutils';
+import type { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from '../../contracts/CommandRunner';
+import type {
     BuildImageCommandOptions,
     CheckInstallCommandOptions,
     ContainersStatsCommandOptions,

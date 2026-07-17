@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { withNamedArg } from "@microsoft/vscode-processutils";
-import { RunContainerMount } from "../../contracts/ContainerClient";
+import type { RunContainerMount } from "../../contracts/ContainerClient";
 
 export function formatDockerMount(mount: RunContainerMount): string {
     const mountParts = new Array<string>(

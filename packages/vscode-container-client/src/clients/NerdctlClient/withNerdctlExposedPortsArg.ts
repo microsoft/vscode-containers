@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandLineArgs, CommandLineCurryFn, withArg } from '@microsoft/vscode-processutils';
+import { type CommandLineArgs, type CommandLineCurryFn, withArg } from '@microsoft/vscode-processutils';
 
 /**
  * Converts exposed ports to Nerdctl-compatible -p arguments when publishAllPorts is true.

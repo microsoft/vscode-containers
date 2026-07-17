@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { ListContainersItem, PortBinding } from "../../contracts/ContainerClient";
+import type { ListContainersItem, PortBinding } from "../../contracts/ContainerClient";
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from "../../utils/parseDockerLikeImageName";
 import { parseDockerLikeLabels } from "./parseDockerLikeLabels";

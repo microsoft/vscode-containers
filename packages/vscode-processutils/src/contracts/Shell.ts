@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ShellQuotedString, ShellQuoting } from '../typings/ShellQuoting';
-import { CommandLineArgs } from '../utils/commandLineBuilder';
+import { type ShellQuotedString, ShellQuoting } from '../typings/ShellQuoting';
+import type { CommandLineArgs } from '../utils/commandLineBuilder';
 
 export interface IShell {
     quote(args: CommandLineArgs): Array<string>;

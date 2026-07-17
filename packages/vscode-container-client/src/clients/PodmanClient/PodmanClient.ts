@@ -9,7 +9,7 @@ import {
 } from '@microsoft/vscode-processutils';
 import * as readline from 'readline';
 import * as z from 'zod/mini';
-import {
+import type {
     EventItem,
     EventStreamCommandOptions,
     IContainersClient,
@@ -48,8 +48,8 @@ import { PodmanInspectContainerRecordSchema, normalizePodmanInspectContainerReco
 import { PodmanInspectImageRecordSchema, normalizePodmanInspectImageRecord } from './PodmanInspectImageRecord';
 import { PodmanInspectNetworkRecordSchema, normalizePodmanInspectNetworkRecord } from './PodmanInspectNetworkRecord';
 import { PodmanInspectVolumeRecordSchema, normalizePodmanInspectVolumeRecord } from './PodmanInspectVolumeRecord';
-import { PodmanListContainerRecord, PodmanListContainerRecordSchema } from './PodmanListContainerRecord';
-import { PodmanListImageRecord, PodmanListImageRecordSchema } from './PodmanListImageRecord';
+import { type PodmanListContainerRecord, PodmanListContainerRecordSchema } from './PodmanListContainerRecord';
+import { type PodmanListImageRecord, PodmanListImageRecordSchema } from './PodmanListImageRecord';
 import { PodmanListNetworkRecordSchema } from './PodmanListNetworkRecord';
 import { PodmanVersionRecordSchema } from './PodmanVersionRecord';
 

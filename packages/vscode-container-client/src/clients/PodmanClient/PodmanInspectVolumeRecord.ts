@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { InspectVolumesItem } from '../../contracts/ContainerClient';
+import type { InspectVolumesItem } from '../../contracts/ContainerClient';
 
 export const PodmanInspectVolumeRecordSchema = z.object({
     Name: z.string(),

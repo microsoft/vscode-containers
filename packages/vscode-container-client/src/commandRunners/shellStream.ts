@@ -7,21 +7,21 @@ import {
     AccumulatorStream,
     CancellationError,
     CancellationTokenLike,
-    CommandLineArgs,
+    type CommandLineArgs,
     spawnStreamAsync,
-    StreamSpawnOptions
+    type StreamSpawnOptions
 } from '@microsoft/vscode-processutils';
 import * as stream from 'stream';
 import {
-    CommandResponseBase,
-    CommandRunner,
-    GeneratorCommandResponse,
-    ICommandRunnerFactory,
-    Like,
+    type CommandResponseBase,
+    type CommandRunner,
+    type GeneratorCommandResponse,
+    type ICommandRunnerFactory,
+    type Like,
     normalizeCommandResponseLike,
-    PromiseCommandResponse,
-    StreamingCommandRunner,
-    VoidCommandResponse,
+    type PromiseCommandResponse,
+    type StreamingCommandRunner,
+    type VoidCommandResponse,
 } from '../contracts/CommandRunner';
 
 export type ShellStreamCommandRunnerOptions = StreamSpawnOptions & {

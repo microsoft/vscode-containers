@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ShellQuotedString } from '@microsoft/vscode-processutils';
-import { FileType } from '../typings/FileType';
-import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from './CommandRunner';
-import { ContainerOS, EventAction, EventType } from './ZodEnums';
+import type { ShellQuotedString } from '@microsoft/vscode-processutils';
+import type { FileType } from '../typings/FileType';
+import type { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from './CommandRunner';
+import type { ContainerOS, EventAction, EventType } from './ZodEnums';
 
 // Reexport the nativized Zod enums, but not their Zod schemas
-export { ContainerOS, EventAction, EventType } from './ZodEnums';
+export type { ContainerOS, EventAction, EventType } from './ZodEnums';
 
 /**
  * Information about an image's name

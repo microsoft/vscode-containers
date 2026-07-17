@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from "./CommandRunner";
-import { ClientIdentity, CommonCommandOptions } from "./ContainerClient";
+import type { GeneratorCommandResponse, PromiseCommandResponse, VoidCommandResponse } from "./CommandRunner";
+import type { ClientIdentity, CommonCommandOptions } from "./ContainerClient";
 
 // #region Container orchestrator commands
 // Common command options

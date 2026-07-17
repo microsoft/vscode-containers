@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { withNamedArg } from "@microsoft/vscode-processutils";
-import { PortBinding } from "../../contracts/ContainerClient";
+import type { PortBinding } from "../../contracts/ContainerClient";
 
 export function withDockerPortsArg(ports?: Array<PortBinding>) {
     return withNamedArg(

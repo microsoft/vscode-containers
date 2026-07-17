@@ -4,18 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-    CommandLineArgs,
+    type CommandLineArgs,
     composeArgs,
     withArg,
     withNamedArg
 } from '@microsoft/vscode-processutils';
-import {
+import type {
     CommandResponseBase,
     ICommandRunnerFactory,
 } from '../contracts/CommandRunner';
 import {
     ShellStreamCommandRunnerFactory,
-    ShellStreamCommandRunnerOptions,
+    type ShellStreamCommandRunnerOptions,
 } from './shellStream';
 
 export type WslShellCommandRunnerOptions = ShellStreamCommandRunnerOptions & {

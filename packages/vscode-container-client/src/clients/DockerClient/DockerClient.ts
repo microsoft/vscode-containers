@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandLineArgs, composeArgs, withArg } from "@microsoft/vscode-processutils";
-import { PromiseCommandResponse, VoidCommandResponse } from "../../contracts/CommandRunner";
-import { IContainersClient, InspectContextsCommandOptions, InspectContextsItem, ListContextItem, ListContextsCommandOptions, RemoveContextsCommandOptions, UseContextCommandOptions } from "../../contracts/ContainerClient";
+import { type CommandLineArgs, composeArgs, withArg } from "@microsoft/vscode-processutils";
+import type { PromiseCommandResponse, VoidCommandResponse } from "../../contracts/CommandRunner";
+import type { IContainersClient, InspectContextsCommandOptions, InspectContextsItem, ListContextItem, ListContextsCommandOptions, RemoveContextsCommandOptions, UseContextCommandOptions } from "../../contracts/ContainerClient";
 import { asIds } from "../../utils/asIds";
 import { DockerClientBase } from "../DockerClientBase/DockerClientBase";
 import { withDockerJsonFormatArg } from "../DockerClientBase/withDockerJsonFormatArg";

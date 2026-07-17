@@ -5,7 +5,7 @@
 
 import { toArray } from '@microsoft/vscode-processutils';
 import * as z from 'zod/mini';
-import { ImageNameInfo, InspectImagesItem, PortBinding } from "../../contracts/ContainerClient";
+import type { ImageNameInfo, InspectImagesItem, PortBinding } from "../../contracts/ContainerClient";
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from "../../utils/parseDockerLikeImageName";
 import { parseDockerLikeEnvironmentVariables } from "./parseDockerLikeEnvironmentVariables";

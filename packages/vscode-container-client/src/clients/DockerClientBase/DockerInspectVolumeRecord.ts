@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import { InspectVolumesItem } from '../../contracts/ContainerClient';
+import type { InspectVolumesItem } from '../../contracts/ContainerClient';
 import { dayjs } from '../../utils/dayjs';
 
 export const DockerInspectVolumeRecordSchema = z.object({

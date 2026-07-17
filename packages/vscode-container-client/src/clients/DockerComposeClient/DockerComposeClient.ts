@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IContainerOrchestratorClient } from '../../contracts/ContainerOrchestratorClient';
+import type { IContainerOrchestratorClient } from '../../contracts/ContainerOrchestratorClient';
 import { DockerComposeClientBase } from '../DockerComposeClientBase/DockerComposeClientBase';
 
 export class DockerComposeClient extends DockerComposeClientBase implements IContainerOrchestratorClient {

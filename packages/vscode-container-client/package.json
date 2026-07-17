@@ -27,7 +27,7 @@
         "package": "pnpm pack",
         "test": "mocha",
         "testintegration": "mocha --grep \"(integration)\"",
-        "testintegrationcov": "pnpm dlx nyc --reporter=html mocha --grep \"(integration)\"",
+        "testintegrationcov": "pnpx nyc --reporter=html mocha --grep \"(integration)\"",
         "clean": "node ../../scripts/clean.mjs"
     },
     "dependencies": {
