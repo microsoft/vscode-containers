@@ -33,8 +33,5 @@
     },
     "extensionDependencies": [
         "ms-azuretools.vscode-containers"
-    ],
-    "devDependencies": {
-        "@vscode/vsce": "catalog:"
-    }
+    ]
 }

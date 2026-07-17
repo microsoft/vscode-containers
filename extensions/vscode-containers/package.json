@@ -3355,7 +3355,6 @@
         "@types/semver": "^7.3.13",
         "@vscode/test-cli": "catalog:",
         "@vscode/test-electron": "catalog:",
-        "@vscode/vsce": "catalog:",
         "esbuild": "catalog:",
         "esbuild-plugin-copy": "catalog:",
         "tsx": "catalog:"
