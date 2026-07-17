@@ -30,6 +30,9 @@ catalogs:
     tsx:
       specifier: ^4.22.4
       version: 4.23.0
+    vscode-languageclient:
+      specifier: ^10.1.0
+      version: 10.1.0
     zod:
       specifier: ^4.1.13
       version: 4.4.3
@@ -119,7 +122,7 @@ importers:
         specifier: ^7.5.16
         version: 7.5.19
       vscode-languageclient:
-        specifier: ^10.0.0-next.19
+        specifier: 'catalog:'
         version: 10.1.0
       vscode-tas-client:
         specifier: 0.1.84
@@ -151,6 +154,31 @@ importers:
         version: 4.23.0
 
   extensions/vscode-docker: {}
+
+  packages/compose-language-service:
+    dependencies:
+      vscode-languageserver:
+        specifier: ^10.1.0
+        version: 10.1.0
+      vscode-languageserver-protocol:
+        specifier: ^3.18.2
+        version: 3.18.2
+      vscode-languageserver-textdocument:
+        specifier: ^1.0.12
+        version: 1.0.12
+      yaml:
+        specifier: ^2.8.2
+        version: 2.9.0
+    devDependencies:
+      vscode-jsonrpc:
+        specifier: ^9.0.1
+        version: 9.0.1
+      vscode-languageclient:
+        specifier: 'catalog:'
+        version: 10.1.0
+      vscode-languageserver-types:
+        specifier: ^3.18.0
+        version: 3.18.0
 
   packages/vscode-container-client:
     dependencies:
@@ -207,43 +235,6 @@ importers:
       vscode-jsonrpc:
         specifier: ^8.0.1
         version: 8.0.2
-
-  packages/compose-language-service:
-    dependencies:
-      vscode-languageserver:
-        specifier: ^10.1.0
-        version: 10.1.0
-      vscode-languageserver-protocol:
-        specifier: ^3.18.2
-        version: 3.18.2
-      vscode-languageserver-textdocument:
-        specifier: ^1.0.12
-        version: 1.0.12
-      yaml:
-        specifier: ^2.8.2
-        version: 2.9.0
-    devDependencies:
-      '@microsoft/vscode-azext-eng':
-        specifier: ^1.1.0-alpha.3
-        version: 1.1.0-alpha.3(@vscode/test-cli@0.0.12)(@vscode/test-electron@3.0.0)(@vscode/vsce@3.9.2)(esbuild-plugin-copy@2.1.1(esbuild@0.28.1))(esbuild@0.28.1)(tsx@4.23.0)
-      '@types/chai-as-promised':
-        specifier: 8.0.2
-        version: 8.0.2
-      chai-as-promised:
-        specifier: 8.0.2
-        version: 8.0.2(chai@6.2.2)
-      tsx:
-        specifier: 'catalog:'
-        version: 4.23.0
-      vscode-jsonrpc:
-        specifier: ^9.0.1
-        version: 9.0.1
-      vscode-languageclient:
-        specifier: ^10.1.0
-        version: 10.1.0
-      vscode-languageserver-types:
-        specifier: ^3.18.0
-        version: 3.18.0
 
 packages:
 

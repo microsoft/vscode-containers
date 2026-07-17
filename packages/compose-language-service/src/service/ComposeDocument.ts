@@ -55,7 +55,7 @@ export class ComposeDocument {
         const startOfLine = (typeof line === 'number') ? Position.create(line, 0) : Position.create(line.line, 0);
         const endOfLine = Position.create(startOfLine.line, MaximumLineLength);
 
-        if (startOfLine.line > this.textDocument.lineCount) {
+        if (startOfLine.line >= this.textDocument.lineCount) {
             throw new Error(`Requested line ${startOfLine.line} is out of bounds.`);
         }
 

@@ -93,7 +93,7 @@ export class TelemetryAggregator implements Disposable {
             const aggregatedEvent = initEvent(eventName);
 
             // Aggregate the performance statistics
-            const durations = events.map(e => e.measurements.duration ?? undefined).filter(d => d !== undefined) || [];
+            const durations = events.map(e => e.measurements.duration).filter((d): d is number => d !== undefined);
             const stats = logNormal(durations);
 
             aggregatedEvent.measurements.count = events.length;
