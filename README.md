@@ -25,7 +25,6 @@ To contribute bug fixes, features, or design changes:
   * Clone the repository locally and open in VS Code.
   * Install [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint), [TypeScript 7](https://marketplace.visualstudio.com/items?itemName=typescriptteam.native-preview) and [esbuild Problem Matchers](https://marketplace.visualstudio.com/items?itemName=connor4312.esbuild-problem-matchers) for Visual Studio Code.
   * Open the terminal (<kbd>Ctrl</kbd>+ <kbd>\`</kbd> by default) and run `pnpm install`.
-    * pnpm is pinned (via `package.json`'s `packageManager` field) to a tarball on our proxy feed rather than the default npm registry, which our machines can't reach. If Corepack activates pnpm for you, set `COREPACK_ENABLE_UNSAFE_CUSTOM_URLS=1` in your environment first so it accepts the custom URL.
   * To build, open the Command Palette (<kbd>F1</kbd> by default) and type in `Tasks: Run Build Task`.
   * Debug: press <kbd>F5</kbd> (by default) to start debugging the extension.
 
