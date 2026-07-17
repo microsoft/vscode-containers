@@ -13,6 +13,7 @@ parameters:
       - microsoft-vscode-container-client
       - microsoft-vscode-docker-registries
       - microsoft-vscode-inproc-mcp
+      - microsoft-compose-language-service
   # The version to publish--used for ensuring the expected version is published
   - name: publishVersion
     displayName: Version to publish

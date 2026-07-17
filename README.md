@@ -17,6 +17,9 @@ These libraries are published to npm under the [`@microsoft`](https://www.npmjs.
 * [`@microsoft/vscode-docker-registries`](packages/vscode-docker-registries/README.md) -- extensibility model for contributing registry providers to the Container Tools extension.
 * [`@microsoft/vscode-processutils`](packages/vscode-processutils/README.md) -- library support for building command lines and running external processes.
 * [`@microsoft/vscode-inproc-mcp`](packages/vscode-inproc-mcp/README.md) -- library support for building in-process MCP servers.
+* [`@microsoft/compose-language-service`](packages/compose-language-service/README.md) -- the Docker Compose language server, published to npm and consumed (built from source) by the Container Tools extension.
+
+Additional shared packages will be added here as more repositories are consolidated into this monorepo (see [#520](https://github.com/microsoft/vscode-containers/issues/520)).
 
 ## Contributing
 
