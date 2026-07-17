@@ -32,7 +32,7 @@ export class DockerComposeClient extends DockerComposeClientBase implements ICon
     ) {
         super(
             DockerComposeClient.ClientId,
-            commandName || composeV2 ? 'docker' : 'docker-compose',
+            commandName || (composeV2 ? 'docker' : 'docker-compose'),
             displayName,
             description
         );

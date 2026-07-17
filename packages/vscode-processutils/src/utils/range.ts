@@ -31,7 +31,7 @@ export function* range(start: number, stop?: number, step: number = 1): Generato
         throw new Error('Step must be a positive or negative number.');
     }
 
-    for (let i = start; stop > 0 ? i < stop : i > stop; i += step) {
+    for (let i = start; step > 0 ? i < stop : i > stop; i += step) {
         yield i;
     }
 }

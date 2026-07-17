@@ -31,7 +31,7 @@ export class AccumulatorStream extends stream.Writable {
         });
 
         this.streamEndPromise = new Promise<void>((resolve, reject) => {
-            this.on('close', () => {
+            this.on('finish', () => {
                 resolve();
             });
 

@@ -29,13 +29,14 @@ export function getSafeExecPath(command: string, alternatePath?: string): string
         return command;
     } else {
         // For Windows, we need to resolve the command to an absolute path using `which`.
-        if (!pathCache.has(command)) {
+        const cacheKey = `${command}\0${alternatePath ?? ''}`;
+        if (!pathCache.has(cacheKey)) {
             // We'd use the async, but it's significantly slower
             const resolvedPath = which.sync(command, { all: false, nothrow: false, path: alternatePath });
-            pathCache.set(command, resolvedPath);
+            pathCache.set(cacheKey, resolvedPath);
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return pathCache.get(command)!;
+        return pathCache.get(cacheKey)!;
     }
 }

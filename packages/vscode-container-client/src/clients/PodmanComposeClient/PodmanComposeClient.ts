@@ -32,7 +32,7 @@ export class PodmanComposeClient extends DockerComposeClientBase implements ICon
     ) {
         super(
             PodmanComposeClient.ClientId,
-            commandName || composeV2 ? 'podman' : 'podman-compose',
+            commandName || (composeV2 ? 'podman' : 'podman-compose'),
             displayName,
             description
         );
