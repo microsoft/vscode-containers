@@ -1,0 +1,47 @@
+{
+    "name": "@microsoft/vscode-container-client",
+    "author": "Microsoft Corporation",
+    "version": "0.5.4",
+    "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/vscode-containers",
+        "directory": "packages/vscode-container-client"
+    },
+    "bugs": {
+        "url": "https://github.com/microsoft/vscode-containers/issues"
+    },
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-container-client/README.md",
+    "module": "dist/esm/index.js",
+    "main": "dist/cjs/index.js",
+    "types": "dist/esm/index.d.ts",
+    "scripts": {
+        "build": "pnpm run build:esm && pnpm run build:cjs",
+        "build:esm": "tsc",
+        "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
+        "lint": "eslint --max-warnings 0",
+        "package": "pnpm pack",
+        "test": "mocha",
+        "testintegration": "mocha --grep \"(integration)\"",
+        "testintegrationcov": "pnpx nyc --reporter=html mocha --grep \"(integration)\"",
+        "clean": "node ../../scripts/clean.mjs"
+    },
+    "dependencies": {
+        "@microsoft/vscode-processutils": "workspace:*",
+        "dayjs": "catalog:",
+        "zod": "catalog:"
+    },
+    "mocha": {
+        "node-option": [
+            "experimental-transform-types",
+            "import=@microsoft/vscode-azext-eng/mocha"
+        ],
+        "spec": [
+            "src/test/**/*.test.ts"
+        ],
+        "grep": [
+            "(unit)"
+        ]
+    }
+}

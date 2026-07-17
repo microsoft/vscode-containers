@@ -6,6 +6,11 @@
         "lib": [
             "es2022",
         ],
+        "declaration": true,
+        "stripInternal": true,
+        "types": [
+            "node",
+        ],
         "sourceMap": true,
         "strict": true,
         "alwaysStrict": true,

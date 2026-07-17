@@ -1,0 +1,12 @@
+{
+    // This tsconfig lets the linter/type-checker resolve the sibling
+    // vscode-processutils package from source without requiring it to be built first.
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "paths": {
+            "@microsoft/vscode-processutils": [
+                "../vscode-processutils/src/index.ts"
+            ]
+        }
+    },
+}
