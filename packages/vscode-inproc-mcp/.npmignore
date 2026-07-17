@@ -3,7 +3,7 @@ dist/*/test/**
 node_modules/
 .eslint*
 src
-tsconfig.json
+tsconfig*.json
 *.tgz
 *.map
 eslint.config.mjs

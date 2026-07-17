@@ -2,7 +2,20 @@
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "outDir": "out",
-        "rootDir": "src",
+        "rootDir": "../..",
+        "paths": {
+            // Resolve the workspace-local packages from source for the type-checker
+            // and linter, mirroring the esbuild aliases in esbuild.mjs.
+            "@microsoft/vscode-container-client": [
+                "../../packages/vscode-container-client/src/index.ts"
+            ],
+            "@microsoft/vscode-docker-registries": [
+                "../../packages/vscode-docker-registries/src/index.ts"
+            ],
+            "@microsoft/vscode-processutils": [
+                "../../packages/vscode-processutils/src/index.ts"
+            ]
+        },
         "noUnusedLocals": false, // ESLint takes care of this for us
         "noUnusedParameters": false, // ESLint takes care of this for us
         "noImplicitAny": false, // TODO ~14 errors

@@ -3,15 +3,19 @@
     "author": "Microsoft Corporation",
     "version": "0.2.2",
     "description": "Library support for building command lines and running external processes, primarily for use in VS Code.",
-    "license": "See LICENSE in the project root for license information.",
+    "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/microsoft/vscode-docker-extensibility"
+        "url": "https://github.com/microsoft/vscode-containers",
+        "directory": "packages/vscode-processutils"
     },
     "bugs": {
-        "url": "https://github.com/microsoft/vscode-docker-extensibility/issues"
+        "url": "https://github.com/microsoft/vscode-containers/issues"
     },
-    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-processutils/README.md",
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-processutils/README.md",
+    "publishConfig": {
+        "access": "public"
+    },
     "module": "dist/esm/index.js",
     "main": "dist/cjs/index.js",
     "types": "dist/esm/index.d.ts",
@@ -20,9 +24,10 @@
         "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
         "lint": "eslint --max-warnings 0",
-        "package": "npm pack",
+        "package": "pnpm pack",
         "test": "mocha",
-        "testintegration": "mocha --grep \"(integration)\""
+        "testintegration": "mocha --grep \"(integration)\"",
+        "clean": "node ../../scripts/clean.mjs"
     },
     "dependencies": {
         "tree-kill": "^1.2.2",

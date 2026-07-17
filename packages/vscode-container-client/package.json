@@ -3,15 +3,19 @@
     "author": "Microsoft Corporation",
     "version": "0.5.4",
     "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
-    "license": "See LICENSE in the project root for license information.",
+    "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/microsoft/vscode-docker-extensibility"
+        "url": "https://github.com/microsoft/vscode-containers",
+        "directory": "packages/vscode-container-client"
     },
     "bugs": {
-        "url": "https://github.com/microsoft/vscode-docker-extensibility/issues"
+        "url": "https://github.com/microsoft/vscode-containers/issues"
     },
-    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-container-client/README.md",
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-container-client/README.md",
+    "publishConfig": {
+        "access": "public"
+    },
     "module": "dist/esm/index.js",
     "main": "dist/cjs/index.js",
     "types": "dist/esm/index.d.ts",
@@ -20,13 +24,14 @@
         "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
         "lint": "eslint --max-warnings 0",
-        "package": "npm pack",
+        "package": "pnpm pack",
         "test": "mocha",
         "testintegration": "mocha --grep \"(integration)\"",
-        "testintegrationcov": "npx nyc --reporter=html mocha --grep \"(integration)\""
+        "testintegrationcov": "npx nyc --reporter=html mocha --grep \"(integration)\"",
+        "clean": "node ../../scripts/clean.mjs"
     },
     "dependencies": {
-        "@microsoft/vscode-processutils": "^0.2.2",
+        "@microsoft/vscode-processutils": "workspace:*",
         "dayjs": "^1.11.2",
         "zod": "^4.1.13"
     },

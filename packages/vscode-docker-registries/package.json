@@ -3,15 +3,19 @@
     "author": "Microsoft Corporation",
     "version": "0.4.2",
     "description": "Extensibility model for contributing registry providers to the Container Tools extension for Visual Studio Code",
-    "license": "See LICENSE in the project root for license information.",
+    "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/microsoft/vscode-docker-extensibility"
+        "url": "https://github.com/microsoft/vscode-containers",
+        "directory": "packages/vscode-docker-registries"
     },
     "bugs": {
-        "url": "https://github.com/microsoft/vscode-docker-extensibility/issues"
+        "url": "https://github.com/microsoft/vscode-containers/issues"
     },
-    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-docker-registries/README.md",
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-docker-registries/README.md",
+    "publishConfig": {
+        "access": "public"
+    },
     "keywords": [
         "vscode",
         "docker"
@@ -25,7 +29,8 @@
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
         "lint": "eslint --max-warnings 0",
         "test": "mocha",
-        "package": "npm pack"
+        "package": "pnpm pack",
+        "clean": "node ../../scripts/clean.mjs"
     },
     "engines": {
         "vscode": "^1.105.0"

@@ -4,7 +4,7 @@
 This package adds support for building command lines and running external processes, primarily for use in VS Code.
 
 ## License
-[MIT](LICENSE)
+[MIT](LICENSE.md)
 
 ## Contributing
 

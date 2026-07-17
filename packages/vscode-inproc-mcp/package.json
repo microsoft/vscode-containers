@@ -3,15 +3,19 @@
     "author": "Microsoft Corporation",
     "version": "0.3.0",
     "description": "Library support for building MCP servers, primarily for use in VS Code.",
-    "license": "See LICENSE in the project root for license information.",
+    "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/microsoft/vscode-docker-extensibility"
+        "url": "https://github.com/microsoft/vscode-containers",
+        "directory": "packages/vscode-inproc-mcp"
     },
     "bugs": {
-        "url": "https://github.com/microsoft/vscode-docker-extensibility/issues"
+        "url": "https://github.com/microsoft/vscode-containers/issues"
     },
-    "homepage": "https://github.com/microsoft/vscode-docker-extensibility/blob/main/packages/vscode-inproc-mcp/README.md",
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-inproc-mcp/README.md",
+    "publishConfig": {
+        "access": "public"
+    },
     "exports": {
         ".": {
             "import": "./dist/esm/index.js",
@@ -34,15 +38,16 @@
         "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
         "lint": "eslint --max-warnings 0",
-        "package": "npm pack",
-        "test": "mocha"
+        "package": "pnpm pack",
+        "test": "mocha",
+        "clean": "node ../../scripts/clean.mjs"
     },
     "engines": {
         "vscode": "^1.105.0"
     },
     "dependencies": {
         "@microsoft/vscode-azext-utils": "^4.1.0",
-        "@microsoft/vscode-processutils": "^0.2.1",
+        "@microsoft/vscode-processutils": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.26.0",
         "express": "~5",
         "zod": "~4"

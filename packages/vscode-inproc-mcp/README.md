@@ -4,7 +4,7 @@
 This package adds support for building MCP servers, especially in-proc in the extension host process of VSCode.
 
 ## License
-[MIT](LICENSE)
+[MIT](LICENSE.md)
 
 ## Contributing
 

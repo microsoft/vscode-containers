@@ -8,6 +8,16 @@ import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
     azExtEslintRecommendedTypeChecked,
+    {
+        languageOptions: {
+            parserOptions: {
+                projectService: false,
+                // This tsconfig lets the linter resolve the sibling vscode-processutils
+                // package from source without needing to build it first.
+                project: './tsconfig.lint.json',
+            },
+        },
+    },
     lazyImportRuleConfig([
         'express',
         '@modelcontextprotocol/*',
