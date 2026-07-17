@@ -34,7 +34,7 @@
         }
     },
     "scripts": {
-        "build": "npm run build:esm && npm run build:cjs",
+        "build": "pnpm run build:esm && pnpm run build:cjs",
         "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
         "lint": "eslint --max-warnings 0",
@@ -46,18 +46,19 @@
         "vscode": "^1.105.0"
     },
     "dependencies": {
-        "@microsoft/vscode-azext-utils": "^4.1.0",
+        "@microsoft/vscode-azext-utils": "catalog:",
         "@microsoft/vscode-processutils": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.26.0",
         "express": "~5",
-        "zod": "~4"
+        "zod": "catalog:"
     },
     "devDependencies": {
         "@types/express": "^5.0.3"
     },
     "mocha": {
         "node-option": [
-            "import=tsx"
+            "experimental-transform-types",
+            "import=@microsoft/vscode-azext-eng/mocha"
         ],
         "spec": [
             "src/test/**/*.test.ts"

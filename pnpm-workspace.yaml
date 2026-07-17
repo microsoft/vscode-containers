@@ -1,7 +1,10 @@
 packages:
   - extensions/vscode-containers
   - extensions/vscode-docker
-  - packages/*
+  - packages/vscode-processutils
+  - packages/vscode-container-client
+  - packages/vscode-docker-registries
+  - packages/vscode-inproc-mcp
 allowBuilds:
   "@vscode/vsce-sign": true
   esbuild: true
@@ -33,9 +36,6 @@ publicHoistPattern:
   # imported packages' tests (and their tsc build, which compiles test files) can resolve it.
   - "chai-as-promised"
   - "@types/chai-as-promised"
-  # tsx is hoisted so the imported packages' mocha config (--import=tsx) resolves it
-  # without each package having to declare it explicitly.
-  - "tsx"
 pnpmfile: scripts/pnpmfile.mjs
 # The Azure Artifacts proxy sits behind a load balancer that stamps a random backend shard
 # host (ms-feed-N.pkgs.visualstudio.com) into each package's dist.tarball. pnpm's supply-chain
@@ -53,9 +53,12 @@ supportedArchitectures:
   libc:
     - current
 catalog:
+  "@microsoft/vscode-azext-utils": ^4.1.0
   "@vscode/extension-telemetry": ^1.5.2
   "@vscode/test-cli": ^0.0.12
   "@vscode/test-electron": ^3.0.0
+  dayjs: ^1.11.7
   esbuild: ^0.28.1
   esbuild-plugin-copy: ^2.1.1
   tsx: ^4.22.4
+  zod: ^4.1.13

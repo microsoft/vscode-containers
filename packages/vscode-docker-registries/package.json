@@ -24,7 +24,7 @@
     "main": "dist/cjs/index.js",
     "types": "dist/esm/index.d.ts",
     "scripts": {
-        "build": "npm run build:esm && npm run build:cjs",
+        "build": "pnpm run build:esm && pnpm run build:cjs",
         "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
         "lint": "eslint --max-warnings 0",
@@ -36,11 +36,12 @@
         "vscode": "^1.105.0"
     },
     "dependencies": {
-        "dayjs": "^1.11.7"
+        "dayjs": "catalog:"
     },
     "mocha": {
         "node-option": [
-            "import=tsx"
+            "experimental-transform-types",
+            "import=@microsoft/vscode-azext-eng/mocha"
         ],
         "spec": [
             "src/test/**/*.test.ts"
