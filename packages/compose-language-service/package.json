@@ -53,7 +53,6 @@
         "node": ">=22"
     },
     "devDependencies": {
-        "@microsoft/vscode-azext-eng": "^1.1.0-alpha.3",
         "vscode-jsonrpc": "^9.0.1",
         "vscode-languageclient": "catalog:",
         "vscode-languageserver-types": "^3.18.0"
