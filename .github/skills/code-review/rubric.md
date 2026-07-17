@@ -38,11 +38,11 @@ you are guessing, drop it or make it an open question.
 ## Higher scrutiny for agent-authored PRs
 
 If the PR is authored by an agent (title starts with an agent marker such as the robot emoji,
-or the author is a bot like `Copilot` / `dependabot`), review with **higher scrutiny** --
-agents commonly over-engineer, duplicate existing helpers, hard-code strings that should be
-localized, add unnecessary defensive code, or leave PR-narrative comments in source. For human
-authors, give benefit of the doubt and **ask** when something looks odd but could be
-intentional.
+or the author is a bot like `Copilot` / `dependabot`), look **more carefully** at the known
+agent failure modes -- over-engineering, duplicated helpers, hard-coded strings that should be
+localized, unnecessary defensive code, PR-narrative comments left in source. This raises where
+you look, not the bar: every finding still needs the same grounding. For human authors, give
+benefit of the doubt and **ask** when something looks odd but could be intentional.
 
 ## Scope and intent (every PR)
 
@@ -79,20 +79,18 @@ Apply these. Cite the concrete helper or convention the author should use.
 - **Every user-facing string must be localized** with `vscode.l10n.t('...')`. Flag any
   hard-coded visible string (messages, quick-pick labels/placeholders, notifications, errors,
   `package.json` contributions via `package.nls.json`). Legacy `localize(...)` is gone; new
-  code uses `vscode.l10n.t`.
-- Message style: avoid contractions in user-facing text; keep trailing-period usage
-  consistent; prefer clear, full wording.
+  code uses `vscode.l10n.t`. Spell terms out in user-facing text (e.g. "Software Bill of
+  Materials", not "SBOM") where a maintainer has asked for it; skip routine grammar/punctuation
+  nits.
 
 ### Async / await
-- Do not mark a function `async` if its body is synchronous.
 - Mixing `try/catch` with promises **without** `await` hides errors -- ensure rejections are
-  awaited inside the `try`.
-- Intentional fire-and-forget must be explicit: prefix the call with `void` **and** a short
-  comment that you are deliberately not awaiting.
-- `vscode.window.withProgress(...)` returns the inner callback's value -- await it instead of
-  stashing extra locals.
-- After an `await`, re-check any guard state you relied on before it (reentrancy).
-- Consider `Promise.all` for independent CLI calls.
+  awaited inside the `try` (a fire-and-forget call in a `try` will not be caught).
+- Intentional fire-and-forget must be explicit: prefix the call with `void`, and make sure a
+  rejection cannot go unhandled (attach a handler or `await` in a `try/catch` when the call can
+  fail meaningfully). Do not demand an explanatory comment on every `void`.
+- After an `await`, re-check any guard state you relied on before it -- but only when that state
+  is shared/mutable and can actually change across the await (reentrancy).
 
 ### Disposables / resource lifetime
 - `CancellationTokenSource`, `EventEmitter<T>`, `createOutputChannel()`, event subscriptions,
@@ -111,24 +109,16 @@ Apply these. Cite the concrete helper or convention the author should use.
 ### null / undefined
 - Choose `||` vs `??` deliberately: `||` treats `''` / `0` / `false` as "use default"; `??`
   only defaults on null/undefined. This matters for settings where empty string is a real
-  value.
-- Guard array access on possibly-undefined values; a non-empty check often needs both a
-  defined check **and** `length > 0`.
+  value. Flag it when you can point to a legitimate falsy case the `||` mishandles.
 - Keep return types honest -- if a value can be undefined, the signature must be
-  `T | undefined`.
-- Prefer real `undefined` over `''` / "(not set)" in telemetry; do not write explicit
-  default/`undefined` config into `tasks.json`.
+  `T | undefined`, and guard the resulting possibly-undefined access.
 
 ### TypeScript typing
-- TS is **structurally** typed -- two interfaces with the same shape are interchangeable, so
-  distinct names alone do not prevent mix-ups.
-- Prefer an `enum` or string-literal union over a bare `boolean` parameter so call sites are
-  self-documenting.
-- Avoid `any`; keep public/extension API surface minimal (add options only when needed).
-
-### Declarations / style
-- Prefer `const`; use `private readonly` on constructor parameter properties.
-- Single quotes for strings; `export const X` over `export default`; avoid `=== true`.
+- Prefer an `enum` or string-literal union over a bare `boolean` parameter **for an
+  exported/public API or an ambiguous call site** so callers are self-documenting; do not
+  demand it for a clear private helper.
+- Avoid introducing new avoidable `any`; the command-wrapper signatures that legitimately use
+  `any[]` are an established boundary, not a target.
 
 ### Command-line / regex construction
 - Build container/CLI commands with the arg helpers from `@microsoft/vscode-processutils`
@@ -137,14 +127,15 @@ Apply these. Cite the concrete helper or convention the author should use.
   Escaping differs per shell/OS (especially Windows); prefer `withQuotedArg` / `shouldQuote`
   over hand-rolled quoting. See `extensions/vscode-containers/src/tasks/netSdk/netSdkTaskUtils.ts` and
   `extensions/vscode-containers/src/debugging/netcore/*` for current usage.
-- Regex: escape `.` as `\.`, anchor correctly, and watch for accidental matches elsewhere in a
-  path or command line.
+- Regex: escape `.` as `\.`, anchor correctly, and watch for accidental matches -- flag one
+  when you can point to the concrete input it would mis-match, not merely because it looks
+  complex.
 
 ### UI / UX
-- Prefer a QuickPick (shows all options at once) over multi-click "cycle" buttons.
 - Accessibility: refer to UI elements by name, not relative position ("the button on the
-  left") -- screen readers cannot rely on position.
-- Avoid redundant toasts / progress notifications.
+  left") -- screen readers cannot rely on position. (Open question unless clearly wrong.)
+- Flag a redundant toast / progress notification only when you can name the concrete duplicate
+  or misleading path (e.g. two popups for one failure).
 - Commands that should not appear in the Command Palette need a `when` clause / menu
   restriction in `package.json`.
 
@@ -163,15 +154,19 @@ Apply these. Cite the concrete helper or convention the author should use.
   `DOCKER_HOST`).
 
 ### Cross-platform
-- Prefer Node `os.platform()` / `os.arch()` over bespoke OS-provider abstractions.
 - Linux filesystems are case-sensitive: import path casing must match exactly or the Linux
   build breaks.
-- Consider cmd, PowerShell, and git bash behavior on Windows.
+- Container/CLI command construction must work across cmd, PowerShell, and git bash on Windows
+  -- lean on the `@microsoft/vscode-processutils` arg helpers (above) rather than hand-rolled
+  quoting.
 
 ### Contracts / client / registry packages (imported extensibility)
-The monorepo is importing `vscode-docker-extensibility` (the `@microsoft/vscode-container-client`
-and `@microsoft/vscode-docker-registries` packages) and `compose-language-service`. For changes
-under those packages, apply these -- they are the patterns their maintainers raise most:
+**Apply this section ONLY to changes under `packages/**`** -- the imported source of
+`vscode-docker-extensibility` (`@microsoft/vscode-container-client`,
+`@microsoft/vscode-docker-registries`) and `compose-language-service`, arriving via the open
+import PRs. These do **not** apply to `extensions/**` consumer code, which merely depends on the
+published packages. If `packages/**` is not in the diff, skip this section. For changes that
+are under those packages, apply -- they are the patterns those maintainers raise most:
 - **Self-contained public contracts.** Define the types a contract exposes in the contract file;
   do not couple a public API to implementation-only types. Re-export intended public symbols from
   the package entrypoint, and share cross-cutting errors (e.g. `CancellationError`,
@@ -200,21 +195,22 @@ under those packages, apply these -- they are the patterns their maintainers rai
   entrypoint imports is a real `dependency`/`peerDependency`, not a `devDependency`.
 
 ### Dependencies / manifests
-- Do not change dependencies, the root manifest, or the lockfile unless the owning package
-  actually needs it; flag spurious dependency additions and stray root `devDependencies`.
-- Keep dependency bumps scoped to the intended package, and verify new deps satisfy the Node
-  engine in `.nvmrc` (e.g. a package requiring a newer Node than the repo targets).
+- Keep dependency changes scoped to the workspace that needs them: flag a dependency added to
+  the root manifest (or a stray root `devDependency`) when only one extension/package uses it.
+  Name the workspace that should own it.
+- When a **changed** dependency declares its own engine requirement, check it against `.nvmrc`.
+  Do not review generated `pnpm-lock.yaml` entries line by line -- confirm the lockfile change
+  is the expected result of the manifest change.
 
 ### Comments / docs / tests
-- Comments explain **why**, not what; add a source link (permalink) when porting logic from
-  elsewhere.
-- Replace "what does `true` mean" comments with a typed parameter.
-- Factor pure logic (version comparison, parsing) into unit-testable functions; use test data
-  that is not already sorted so sorting logic is actually exercised.
-- Avoid tight wall-clock upper-bound assertions in timing tests (CI VMs stall); assert ordering
-  or use repeated samples if a bound is essential.
-- Preserve original line endings and avoid whole-file rewrites / formatting-only churn that
-  bury the real change and pollute `git blame`.
+- Comments should explain **why** for surprising / platform / protocol logic; add a source
+  permalink when porting logic from elsewhere. Do not ask for comments on obvious code.
+- Factor pure logic (version comparison, parsing) into unit-testable functions; when a test
+  exercises sorting, use input that is not already sorted.
+- In timing tests, avoid tight wall-clock upper-bound assertions (CI VMs stall); assert
+  ordering or use repeated samples if a bound is essential.
+- Flag a genuine whole-file rewrite or line-ending conversion that buries the real change and
+  pollutes `git blame`; ignore ordinary formatter output.
 
 ## General correctness (every PR)
 
@@ -249,9 +245,10 @@ Frame the review as:
 1. **Verdict** -- one line: ready / needs changes / needs discussion.
 2. **Blocking issues** -- correctness, resource, localization, or pattern violations that must
    be fixed, each with file:line and the concrete fix.
-3. **Non-blocking suggestions** -- improvements and nits.
-4. **What looks good** -- brief.
-5. **Open questions** -- things to ask the author rather than assert.
+3. **Non-blocking suggestions** -- improvements and nits worth making; omit if there are none.
+4. **What looks good** -- optional, one line; skip it rather than pad the review.
+5. **Open questions** -- material ambiguities to ask the author about rather than assert (not a
+   dumping ground for low-confidence findings).
 
 Never approve -- approval is a human maintainer's decision. A review either raises comments or
 requests changes; it does not sign off.
