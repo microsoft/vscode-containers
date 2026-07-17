@@ -181,7 +181,13 @@ export class ComposeLanguageService implements Disposable {
 
     private createLspHandler<P extends TextDocumentParams, R, PR, E>(
         event: (handler: ServerRequestHandler<P, R, PR, E>) => void,
-        handler: ProviderBase<P & ExtendedParams, R, PR, E>
+        // The result (`R`) and error (`E`) types are inferred from the connection's
+        // handler signature (via `NoInfer`) and the provider is validated against them.
+        // The partial-result type (`PR`) is not cross-checked: the LSP connection types it
+        // as the item type while providers use `never`, and those are contravariantly
+        // incompatible even though the wrapper simply forwards the reporter unchanged.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        handler: ProviderBase<P & ExtendedParams, NoInfer<R>, any, NoInfer<E>>
     ): void {
         event(async (params, token, workDoneProgress, resultProgress) => {
 
@@ -220,7 +226,7 @@ export class ComposeLanguageService implements Disposable {
         }, this, this.subscriptions);
     }
 
-    private async callWithTelemetryAndErrorHandling<R, E>(callbackId: string, callback: () => Promise<R>): Promise<R | ResponseError<E>> {
+    private async callWithTelemetryAndErrorHandling<R, E>(callbackId: string, callback: () => Promise<R | ResponseError<E>>): Promise<R | ResponseError<E>> {
         const actionContext: ActionContext = {
             clientCapabilities: this.clientParams.capabilities,
             connection: this.connection,

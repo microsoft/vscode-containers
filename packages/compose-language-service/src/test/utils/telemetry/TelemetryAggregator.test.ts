@@ -170,7 +170,6 @@ async function awaitTelemetryAndCompare(testConnection: TestConnection, telemetr
         // Need to connect the listener *before* sending the events, to ensure no timing issues, i.e. with the response being sent before the listener is ready
         const listenerPromise = new Promise<TelemetryEvent>((resolve) => {
             testConnection.client.onNotification(TelemetryEventNotification.type, (telemetry) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 resolve(telemetry);
             });
         });

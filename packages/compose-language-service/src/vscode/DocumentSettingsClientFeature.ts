@@ -55,7 +55,7 @@ export class DocumentSettingsClientFeature implements StaticFeature, vscode.Disp
                     return {
                         eol: textEditor.document.eol,
                         tabSize: Number(textEditor.options.tabSize),
-                    } as DocumentSettings;
+                    };
                 }
             )
         );

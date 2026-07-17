@@ -5,6 +5,7 @@ packages:
   - packages/vscode-container-client
   - packages/vscode-docker-registries
   - packages/vscode-inproc-mcp
+  - packages/compose-language-service
 allowBuilds:
   "@vscode/vsce-sign": true
   esbuild: true

@@ -24,6 +24,7 @@ const copies = {
     './packages/vscode-container-client': ['./LICENSE.md'],
     './packages/vscode-docker-registries': ['./LICENSE.md'],
     './packages/vscode-inproc-mcp': ['./LICENSE.md'],
+    './packages/compose-language-service': ['./LICENSE.md'],
 };
 
 for (const [toDir, files] of Object.entries(copies)) {

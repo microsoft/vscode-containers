@@ -1,5 +1,0 @@
-# Mark some files as generated to prevent them from showing in the repo's language stats
-NOTICE.html linguist-vendored=true
-
-# Stop git from breaking this script by putting CRLF in place of LF
-bin/docker-compose-langserver text eol=lf

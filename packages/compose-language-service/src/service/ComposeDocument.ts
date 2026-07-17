@@ -112,7 +112,7 @@ export class ComposeDocument {
 
         for (let i = params.position.line - 1; i >= 0 && currentIndentDepth > 0; i--) {
             const currentLine = this.lineAt(i);
-            let indentDepth = MaximumLineLength;
+            let indentDepth: number;
             let result: RegExpExecArray | null;
 
             /* eslint-disable @typescript-eslint/no-non-null-assertion */

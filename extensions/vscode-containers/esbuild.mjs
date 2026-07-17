@@ -14,6 +14,8 @@ extensionConfig.alias = {
     '@microsoft/vscode-container-client': '../../packages/vscode-container-client/src/index.ts',
     '@microsoft/vscode-docker-registries': '../../packages/vscode-docker-registries/src/index.ts',
     '@microsoft/vscode-processutils': '../../packages/vscode-processutils/src/index.ts',
+    '@microsoft/compose-language-service/client': '../../packages/compose-language-service/src/client/index.ts',
+    '@microsoft/compose-language-service/vscode': '../../packages/compose-language-service/src/vscode/index.ts',
 };
 
 /** @type {import('esbuild').BuildOptions} */
@@ -26,7 +28,8 @@ const finalConfig = {
             out: 'dockerfile-language-server-nodejs/lib/server',
         },
         {
-            in: './node_modules/@microsoft/compose-language-service/dist/esm/server.js',
+            // Bundle the compose language server straight from the workspace-local source
+            in: '../../packages/compose-language-service/src/server.ts',
             out: 'compose-language-service/lib/server',
         },
     ],

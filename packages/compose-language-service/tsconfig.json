@@ -6,6 +6,11 @@
         ],
         "module": "es2022",
         "moduleResolution": "bundler",
+        "types": [
+            "node",
+            "mocha",
+            "vscode",
+        ],
         "sourceMap": true,
         "inlineSources": false,
         "declaration": true,

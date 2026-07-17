@@ -7,12 +7,12 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/microsoft/compose-language-service"
+        "url": "git+https://github.com/microsoft/vscode-containers.git"
     },
     "bugs": {
-        "url": "https://github.com/microsoft/compose-language-service/issues"
+        "url": "https://github.com/microsoft/vscode-containers/issues"
     },
-    "homepage": "https://github.com/microsoft/compose-language-service/blob/main/README.md",
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/compose-language-service/README.md",
     "keywords": [
         "vscode",
         "docker"
@@ -21,44 +21,48 @@
     "types": "dist/esm/server.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/esm/server.d.ts",
             "import": "./dist/esm/server.js",
-            "require": "./dist/cjs/server.js",
-            "types": "./dist/esm/server.d.ts"
+            "require": "./dist/cjs/server.js"
         },
         "./client": {
+            "types": "./dist/esm/client/index.d.ts",
             "import": "./dist/esm/client/index.js",
-            "require": "./dist/cjs/client/index.js",
-            "types": "./dist/esm/client/index.d.ts"
+            "require": "./dist/cjs/client/index.js"
         },
         "./vscode": {
+            "types": "./dist/esm/vscode/index.d.ts",
             "import": "./dist/esm/vscode/index.js",
-            "require": "./dist/cjs/vscode/index.js",
-            "types": "./dist/esm/vscode/index.d.ts"
+            "require": "./dist/cjs/vscode/index.js"
         }
     },
     "bin": {
         "docker-compose-langserver": "./bin/docker-compose-langserver"
     },
     "scripts": {
-        "build": "npm run build:esm && npm run build:cjs",
+        "build": "pnpm run build:esm && pnpm run build:cjs",
         "build:esm": "tsc",
         "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
         "lint": "eslint --max-warnings 0",
-        "package": "npm pack",
-        "test": "mocha"
+        "package": "pnpm pack",
+        "test": "mocha",
+        "clean": "node ../../scripts/clean.mjs"
     },
     "engines": {
         "node": ">=22"
     },
     "devDependencies": {
-        "@microsoft/vscode-azext-eng": "1.0.0-alpha.12",
-        "@types/node": "22.x",
-        "@types/vscode": "1.105.0",
-        "vscode-languageclient": "^10.0.0-next.19"
+        "@microsoft/vscode-azext-eng": "^1.1.0-alpha.3",
+        "@types/chai-as-promised": "8.0.2",
+        "chai-as-promised": "8.0.2",
+        "tsx": "catalog:",
+        "vscode-jsonrpc": "^9.0.1",
+        "vscode-languageclient": "^10.1.0",
+        "vscode-languageserver-types": "^3.18.0"
     },
     "dependencies": {
-        "vscode-languageserver": "^10.0.0-next.16",
-        "vscode-languageserver-protocol": "^3.17.6-next.16",
+        "vscode-languageserver": "^10.1.0",
+        "vscode-languageserver-protocol": "^3.18.2",
         "vscode-languageserver-textdocument": "^1.0.12",
         "yaml": "^2.8.2"
     },

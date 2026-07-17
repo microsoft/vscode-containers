@@ -71,8 +71,8 @@ importers:
         specifier: ^12.14.0
         version: 12.33.0
       '@microsoft/compose-language-service':
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: workspace:*
+        version: link:../../packages/compose-language-service
       '@microsoft/vscode-azext-azureauth':
         specifier: ^6.0.0-alpha.8
         version: 6.0.0-alpha.8
@@ -207,6 +207,43 @@ importers:
       vscode-jsonrpc:
         specifier: ^8.0.1
         version: 8.0.2
+
+  packages/compose-language-service:
+    dependencies:
+      vscode-languageserver:
+        specifier: ^10.1.0
+        version: 10.1.0
+      vscode-languageserver-protocol:
+        specifier: ^3.18.2
+        version: 3.18.2
+      vscode-languageserver-textdocument:
+        specifier: ^1.0.12
+        version: 1.0.12
+      yaml:
+        specifier: ^2.8.2
+        version: 2.9.0
+    devDependencies:
+      '@microsoft/vscode-azext-eng':
+        specifier: ^1.1.0-alpha.3
+        version: 1.1.0-alpha.3(@vscode/test-cli@0.0.12)(@vscode/test-electron@3.0.0)(@vscode/vsce@3.9.2)(esbuild-plugin-copy@2.1.1(esbuild@0.28.1))(esbuild@0.28.1)(tsx@4.23.0)
+      '@types/chai-as-promised':
+        specifier: 8.0.2
+        version: 8.0.2
+      chai-as-promised:
+        specifier: 8.0.2
+        version: 8.0.2(chai@6.2.2)
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.0
+      vscode-jsonrpc:
+        specifier: ^9.0.1
+        version: 9.0.1
+      vscode-languageclient:
+        specifier: ^10.1.0
+        version: 10.1.0
+      vscode-languageserver-types:
+        specifier: ^3.18.0
+        version: 3.18.0
 
 packages:
 
@@ -622,11 +659,6 @@ packages:
     resolution: {integrity: sha1-Jq1prhzQVMjUMHCQAeJVKTb6dU0=}
     peerDependencies:
       tslib: '>= 1.0.0'
-
-  '@microsoft/compose-language-service@0.5.0':
-    resolution: {integrity: sha1-n+MuEEWCf3bZ+hsbLFnZ3DUMhxI=}
-    engines: {node: '>=22'}
-    hasBin: true
 
   '@microsoft/dynamicproto-js@2.0.5':
     resolution: {integrity: sha1-9NCLCwbFcNaerXzSq69BQCUITGc=}
@@ -3481,13 +3513,6 @@ snapshots:
       '@nevware21/ts-utils': 0.15.0
       tslib: 2.8.1
 
-  '@microsoft/compose-language-service@0.5.0':
-    dependencies:
-      vscode-languageserver: 10.1.0
-      vscode-languageserver-protocol: 3.18.2
-      vscode-languageserver-textdocument: 1.0.12
-      yaml: 2.9.0
-
   '@microsoft/dynamicproto-js@2.0.5':
     dependencies:
       '@nevware21/ts-utils': 0.15.0
@@ -4417,7 +4442,7 @@ snapshots:
   dockerfile-ast@0.7.1:
     dependencies:
       vscode-languageserver-textdocument: 1.0.12
-      vscode-languageserver-types: 3.17.3
+      vscode-languageserver-types: 3.18.0
 
   dockerfile-language-server-nodejs@0.15.0:
     dependencies:
