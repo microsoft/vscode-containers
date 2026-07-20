@@ -42,7 +42,13 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
         }
 
         this._runtimeClients.set(client.id, client);
-        this.reconfigureClient(client);
+
+        // Reconfiguration can throw a user-actionable error (e.g. an unsupported Compose V1 override). Wrap
+        // it so a bad setting surfaces an error notification instead of breaking extension activation. The
+        // callback runs synchronously, so `commandName` is still configured before this method returns.
+        void callWithTelemetryAndErrorHandling('vscode-containers.client.reconfigure', () => {
+            this.reconfigureClient(client);
+        });
 
         this.runtimeClientRegisteredEmitter.fire(client);
 

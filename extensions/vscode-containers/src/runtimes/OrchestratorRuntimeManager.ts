@@ -4,7 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DockerComposeClient, IContainerOrchestratorClient } from '@microsoft/vscode-container-client';
+import * as vscode from 'vscode';
+import { configPrefix } from '../constants';
 import { RuntimeManager } from './RuntimeManager';
+
+// Matches a base command that still ends with the `compose` subcommand, whether V1-style (`docker-compose`,
+// `podman-compose.exe`, or a rooted path to one) or an explicit V2 command (`docker compose`).
+const composeSuffixRegex = /[-\s]+compose(\.exe)?\s*$/i;
 
 export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchestratorClient> {
     public constructor() {
@@ -20,9 +26,16 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
             // where `compose` is appended as the first argument to the base command (e.g. `docker compose`).
             client.composeV2 = true;
 
-            // Normalize a V1-style (`docker-compose`) or explicit V2 (`docker compose`) override down to the
-            // base command, since composeV2 appends `compose` itself and we'd otherwise get `docker-compose compose`.
-            client.commandName = client.commandName.replace(/[-\s]+compose(\.exe)?\s*$/i, '');
+            // The base command must not already include the `compose` subcommand, otherwise we'd invoke
+            // e.g. `docker-compose compose`. Rather than silently rewriting the command (which breaks for
+            // rooted paths and standalone binaries), surface an actionable error asking the user to fix it.
+            if (composeSuffixRegex.test(client.commandName)) {
+                throw new Error(vscode.l10n.t(
+                    'The "{0}.{1}" setting is set to "{2}", but Compose V1 (for example "docker-compose") is no longer supported. Set it to the base command only (for example "docker" or "podman"); it will be invoked as "docker compose".',
+                    configPrefix,
+                    this.overrideCommandSettingName,
+                    client.commandName));
+            }
         }
     }
 }
