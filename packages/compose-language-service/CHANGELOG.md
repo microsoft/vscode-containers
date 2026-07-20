@@ -1,3 +1,7 @@
+## 1.0.0 - 20 July 2026
+### Changed
+* The repository has been relocated to [microsoft/vscode-containers](https://github.com/microsoft/vscode-containers). The bump to 1.0.0 does not reflect any breaking API changes.
+
 ## 0.5.0 - 9 February 2026
 ### Breaking Changes
 * `TelemetryEvent`, `AlternateYamlLanguageServiceClientCapabilities`, and `DocumentSettings*` types have moved from `lib/client/*` to `@microsoft/compose-language-service/client`.
