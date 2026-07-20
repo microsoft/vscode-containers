@@ -28,9 +28,9 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
 
             // The base command must not already include the `compose` subcommand, otherwise we'd invoke
             // e.g. `docker-compose compose`. Rather than silently rewriting the command (which breaks for
-            // rooted paths and standalone binaries), surface an actionable error asking the user to fix it.
+            // rooted paths and standalone binaries), show an actionable error asking the user to fix it.
             if (composeSuffixRegex.test(client.commandName)) {
-                throw new Error(vscode.l10n.t(
+                void vscode.window.showErrorMessage(vscode.l10n.t(
                     'The "{0}.{1}" setting is set to "{2}", but Compose V1 (for example "docker-compose") is no longer supported. Set it to the base command only (for example "docker" or "podman"); it will be invoked as "docker compose".',
                     configPrefix,
                     this.overrideCommandSettingName,
