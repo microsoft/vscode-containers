@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { callWithTelemetryAndErrorHandling, IActionContext } from '@microsoft/vscode-azext-utils';
+import { callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils';
 import { ClientIdentity } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
@@ -16,9 +16,9 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
     private readonly onDidChangeConfigurationDisposable: vscode.Disposable;
 
     protected constructor(private readonly defaultClientId: string, private readonly clientSettingName: string, protected readonly overrideCommandSettingName: string) {
-        this.onDidChangeConfigurationDisposable = vscode.workspace.onDidChangeConfiguration(async e => {
+        this.onDidChangeConfigurationDisposable = vscode.workspace.onDidChangeConfiguration(e => {
             if (e.affectsConfiguration(`${configPrefix}.${this.overrideCommandSettingName}`)) {
-                return callWithTelemetryAndErrorHandling('vscode-containers.command.changed', (context: IActionContext) => {
+                void callWithTelemetryAndErrorHandling('vscode-containers.command.changed', () => {
                     for (const client of this._runtimeClients.values()) {
                         this.reconfigureClient(client);
                     }
@@ -53,18 +53,12 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
 
     public async getClient(): Promise<TClient> {
         const config = vscode.workspace.getConfiguration(configPrefix);
-        const runtimeClientId = config.get<string | undefined>(this.clientSettingName);
+        const effectiveClientId = config.get<string | undefined>(this.clientSettingName) || this.defaultClientId;
 
-        let runtimeClient: TClient;
-
-        if (!runtimeClientId) {
-            runtimeClient = this._runtimeClients.get(this.defaultClientId);
-        } else {
-            runtimeClient = await this.waitForClientToBeRegistered(runtimeClientId);
-        }
+        const runtimeClient = await this.waitForClientToBeRegistered(effectiveClientId);
 
         if (!runtimeClient) {
-            throw new Error(vscode.l10n.t('No container / orchestrator client with ID \'{0}\' is registered.', runtimeClientId));
+            throw new Error(vscode.l10n.t('No container / orchestrator client with ID \'{0}\' is registered.', effectiveClientId));
         }
 
         return runtimeClient;

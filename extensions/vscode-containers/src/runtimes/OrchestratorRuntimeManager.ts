@@ -22,7 +22,7 @@ export class OrchestratorRuntimeManager extends RuntimeManager<IContainerOrchest
 
             // Normalize a V1-style (`docker-compose`) or explicit V2 (`docker compose`) override down to the
             // base command, since composeV2 appends `compose` itself and we'd otherwise get `docker-compose compose`.
-            client.commandName = client.commandName.replace(/[-\s]+compose\s*$/i, '');
+            client.commandName = client.commandName.replace(/[-\s]+compose(\.exe)?\s*$/i, '');
         }
     }
 }
