@@ -69,7 +69,10 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
     }
 
     protected reconfigureClient(client: TClient): void {
-        client.commandName = this.getOverrideSettingValue() || client.defaultCommandName;
+        // Fall back to the client's current command name so third-party clients registered via the public
+        // extension API (which may predate `defaultCommandName` on the ClientIdentity contract) are never
+        // wiped to `undefined`.
+        client.commandName = this.getOverrideSettingValue() || client.defaultCommandName || client.commandName;
     }
 
     private getOverrideSettingValue(): string | undefined {
