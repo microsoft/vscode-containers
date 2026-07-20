@@ -1,3 +1,7 @@
+## 1.0.0 - 21 July 2026
+### Changed
+* The repository has been relocated to [microsoft/vscode-containers](https://github.com/microsoft/vscode-containers). The bump to 1.0.0 does not reflect any breaking API changes.
+
 ## 0.4.2 - 16 April 2026
 ### Fixed
 * Fixed an issue where some requests would fail. [#354](https://github.com/microsoft/vscode-docker-extensibility/issues/354)

@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/compose-language-service",
     "author": "Microsoft Corporation",
-    "version": "0.5.0",
+    "version": "1.0.0",
     "publisher": "ms-azuretools",
     "description": "Language service for Docker Compose documents",
     "license": "MIT",
