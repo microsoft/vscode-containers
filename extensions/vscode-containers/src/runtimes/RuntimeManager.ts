@@ -75,13 +75,7 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
     }
 
     protected reconfigureClient(client: TClient): void {
-        // TEMPORARY: `defaultCommandName` is being added to `ClientIdentity` in @microsoft/vscode-container-client.
-        // Until that change is published and this extension's dependency is bumped, cast to reach it and fall back
-        // to the client's current command name (its constructor default) since the property isn't present at runtime yet.
-        // Once the dependency is updated, replace the next two lines with:
-        //   client.commandName = this.getOverrideSettingValue() || client.defaultCommandName;
-        const defaultCommandName = (client as unknown as { defaultCommandName?: string }).defaultCommandName ?? client.commandName;
-        client.commandName = this.getOverrideSettingValue() || defaultCommandName;
+        client.commandName = this.getOverrideSettingValue() || client.defaultCommandName;
     }
 
     private getOverrideSettingValue(): string | undefined {
