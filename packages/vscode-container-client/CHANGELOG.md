@@ -1,4 +1,4 @@
-## 1.0.0 - 20 July 2026
+## 1.0.0 - 21 July 2026
 ### Breaking Changes
 * Added a required readonly `defaultCommandName` property to `ClientIdentity` (and therefore the `ContainerClient` interface implemented by all clients). Consumers implementing these interfaces directly must now provide this property; those extending `ConfigurableClient` get it automatically.
 
