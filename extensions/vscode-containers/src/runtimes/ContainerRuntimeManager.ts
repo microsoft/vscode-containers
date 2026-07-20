@@ -9,10 +9,9 @@ import { RuntimeManager } from './RuntimeManager';
 
 export class ContainerRuntimeManager extends RuntimeManager<IContainersClient> {
     private readonly _contextManager = new ContextManager();
-    public readonly onContainerRuntimeClientRegistered = this.runtimeClientRegisteredEmitter.event;
 
     public constructor() {
-        super('containerClient');
+        super(DockerClient.ClientId, 'containerClient', 'containerCommand');
     }
 
     public override dispose(): void {
@@ -23,12 +22,4 @@ export class ContainerRuntimeManager extends RuntimeManager<IContainersClient> {
     public get contextManager(): IContextManager {
         return this._contextManager;
     }
-
-    protected override getDefaultClient(): IContainersClient {
-        return this.runtimeClients.find(isDockerClient);
-    }
-}
-
-function isDockerClient(maybeDockerClient: IContainersClient): maybeDockerClient is DockerClient {
-    return maybeDockerClient.id === DockerClient.ClientId;
 }

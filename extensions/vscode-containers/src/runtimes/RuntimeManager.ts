@@ -3,17 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils';
 import { ClientIdentity } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { TimeoutPromiseSource } from '../utils/promiseUtils';
 
-export abstract class RuntimeManager<TClient extends ClientIdentity> extends vscode.Disposable {
+export abstract class RuntimeManager<TClient extends ClientIdentity> implements vscode.Disposable {
     private readonly _runtimeClients = new Map<string, TClient>();
-    protected readonly runtimeClientRegisteredEmitter = new vscode.EventEmitter<TClient>();
+    private readonly runtimeClientRegisteredEmitter = new vscode.EventEmitter<TClient>();
 
-    protected constructor(private readonly clientSettingName: string) {
-        super(() => { /* Do nothing */ });
+    private readonly onDidChangeConfigurationDisposable: vscode.Disposable;
+
+    protected constructor(private readonly defaultClientId: string, private readonly clientSettingName: string, protected readonly overrideCommandSettingName: string) {
+        this.onDidChangeConfigurationDisposable = vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration(`${configPrefix}.${this.overrideCommandSettingName}`)) {
+                void callWithTelemetryAndErrorHandling('vscode-containers.command.changed', () => {
+                    for (const client of this._runtimeClients.values()) {
+                        this.reconfigureClient(client);
+                    }
+                });
+            }
+        });
+    }
+
+    public dispose(): void {
+        this.runtimeClientRegisteredEmitter.dispose();
+        this.onDidChangeConfigurationDisposable.dispose();
     }
 
     public registerRuntimeClient(client: TClient): vscode.Disposable {
@@ -26,6 +42,7 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
         }
 
         this._runtimeClients.set(client.id, client);
+        this.reconfigureClient(client);
 
         this.runtimeClientRegisteredEmitter.fire(client);
 
@@ -34,24 +51,14 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
         });
     }
 
-    public get runtimeClients(): Array<TClient> {
-        return Array.from(this._runtimeClients.values());
-    }
-
     public async getClient(): Promise<TClient> {
         const config = vscode.workspace.getConfiguration(configPrefix);
-        const runtimeClientId = config.get<string | undefined>(this.clientSettingName);
+        const effectiveClientId = config.get<string | undefined>(this.clientSettingName) || this.defaultClientId;
 
-        let runtimeClient: TClient;
-
-        if (!runtimeClientId) {
-            runtimeClient = this.getDefaultClient();
-        } else {
-            runtimeClient = await this.waitForClientToBeRegistered(runtimeClientId);
-        }
+        const runtimeClient = await this.waitForClientToBeRegistered(effectiveClientId);
 
         if (!runtimeClient) {
-            throw new Error(vscode.l10n.t('No container / orchestrator client with ID \'{0}\' is registered.', runtimeClientId));
+            throw new Error(vscode.l10n.t('No container / orchestrator client with ID \'{0}\' is registered.', effectiveClientId));
         }
 
         return runtimeClient;
@@ -61,9 +68,18 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> extends vsc
         return (await this.getClient()).commandName;
     }
 
-    protected abstract getDefaultClient(): TClient;
+    protected reconfigureClient(client: TClient): void {
+        // Fall back to the client's current command name so third-party clients registered via the public
+        // extension API (which may predate `defaultCommandName` on the ClientIdentity contract) are never
+        // wiped to `undefined`.
+        client.commandName = this.getOverrideSettingValue() || client.defaultCommandName || client.commandName;
+    }
 
-    protected waitForClientToBeRegistered(clientId: string): Promise<TClient> {
+    private getOverrideSettingValue(): string | undefined {
+        return vscode.workspace.getConfiguration(configPrefix).get<string | undefined>(this.overrideCommandSettingName);
+    }
+
+    private waitForClientToBeRegistered(clientId: string): Promise<TClient> {
         if (this._runtimeClients.has(clientId)) {
             // If it's already registered, resolve immediately
             return Promise.resolve(this._runtimeClients.get(clientId));

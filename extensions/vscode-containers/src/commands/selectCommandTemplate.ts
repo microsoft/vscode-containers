@@ -9,7 +9,7 @@ import { quoted } from '@microsoft/vscode-processutils';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
-import { isComposeV2ableOrchestratorClient } from '../runtimes/clients/AutoConfigurableDockerComposeClient';
+import { isComposeV2ableOrchestratorClient } from '../runtimes/OrchestratorRuntimeManager';
 import { resolveVariables } from '../utils/resolveVariables';
 
 type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset';

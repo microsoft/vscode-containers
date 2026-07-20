@@ -61,11 +61,17 @@ export type ClientIdentity = {
      */
     description: string;
     /**
-     * The default command name / path to use for the client. Will have a
+     * The command name / path to use for the client. Will have a
      * default value, but can be changed by the consumer (e.g. for
      * custom install paths).
      */
     commandName: string;
+    /**
+     * The default command name / path the client was constructed with. Unlike
+     * {@link commandName}, this is immutable and always reflects the original
+     * default, so consumers can reset {@link commandName} back to it.
+     */
+    readonly defaultCommandName: string;
 };
 
 export type ImageNameDefaults = {

@@ -13,6 +13,7 @@ export abstract class ConfigurableClient implements ClientIdentity {
         description: string
     ) {
         this.#commandName = commandName;
+        this.#defaultCommandName = commandName;
         this.#displayName = displayName;
         this.#description = description;
     }
@@ -24,6 +25,11 @@ export abstract class ConfigurableClient implements ClientIdentity {
 
     public set commandName(value: string) {
         this.#commandName = value;
+    }
+
+    readonly #defaultCommandName: string;
+    public get defaultCommandName(): string {
+        return this.#defaultCommandName;
     }
 
     #displayName: string;

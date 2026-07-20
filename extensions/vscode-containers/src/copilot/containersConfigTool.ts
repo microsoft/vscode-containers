@@ -7,7 +7,7 @@ import { AzExtLMTool, IActionContext } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
-import { isComposeV2ableOrchestratorClient } from '../runtimes/clients/AutoConfigurableDockerComposeClient';
+import { isComposeV2ableOrchestratorClient } from '../runtimes/OrchestratorRuntimeManager';
 
 export class ContainersConfigTool implements AzExtLMTool<void> {
     public async invoke(context: IActionContext, options: vscode.LanguageModelToolInvocationOptions<void>, token: vscode.CancellationToken): Promise<vscode.LanguageModelToolResult> {
