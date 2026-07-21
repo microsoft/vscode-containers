@@ -3,6 +3,9 @@
 * The repository has been relocated to [microsoft/vscode-containers](https://github.com/microsoft/vscode-containers). The bump to 1.0.0 does not reflect any breaking API changes.
 * The package now declares a minimum Node.js engine of 22.
 
+### Fixed
+* `spawnStreamAsync` now ends caller-provided `stdOutPipe`/`stdErrPipe` streams on the spawn `error` (e.g. `ENOENT`) and pre-spawn failure paths, so awaiting an `AccumulatorStream` after a rejection no longer hangs. [#540](https://github.com/microsoft/vscode-containers/issues/540)
+
 ## 0.2.2 - 22 April 2026
 ### Changed
 * Removed runtime imports of `'vscode'`. [#358](https://github.com/microsoft/vscode-docker-extensibility/pull/358)
