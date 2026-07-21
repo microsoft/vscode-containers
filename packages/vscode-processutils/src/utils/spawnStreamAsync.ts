@@ -76,39 +76,61 @@ export async function spawnStreamAsync(
     const cancellationToken = options.cancellationToken ?? CancellationTokenLike.None;
     const shell = options.shellProvider?.getShellOrDefault(options.shell) ?? options.shell;
 
+    // Ends any caller-provided output/error pipes. This is used only on terminal paths where
+    // the child's stdio streams never deliver EOF to the destination (a pre-spawn throw, or a
+    // spawn `error` such as ENOENT), so that consumers awaiting an `AccumulatorStream` (which
+    // resolves only on the stream's `finish` event) always settle instead of hanging.
+    //
+    // It is intentionally NOT called on the normal `exit` path: there the `.pipe({ end: true })`
+    // wiring below already ends the destination once the source reaches EOF, i.e. after all
+    // output has drained. Ending manually on `exit` would race that drain and can truncate
+    // trailing output (and trigger "write after end") when a slower destination is still
+    // consuming buffered data.
+    const endPipes = () => {
+        options.stdOutPipe?.end();
+        options.stdErrPipe?.end();
+    };
+
     // If there is a shell provider, apply its quoting, otherwise just flatten arguments into strings
     const normalizedArgs: string[] = options.shellProvider?.quote(args) ?? args.map(arg => typeof arg === 'string' ? arg : arg.value);
 
-    // Cancellation check
-    if (cancellationToken.isCancellationRequested) {
-        throw new CancellationError('Command cancelled', cancellationToken);
-    }
-
     let finalCommand: string;
-    if (!!options.allowUnsafeExecutablePath) {
-        // If allowUnsafeExecutablePath is true, we assume the command is a full command line
-        // and we do not apply any quoting or checks.
-        finalCommand = command;
-    } else {
-        // Otherwise, we do some checks and quoting.
-        const safeCommand = getSafeExecPath(command, options.env?.PATH);
-        const quotedSafeCommand = quoteExecutableCommandIfNeeded(safeCommand);
-        finalCommand = !!shell ? quotedSafeCommand : safeCommand;
+    try {
+        // Cancellation check
+        if (cancellationToken.isCancellationRequested) {
+            throw new CancellationError('Command cancelled', cancellationToken);
+        }
 
-        // If we're on Windows and not using a shell, we must use `windowsVerbatimArguments`
-        options.windowsVerbatimArguments ??= os.platform() === 'win32' && !shell;
+        if (!!options.allowUnsafeExecutablePath) {
+            // If allowUnsafeExecutablePath is true, we assume the command is a full command line
+            // and we do not apply any quoting or checks.
+            finalCommand = command;
+        } else {
+            // Otherwise, we do some checks and quoting.
+            const safeCommand = getSafeExecPath(command, options.env?.PATH);
+            const quotedSafeCommand = quoteExecutableCommandIfNeeded(safeCommand);
+            finalCommand = !!shell ? quotedSafeCommand : safeCommand;
 
-        // If we use `windowsVerbatimArguments`, we must also set `argv0` to the quoted command
-        options.argv0 ??= options.windowsVerbatimArguments ? quotedSafeCommand : undefined;
-    }
+            // If we're on Windows and not using a shell, we must use `windowsVerbatimArguments`
+            options.windowsVerbatimArguments ??= os.platform() === 'win32' && !shell;
 
-    if (options.onCommand) {
-        options.onCommand([finalCommand, ...normalizedArgs].join(' '));
-    }
+            // If we use `windowsVerbatimArguments`, we must also set `argv0` to the quoted command
+            options.argv0 ??= options.windowsVerbatimArguments ? quotedSafeCommand : undefined;
+        }
 
-    // One last cancellation check before we start the process
-    if (cancellationToken.isCancellationRequested) {
-        throw new CancellationError('Command cancelled', cancellationToken);
+        if (options.onCommand) {
+            options.onCommand([finalCommand, ...normalizedArgs].join(' '));
+        }
+
+        // One last cancellation check before we start the process
+        if (cancellationToken.isCancellationRequested) {
+            throw new CancellationError('Command cancelled', cancellationToken);
+        }
+    } catch (err) {
+        // Any pre-spawn failure (already-cancelled token, executable-resolution failure) rejects
+        // before a child process or its streams exist, so end the caller-provided pipes here.
+        endPipes();
+        throw err;
     }
 
     const childProcess = spawn(
@@ -155,9 +177,11 @@ export async function spawnStreamAsync(
         // Reject the promise on an error event
         childProcess.on('error', (err) => {
             disposable.dispose();
+            endPipes();
 
             if (cancellationToken.isCancellationRequested) {
                 reject(new CancellationError('Command cancelled', cancellationToken));
+                return;
             }
 
             reject(err);
@@ -166,9 +190,14 @@ export async function spawnStreamAsync(
         // Complete the promise when the process exits
         childProcess.on('exit', (code, signal) => {
             disposable.dispose();
+            // NOTE: Do not end the pipes here. The child's stdout/stderr reach EOF when the
+            // process exits, and the `.pipe({ end: true })` wiring ends the destinations after
+            // all output has drained. Ending manually would race that drain and can truncate
+            // trailing output for a slower destination.
 
             if (cancellationToken.isCancellationRequested) {
                 reject(new CancellationError('Command cancelled', cancellationToken));
+                return;
             }
 
             if (code === 0) {
