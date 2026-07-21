@@ -23,19 +23,18 @@ export class AlternateYamlLanguageServiceClientFeature implements StaticFeature,
     }
 
     private createAlternateYamlLanguageServiceClientCapabilities(): AlternateYamlLanguageServiceClientCapabilities | null {
-        // If RedHat YAML's extension or Docker's extension is present, we can disable many of the compose language service features
-        const redhat = vscode.extensions.getExtension('redhat.vscode-yaml') !== undefined;
+        // If Docker's extension is present, we can disable many of the compose language service features
         const docker = vscode.extensions.getExtension('docker.docker') !== undefined;
-        if (redhat || docker) {
+        if (docker) {
             return {
-                syntaxValidation: redhat || docker,
-                schemaValidation: redhat,
-                basicCompletions: redhat || docker,
-                advancedCompletions: false, // The other extensions do not have advanced completions for Compose docs
-                hover: redhat || docker, // Compose spec has descriptions
+                syntaxValidation: docker,
+                schemaValidation: false, // Docker DX does not provide Compose schema validation
+                basicCompletions: docker,
+                advancedCompletions: false, // Docker DX does not have advanced completions for Compose docs
+                hover: docker, // Compose spec has descriptions
                 imageLinks: false, // Keep Compose image links local so private registries aren't incorrectly linked to Docker Hub (see #179)
-                serviceStartupCodeLens: false, // The other extensions do not provide any code lens
-                formatting: false, // The other extensions do support formatting, but we enable it regardless so that an explicitly-chosen formatter always works
+                serviceStartupCodeLens: false, // Docker DX does not provide any code lens
+                formatting: false, // Docker DX does support formatting, but we enable it regardless so that an explicitly-chosen formatter always works
             };
         }
         return null;
