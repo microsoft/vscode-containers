@@ -181,6 +181,7 @@ export async function spawnStreamAsync(
 
             if (cancellationToken.isCancellationRequested) {
                 reject(new CancellationError('Command cancelled', cancellationToken));
+                return;
             }
 
             reject(err);
@@ -196,6 +197,7 @@ export async function spawnStreamAsync(
 
             if (cancellationToken.isCancellationRequested) {
                 reject(new CancellationError('Command cancelled', cancellationToken));
+                return;
             }
 
             if (code === 0) {
