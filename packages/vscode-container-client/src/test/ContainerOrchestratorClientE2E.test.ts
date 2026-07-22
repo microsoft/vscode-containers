@@ -7,6 +7,7 @@ import { NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { DockerComposeClient } from '../clients/DockerComposeClient/DockerComposeClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
@@ -15,11 +16,14 @@ import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { PodmanComposeClient } from '../clients/PodmanComposeClient/PodmanComposeClient';
 import { ShellStreamCommandRunnerFactory, type ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
 import { WslShellCommandRunnerFactory, type WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
+import type { ICommandRunnerFactory } from '../contracts/CommandRunner';
 import type { IContainersClient } from '../contracts/ContainerClient';
 import type { IContainerOrchestratorClient } from '../contracts/ContainerOrchestratorClient';
-import type { ICommandRunnerFactory } from '../contracts/CommandRunner';
 import { wslifyPath } from '../utils/wslifyPath';
 import { type ClientType, KeepAliveShellCommand, validateContainerExists } from './e2eShared';
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Modify the below options to configure the tests
 const clientTypeToTest: ClientType = (process.env.CONTAINER_CLIENT_TYPE || 'docker') as ClientType;

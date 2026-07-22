@@ -9,16 +9,20 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import * as stream from 'stream';
-import { FileType } from '../typings/FileType';
+import { fileURLToPath } from 'url';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { ShellStreamCommandRunnerFactory, type ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
 import { WslShellCommandRunnerFactory, type WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
-import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
 import type { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
+import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
+import { FileType } from '../typings/FileType';
 import { wslifyPath } from '../utils/wslifyPath';
 import { type ClientType, validateContainerExists } from './e2eShared';
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * WARNING: This test suite will prune unused images, containers, networks, and volumes.
