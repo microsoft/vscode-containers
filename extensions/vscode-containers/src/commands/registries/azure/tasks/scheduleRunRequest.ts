@@ -11,15 +11,15 @@ import * as path from 'path';
 import * as readline from 'readline';
 import * as vscode from 'vscode';
 import { ext } from '../../../../extensionVariables';
-import { AzureRegistry, AzureRegistryItem } from "../../../../tree/registries/Azure/AzureRegistryDataProvider";
-import { UnifiedRegistryItem } from "../../../../tree/registries/UnifiedRegistryTreeDataProvider";
+import { AzureRegistryItem } from "../../../../tree/registries/Azure/AzureRegistryDataProvider";
 import { createArmContainerRegistryClient, getResourceGroupFromId } from "../../../../utils/azureUtils";
 import { getStorageBlob, getTar } from '../../../../utils/lazyPackages';
 import { delay } from '../../../../utils/promiseUtils';
 import { Item, quickPickDockerFileItem, quickPickYamlFileItem } from '../../../../utils/quickPickFile';
 import { quickPickWorkspaceFolder } from '../../../../utils/quickPickWorkspaceFolder';
-import { registryExperience } from "../../../../utils/registryExperience";
+import { subscriptionExperience } from "../../../../utils/registryExperience";
 import { addImageTaggingTelemetry, getTagFromUserInput } from '../../../images/tagImage';
+import { pickAcr } from '../pickAcr';
 
 const vcsIgnoreList = ['.git', '.gitignore', '.bzr', 'bzrignore', '.hg', '.hgignore', '.svn'];
 
@@ -45,10 +45,8 @@ export async function scheduleRunRequest(context: IActionContext, requestType: '
         throw new Error(vscode.l10n.t('Run Request Type Currently not supported.'));
     }
 
-    const node: UnifiedRegistryItem<AzureRegistryItem> = await registryExperience<AzureRegistry>(context, {
-        registryFilter: { include: [ext.azureRegistryDataProvider.label] },
-        contextValueFilter: { include: /commonregistry/i },
-    });
+    const subscriptionNode = await subscriptionExperience(context);
+    const node = await pickAcr(context, subscriptionNode);
     const registryItem: AzureRegistryItem = node.wrappedItem;
     const resourceGroup = getResourceGroupFromId(registryItem.id);
 
