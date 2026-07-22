@@ -15,9 +15,9 @@ import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { PodmanComposeClient } from '../clients/PodmanComposeClient/PodmanComposeClient';
 import { ShellStreamCommandRunnerFactory, type ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
 import { WslShellCommandRunnerFactory, type WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
+import type { ICommandRunnerFactory } from '../contracts/CommandRunner';
 import type { IContainersClient } from '../contracts/ContainerClient';
 import type { IContainerOrchestratorClient } from '../contracts/ContainerOrchestratorClient';
-import type { ICommandRunnerFactory } from '../contracts/CommandRunner';
 import { wslifyPath } from '../utils/wslifyPath';
 import { type ClientType, KeepAliveShellCommand, validateContainerExists } from './e2eShared';
 
@@ -68,7 +68,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
         defaultRunner = defaultRunnerFactory({ strict: true, shellProvider: new NoShell() });
 
         // Set up paths for test docker-compose files
-        composeDir = path.resolve(__dirname, 'buildContext');
+        composeDir = path.resolve(import.meta.dirname, 'buildContext');
         composeFilePath = path.resolve(composeDir, 'docker-compose.yml');
         composeWithLogsFilePath = path.resolve(composeDir, 'docker-compose.logs.yml');
         composeWithProfilesFilePath = path.resolve(composeDir, 'docker-compose.profiles.yml');

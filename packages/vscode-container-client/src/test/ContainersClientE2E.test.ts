@@ -9,14 +9,14 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import * as stream from 'stream';
-import { FileType } from '../typings/FileType';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { ShellStreamCommandRunnerFactory, type ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
 import { WslShellCommandRunnerFactory, type WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
-import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
 import type { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
+import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
+import { FileType } from '../typings/FileType';
 import { wslifyPath } from '../utils/wslifyPath';
 import { type ClientType, validateContainerExists } from './e2eShared';
 
@@ -167,7 +167,7 @@ describe('(integration) ContainersClientE2E', function () {
 
         before('Images', async function () {
             // Prepare the test Dockerfile context
-            testDockerfileContext = path.resolve(__dirname, 'buildContext');
+            testDockerfileContext = path.resolve(import.meta.dirname, 'buildContext');
             testDockerfile = path.resolve(testDockerfileContext, 'Dockerfile');
 
             // Create the test Dockerfile and context if it doesn't exist
@@ -322,7 +322,7 @@ describe('(integration) ContainersClientE2E', function () {
         let testContainerId: string;
 
         before('Containers', async function () {
-            testContainerBindMountSource = __dirname;
+            testContainerBindMountSource = import.meta.dirname;
 
             // If running in WSL, convert the bind mount source path to WSL format
             if (runInWsl) {
