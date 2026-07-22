@@ -7,7 +7,6 @@ import { NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { DockerComposeClient } from '../clients/DockerComposeClient/DockerComposeClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
@@ -21,9 +20,6 @@ import type { IContainersClient } from '../contracts/ContainerClient';
 import type { IContainerOrchestratorClient } from '../contracts/ContainerOrchestratorClient';
 import { wslifyPath } from '../utils/wslifyPath';
 import { type ClientType, KeepAliveShellCommand, validateContainerExists } from './e2eShared';
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Modify the below options to configure the tests
 const clientTypeToTest: ClientType = (process.env.CONTAINER_CLIENT_TYPE || 'docker') as ClientType;
@@ -72,7 +68,7 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
         defaultRunner = defaultRunnerFactory({ strict: true, shellProvider: new NoShell() });
 
         // Set up paths for test docker-compose files
-        composeDir = path.resolve(__dirname, 'buildContext');
+        composeDir = path.resolve(import.meta.dirname, 'buildContext');
         composeFilePath = path.resolve(composeDir, 'docker-compose.yml');
         composeWithLogsFilePath = path.resolve(composeDir, 'docker-compose.logs.yml');
         composeWithProfilesFilePath = path.resolve(composeDir, 'docker-compose.profiles.yml');

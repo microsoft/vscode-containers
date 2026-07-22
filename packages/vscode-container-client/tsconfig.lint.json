@@ -9,4 +9,10 @@
             ]
         }
     },
+    // Unlike the build config, the linter should still type-check the test files.
+    "exclude": [
+        "**/node_modules",
+        "**/dist",
+        "**/.vscode-test"
+    ],
 }

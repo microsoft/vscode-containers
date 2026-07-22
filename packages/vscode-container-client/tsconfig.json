@@ -7,4 +7,13 @@
     "include": [
         "src/**/*.ts"
     ],
+    // Test files are run directly as TypeScript by mocha and are not part of the
+    // published build, so they are excluded here to avoid emitting them (and to
+    // avoid CJS build errors from ESM-only constructs like import.meta).
+    "exclude": [
+        "**/node_modules",
+        "**/dist",
+        "**/.vscode-test",
+        "src/test/**/*.ts"
+    ],
 }

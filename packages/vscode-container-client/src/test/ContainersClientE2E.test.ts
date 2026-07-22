@@ -9,7 +9,6 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import * as stream from 'stream';
-import { fileURLToPath } from 'url';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
@@ -20,9 +19,6 @@ import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem
 import { FileType } from '../typings/FileType';
 import { wslifyPath } from '../utils/wslifyPath';
 import { type ClientType, validateContainerExists } from './e2eShared';
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * WARNING: This test suite will prune unused images, containers, networks, and volumes.
@@ -171,7 +167,7 @@ describe('(integration) ContainersClientE2E', function () {
 
         before('Images', async function () {
             // Prepare the test Dockerfile context
-            testDockerfileContext = path.resolve(__dirname, 'buildContext');
+            testDockerfileContext = path.resolve(import.meta.dirname, 'buildContext');
             testDockerfile = path.resolve(testDockerfileContext, 'Dockerfile');
 
             // Create the test Dockerfile and context if it doesn't exist
@@ -326,7 +322,7 @@ describe('(integration) ContainersClientE2E', function () {
         let testContainerId: string;
 
         before('Containers', async function () {
-            testContainerBindMountSource = __dirname;
+            testContainerBindMountSource = import.meta.dirname;
 
             // If running in WSL, convert the bind mount source path to WSL format
             if (runInWsl) {
