@@ -29,7 +29,7 @@ export class AlternateYamlLanguageServiceClientFeature implements StaticFeature,
         if (redhat || docker) {
             return {
                 syntaxValidation: redhat || docker,
-                schemaValidation: redhat,
+                schemaValidation: redhat && !docker, // RedHat YAML auto-disables its Compose schema detection when Docker DX is present, and Docker DX does not provide Compose schema validation
                 basicCompletions: redhat || docker,
                 advancedCompletions: false, // The other extensions do not have advanced completions for Compose docs
                 hover: redhat || docker, // Compose spec has descriptions
