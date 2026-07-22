@@ -52,5 +52,23 @@
             },
             "isBackground": true,
         },
+        {
+            "label": "Build: vscode-processutils",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "--filter",
+                "@microsoft/vscode-processutils",
+                "run",
+                "build"
+            ],
+            "problemMatcher": "$tsc",
+            "presentation": {
+                "reveal": "silent",
+            },
+            "group": {
+                "kind": "build",
+            },
+        },
     ],
 }

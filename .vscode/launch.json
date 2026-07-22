@@ -35,5 +35,52 @@
             ],
             "preLaunchTask": "Extension: ESBuild+Watch",
         },
+        {
+            "name": "Container client integration tests",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/packages/vscode-container-client",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "run",
+                "testintegration"
+            ],
+            "env": {
+                "CONTAINER_CLIENT_TYPE": "${input:containerRuntime}", // Set to 'docker', 'podman', or 'nerdctl'
+                "RUN_IN_WSL": "0", // Set to 1 if running in WSL
+                "DOCKER_HUB_USERNAME": "${input:dockerHubUsername}",
+                "DOCKER_HUB_PAT": "${input:dockerHubPAT}"
+            },
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "Build: vscode-processutils",
+        },
     ],
+    "inputs": [
+        {
+            "id": "containerRuntime",
+            "type": "pickString",
+            "description": "Select the container runtime to use for integration tests",
+            "options": [
+                "docker",
+                "podman",
+                "nerdctl"
+            ],
+            "default": "docker"
+        },
+        {
+            "id": "dockerHubUsername",
+            "type": "promptString",
+            "description": "Enter your Docker Hub username (or leave blank to skip the login test)",
+            "default": ""
+        },
+        {
+            "id": "dockerHubPAT",
+            "type": "promptString",
+            "description": "Enter your Docker Hub Personal Access Token (or leave blank to skip the login test)",
+            "default": "",
+            "password": true
+        }
+    ]
 }
