@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PassThrough } from 'stream';
-import { type Connection, DidOpenTextDocumentNotification, type DidOpenTextDocumentParams, type Disposable, type InitializeParams, TextDocumentItem } from 'vscode-languageserver';
+import { type Connection, DidOpenTextDocumentNotification, type DidOpenTextDocumentParams, type Disposable, type InitializeParams, TextDocumentItem, type WorkspaceFolder, WorkspaceFoldersRequest } from 'vscode-languageserver';
 import type { DocumentUri } from 'vscode-languageserver-textdocument';
 import { createConnection } from 'vscode-languageserver/node';
 import { Document } from 'yaml';
@@ -23,6 +23,12 @@ export class TestConnection implements Disposable {
     public readonly server: Connection;
     public readonly client: Connection;
     public readonly languageService: ComposeLanguageService;
+
+    /**
+     * The workspace folders that the (mock) client will report when the server issues a
+     * `workspace/workspaceFolders` request. Assign to this to simulate open workspace folders.
+     */
+    public workspaceFolders: WorkspaceFolder[] | null = null;
     private counter = 0;
 
     public constructor(public readonly initParams: InitializeParams = DefaultInitializeParams) {
@@ -33,6 +39,9 @@ export class TestConnection implements Disposable {
         this.client = createConnection(down, up);
 
         this.languageService = new ComposeLanguageService(this.server, initParams);
+
+        // Respond to the server's workspace folder requests with the configured folders
+        this.client.onRequest(WorkspaceFoldersRequest.type, () => this.workspaceFolders);
 
         this.server.listen();
         this.client.listen();

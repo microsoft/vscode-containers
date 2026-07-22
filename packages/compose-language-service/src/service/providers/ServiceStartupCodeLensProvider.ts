@@ -9,16 +9,24 @@ import type { ExtendedParams } from '../ExtendedParams';
 import { getCurrentContext } from '../utils/ActionContext';
 import { isMap, isPair, isScalar } from 'yaml';
 import { yamlRangeToLspRange } from '../utils/yamlRangeToLspRange';
+import { isDocumentInWorkspace } from '../utils/isDocumentInWorkspace';
 
 export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams & ExtendedParams, CodeLens[] | undefined, never, never> {
-    public on(params: CodeLensParams & ExtendedParams, token: CancellationToken): Promise<CodeLens[] | undefined> {
+    public async on(params: CodeLensParams & ExtendedParams, token: CancellationToken): Promise<CodeLens[] | undefined> {
         const ctx = getCurrentContext();
         ctx.telemetry.properties.isActivationEvent = 'true'; // This happens automatically so we'll treat it as isActivationEvent === true
 
         const results: CodeLens[] = [];
 
+        // The code lens commands (compose up, etc.) require the document to be within an open workspace folder.
+        // If it is not, running them results in an error, so the code lenses should not be shown.
+        // See https://github.com/microsoft/vscode-containers/issues/535
+        if (!await isDocumentInWorkspace(ctx, params.document.uri)) {
+            return undefined;
+        }
+
         if (!params.document.yamlDocument.value.has('services')) {
-            return Promise.resolve(undefined);
+            return undefined;
         }
 
         // First add the run-all from the main "services" node
@@ -47,7 +55,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
 
         // Check for cancellation
         if (token.isCancellationRequested) {
-            return Promise.resolve(undefined);
+            return undefined;
         }
 
         // Then add the run-single for each service
@@ -56,7 +64,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
             for (const service of serviceMap.items) {
                 // Within each loop we'll check for cancellation (though this is expected to be very fast)
                 if (token.isCancellationRequested) {
-                    return Promise.resolve(undefined);
+                    return undefined;
                 }
 
                 if (isScalar(service.key) && typeof service.key.value === 'string' && service.key.range) {
@@ -75,6 +83,6 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
             }
         }
 
-        return Promise.resolve(results);
+        return results;
     }
 }
