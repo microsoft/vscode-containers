@@ -10,11 +10,11 @@ import { scaffold } from "../scaffolding/scaffold";
 import { scaffoldCompose } from "../scaffolding/scaffoldCompose";
 import { scaffoldDebugConfig } from "../scaffolding/scaffoldDebugConfig";
 import { chooseContainerRuntime } from "./chooseContainerRuntime";
-import { composeDown, composeDownSubset, composeRestart, composeUp, composeUpSubset } from "./compose/compose";
+import { composeDown, composeDownSubset, composePull, composePullSubset, composeRestart, composeUp, composeUpSubset } from "./compose/compose";
 import { askCopilot } from "./containers/askCopilot";
 import { attachShellContainer } from "./containers/attachShellContainer";
 import { browseContainer } from "./containers/browseContainer";
-import { composeGroupDown, composeGroupLogs, composeGroupRestart, composeGroupStart, composeGroupStop } from "./containers/composeGroup";
+import { composeGroupDown, composeGroupLogs, composeGroupPull, composeGroupRestart, composeGroupStart, composeGroupStop } from "./containers/composeGroup";
 import { configureContainersExplorer } from "./containers/configureContainersExplorer";
 import { downloadContainerFile } from "./containers/files/downloadContainerFile";
 import { openContainerFile } from "./containers/files/openContainerFile";
@@ -120,6 +120,8 @@ export function registerCommands(): void {
     registerWorkspaceCommand('vscode-containers.debugging.initializeForDebugging', scaffoldDebugConfig);
 
     registerWorkspaceCommand('vscode-containers.compose.down', composeDown);
+    registerWorkspaceCommand('vscode-containers.compose.pull', composePull);
+    registerWorkspaceCommand('vscode-containers.compose.pull.subset', composePullSubset);
     registerWorkspaceCommand('vscode-containers.compose.restart', composeRestart);
     registerWorkspaceCommand('vscode-containers.compose.up', composeUp);
     registerWorkspaceCommand('vscode-containers.compose.up.subset', composeUpSubset);
@@ -146,6 +148,7 @@ export function registerCommands(): void {
     registerWorkspaceCommand('vscode-containers.containers.composeGroup.logs', composeGroupLogs);
     registerWorkspaceCommand('vscode-containers.containers.composeGroup.start', composeGroupStart);
     registerWorkspaceCommand('vscode-containers.containers.composeGroup.stop', composeGroupStop);
+    registerWorkspaceCommand('vscode-containers.containers.composeGroup.pull', composeGroupPull);
     registerWorkspaceCommand('vscode-containers.containers.composeGroup.restart', composeGroupRestart);
     registerWorkspaceCommand('vscode-containers.containers.composeGroup.down', composeGroupDown);
 
