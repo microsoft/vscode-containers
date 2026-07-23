@@ -41,6 +41,10 @@ export abstract class LocalGroupTreeItemBase<TItem extends AnyContainerObject, T
         return this.parent.compareChildrenImpl(ti1, ti2);
     }
 
+    protected get items(): TItem[] {
+        return this._items;
+    }
+
     public get ChildTreeItems(): AzExtTreeItem[] {
         if (!this._childTreeItems) {
             this._childTreeItems = this.getChildTreeItems();

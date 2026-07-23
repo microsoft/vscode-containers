@@ -8,7 +8,7 @@ import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import { LocalGroupTreeItemBase } from "../LocalGroupTreeItemBase";
 import { LocalRootTreeItemBase } from "../LocalRootTreeItemBase";
 import { getCommonGroupIcon } from "../settings/CommonProperties";
-import { ContainerProperty, getContainerStateIcon, NonComposeGroupName } from "./ContainerProperties";
+import { ContainerProperty, composeProjectLabel, getContainerStateIcon, NonComposeGroupName } from "./ContainerProperties";
 import { DockerContainerInfo } from "./ContainersTreeItem";
 
 export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContainerInfo, ContainerProperty> {
@@ -26,11 +26,17 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
     }
 
     public get contextValue(): string {
-        if (this.parent.groupBySetting === 'Compose Project Name' && this.group !== NonComposeGroupName) {
+        // The compose group commands (start/stop/restart/down/logs) rely on compose labels/files, which
+        // Docker Swarm stacks don't have. Only expose them for actual compose projects.
+        if (this.parent.groupBySetting === 'Compose Project Name' && this.group !== NonComposeGroupName && this.isComposeProjectGroup()) {
             return 'containerGroup;composeGroup';
         }
 
         return 'containerGroup';
+    }
+
+    private isComposeProjectGroup(): boolean {
+        return this.items.some(item => !!item.labels?.[composeProjectLabel]);
     }
 
     public get iconPath(): ThemeIcon {
