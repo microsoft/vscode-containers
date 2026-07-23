@@ -31,18 +31,17 @@ function getFilterMementoKey(treePrefix: TreePrefix): string {
 }
 
 function loadPersistedTreeFilter(treePrefix: TreePrefix): void {
-    const persistedFilter = ext.context.workspaceState.get<string>(
-        getFilterMementoKey(treePrefix)
-    );
+    const persistedFilter = ext.context.workspaceState
+        .get<string | undefined>(getFilterMementoKey(treePrefix))
+        ?.toLowerCase();
 
-    if (persistedFilter !== undefined) {
-        const normalizedFilter = persistedFilter.toLowerCase();
+    if (persistedFilter) {
         treeFilters.set(treePrefix, {
-            filterText: normalizedFilter,
-            isActive: normalizedFilter.length > 0,
+            filterText: persistedFilter,
+            isActive: true,
         });
     } else {
-        treeFilters.delete(treePrefix);
+        void clearTreeFilter(treePrefix);
     }
 }
 
