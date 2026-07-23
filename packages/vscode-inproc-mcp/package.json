@@ -1,0 +1,64 @@
+{
+    "name": "@microsoft/vscode-inproc-mcp",
+    "author": "Microsoft Corporation",
+    "version": "1.0.0",
+    "description": "Library support for building MCP servers, primarily for use in VS Code.",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/vscode-containers",
+        "directory": "packages/vscode-inproc-mcp"
+    },
+    "bugs": {
+        "url": "https://github.com/microsoft/vscode-containers/issues"
+    },
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-inproc-mcp/README.md",
+    "exports": {
+        ".": {
+            "import": "./dist/esm/index.js",
+            "require": "./dist/cjs/index.js",
+            "types": "./dist/esm/index.d.ts"
+        },
+        "./mcp": {
+            "import": "./dist/esm/mcp/index.js",
+            "require": "./dist/cjs/mcp/index.js",
+            "types": "./dist/esm/mcp/index.d.ts"
+        },
+        "./vscode": {
+            "import": "./dist/esm/vscode/index.js",
+            "require": "./dist/cjs/vscode/index.js",
+            "types": "./dist/esm/vscode/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "pnpm run build:esm && pnpm run build:cjs",
+        "build:esm": "tsc",
+        "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
+        "lint": "eslint --max-warnings 0",
+        "package": "pnpm pack",
+        "test": "mocha",
+        "clean": "node ../../scripts/clean.mjs"
+    },
+    "engines": {
+        "vscode": "^1.105.0"
+    },
+    "dependencies": {
+        "@microsoft/vscode-azext-utils": "catalog:",
+        "@microsoft/vscode-processutils": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.26.0",
+        "express": "~5",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.3"
+    },
+    "mocha": {
+        "node-option": [
+            "experimental-transform-types",
+            "import=@microsoft/vscode-azext-eng/mocha"
+        ],
+        "spec": [
+            "src/test/**/*.test.ts"
+        ]
+    }
+}

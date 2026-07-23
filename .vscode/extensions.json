@@ -2,5 +2,6 @@
     "recommendations": [
         "dbaeumer.vscode-eslint",
         "connor4312.esbuild-problem-matchers",
+        "typescriptteam.native-preview",
     ],
 }

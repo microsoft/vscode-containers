@@ -3,6 +3,9 @@
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
     "editor.formatOnSave": true,
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit",
         "source.organizeImports": "explicit",
@@ -10,6 +13,24 @@
     "files.associations": {
         "*.template": "plaintext",
     },
+    "search.exclude": {
+        "**/dist": true,
+        "**/node_modules": true,
+        "**/.vscode-test": true,
+    },
+    "files.watcherExclude": {
+        "**/dist": true,
+        "**/node_modules": true,
+        "**/.vscode-test": true,
+    },
+    "eslint.workingDirectories": [
+        {
+            "mode": "auto",
+        }
+    ],
+    "js/ts.experimental.useTsgo": true,
+    "js/ts.preferences.quoteStyle": "single",
+    "js/ts.preferences.preferTypeOnlyAutoImports": true,
     "git.branchProtection": [
         "main",
         "rel/*",

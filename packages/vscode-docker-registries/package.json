@@ -1,0 +1,47 @@
+{
+    "name": "@microsoft/vscode-docker-registries",
+    "author": "Microsoft Corporation",
+    "version": "1.0.0",
+    "description": "Extensibility model for contributing registry providers to the Container Tools extension for Visual Studio Code",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/vscode-containers",
+        "directory": "packages/vscode-docker-registries"
+    },
+    "bugs": {
+        "url": "https://github.com/microsoft/vscode-containers/issues"
+    },
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/vscode-docker-registries/README.md",
+    "keywords": [
+        "vscode",
+        "docker"
+    ],
+    "module": "dist/esm/index.js",
+    "main": "dist/cjs/index.js",
+    "types": "dist/esm/index.d.ts",
+    "scripts": {
+        "build": "pnpm run build:esm && pnpm run build:cjs",
+        "build:esm": "tsc",
+        "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
+        "lint": "eslint --max-warnings 0",
+        "test": "mocha",
+        "package": "pnpm pack",
+        "clean": "node ../../scripts/clean.mjs"
+    },
+    "engines": {
+        "vscode": "^1.105.0"
+    },
+    "dependencies": {
+        "dayjs": "catalog:"
+    },
+    "mocha": {
+        "node-option": [
+            "experimental-transform-types",
+            "import=@microsoft/vscode-azext-eng/mocha"
+        ],
+        "spec": [
+            "src/test/**/*.test.ts"
+        ]
+    }
+}
