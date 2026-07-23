@@ -83,6 +83,22 @@ services:
 
             await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
         });
+
+        it('Should NOT round large integers', async () => {
+            const testObject = `version: '123'
+services:
+  foo:
+    image: bar
+    environment:
+      discord_id: 1147053346671102335
+`;
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+
+            const expected2Space = testObject; // Output will be unchanged, the large integer must not be rounded
+
+            await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
+        });
     });
 
     describe('Error scenarios', () => {
