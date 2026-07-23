@@ -25,6 +25,9 @@ overrides:
   # 0.2.33 has no "type" field (CommonJS) and bundles correctly.
   vscode-tas-client: 0.1.84
   tas-client: 0.2.33
+  # Pin enhanced-resolve to 5.24.2; 5.24.3 (published 2026-07-20) fails the 7-day supply-chain
+  # quarantine and would cause ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION.
+  enhanced-resolve: 5.24.2
 
 publicHoistPattern:
   # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
