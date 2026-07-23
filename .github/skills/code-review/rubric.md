@@ -21,8 +21,10 @@ prioritize, then apply general engineering judgment for anything they do not cov
 
 Judge each finding on two axes and only surface what earns its place:
 
-- **Severity**: blocking (correctness / resource / localization / clear pattern violation) vs
-  non-blocking (nit, style, optional improvement) vs open question (ask, do not assert).
+- **Severity**: blocking (correctness / resource / localization / a pattern violation that
+  creates a concrete functional or maintenance risk) vs non-blocking (nit, style, optional
+  improvement) vs open question (ask, do not assert). A stated preference is not blocking by
+  itself; explain the concrete risk when grading a house-style violation as blocking.
 - **Confidence**: only raise a point you can ground in the diff or a concrete repo
   convention, and cite the exact helper/pattern the author should use instead. If you are
   guessing, downgrade it to an open question or drop it.
@@ -231,8 +233,7 @@ builds as part of a review unless explicitly asked.
 - Alternative approaches that are merely different, not clearly better.
 - Missing XML/JSDoc unless it is public API or the surrounding code documents everything else.
 - Theoretical concerns that do not manifest in practice.
-- Files that must not be hand-edited / reviewed line-by-line (generated or curated files) --
-  see the repo's custom instructions.
+- Do not review `NOTICE.html`; it is a curated artifact that must not be hand-edited.
 
 When you do propose an alternative, make it concrete (sketch the code / name the files) and say
 *why* it is better -- simpler, safer, faster, or more maintainable. "Did you consider X?" is

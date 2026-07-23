@@ -1,7 +1,6 @@
 ---
 name: review-pr
 description: Review a specific vscode-containers pull request on demand from the CLI (or any interactive agent), the way a Container Tools maintainer would. Use when asked to review a PR by number, URL, or "the current branch", to produce a written review and, only when explicitly asked, post comments on the PR. Fetches the PR with the GitHub CLI and applies the shared review rubric.
-allowed-tools: shell
 ---
 
 # Review a Container Tools PR (on demand)
@@ -46,8 +45,8 @@ If the PR references an issue, read it (`gh issue view <n>`) to confirm the PR a
 If the PR is already **merged or closed**, do a retrospective review in report mode only -- do
 not try to post change requests on it.
 
-(Equivalent GitHub MCP Server tools -- `get_pull_request`, `get_pull_request_diff`,
-`get_pull_request_files`, `get_pull_request_comments` -- work too if `gh` is unavailable.)
+If `gh` is unavailable, use the equivalent read-only GitHub tools exposed by the current host;
+tool names vary between hosts.
 
 ## Produce the review
 
@@ -59,16 +58,17 @@ concrete repo convention and cite the helper/pattern to use.
 
 Keep each comment specific and actionable; reference the exact file/line.
 
-- Inline comment on a line:
+- Prefer one summary review so comments are submitted together. Use inline comments only when
+  the user explicitly asks for them; the REST endpoint below posts each comment immediately.
+- Inline comment on a changed line (GitHub rejects lines outside the PR diff):
   `gh api repos/microsoft/vscode-containers/pulls/<n>/comments -f body='...' -f commit_id='<headRefOid>' -f path='<file>' -F line=<n> -f side=RIGHT`
 - Summary review (comment, or request changes when the author must act -- never approve):
   `gh pr review <n> --comment --body '...'`  /  `gh pr review <n> --request-changes --body '...'`
 - Prefix each agent-posted review comment with a clear reviewer marker (e.g. a magnifying
   glass or detective emoji) so it is distinguishable from a human review.
 
-(Equivalent GitHub MCP Server tools: `create_pending_pull_request_review` ->
-`add_comment_to_pending_review` -> `submit_pending_pull_request_review`, or
-`create_and_submit_pull_request_review` for a summary-only review.)
+When using host-provided GitHub tools, prefer their pending-review workflow so inline comments
+are submitted as one review.
 
 ## Rules
 

@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Review a pull request in this repository (the vscode-containers / Container Tools extension) against the maintainers' house style. Use this whenever reviewing a pull request or its changed files to check localization, async/resource correctness, TypeScript conventions, command-line construction, telemetry, settings, and cross-platform issues distilled from this repo's review history.
+description: Review a pull request in this repository (the vscode-containers / Container Tools extension) when the automated reviewer has already supplied the diff and changed files. Checks localization, async/resource correctness, TypeScript conventions, command-line construction, telemetry, settings, and cross-platform issues distilled from this repo's review history. For an on-demand review by PR number, URL, or current branch, use review-pr instead.
 ---
 
 # Container Tools code review
@@ -9,8 +9,9 @@ Apply the shared grading rubric in [`rubric.md`](./rubric.md) to the pull reques
 review. That file is the single source of truth for what to look for and how to grade it --
 read it and follow it.
 
-You already have the pull request's diff and changed files provided to you, and your review
-comments are published through the normal review mechanism. So:
+This skill is for the automated review context, where the pull request's diff and changed files
+are already provided and review comments are published through the normal review mechanism. If
+that context is not present, use `review-pr` instead. So:
 
 - **Do not** fetch the PR yourself or run `gh` -- work from the diff you were given.
 - **Do not** approve. Leave comments / request changes only; approval is a human decision.
