@@ -70,9 +70,6 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
                     // Close the Hono server
                     if (httpServer.listening) {
                         httpServer.close();
-                        if ('closeAllConnections' in httpServer) {
-                            httpServer.closeAllConnections();
-                        }
                     }
 
                     // Clean up the socket path
