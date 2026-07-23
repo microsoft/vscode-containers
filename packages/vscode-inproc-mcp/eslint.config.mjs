@@ -19,7 +19,8 @@ export default defineConfig([
         },
     },
     lazyImportRuleConfig([
-        'express',
+        'hono',
+        '@hono/*',
         '@modelcontextprotocol/*',
         '@microsoft/vscode-azext*'
     ]),
