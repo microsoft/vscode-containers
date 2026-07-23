@@ -19,7 +19,7 @@ export async function pickAcr(context: IActionContext, subscriptionNode: Unified
     const picks: IAzureQuickPickItem<string | UnifiedRegistryItem<AzureRegistry>>[] = acrs.map(acr => <IAzureQuickPickItem<UnifiedRegistryItem<AzureRegistry>>>{ label: acr.wrappedItem.label, data: acr });
     picks.push({ label: vscode.l10n.t('$(plus) Create new Azure Container Registry...'), data: 'create' });
 
-    const response = await context.ui.showQuickPick(picks, { placeHolder: vscode.l10n.t('Select an Azure Container Registry to push to') });
+    const response = await context.ui.showQuickPick(picks, { placeHolder: vscode.l10n.t('Select an Azure Container Registry') });
 
     if (response.data === 'create') {
         const createdAcrName = await createAzureRegistry(context, subscriptionNode);
