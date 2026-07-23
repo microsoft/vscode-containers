@@ -1,0 +1,33 @@
+{
+    "name": "compose-languageserver-testclient",
+    "publisher": "ms-azuretools",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.105.0"
+    },
+    "activationEvents": [
+        "onLanguage:dockercompose",
+        "onStartupFinished"
+    ],
+    "main": "./extension.js",
+    "dependencies": {
+        "vscode-languageclient": "^10.0.0-next.19"
+    },
+    "devDependencies": {
+        "@types/vscode": "1.105.0"
+    },
+    "contributes": {
+        "configurationDefaults": {
+            "[dockercompose]": {
+                "editor.insertSpaces": true,
+                "editor.tabSize": 2,
+                "editor.autoIndent": "advanced",
+                "editor.quickSuggestions": {
+                    "other": true,
+                    "comments": false,
+                    "strings": true
+                }
+            }
+        }
+    }
+}

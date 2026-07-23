@@ -1,0 +1,96 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import { AzExtTreeDataProvider, AzExtTreeItem, IActionContext } from "@microsoft/vscode-azext-utils";
+import { DockerHubRegistryDataProvider, GenericRegistryV2DataProvider, GitHubRegistryDataProvider } from "@microsoft/vscode-docker-registries";
+import * as vscode from 'vscode';
+import { registerCommand } from '../commands/registerCommands';
+import { ext } from '../extensionVariables';
+import { OpenUrlTreeItem } from './OpenUrlTreeItem';
+import { RefreshManager } from './RefreshManager';
+import { ContainersTreeItem } from './containers/ContainersTreeItem';
+import { ContextsTreeItem } from './contexts/ContextsTreeItem';
+import { HelpsTreeItem } from './help/HelpsTreeItem';
+import { ImagesTreeItem } from "./images/ImagesTreeItem";
+import { NetworksTreeItem } from "./networks/NetworksTreeItem";
+import { AzureRegistryDataProvider } from "./registries/Azure/AzureRegistryDataProvider";
+import { UnifiedRegistryTreeDataProvider } from "./registries/UnifiedRegistryTreeDataProvider";
+import { VolumesTreeItem } from "./volumes/VolumesTreeItem";
+
+export function registerTrees(): void {
+    ext.containersRoot = new ContainersTreeItem(undefined);
+    const containersLoadMore = 'vscode-containers.containers.loadMore';
+    ext.containersTree = new AzExtTreeDataProvider(ext.containersRoot, containersLoadMore);
+    ext.containersTreeView = vscode.window.createTreeView('vscode-containers.views.containers', { treeDataProvider: ext.containersTree, canSelectMany: true, showCollapseAll: true });
+    ext.context.subscriptions.push(ext.containersTreeView);
+    registerCommand(containersLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.containersTree.loadMore(node, context));
+
+    ext.networksRoot = new NetworksTreeItem(undefined);
+    const networksLoadMore = 'vscode-containers.networks.loadMore';
+    ext.networksTree = new AzExtTreeDataProvider(ext.networksRoot, networksLoadMore);
+    ext.networksTreeView = vscode.window.createTreeView('vscode-containers.views.networks', { treeDataProvider: ext.networksTree, canSelectMany: true, showCollapseAll: true });
+    ext.context.subscriptions.push(ext.networksTreeView);
+    registerCommand(networksLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.networksTree.loadMore(node, context));
+
+    ext.imagesRoot = new ImagesTreeItem(undefined);
+    const imagesLoadMore = 'vscode-containers.images.loadMore';
+    ext.imagesTree = new AzExtTreeDataProvider(ext.imagesRoot, imagesLoadMore);
+    ext.imagesTreeView = vscode.window.createTreeView('vscode-containers.views.images', { treeDataProvider: ext.imagesTree, canSelectMany: true, showCollapseAll: true });
+    ext.context.subscriptions.push(ext.imagesTreeView);
+    registerCommand(imagesLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.imagesTree.loadMore(node, context));
+
+    const urtdp = new UnifiedRegistryTreeDataProvider(ext.context.globalState);
+    ext.registriesRoot = urtdp;
+    ext.registriesTreeView = vscode.window.createTreeView('vscode-containers.views.registries', { treeDataProvider: urtdp, showCollapseAll: true });
+    ext.registriesTree = urtdp;
+    registerRegistryDataProviders(urtdp);
+
+    ext.volumesRoot = new VolumesTreeItem(undefined);
+    const volumesLoadMore = 'vscode-containers.volumes.loadMore';
+    ext.volumesTree = new AzExtTreeDataProvider(ext.volumesRoot, volumesLoadMore);
+    ext.volumesTreeView = vscode.window.createTreeView('vscode-containers.views.volumes', { treeDataProvider: ext.volumesTree, canSelectMany: true, showCollapseAll: true });
+    ext.context.subscriptions.push(ext.volumesTreeView);
+    registerCommand(volumesLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.volumesTree.loadMore(node, context));
+
+    ext.contextsRoot = new ContextsTreeItem(undefined);
+    const contextsLoadMore = 'vscode-containers.contexts.loadMore';
+    ext.contextsTree = new AzExtTreeDataProvider(ext.contextsRoot, contextsLoadMore);
+    ext.contextsTreeView = vscode.window.createTreeView('vscode-containers.views.dockerContexts', { treeDataProvider: ext.contextsTree, canSelectMany: false, showCollapseAll: true });
+    ext.context.subscriptions.push(ext.contextsTreeView);
+    registerCommand(contextsLoadMore, async (context: IActionContext, node: AzExtTreeItem) => ext.contextsTree.loadMore(node, context));
+
+    const helpRoot = new HelpsTreeItem(undefined);
+    const helpTreeDataProvider = new AzExtTreeDataProvider(helpRoot, 'vscode-containers.help.loadMore');
+    const helpTreeView = vscode.window.createTreeView('vscode-containers.views.help', { treeDataProvider: helpTreeDataProvider, canSelectMany: false });
+    ext.context.subscriptions.push(helpTreeView);
+
+    // Allows OpenUrlTreeItem to open URLs
+    registerCommand('vscode-containers.openUrl', async (context: IActionContext, node: OpenUrlTreeItem) => node.openUrl());
+
+    // Register the refresh manager
+    ext.context.subscriptions.push(new RefreshManager());
+}
+
+function registerRegistryDataProviders(urtdp: UnifiedRegistryTreeDataProvider): void {
+    const githubRegistryDataProvider = new GitHubRegistryDataProvider(ext.context);
+    ext.context.subscriptions.push(urtdp.registerProvider(githubRegistryDataProvider));
+    ext.context.subscriptions.push(githubRegistryDataProvider);
+    ext.githubRegistryDataProvider = githubRegistryDataProvider;
+
+    const dockerHubRegistryDataProvider = new DockerHubRegistryDataProvider(ext.context);
+    ext.context.subscriptions.push(urtdp.registerProvider(dockerHubRegistryDataProvider));
+    ext.context.subscriptions.push(dockerHubRegistryDataProvider);
+    ext.dockerHubRegistryDataProvider = dockerHubRegistryDataProvider;
+
+    const azureRegistryDataProvider = new AzureRegistryDataProvider(ext.context);
+    ext.context.subscriptions.push(urtdp.registerProvider(azureRegistryDataProvider));
+    ext.context.subscriptions.push(azureRegistryDataProvider);
+    ext.azureRegistryDataProvider = azureRegistryDataProvider;
+
+    const genericRegistryV2DataProvider = new GenericRegistryV2DataProvider(ext.context);
+    ext.context.subscriptions.push(urtdp.registerProvider(genericRegistryV2DataProvider));
+    ext.context.subscriptions.push(genericRegistryV2DataProvider);
+    ext.genericRegistryV2DataProvider = genericRegistryV2DataProvider;
+}

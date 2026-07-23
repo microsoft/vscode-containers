@@ -1,0 +1,4 @@
+# This dev-only test client does a fresh `npm install` when launched
+# (via the "Client + Server" compound launch config), so its lockfile is
+# generated on demand and does not need to be committed.
+package-lock.json
