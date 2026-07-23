@@ -35,6 +35,7 @@ async function pullImages(context: IActionContext, node: UnifiedRegistryItem<unk
     const client = await ext.runtimeManager.getClient();
     const taskCRF = new TaskCommandRunnerFactory({
         taskName: client.displayName,
+        close: true,
     });
 
     await taskCRF.getCommandRunner()(

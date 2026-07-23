@@ -18,7 +18,8 @@ export class ImagePushStep extends AzureWizardExecuteStep<PushImageWizardContext
         const client = await ext.runtimeManager.getClient();
         const taskCRF = new TaskCommandRunnerFactory(
             {
-                taskName: wizardContext.finalTag
+                taskName: wizardContext.finalTag,
+                close: true,
             }
         );
 

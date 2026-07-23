@@ -45,6 +45,7 @@ async function runImageCore(context: IActionContext, node: ImageTreeItem | undef
         {
             taskName: node.fullTag === '<none>' ? node.imageId : node.fullTag,
             alwaysRunNew: interactive,
+            close: !interactive,
         }
     );
 
