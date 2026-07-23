@@ -68,9 +68,9 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
             // user-initiated manual refresh), so that changes to subscriptions or signed-in accounts are
             // reflected without needing to reload the window.
             const noCache = this.clearCacheOnNextLoad;
-            this.clearCacheOnNextLoad = false;
 
             const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions({ noCache });
+            this.clearCacheOnNextLoad = false;
             this.sendSubscriptionTelemetryIfNeeded();
 
             return subscriptions.map(sub => {
