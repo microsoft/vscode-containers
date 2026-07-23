@@ -1,0 +1,56 @@
+packages:
+  - extensions/vscode-containers
+  - extensions/vscode-docker
+  - packages/vscode-processutils
+  - packages/vscode-container-client
+  - packages/vscode-docker-registries
+  - packages/vscode-inproc-mcp
+  - packages/compose-language-service
+
+minimumReleaseAge: 10080 # One week in minutes
+
+allowBuilds:
+  "@vscode/vsce-sign": true
+  esbuild: true
+  keytar: true
+
+overrides:
+  # Force a non-vulnerable version of these dependencies
+  serialize-javascript: ^7.0.0
+  diff: ^8.0.3
+  # Pin the tas-client stack to the last known-good versions. tas-client >=0.3.x ships a UMD
+  # dist/tas-client.min.js while declaring "type":"module"; esbuild then wraps the UMD with its
+  # __esm helper (no local `module`), so the UMD's `module.exports = factory()` clobbers the
+  # extension bundle's top-level exports and drops activateInternal, breaking activation.
+  # 0.2.33 has no "type" field (CommonJS) and bundles correctly.
+  vscode-tas-client: 0.1.84
+  tas-client: 0.2.33
+
+publicHoistPattern:
+  # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
+  # NOTE: `typescript` is deliberately NOT hoisted here. The build compiler is TypeScript 7 (installed
+  # under the `@typescript/native` alias in package.json), which has no compiler API; hoisting a
+  # `typescript` package would let typescript-eslint resolve its peer to the API-less TS 7 and break
+  # linting. Once TS 7.1 ships its API and typescript-eslint adopts it, `typescript` can be declared/
+  # hoisted normally again.
+  - "*eslint*"
+  - "mocha"
+  - "@types/mocha"
+  - "chai"
+  - "@types/chai"
+  # chai-as-promised arrives transitively via @microsoft/vscode-azext-eng; hoist it so the
+  # imported packages' tests (and their tsc build, which compiles test files) can resolve it.
+  - "chai-as-promised"
+  - "@types/chai-as-promised"
+
+catalog:
+  "@microsoft/vscode-azext-utils": ^4.1.0
+  "@vscode/extension-telemetry": ^1.5.2
+  "@vscode/test-cli": ^0.0.12
+  "@vscode/test-electron": ^3.0.0
+  dayjs: ^1.11.7
+  esbuild: ^0.28.1
+  esbuild-plugin-copy: ^2.1.1
+  tsx: ^4.22.4
+  vscode-languageclient: ^10.1.0
+  zod: ^4.1.13
