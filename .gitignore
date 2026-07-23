@@ -17,3 +17,16 @@ esbuild.meta.json
 
 # Artifacts from running npm install
 **/npm-debug.log
+
+# Optional eslint cache
+.eslintcache
+
+# TypeScript build info
+*.tsbuildinfo
+
+# LICENSE.md and NOTICE.html are copied into each publishable workspace by
+# scripts/postinstall.mjs; ignore the copies but keep the originals at the root
+/**/LICENSE.md
+/**/NOTICE.html
+!/LICENSE.md
+!/NOTICE.html
