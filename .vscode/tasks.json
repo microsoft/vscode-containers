@@ -4,10 +4,12 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Watch: ESBuild",
+            "label": "Extension: ESBuild+Watch",
             "type": "shell",
-            "command": "npm",
+            "command": "pnpm",
             "args": [
+                "--filter",
+                "vscode-containers",
                 "run",
                 "build:esbuild",
                 "--",
@@ -23,16 +25,24 @@
             "isBackground": true,
         },
         {
-            "label": "Watch: Check Types",
+            "label": "Extension: Check+Watch",
             "type": "shell",
-            "command": "npm",
+            "command": "pnpm",
             "args": [
+                "--filter",
+                "vscode-containers",
                 "run",
                 "build:check",
                 "--",
                 "--watch"
             ],
-            "problemMatcher": "$tsc-watch",
+            "problemMatcher": {
+                "base": "$tsc-watch",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/extensions/vscode-containers"
+                ]
+            },
             "presentation": {
                 "revealProblems": "onProblem",
             },
@@ -41,6 +51,24 @@
                 "isDefault": true,
             },
             "isBackground": true,
+        },
+        {
+            "label": "Build: vscode-processutils",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "--filter",
+                "@microsoft/vscode-processutils",
+                "run",
+                "build"
+            ],
+            "problemMatcher": "$tsc",
+            "presentation": {
+                "reveal": "silent",
+            },
+            "group": {
+                "kind": "build",
+            },
         },
     ],
 }

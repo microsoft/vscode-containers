@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "module": "es2022",
+        "moduleResolution": "bundler",
+        "target": "es2022",
+        "lib": [
+            "es2022",
+        ],
+        "declaration": true,
+        "stripInternal": true,
+        "types": [
+            "node",
+        ],
+        "sourceMap": true,
+        "strict": true,
+        "alwaysStrict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+    },
+    "exclude": [
+        "**/node_modules",
+        "**/dist",
+        "**/.vscode-test",
+    ],
+}

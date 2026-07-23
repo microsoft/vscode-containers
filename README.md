@@ -1,102 +1,44 @@
-## Container Tools for Visual Studio Code  [![Version](https://img.shields.io/visual-studio-marketplace/v/ms-azuretools.vscode-containers)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers) [![Installs](https://img.shields.io/visual-studio-marketplace/i/ms-azuretools.vscode-containers)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers)
+# Container Tools for Visual Studio Code
 
-The Container Tools extension makes it easy to build, manage, and deploy containerized applications from Visual Studio Code. It also provides one-click debugging of Node.js, Python, and .NET inside a container.
+## Overview
 
-![Container Tools extension overview](resources/readme/overview.gif)
+This is the repository for the Container Tools for Visual Studio Code extension.
 
-**Check out the [Working with containers](https://aka.ms/AA7arez) topic on the Visual Studio Code documentation site to get started**.
+## Extensions
 
-## Why do I have this extension?
-If you didn't install it directly, you probably got it as part of the [Docker Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker). The extension pack is optional and can be uninstalled at any time. The Container Tools extension replaces the language service, container management, and debugging functionality previously provided by the Docker extension. See [here](https://aka.ms/vscode-container-tools-learn-more) for additional information.
+* [Container Tools for Visual Studio Code](extensions/vscode-containers/README.md) -- the VS Code extension for building, managing, and deploying containerized applications.
+* [Docker Extension Pack](extensions/vscode-docker/README.md) -- a thin extension pack that installs Container Tools, so existing users of the former "Docker" extension are migrated forward.
 
-## Installation
+## Packages
 
-[Install Docker](https://docs.docker.com/install/) on your machine and add it to the system path.
+These libraries are published to npm under the [`@microsoft`](https://www.npmjs.com/org/microsoft) scope and are consumed by the Container Tools extension (built directly from source in this monorepo):
 
-On Linux, you should [enable rootless Docker](https://docs.docker.com/engine/security/rootless/) and set the generated Docker context to "rootless" (more secure) or [enable Docker CLI for the non-root user account](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (less secure) that will be used to run VS Code.
-
-To install the extension, open the Extensions view, search for `container tools` to filter results and select the Container Tools extension authored by Microsoft.
-
-## Overview of the extension features
-
-### Editing Docker files
-
-Container Tools provides basic IntelliSense when editing your `Dockerfile` and `compose.yaml` files including completions and syntax help for common commands.
-
-> Note: [Docker DX](https://marketplace.visualstudio.com/items?itemName=docker.docker) is the official language service from Docker that provides more advanced IntelliSense for Docker, Compose, and Bake configuration files. This extension is recommended to be installed alongside Container Tools for enhanced editing support.
-
-![IntelliSense for Dockerfiles](resources/readme/dockerfile-intellisense.png)
-
-In addition, you can use the Problems panel (<kbd>Ctrl+Shift+M</kbd> on Windows/Linux, <kbd>Shift+Command+M</kbd> on Mac) to view common errors for `Dockerfile` and `compose.yaml` files.
-
-### Generating Docker files
-
-You can add Docker files to your workspace by opening the Command Palette (<kbd>F1</kbd>) and using **Containers: Add Docker Files to Workspace** command. The command will generate a `Dockerfile` and `.dockerignore` file and add them to your workspace. The command will also ask you if you want to add Docker Compose files as well, but this is optional.
-
-The extension can scaffold Docker files for most popular development languages (C#, Node.js, Python, Ruby, Go, and Java) and customizes the generated Docker files accordingly. When these files are created, we also create the necessary artifacts to provide first-class debugging support for Node.js, Python, and .NET (C#).
-
-### Container Explorer
-
-The Container Tools extension contributes a Container Explorer view to VS Code. The Container Explorer lets you examine and manage container-related assets: containers, images, volumes, networks, and container registries.
-
-The right-click menu provides access to commonly used commands for each type of asset.
-
-![Container Explorer context menu](resources/readme/container-view-context-menu.gif)
-
-You can rearrange the view panes by dragging them up or down with a mouse and use the context menu to hide or show them.
-
-![Customize Container Explorer](resources/readme/container-view-rearrange.gif)
-
-### Container commands
-
-Many of the most common container commands are built right into the Command Palette:
-
-![Container commands](resources/readme/command-palette.png)
-
-You can run container commands to manage [images](https://docs.docker.com/engine/reference/commandline/image/), [networks](https://docs.docker.com/engine/reference/commandline/network/), [volumes](https://docs.docker.com/engine/reference/commandline/volume/), [container registries](https://docs.docker.com/engine/reference/commandline/push/), and [Docker Compose](https://docs.docker.com/compose/reference/overview/). In addition, the **Containers: Prune System** command will remove stopped containers, dangling images, and unused networks and volumes.
-
-
-### Docker Compose
-
-[Docker Compose](https://docs.docker.com/compose/) lets you define and run multi-container applications. Our [Compose Language Service](https://github.com/microsoft/compose-language-service) in the Container Tools extension gives you IntelliSense and tab completions when authoring `compose.yaml` files. Press `Ctrl+Space` to see a list of valid Compose directives.
-
- ![Compose IntelliSense](resources/readme/tab-completions.gif)
-
-We also provide tooltips when you hover over a Compose YAML attribute.
-
- ![Compose Tooltips](resources/readme/hover-support.png)
-
-While `Compose Up` allows you to run all of your services at once, our new feature `Compose Up - Select Services` lets you select any combination of the services you want to run.
-
-![Compose Up - Select Subset](resources/readme/select-subset.gif)
-
-Once your `Compose Up` command completes, navigate to the Container Explorer to view your services as a Compose Group. This allows you to start, stop, and view the logs of each service as a group.
-
-![Compose Groups](resources/readme/compose-group.png)
-
-### Using image registries
-
-You can display the content and push, pull, or delete images from [Docker Hub](https://hub.docker.com/) and [Azure Container Registry](https://docs.microsoft.com/azure/container-registry/):
-
-![Azure Container Registry content](resources/readme/container-registry.png)
-
-An image in an Azure Container Registry can be deployed to Azure App Service directly from VS Code. See [Deploy images to Azure App Service](https://aka.ms/AA7arf8) to get started. For more information about how to authenticate to and work with registries, see [Using container registries](https://aka.ms/AA7arf9).
-
-### Debugging services running inside a container
-
-You can debug services built using Node.js, Python, or .NET (C#) that are running inside a container. The extension offers custom tasks that help with launching a service under the debugger and with attaching the debugger to a running service instance. For more information, see [Debug containerized apps](https://aka.ms/AA7arfb)  and [Customize the Container Tools extension](https://aka.ms/AA7ay8l).
-
-### Azure CLI integration
-
-You can start Azure CLI (command-line interface) in a standalone, Linux-based container with **Container Images: Run Azure CLI** command. This gives you access to the full Azure CLI command set in an isolated environment. For more information on available commands, see [Get started with Azure CLI](https://docs.microsoft.com/cli/azure/get-started-with-azure-cli?view=azure-cli-latest#sign-in).
-
-### Alternative container runtimes
-
-The Container Tools extension supports multiple container runtime options, such as Docker or Podman. If you want to change runtimes, you can do so with the VS Code settings `containers.containerClient` and `containers.orchestratorClient`. Changing requires a restart to take effect.
+* [`@microsoft/vscode-container-client`](packages/vscode-container-client/README.md) -- extensibility model for implementing container runtime providers (shared by VS and VS Code).
+* [`@microsoft/vscode-docker-registries`](packages/vscode-docker-registries/README.md) -- extensibility model for contributing registry providers to the Container Tools extension.
+* [`@microsoft/vscode-processutils`](packages/vscode-processutils/README.md) -- library support for building command lines and running external processes.
+* [`@microsoft/vscode-inproc-mcp`](packages/vscode-inproc-mcp/README.md) -- library support for building in-process MCP servers.
+* [`@microsoft/compose-language-service`](packages/compose-language-service/README.md) -- the Docker Compose language server, published to npm and consumed (built from source) by the Container Tools extension.
 
 ## Contributing
 
-See [the contribution guidelines](CONTRIBUTING.md) for ideas and guidance on how to improve the extension. Thank you!
+There are several ways you can contribute to this extension.
+
+### Ideas, feature requests, and bugs
+We are open to all ideas and we want to get rid of bugs! Use the Issues section to either report a new issue, provide your ideas or contribute to existing threads.
+
+### Code
+To contribute bug fixes, features, or design changes:
+  * Clone the repository locally and open in VS Code.
+  * Install [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint), [TypeScript 7](https://marketplace.visualstudio.com/items?itemName=typescriptteam.native-preview) and [esbuild Problem Matchers](https://marketplace.visualstudio.com/items?itemName=connor4312.esbuild-problem-matchers) for Visual Studio Code.
+  * Open the terminal (<kbd>Ctrl</kbd>+ <kbd>\`</kbd> by default) and run `pnpm install`.
+  * To build, open the Command Palette (<kbd>F1</kbd> by default) and type in `Tasks: Run Build Task`.
+  * Debug: press <kbd>F5</kbd> (by default) to start debugging the extension.
+
+### Legal
+
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA.
 
 ### Code of Conduct
 
@@ -104,7 +46,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ## Telemetry
 
-VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=521839) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.telemetryLevel` setting to `off`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=521839) to learn more. If you don't wish to send usage data to Microsoft, you can set the `telemetry.telemetryLevel` setting to `off`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## License
 
