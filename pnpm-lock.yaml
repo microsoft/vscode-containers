@@ -102,8 +102,8 @@ importers:
         specifier: ^0.15.0
         version: 0.15.0
       fast-xml-parser:
-        specifier: ^5.7.1
-        version: 5.9.3
+        specifier: 5.10.0
+        version: 5.10.0
       fs-extra:
         specifier: ^11.1.1
         version: 11.3.6
@@ -1692,8 +1692,8 @@ packages:
   fast-xml-builder@1.2.1:
     resolution: {integrity: sha512-tPb5TTWfgfVx5BNSi2xV0eLr89POeXXn0dXIsCJ9m1narrWxeIyx6je9d7Rce/3NyXLbvuQmLkxq+RuxMWejvw==}
 
-  fast-xml-parser@5.9.3:
-    resolution: {integrity: sha512-brCNCeScma/kqa54J4PIDriSSSLssRkuYaUCpvHJulGc3HGI/xxKUCTDcYkAdqJsyb//ydpbxecjC3hB9+tb/g==}
+  fast-xml-parser@5.10.0:
+    resolution: {integrity: sha512-SLhnTEqE5QpJHq/6zl9bsmImEP2adv+y6Wy+cJa7nVTRzQh1OZfCe9k29M5xN74LWnu0xa1zrUrq3KnOKl92Fg==}
     hasBin: true
 
   fastq@1.20.1:
@@ -1988,8 +1988,8 @@ packages:
     resolution: {integrity: sha512-mE00Gnza5EEB3Ds0HfMyllZzbBrmLOX3vfWoj9A9PEnTfratQ/BcaJOuMhnkhjXvb2+FkY3VuHqtAGpTPmglFQ==}
     engines: {node: '>=18'}
 
-  is-unsafe@1.0.1:
-    resolution: {integrity: sha512-CLK2+VdgERgD96EYm5lUQssZYlRg2tkZnbsxZoacmSiRxiFJ4Nk4SzjCl+Ur+v3kXIY9dTIdb3IH22y1mZ56LA==}
+  is-unsafe@2.0.0:
+    resolution: {integrity: sha512-2LdV822R+wmI86unXA93WCFpL6g+av8ynWk0nrHyJqGop5VoocYsSLFgN8jrfalT6iGeLNM4KXuVSsULP53kEA==}
 
   is-wsl@3.1.1:
     resolution: {integrity: sha512-e6rvdUCiQCAuumZslxRJWR/Doq4VpPR82kqclvcS0efgt430SlGIk05vdCN58+VrzgtIcfNODjozVielycD4Sw==}
@@ -2946,6 +2946,10 @@ packages:
     resolution: {integrity: sha512-k8KO9hrMyNk6tUWqUfkTEZbezRRpONVOzUTnc97VnCvyj6Tf9lyUR9EDAIeiVLv56jsMcoXEwjW8Kv5yPY52lw==}
     engines: {node: '>=16.0.0'}
 
+  xml-naming@0.3.0:
+    resolution: {integrity: sha512-ghig2TBE/H11aOVgmahA3MhimvkBr6JIYknH/Dhdk10nXwdbIqBJsbfMxpvFPG8bAw77gN29aQWvKpmVoPlvPQ==}
+    engines: {node: '>=16.0.0'}
+
   xml2js@0.5.0:
     resolution: {integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==}
     engines: {node: '>=4.0.0'}
@@ -3204,7 +3208,7 @@ snapshots:
 
   '@azure/core-xml@1.5.1':
     dependencies:
-      fast-xml-parser: 5.9.3
+      fast-xml-parser: 5.10.0
       tslib: 2.8.1
 
   '@azure/identity@4.13.1':
@@ -4714,14 +4718,14 @@ snapshots:
       path-expression-matcher: 1.6.2
       xml-naming: 0.1.0
 
-  fast-xml-parser@5.9.3:
+  fast-xml-parser@5.10.0:
     dependencies:
       '@nodable/entities': 2.2.0
       fast-xml-builder: 1.2.1
-      is-unsafe: 1.0.1
+      is-unsafe: 2.0.0
       path-expression-matcher: 1.6.2
       strnum: 2.4.1
-      xml-naming: 0.1.0
+      xml-naming: 0.3.0
 
   fastq@1.20.1:
     dependencies:
@@ -5018,7 +5022,7 @@ snapshots:
 
   is-unicode-supported@2.1.0: {}
 
-  is-unsafe@1.0.1: {}
+  is-unsafe@2.0.0: {}
 
   is-wsl@3.1.1:
     dependencies:
@@ -6033,6 +6037,8 @@ snapshots:
       is-wsl: 3.1.1
 
   xml-naming@0.1.0: {}
+
+  xml-naming@0.3.0: {}
 
   xml2js@0.5.0:
     dependencies:

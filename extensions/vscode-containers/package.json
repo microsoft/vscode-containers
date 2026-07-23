@@ -3372,7 +3372,7 @@
         "@vscode/extension-telemetry": "catalog:",
         "dayjs": "catalog:",
         "dockerfile-language-server-nodejs": "^0.15.0",
-        "fast-xml-parser": "^5.7.1",
+        "fast-xml-parser": "5.10.0",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
         "handlebars": "^4.7.9",
