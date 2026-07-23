@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
+import type { McpServer, RegisteredTool, ServerContext, StandardSchemaWithJSON } from '@modelcontextprotocol/server';
 import type { z } from 'zod/mini';
 import type { CopilotTool, ToolIOSchema } from '../contracts/CopilotTool';
 import { McpTool } from './McpTool';
@@ -54,28 +53,53 @@ export function registerMcpTool<TInSchema extends ToolIOSchema, TOutSchema exten
         normalizedOutputSchema = mcpTool.outputSchema;
     }
 
+    const mcpInputSchema = toMcpServerSchema(normalizedInputSchema);
+    const mcpOutputSchema = toMcpServerSchema(normalizedOutputSchema);
+
+    if (mcpInputSchema === undefined) {
+        return server.registerTool(
+            mcpTool.name,
+            {
+                title: mcpTool.title,
+                description: mcpTool.description,
+                outputSchema: mcpOutputSchema,
+                annotations: mcpTool.annotations,
+            },
+            async (extra: ServerContext) => {
+                return mcpTool.executeMcp.call(mcpTool, undefined as z.infer<TInSchema>, toToolExecutionExtras(extra));
+            }
+        );
+    }
+
     return server.registerTool(
         mcpTool.name,
         {
-            ...mcpTool,
-            inputSchema: normalizedInputSchema,
-            outputSchema: normalizedOutputSchema,
+            title: mcpTool.title,
+            description: mcpTool.description,
+            inputSchema: mcpInputSchema,
+            outputSchema: mcpOutputSchema,
+            annotations: mcpTool.annotations,
         },
-        async (input: unknown, extra: RequestHandlerExtra<never, never>) => {
-            // If the input is void, MCP SDK will call with (extra) instead of (undefined, extra)
-            // We won't want that, so detect that case and call appropriately
-            if (inputIsRequestHandlerExtra(input)) {
-                return mcpTool.executeMcp.call(mcpTool, undefined as z.infer<TInSchema>, input);
-            } else {
-                return mcpTool.executeMcp.call(mcpTool, input as z.infer<TInSchema>, extra);
-            }
+        async (input: unknown, extra: ServerContext) => {
+            return mcpTool.executeMcp.call(mcpTool, input as z.infer<TInSchema>, toToolExecutionExtras(extra));
         }
     );
 }
 
-function inputIsRequestHandlerExtra(input: unknown): input is RequestHandlerExtra<never, never> {
-    return !!input &&
-        typeof input === 'object' &&
-        'signal' in input &&
-        input.signal instanceof AbortSignal;
+function toMcpServerSchema(schema: ToolIOSchema | undefined): StandardSchemaWithJSON<unknown, unknown> | undefined {
+    if (!schema) {
+        return undefined;
+    }
+
+    // zod/mini schemas implement the Standard Schema contract expected by @modelcontextprotocol/server,
+    // but the TypeScript package types don't currently line up.
+    return schema as unknown as StandardSchemaWithJSON<unknown, unknown>;
+}
+
+function toToolExecutionExtras(context: ServerContext) {
+    return {
+        signal: context.mcpReq.signal,
+        requestId: context.mcpReq.id,
+        sessionId: context.sessionId,
+    };
 }
