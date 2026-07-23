@@ -83,6 +83,7 @@ services:
 
             await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
         });
+
         it('Should NOT round large integers', async () => {
             const testObject = `version: '123'
 services:
