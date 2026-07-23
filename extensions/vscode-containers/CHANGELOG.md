@@ -1,7 +1,3 @@
-## Unreleased
-### Added
-* Docker Swarm stack containers are now automatically grouped by their stack name in the Containers view (when grouping by Compose Project Name), matching the experience for Docker Compose projects. [#472](https://github.com/microsoft/vscode-containers/issues/472)
-
 ## 2.4.5 - 28 May 2026
 ### Changed
 * Deployments to Azure App Service are now performed through the [Azure App Service extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), simplifying the deployment flow and reducing duplicated code. [#473](https://github.com/microsoft/vscode-containers/pull/473)

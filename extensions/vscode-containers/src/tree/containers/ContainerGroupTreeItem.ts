@@ -9,7 +9,6 @@ import { LocalGroupTreeItemBase } from "../LocalGroupTreeItemBase";
 import { LocalRootTreeItemBase } from "../LocalRootTreeItemBase";
 import { getCommonGroupIcon } from "../settings/CommonProperties";
 import { ContainerProperty, composeProjectLabel, getContainerStateIcon, NonComposeGroupName } from "./ContainerProperties";
-import { ContainerTreeItem } from "./ContainerTreeItem";
 import { DockerContainerInfo } from "./ContainersTreeItem";
 
 export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContainerInfo, ContainerProperty> {
@@ -37,7 +36,7 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
     }
 
     private isComposeProjectGroup(): boolean {
-        return (this.ChildTreeItems as ContainerTreeItem[]).some(c => !!c.labels?.[composeProjectLabel]);
+        return this.items.some(item => !!item.labels?.[composeProjectLabel]);
     }
 
     public get iconPath(): ThemeIcon {
