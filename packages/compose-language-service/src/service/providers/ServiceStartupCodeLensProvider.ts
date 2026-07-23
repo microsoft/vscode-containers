@@ -18,14 +18,18 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
 
         const results: CodeLens[] = [];
 
+        if (!params.document.yamlDocument.value.has('services')) {
+            return undefined;
+        }
+
+        if (token.isCancellationRequested) {
+            return undefined;
+        }
+
         // The code lens commands (compose up, etc.) require the document to be within an open workspace folder.
         // If it is not, running them results in an error, so the code lenses should not be shown.
         // See https://github.com/microsoft/vscode-containers/issues/535
         if (!await isDocumentInWorkspace(ctx, params.document.uri)) {
-            return undefined;
-        }
-
-        if (!params.document.yamlDocument.value.has('services')) {
             return undefined;
         }
 
