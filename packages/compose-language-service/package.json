@@ -1,0 +1,75 @@
+{
+    "name": "@microsoft/compose-language-service",
+    "author": "Microsoft Corporation",
+    "version": "1.0.0",
+    "publisher": "ms-azuretools",
+    "description": "Language service for Docker Compose documents",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/microsoft/vscode-containers.git",
+        "directory": "packages/compose-language-service"
+    },
+    "bugs": {
+        "url": "https://github.com/microsoft/vscode-containers/issues"
+    },
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/packages/compose-language-service/README.md",
+    "keywords": [
+        "vscode",
+        "docker"
+    ],
+    "main": "dist/cjs/server.js",
+    "types": "dist/esm/server.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/esm/server.d.ts",
+            "import": "./dist/esm/server.js",
+            "require": "./dist/cjs/server.js"
+        },
+        "./client": {
+            "types": "./dist/esm/client/index.d.ts",
+            "import": "./dist/esm/client/index.js",
+            "require": "./dist/cjs/client/index.js"
+        },
+        "./vscode": {
+            "types": "./dist/esm/vscode/index.d.ts",
+            "import": "./dist/esm/vscode/index.js",
+            "require": "./dist/cjs/vscode/index.js"
+        }
+    },
+    "bin": {
+        "docker-compose-langserver": "./bin/docker-compose-langserver"
+    },
+    "scripts": {
+        "build": "pnpm run build:esm && pnpm run build:cjs",
+        "build:esm": "tsc",
+        "build:cjs": "tsc --outDir dist/cjs --module nodenext --moduleResolution nodenext --declaration false",
+        "lint": "eslint --max-warnings 0",
+        "package": "pnpm pack",
+        "test": "mocha",
+        "clean": "node ../../scripts/clean.mjs"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "devDependencies": {
+        "vscode-jsonrpc": "^9.0.1",
+        "vscode-languageclient": "catalog:",
+        "vscode-languageserver-types": "^3.18.0"
+    },
+    "dependencies": {
+        "vscode-languageserver": "^10.1.0",
+        "vscode-languageserver-protocol": "^3.18.2",
+        "vscode-languageserver-textdocument": "^1.0.12",
+        "yaml": "^2.8.2"
+    },
+    "mocha": {
+        "node-option": [
+            "experimental-transform-types",
+            "import=@microsoft/vscode-azext-eng/mocha"
+        ],
+        "spec": [
+            "src/test/**/*.test.ts"
+        ]
+    }
+}

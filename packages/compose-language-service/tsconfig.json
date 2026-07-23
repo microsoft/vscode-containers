@@ -1,0 +1,19 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "dist/esm",
+        "rootDir": "src",
+        "inlineSources": false,
+        // `types` arrays do not merge across `extends`; repeat `node` (from the base)
+        // alongside `mocha` for this package's tests.
+        "types": [
+            "node",
+            "mocha",
+        ],
+    },
+    "exclude": [
+        "src/test/clientExtension",
+        "**/dist",
+        "bin"
+    ],
+}

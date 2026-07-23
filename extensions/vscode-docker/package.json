@@ -1,0 +1,37 @@
+{
+    "name": "vscode-docker",
+    "version": "2.0.0",
+    "publisher": "ms-azuretools",
+    "displayName": "Docker",
+    "description": "Makes it easy to create, manage, and debug containerized applications.",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "icon": "resources/docker_blue.png",
+    "galleryBanner": {
+        "color": "#1e1e1e",
+        "theme": "dark"
+    },
+    "keywords": [
+        "docker",
+        "compose",
+        "container",
+        "containers"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/vscode-containers"
+    },
+    "homepage": "https://github.com/microsoft/vscode-containers/blob/main/extensions/vscode-docker/README.md",
+    "engines": {
+        "vscode": "^1.92.0"
+    },
+    "scripts": {
+        "build": "",
+        "package": "vsce package --no-dependencies",
+        "lint": "",
+        "test": "",
+        "clean": "node ../../scripts/clean.mjs"
+    },
+    "extensionDependencies": [
+        "ms-azuretools.vscode-containers"
+    ]
+}
