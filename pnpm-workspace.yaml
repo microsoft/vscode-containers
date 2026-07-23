@@ -25,6 +25,7 @@ overrides:
   # 0.2.33 has no "type" field (CommonJS) and bundles correctly.
   vscode-tas-client: 0.1.84
   tas-client: 0.2.33
+
 publicHoistPattern:
   # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
   # NOTE: `typescript` is deliberately NOT hoisted here. The build compiler is TypeScript 7 (installed
