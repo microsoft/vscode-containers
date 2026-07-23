@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from '@modelcontextprotocol/server';
 import type { CopilotTool, ToolIOSchema } from '../contracts/CopilotTool';
 import { registerMcpTool } from '../mcp/registerMcpTool';
 import { McpToolWithTelemetry } from './McpToolWithTelemetry';
