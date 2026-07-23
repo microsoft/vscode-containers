@@ -6,10 +6,14 @@ packages:
   - packages/vscode-docker-registries
   - packages/vscode-inproc-mcp
   - packages/compose-language-service
+
+minimumReleaseAge: 10080 # One week in minutes
+
 allowBuilds:
   "@vscode/vsce-sign": true
   esbuild: true
   keytar: true
+
 overrides:
   # Force a non-vulnerable version of these dependencies
   serialize-javascript: ^7.0.0
@@ -21,6 +25,7 @@ overrides:
   # 0.2.33 has no "type" field (CommonJS) and bundles correctly.
   vscode-tas-client: 0.1.84
   tas-client: 0.2.33
+
 publicHoistPattern:
   # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
   # NOTE: `typescript` is deliberately NOT hoisted here. The build compiler is TypeScript 7 (installed
@@ -37,22 +42,7 @@ publicHoistPattern:
   # imported packages' tests (and their tsc build, which compiles test files) can resolve it.
   - "chai-as-promised"
   - "@types/chai-as-promised"
-pnpmfile: scripts/pnpmfile.mjs
-# The Azure Artifacts proxy sits behind a load balancer that stamps a random backend shard
-# host (ms-feed-N.pkgs.visualstudio.com) into each package's dist.tarball. pnpm's supply-chain
-# verification pass re-derives the expected tarball URL from the registry and compares it to
-# that shard host, failing with ERR_PNPM_TARBALL_URL_MISMATCH. The shard host is
-# non-deterministic, so no lockfile content can satisfy the check. trustLockfile skips the
-# re-verification pass (minimumReleaseAge / trustPolicy / tarball URL) for the loaded lockfile;
-# those policies are still applied during resolution when the lockfile is (re)generated.
-trustLockfile: true
-supportedArchitectures:
-  os:
-    - current
-  cpu:
-    - current
-  libc:
-    - current
+
 catalog:
   "@microsoft/vscode-azext-utils": ^4.1.0
   "@vscode/extension-telemetry": ^1.5.2
