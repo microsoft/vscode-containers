@@ -69,6 +69,10 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
     private _cachedItems: TItem[] | undefined;
     private _currentDockerStatus: DockerStatus;
 
+    protected get currentItems(): TItem[] | undefined {
+        return this._currentItems;
+    }
+
     public constructor(parent: AzExtParentTreeItem | undefined) {
         super(parent);
         // `childTypeLabel` is a field in the base class, but we need to redefine it to make it an accessor

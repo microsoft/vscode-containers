@@ -13,6 +13,10 @@ export abstract class LocalGroupTreeItemBase<TItem extends AnyContainerObject, T
     private _items: TItem[];
     private _childTreeItems: AzExtTreeItem[];
 
+    protected get items(): TItem[] {
+        return this._items;
+    }
+
     public constructor(parent: LocalRootTreeItemBase<TItem, TProperty>, group: string, items: TItem[]) {
         super(parent);
         this.group = group;
