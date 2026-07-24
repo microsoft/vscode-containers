@@ -64,6 +64,8 @@ export class ContainersTreeItem extends LocalRootTreeItemBase<DockerContainerInf
         // Don't wait
         void this.updateNewContainerUser(results);
 
+        this.updateRunningContainerCountBadge(results);
+
         return results;
     }
 
@@ -118,5 +120,13 @@ export class ContainersTreeItem extends LocalRootTreeItemBase<DockerContainerInf
             this.newContainerUser = false;
             await ext.context.globalState.update('vscode-containers.container.newContainerUser', false);
         }
+    }
+
+    private updateRunningContainerCountBadge(items: DockerContainerInfo[]): void {
+        const runningCount = items.filter(item => item.state.toLowerCase() === 'running').length;
+
+        ext.containersTreeView.badge = runningCount > 0
+            ? { value: runningCount, tooltip: l10n.t('{0} running container(s)', runningCount) }
+            : undefined;
     }
 }
