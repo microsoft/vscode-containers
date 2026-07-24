@@ -54,6 +54,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
 
     private readonly subscriptionProvider = new VSCodeAzureSubscriptionProvider(ext.outputChannel);
     private readonly authenticationProviders = new Map<string, ACROAuthProvider>(); // The tree items are too short-lived to store the associated auth provider so keep a cache
+    private clearCacheOnNextLoad = false;
 
     public constructor(private readonly extensionContext: vscode.ExtensionContext) {
         super();
@@ -62,7 +63,14 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
     public override async getChildren(element?: CommonRegistryItem | undefined): Promise<CommonRegistryItem[]> {
         if (isRegistryRoot(element)) {
             await this.subscriptionProvider.signIn(undefined, { promptIfNeeded: true });
-            const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions();
+
+            // Only bypass the subscription cache when a cache clear has been explicitly requested (e.g. a
+            // user-initiated manual refresh), so that changes to subscriptions or signed-in accounts are
+            // reflected without needing to reload the window.
+            const noCache = this.clearCacheOnNextLoad;
+
+            const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions({ noCache });
+            this.clearCacheOnNextLoad = false;
             this.sendSubscriptionTelemetryIfNeeded();
 
             return subscriptions.map(sub => {
@@ -101,6 +109,16 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
     public dispose(): void {
         super.dispose();
         this.subscriptionProvider.dispose();
+    }
+
+    /**
+     * Clears the cached authentication providers and forces the subscription cache to be bypassed on the
+     * next load. This should only be called on a user-initiated manual refresh, so that changes to
+     * subscriptions or signed-in accounts are reflected without needing to reload the window.
+     */
+    public clearCache(): void {
+        this.authenticationProviders.clear();
+        this.clearCacheOnNextLoad = true;
     }
 
     public override async getRegistries(subscriptionItem: AzureSubscriptionRegistryItem): Promise<AzureRegistry[]> {
