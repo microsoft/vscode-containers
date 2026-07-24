@@ -126,7 +126,7 @@ export class ContainersTreeItem extends LocalRootTreeItemBase<DockerContainerInf
         const runningCount = items.filter(item => item.state.toLowerCase() === 'running').length;
 
         ext.containersTreeView.badge = runningCount > 0
-            ? { value: runningCount, tooltip: l10n.t('{0} running containers', runningCount) }
+            ? { value: runningCount, tooltip: l10n.t('{0} running container(s)', runningCount) }
             : undefined;
     }
 }
