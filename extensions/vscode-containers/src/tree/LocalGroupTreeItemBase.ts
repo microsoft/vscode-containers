@@ -41,7 +41,7 @@ export abstract class LocalGroupTreeItemBase<TItem extends AnyContainerObject, T
         return this.parent.compareChildrenImpl(ti1, ti2);
     }
 
-    protected get items(): TItem[] {
+    protected get items(): readonly TItem[] {
         return this._items;
     }
 
