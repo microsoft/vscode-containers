@@ -3377,7 +3377,7 @@
         "gradle-to-js": "^2.0.1",
         "handlebars": "^4.7.9",
         "semver": "^7.5.2",
-        "tar": "^7.5.16",
+        "tar": "^7.5.21",
         "vscode-languageclient": "catalog:",
         "vscode-tas-client": "^0.1.75",
         "zod": "catalog:"
