@@ -6,16 +6,18 @@
 import { composeArgs, withNamedArg } from "@microsoft/vscode-processutils";
 import * as path from "path";
 import { WorkspaceFolder, commands, l10n, tasks } from "vscode";
+import { CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN } from "../../constants";
 import { ext } from "../../extensionVariables";
 import { NetChooseBuildTypeContext, netContainerBuild } from "../../scaffolding/wizard/net/NetContainerBuild";
 import { AllNetContainerBuildOptions, NetContainerBuildOptionsKey } from "../../scaffolding/wizard/net/NetSdkChooseBuildStep";
 import { NetSdkRunTaskDefinition, netSdkRunTaskProvider } from "../../tasks/netSdk/NetSdkRunTaskProvider";
 import { normalizeArchitectureToRidArchitecture, normalizeOsToRidOs } from "../../tasks/netSdk/netSdkTaskUtils";
 import { NetCoreTaskHelper } from "../../tasks/netcore/NetCoreTaskHelper";
-import { getNetCoreProjectInfo } from "../../utils/netCoreUtils";
+import { getNetCoreProjectInfo, isFileBasedApp } from "../../utils/netCoreUtils";
 import { getDockerOSType } from "../../utils/osUtils";
 import { PlatformOS } from "../../utils/platform";
 import { resolveVariables, unresolveWorkspaceFolder } from "../../utils/resolveVariables";
+import { resolveFilesOfPattern } from "../../utils/quickPickFile";
 import { DockerDebugContext, DockerDebugScaffoldContext, ResolvedDebugConfiguration, inferContainerName } from "../DebugHelper";
 import { DockerDebugConfiguration } from "../DockerDebugConfigurationProvider";
 import { NetCoreDebugHelper, NetCoreDebugScaffoldingOptions, NetCoreProjectProperties } from "../netcore/NetCoreDebugHelper";
@@ -35,6 +37,9 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
             ...context.actionContext,
             scaffoldType: 'debugging',
             workspaceFolder: context.folder,
+            // File-based apps (a single .cs file with no .csproj/.fsproj) can only be built with the .NET SDK,
+            // so we skip the "SDK vs Dockerfile" prompt for them.
+            isFileBasedApp: await NetSdkDebugHelper.isFileBasedAppFolder(context.folder),
         };
 
         await netContainerBuild(netCoreBuildContext); // prompt user whether to use .NET container SDK build
@@ -110,10 +115,14 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
     protected override async getProjectProperties(debugConfiguration: DockerDebugConfiguration, folder?: WorkspaceFolder): Promise<NetSdkProjectProperties> {
         const ridOS = await normalizeOsToRidOs();
         const ridArchitecture = await normalizeArchitectureToRidArchitecture();
+        const resolvedAppProject = resolveVariables(debugConfiguration.netCore?.appProject, folder);
+        // File-based apps default to PublishAot, which changes the computed container configuration. Disable it
+        // so the properties match the debuggable (managed) image we build.
+        const publishAot = isFileBasedApp(resolvedAppProject) ? 'false' : undefined;
         const additionalProperties = composeArgs(
             withNamedArg('-p:ContainerRuntimeIdentifier', `"${ridOS}-${ridArchitecture}"`, { assignValue: true }), // We have to pre-quote the RID because we cannot simultaneously use `assignValue` and `shouldQuote`
+            withNamedArg('-p:PublishAot', publishAot, { assignValue: true }),
         )();
-        const resolvedAppProject = resolveVariables(debugConfiguration.netCore?.appProject, folder);
 
         const projectInfo = await getNetCoreProjectInfo(resolvedAppProject, additionalProperties);
 
@@ -139,6 +148,20 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
         } else {
             throw new Error(l10n.t("Your current project configuration or .NET SDK version doesn't support SDK Container build. Please choose a compatible project or update .NET SDK."));
         }
+    }
+
+    /**
+     * Determines whether the folder is a file-based .NET app: it contains a single-file app (.cs) and no
+     * project file (.csproj/.fsproj), meaning the .NET SDK is the only way to build a container image for it.
+     */
+    private static async isFileBasedAppFolder(folder: WorkspaceFolder): Promise<boolean> {
+        const projectFiles = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
+        if (projectFiles) {
+            return false;
+        }
+
+        const fileBasedApps = await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN]);
+        return !!fileBasedApps;
     }
 }
 

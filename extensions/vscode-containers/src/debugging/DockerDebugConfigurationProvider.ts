@@ -5,7 +5,7 @@
 
 import { callWithTelemetryAndErrorHandling, IActionContext, registerEvent, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { CancellationToken, commands, debug, DebugConfiguration, DebugConfigurationProvider, DebugSession, l10n, ProviderResult, workspace, WorkspaceFolder } from 'vscode';
-import { CSPROJ_GLOB_PATTERN, DockerOrchestration, FSPROJ_GLOB_PATTERN } from '../constants';
+import { CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, DockerOrchestration, FSPROJ_GLOB_PATTERN } from '../constants';
 import { ext } from '../extensionVariables';
 import { getAssociatedDockerRunTask } from '../tasks/TaskHelper';
 import { resolveFilesOfPattern } from '../utils/quickPickFile';
@@ -196,9 +196,10 @@ export class DockerDebugConfigurationProvider implements DebugConfigurationProvi
         // NOTE: We can not determine the language from `DockerDebugContext`, so we need to check the
         //       type of files inside the folder here to determine the language.
 
-        // check if it's a .NET Core project
+        // check if it's a .NET project (project-based .csproj/.fsproj or a file-based app: a single .cs file)
         const csProjUris = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
-        if (csProjUris) {
+        const fileBasedAppUris = csProjUris ? undefined : await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN]);
+        if (csProjUris || fileBasedAppUris) {
             return await netSdkDebugHelper.provideDebugConfigurations(
                 {
                     actionContext,

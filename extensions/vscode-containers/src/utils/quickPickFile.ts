@@ -6,7 +6,7 @@
 import { DialogResponses, IActionContext } from '@microsoft/vscode-azext-utils';
 import * as path from "path";
 import * as vscode from 'vscode';
-import { COMPOSE_FILE_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, DOCKERFILE_GLOB_PATTERN, FILE_SEARCH_MAX_RESULT, FSPROJ_GLOB_PATTERN, YAML_GLOB_PATTERN } from "../constants";
+import { COMPOSE_FILE_GLOB_PATTERN, CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, DOCKERFILE_GLOB_PATTERN, FILE_SEARCH_MAX_RESULT, FSPROJ_GLOB_PATTERN, YAML_GLOB_PATTERN } from "../constants";
 
 export interface Item extends vscode.QuickPickItem {
     relativeFilePath: string;
@@ -165,12 +165,18 @@ export async function quickPickYamlFileItem(context: IActionContext, fileUri: vs
     return fileItem;
 }
 
-export async function quickPickProjectFileItem(context: IActionContext, fileUri: vscode.Uri, rootFolder: vscode.WorkspaceFolder, noProjectFileMessage: string): Promise<Item> {
+export async function quickPickProjectFileItem(context: IActionContext, fileUri: vscode.Uri, rootFolder: vscode.WorkspaceFolder, noProjectFileMessage: string, includeFileBasedApps?: boolean): Promise<Item> {
     if (fileUri) {
         return createFileItem(rootFolder, fileUri);
     }
 
-    const items: Item[] = await resolveFilesOfPattern(rootFolder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
+    let items: Item[] = await resolveFilesOfPattern(rootFolder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
+
+    // If there are no project files and file-based apps are allowed, fall back to offering the .cs files in the workspace
+    if (!items && includeFileBasedApps) {
+        items = await resolveFilesOfPattern(rootFolder, [CS_GLOB_PATTERN]);
+    }
+
     const fileItem: Item = await quickPickFileItem(context, items, vscode.l10n.t('Choose a project file.'));
 
     if (!fileItem) {

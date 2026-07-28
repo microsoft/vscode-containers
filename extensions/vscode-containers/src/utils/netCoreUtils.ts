@@ -4,11 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { parseError } from '@microsoft/vscode-azext-utils';
-import { CommandLineArgs, composeArgs, withArg, withQuotedArg } from '@microsoft/vscode-processutils';
+import { CommandLineArgs, composeArgs, withArg, withFlagArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as z from 'zod/mini';
 import { execAsync } from './execAsync';
+
+/**
+ * Determines whether the given .NET "project" is actually a file-based app: a single C# file
+ * (e.g. `app.cs`) that can be run directly with `dotnet run app.cs` without a `.csproj`.
+ * {@link https://devblogs.microsoft.com/dotnet/announcing-dotnet-run-app/}
+ */
+export function isFileBasedApp(project: string | undefined): boolean {
+    return !!project && path.extname(project).toLowerCase() === '.cs';
+}
 
 interface NetCoreCommonProjectInfo {
     assemblyName: string;
@@ -49,7 +58,9 @@ const RawNetCoreProjectInfoSchema = z.object({
 
 export async function getNetCoreProjectInfo(project: string, additionalProperties?: CommandLineArgs): Promise<NetCoreProjectInfo> {
     const args = composeArgs(
-        withArg('build', '--no-restore'),
+        withArg('build'),
+        // File-based apps (single .cs file) have no prior restore, so we must allow the implicit restore.
+        withFlagArg('--no-restore', !isFileBasedApp(project)),
         withArg('-target:ComputeContainerConfig'),
         withArg('-getProperty:AssemblyName,TargetFramework,TargetFrameworks,OutputPath,EnableSdkContainerSupport,ContainerWorkingDirectory,ContainerRepository'),
         withArg(...(additionalProperties ?? [])),
