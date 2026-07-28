@@ -3,17 +3,15 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as path from 'path';
 import { WorkspaceFolderPlaceholder } from '../../constants';
-import { ext } from '../../extensionVariables';
 import { PythonExtensionHelper } from '../../tasks/python/PythonExtensionHelper';
 import { PythonRunTaskDefinition } from '../../tasks/python/PythonTaskHelper';
-import { isLinux } from '../../utils/osUtils';
 import { PythonProjectType } from '../../utils/pythonUtils';
 import { DebugHelper, DockerDebugContext, DockerDebugScaffoldContext, ResolvedDebugConfiguration, inferContainerName, resolveDockerServerReadyAction } from '../DebugHelper';
 import { DockerDebugConfigurationBase } from '../DockerDebugConfigurationBase';
 import { DockerDebugConfiguration } from '../DockerDebugConfigurationProvider';
 import { PythonScaffoldingOptions } from '../DockerDebugScaffoldingProvider';
+import { PythonContainerDebugType } from './PythonContainerDebugAdapterDescriptorFactory';
 
 export interface PythonPathMapping {
     localRoot: string;
@@ -78,12 +76,11 @@ export class PythonDebugHelper implements DebugHelper {
                 },
                 true);
 
-        const args = [...(debugConfiguration.python.args || pythonRunTaskOptions.args || []), await ext.runtimeManager.getCommand(), containerName];
-        const launcherPath = path.join(ext.context.asAbsolutePath('resources'), 'python', 'launcher.py');
+        const args = [...(debugConfiguration.python.args || pythonRunTaskOptions.args || [])];
 
         return {
-            ...{ ...debugConfiguration, python: undefined }, // Get the original debug configuration, minus the "python" property which belongs to the Docker launch config and confuses the Python extension
-            type: 'debugpy',
+            ...{ ...debugConfiguration, python: undefined }, // Get the original debug configuration, minus the "python" property which belongs to the Docker launch config and confuses debugpy
+            type: PythonContainerDebugType,
             request: 'launch',
             pathMappings: debugConfiguration.python.pathMappings,
             justMyCode: debugConfiguration.python.justMyCode ?? true,
@@ -95,28 +92,20 @@ export class PythonDebugHelper implements DebugHelper {
                 dockerServerReadyAction: dockerServerReadyAction,
                 removeContainerAfterDebug: debugConfiguration.removeContainerAfterDebug
             },
-            debugLauncherPath: debugConfiguration.debugLauncherPath || launcherPath,
-            debugAdapterHost: debugConfiguration.debugAdapterHost || await this.tryGetDebugAdapterHost(context) || '172.17.0.1', // 172.17.0.1 is the default gateway for the bridge network
-            console: debugConfiguration.console || "integratedTerminal",
+            // The debug adapter (debugpy) runs *inside* the container and communicates with VS Code
+            // over stdio (see PythonContainerDebugAdapterDescriptorFactory). Because the adapter, the
+            // debug server, and the debuggee all run in the container, no host<->container networking
+            // is needed. We use the internal console so the adapter launches the debuggee itself in
+            // the container rather than asking the local client to spawn it in a terminal.
+            console: debugConfiguration.console || "internalConsole",
             internalConsoleOptions: debugConfiguration.internalConsoleOptions || "openOnSessionStart",
             module: debugConfiguration.module || pythonRunTaskOptions.module,
             program: debugConfiguration.file || pythonRunTaskOptions.file,
             redirectOutput: debugConfiguration.redirectOutput as boolean | undefined ?? true,
             args: args,
             cwd: '.',
-
-            // These settings control what Python interpreter gets used in what circumstance.
-            // debugAdapterPython controls the interpreter used by the Python extension to start the debug adapter, on the local client
-            // We want it to use what it would normally use for local Python debugging, i.e. the chosen local interpreter
-            debugAdapterPython: '${command:python.interpreterPath}', // eslint-disable-line no-template-curly-in-string
-
-            // debugLauncherPython controls the interpreter used by the debug adapter to start the launcher, also on the local client
-            // We want it to use what it would normally use for local Python debugging, i.e. the chosen local interpreter
-            // This actually launches our launcher in resources/python/launcher.py, which uses `docker exec -d <containerId> python3 /debugpy/launcher ...` to launch the real debugpy launcher in the container
-            debugLauncherPython: '${command:python.interpreterPath}', // eslint-disable-line no-template-curly-in-string
-
-            // python controls the interpreter used by the launcher to start the application itself
-            // Since this is in the container it should always use `python3`
+            // The interpreter used by the in-container adapter to launch the application itself.
+            // Since this is in the container it should always use `python3`.
             python: 'python3',
         };
     }
@@ -132,31 +121,6 @@ export class PythonDebugHelper implements DebugHelper {
             default:
                 return undefined;
         }
-    }
-
-    private async tryGetDebugAdapterHost(context: DockerDebugContext): Promise<string | undefined> {
-        // For Windows and Mac we ask debugpy to listen on localhost:{randomPort} and then
-        // we use 'host.docker.internal' in the launcher to get the host's ip address.
-        if (!isLinux()) {
-            return 'localhost';
-        }
-
-        // For Docker Desktop on WSL or Linux, we also use 'localhost'
-        const dockerInfo = await ext.runWithDefaults(client =>
-            client.info({})
-        );
-
-        if (/Docker Desktop/i.test(dockerInfo.operatingSystem)) {
-            return 'localhost';
-        }
-
-        // For other Docker setups on WSL or Linux, 'host.docker.internal' doesn't work, so we ask debugpy to listen
-        // on the bridge network's ip address (predefined network).
-        const networkInspection = (await ext.runWithDefaults(client =>
-            client.inspectNetworks({ networks: ['bridge'] })
-        ))?.[0];
-
-        return networkInspection?.ipam?.config?.[0].gateway;
     }
 }
 

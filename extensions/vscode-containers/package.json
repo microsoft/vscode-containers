@@ -958,6 +958,12 @@
                         }
                     }
                 ]
+            },
+            {
+                "type": "python-container",
+                "label": "Containers: Python (internal)",
+                "hiddenWhenLanguageIsNotSupported": true,
+                "languages": []
             }
         ],
         "taskDefinitions": [
