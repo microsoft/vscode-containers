@@ -5,11 +5,11 @@
 
 import { expect } from 'chai';
 import {
-    NerdctlInspectContainerRecordSchema,
-    normalizeNerdctlInspectContainerRecord,
-} from '../clients/NerdctlClient/NerdctlInspectContainerRecord';
+    SharedInspectContainerRecordSchema,
+    normalizeInspectContainerRecord,
+} from '../clients/DockerClientBase/SharedInspectContainerRecord';
 
-describe('(unit) NerdctlInspectContainerRecordSchema mounts', () => {
+describe('(unit) SharedInspectContainerRecordSchema mounts', () => {
     const baseRecord = {
         Id: 'abc123',
         Name: '/my-container',
@@ -27,8 +27,8 @@ describe('(unit) NerdctlInspectContainerRecordSchema mounts', () => {
             ],
         });
 
-        const parsed = NerdctlInspectContainerRecordSchema.parse(JSON.parse(raw));
-        const normalized = normalizeNerdctlInspectContainerRecord(parsed, raw);
+        const parsed = SharedInspectContainerRecordSchema.parse(JSON.parse(raw));
+        const normalized = normalizeInspectContainerRecord(parsed, raw, { defaultVolumeDriver: 'local' });
 
         // The tmpfs mount is skipped, but bind + volume survive (container is not dropped).
         expect(normalized.mounts).to.have.lengthOf(2);
@@ -44,9 +44,10 @@ describe('(unit) NerdctlInspectContainerRecordSchema mounts', () => {
             ],
         });
 
-        const parsed = NerdctlInspectContainerRecordSchema.parse(JSON.parse(raw));
-        const normalized = normalizeNerdctlInspectContainerRecord(parsed, raw);
+        const parsed = SharedInspectContainerRecordSchema.parse(JSON.parse(raw));
+        const normalized = normalizeInspectContainerRecord(parsed, raw, { defaultVolumeDriver: 'local' });
 
         expect(normalized.mounts).to.deep.equal([]);
     });
 });
+

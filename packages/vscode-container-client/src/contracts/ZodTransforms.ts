@@ -3,9 +3,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { toArray } from '@microsoft/vscode-processutils';
 import * as z from 'zod/mini';
+import { tryParseSize } from '../clients/DockerClientBase/tryParseSize';
 import { dayjs } from '../utils/dayjs';
-import type { Labels } from './ContainerClient';
+import { parseDockerLikeImageName } from '../utils/parseDockerLikeImageName';
+import type { ImageNameInfo, Labels } from './ContainerClient';
 
 /**
  * Schema that transforms a date string to a Date object.
@@ -115,3 +118,37 @@ export const architectureStringSchema = z.pipe(z.string(), z.transform((str): 'a
     }
     return undefined;
 }));
+
+/**
+ * Schema that transforms a Docker-like size value (a number of bytes or a
+ * human-readable string such as `"12.34 GB"`) into a number of bytes.
+ *
+ * Backed by {@link tryParseSize}; `undefined`/`null`/`"N/A"`/unparseable input
+ * yields `undefined`.
+ */
+export const sizeSchema = z.pipe(
+    z.nullish(z.union([z.string(), z.number()])),
+    z.transform((val): number | undefined => tryParseSize(val ?? undefined)),
+);
+
+/**
+ * Schema that transforms a raw image name string into an {@link ImageNameInfo}
+ * via {@link parseDockerLikeImageName}. A `null`/`undefined`/empty value yields
+ * an {@link ImageNameInfo} with only `originalName` populated.
+ */
+export const imageNameSchema = z.pipe(
+    z.nullish(z.string()),
+    z.transform((val): ImageNameInfo => parseDockerLikeImageName(val ?? undefined)),
+);
+
+/**
+ * Schema that coalesces a value that may be a single string, an array of
+ * strings, or `null`/`undefined` into a `string[]` via {@link toArray}.
+ *
+ * Docker-like `Entrypoint`/`Cmd`/`Env` fields are emitted inconsistently as
+ * either a scalar or an array depending on the runtime and object.
+ */
+export const stringArraySchema = z.pipe(
+    z.nullish(z.union([z.array(z.string()), z.string()])),
+    z.transform((val): string[] => toArray(val ?? [])),
+);

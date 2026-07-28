@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { normalizeContainerState } from '../clients/DockerClientBase/DockerListContainerRecord';
+import { normalizeContainerState } from '../clients/DockerClientBase/SharedListContainerRecord';
 
 describe('(unit) normalizeContainerState', () => {
 

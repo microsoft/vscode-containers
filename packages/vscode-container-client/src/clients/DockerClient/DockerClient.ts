@@ -91,11 +91,10 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
     }
 
     override listContexts(options: ListContextsCommandOptions): Promise<PromiseCommandResponse<ListContextItem[]>> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getListContextsCommandArgs(options),
-            parse: (output, strict) => this.parseListContextsCommandOutput(output, strict),
-        });
+        return this.makeCommandResponse(
+            this.getListContextsCommandArgs(options),
+            (output, strict) => this.parseListContextsCommandOutput(output, strict),
+        );
     }
 
     //#endregion
@@ -118,11 +117,10 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
     }
 
     override removeContexts(options: RemoveContextsCommandOptions): Promise<PromiseCommandResponse<string[]>> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getRemoveContextsCommandArgs(options),
-            parse: (output, strict) => this.parseRemoveContextsCommandOutput(output, strict),
-        });
+        return this.makeCommandResponse(
+            this.getRemoveContextsCommandArgs(options),
+            (output, strict) => this.parseRemoveContextsCommandOutput(output, strict),
+        );
     }
 
     //#endregion
@@ -137,10 +135,7 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
     }
 
     override useContext(options: UseContextCommandOptions): Promise<VoidCommandResponse> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getUseContextCommandArgs(options),
-        });
+        return this.makeVoidCommandResponse(this.getUseContextCommandArgs(options));
     }
 
     //#endregion
@@ -194,11 +189,10 @@ export class DockerClient extends DockerClientBase implements IContainersClient 
     }
 
     override inspectContexts(options: InspectContextsCommandOptions): Promise<PromiseCommandResponse<InspectContextsItem[]>> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getInspectContextsCommandArgs(options),
-            parse: (output, strict) => this.parseInspectContextsCommandOutput(output, strict),
-        });
+        return this.makeCommandResponse(
+            this.getInspectContextsCommandArgs(options),
+            (output, strict) => this.parseInspectContextsCommandOutput(output, strict),
+        );
     }
 
     //#endregion

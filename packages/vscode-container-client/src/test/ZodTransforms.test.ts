@@ -9,9 +9,12 @@ import {
     booleanStringSchema,
     dateStringSchema,
     dateStringWithFallbackSchema,
+    imageNameSchema,
     labelsSchema,
     labelsStringSchema,
     osTypeStringSchema,
+    sizeSchema,
+    stringArraySchema,
 } from '../contracts/ZodTransforms';
 
 describe('(unit) ZodTransforms', () => {
@@ -112,6 +115,54 @@ describe('(unit) ZodTransforms', () => {
 
         it('Should return undefined for unknown architectures', () => {
             expect(architectureStringSchema.parse('riscv64')).to.be.undefined;
+        });
+    });
+
+    describe('sizeSchema', () => {
+        it('Should round numeric byte values', () => {
+            expect(sizeSchema.parse(1234.6)).to.equal(1235);
+        });
+
+        it('Should parse human-readable size strings', () => {
+            expect(sizeSchema.parse('1234')).to.equal(1234);
+            expect(sizeSchema.parse('1 kb')).to.equal(1024);
+            expect(sizeSchema.parse('12.34 GB')).to.equal(Math.round(12.34 * 1024 * 1024 * 1024));
+        });
+
+        it('Should return undefined for missing or N/A values', () => {
+            expect(sizeSchema.parse(undefined)).to.be.undefined;
+            expect(sizeSchema.parse(null)).to.be.undefined;
+            expect(sizeSchema.parse('N/A')).to.be.undefined;
+        });
+    });
+
+    describe('imageNameSchema', () => {
+        it('Should parse a registry/image:tag string into components', () => {
+            const result = imageNameSchema.parse('docker.io/library/alpine:3.20');
+            expect(result.registry).to.equal('docker.io');
+            expect(result.image).to.equal('library/alpine');
+            expect(result.tag).to.equal('3.20');
+            expect(result.originalName).to.equal('docker.io/library/alpine:3.20');
+        });
+
+        it('Should return only originalName for empty/undefined input', () => {
+            expect(imageNameSchema.parse(undefined)).to.deep.equal({ originalName: undefined });
+            expect(imageNameSchema.parse(null)).to.deep.equal({ originalName: undefined });
+        });
+    });
+
+    describe('stringArraySchema', () => {
+        it('Should wrap a scalar string into an array', () => {
+            expect(stringArraySchema.parse('/bin/sh')).to.deep.equal(['/bin/sh']);
+        });
+
+        it('Should pass arrays through', () => {
+            expect(stringArraySchema.parse(['a', 'b'])).to.deep.equal(['a', 'b']);
+        });
+
+        it('Should coalesce null/undefined to an empty array', () => {
+            expect(stringArraySchema.parse(null)).to.deep.equal([]);
+            expect(stringArraySchema.parse(undefined)).to.deep.equal([]);
         });
     });
 });
