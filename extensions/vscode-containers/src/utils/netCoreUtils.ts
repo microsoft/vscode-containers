@@ -8,7 +8,9 @@ import { CommandLineArgs, composeArgs, withArg, withFlagArg, withQuotedArg } fro
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as z from 'zod/mini';
+import { CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN } from '../constants';
 import { execAsync } from './execAsync';
+import { resolveFilesOfPattern } from './quickPickFile';
 
 /**
  * Determines whether the given .NET "project" is actually a file-based app: a single C# file
@@ -17,6 +19,20 @@ import { execAsync } from './execAsync';
  */
 export function isFileBasedApp(project: string | undefined): boolean {
     return !!project && path.extname(project).toLowerCase() === '.cs';
+}
+
+/**
+ * Determines whether the folder is a file-based .NET app: it contains a single-file app (.cs) and no
+ * project file (.csproj/.fsproj), meaning the .NET SDK is the only way to build a container image for it.
+ */
+export async function isFileBasedAppFolder(folder: vscode.WorkspaceFolder): Promise<boolean> {
+    const projectFiles = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
+    if (projectFiles?.length) {
+        return false;
+    }
+
+    const fileBasedApps = await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN]);
+    return !!(fileBasedApps?.length);
 }
 
 interface NetCoreCommonProjectInfo {

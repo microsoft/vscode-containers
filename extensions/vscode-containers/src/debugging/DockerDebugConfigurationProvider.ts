@@ -5,9 +5,10 @@
 
 import { callWithTelemetryAndErrorHandling, IActionContext, registerEvent, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { CancellationToken, commands, debug, DebugConfiguration, DebugConfigurationProvider, DebugSession, l10n, ProviderResult, workspace, WorkspaceFolder } from 'vscode';
-import { CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, DockerOrchestration, FSPROJ_GLOB_PATTERN } from '../constants';
+import { CSPROJ_GLOB_PATTERN, DockerOrchestration, FSPROJ_GLOB_PATTERN } from '../constants';
 import { ext } from '../extensionVariables';
 import { getAssociatedDockerRunTask } from '../tasks/TaskHelper';
+import { isFileBasedAppFolder } from '../utils/netCoreUtils';
 import { resolveFilesOfPattern } from '../utils/quickPickFile';
 import { DebugHelper, DockerDebugContext, ResolvedDebugConfiguration } from './DebugHelper';
 import { DockerPlatform, getDebugPlatform } from './DockerDebugPlatformHelper';
@@ -198,8 +199,7 @@ export class DockerDebugConfigurationProvider implements DebugConfigurationProvi
 
         // check if it's a .NET project (project-based .csproj/.fsproj or a file-based app: a single .cs file)
         const csProjUris = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
-        const fileBasedAppUris = csProjUris ? undefined : await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN]);
-        if (csProjUris || fileBasedAppUris) {
+        if (csProjUris || await isFileBasedAppFolder(folder)) {
             return await netSdkDebugHelper.provideDebugConfigurations(
                 {
                     actionContext,
