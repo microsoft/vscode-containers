@@ -1,6 +1,11 @@
-## 1.0.0 - 21 July 2026
+## 1.0.0 - 28 July 2026
 ### Changed
 * The repository has been relocated to [microsoft/vscode-containers](https://github.com/microsoft/vscode-containers). The bump to 1.0.0 does not reflect any breaking API changes.
+
+### Fixed
+* Formatting a document no longer rounds large integer values. [#536](https://github.com/microsoft/vscode-containers/issues/536)
+* Formatting a document now preserves YAML anchors. [#537](https://github.com/microsoft/vscode-containers/issues/537)
+* Filled a Compose schema-validation gap that occurred when both the RedHat YAML and Docker DX extensions were installed. [#542](https://github.com/microsoft/vscode-containers/pull/542)
 
 ## 0.5.0 - 9 February 2026
 ### Breaking Changes
