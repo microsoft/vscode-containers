@@ -3,7 +3,7 @@
     "publisher": "ms-azuretools",
     "version": "0.0.1",
     "engines": {
-        "vscode": "^1.105.0"
+        "vscode": "^1.109.0"
     },
     "activationEvents": [
         "onLanguage:dockercompose",
@@ -14,7 +14,7 @@
         "vscode-languageclient": "^10.0.0-next.19"
     },
     "devDependencies": {
-        "@types/vscode": "1.105.0"
+        "@types/vscode": "1.109.0"
     },
     "contributes": {
         "configurationDefaults": {

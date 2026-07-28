@@ -30,7 +30,7 @@
         "clean": "node ../../scripts/clean.mjs"
     },
     "engines": {
-        "vscode": "^1.105.0"
+        "vscode": "^1.109.0"
     },
     "dependencies": {
         "dayjs": "catalog:"

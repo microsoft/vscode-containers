@@ -22,7 +22,7 @@
     },
     "homepage": "https://github.com/microsoft/vscode-containers/blob/main/extensions/vscode-docker/README.md",
     "engines": {
-        "vscode": "^1.92.0"
+        "vscode": "^1.109.0"
     },
     "scripts": {
         "build": "",

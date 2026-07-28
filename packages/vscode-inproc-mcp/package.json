@@ -40,7 +40,7 @@
         "clean": "node ../../scripts/clean.mjs"
     },
     "engines": {
-        "vscode": "^1.105.0"
+        "vscode": "^1.109.0"
     },
     "dependencies": {
         "@hono/node-server": "^2.0.10",
