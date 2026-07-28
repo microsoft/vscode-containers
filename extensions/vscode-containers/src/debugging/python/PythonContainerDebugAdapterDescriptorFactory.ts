@@ -8,6 +8,7 @@ import { NoShell } from '@microsoft/vscode-processutils';
 import { DebugAdapterDescriptor, DebugAdapterDescriptorFactory, DebugAdapterExecutable, DebugSession, l10n } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { containerDebugpyPath } from '../../tasks/python/PythonTaskHelper';
+import { withDockerEnvSettings } from '../../utils/withDockerEnvSettings';
 import { ResolvedDebugConfiguration } from '../DebugHelper';
 
 // The debug type used for Python container debugging over stdio. Must match the type
@@ -53,6 +54,12 @@ export class PythonContainerDebugAdapterDescriptorFactory implements DebugAdapte
         // into a plain argv array.
         const args = new NoShell().quote(commandResponse.args);
 
-        return new DebugAdapterExecutable(commandResponse.command, args);
+        // VS Code spawns this process itself, so it does not inherit the container runtime environment
+        // the extension normally applies (e.g. the `vscode-containers.environment` setting, DOCKER_HOST,
+        // Docker contexts). Pass it explicitly so the `exec` invocation targets the same daemon/runtime
+        // used everywhere else in the extension.
+        return new DebugAdapterExecutable(commandResponse.command, args, {
+            env: withDockerEnvSettings(process.env),
+        });
     }
 }

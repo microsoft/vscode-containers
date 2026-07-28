@@ -961,7 +961,7 @@
             },
             {
                 "type": "python-container",
-                "label": "Containers: Python (internal)",
+                "label": "%vscode-containers.debug.pythonContainer.label%",
                 "languages": [],
                 "hiddenWhen": "true"
             }
