@@ -17,14 +17,21 @@ export async function composeGroupLogs(context: IActionContext, node: ContainerG
     return composeGroup<LogsCommandOptions>(context, async (client, options) => {
         const labels = await getComposeGroupLabels(node);
         const workingDirectory = labels && getComposeWorkingDirectory(labels);
-        let folder;
-        if (workingDirectory) {
-            folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory));
+
+        if (!workingDirectory) {
+            context.errorHandling.suppressReportIssue = true;
+            throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
         }
+
+        const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? {
+            uri: Uri.file(workingDirectory),
+            name: path.basename(workingDirectory),
+            index: 0,
+        };
+
         return selectComposeLogsCommand(context, folder, options.files?.join('" -f "'), options.projectName, options.environmentFile);
     }, node, { follow: true, tail: 1000 });
 }
-
 export async function composeGroupStart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
     return composeGroup(context, (client, options) => client.start(options), node);
 }
