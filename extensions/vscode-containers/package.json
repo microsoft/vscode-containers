@@ -3296,6 +3296,24 @@
                 ]
             }
         ],
+        "chatInstructions": [
+            {
+                "path": "./skills/container-best-practices/dockerfile.instructions.md"
+            },
+            {
+                "path": "./skills/container-best-practices/compose.instructions.md"
+            }
+        ],
+        "chatSkills": [
+            {
+                "path": "./skills/container-best-practices/SKILL.md"
+            }
+        ],
+        "chatAgents": [
+            {
+                "path": "./agents/containers.agent.md"
+            }
+        ],
         "languageModelTools": [
             {
                 "name": "container-tools_get-config",
@@ -3312,7 +3330,7 @@
         ]
     },
     "engines": {
-        "vscode": "^1.105.0"
+        "vscode": "^1.109.0"
     },
     "capabilities": {
         "virtualWorkspaces": false,

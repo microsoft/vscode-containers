@@ -1,3 +1,10 @@
+## Unreleased
+### Added
+* Added Copilot instructions, a best-practices skill, and a Containers agent for authoring, reviewing, optimizing, and troubleshooting Dockerfiles, Containerfiles, and Compose files. [#287](https://github.com/microsoft/vscode-containers/issues/287)
+
+### Changed
+* The minimum version of Visual Studio Code is now 1.109.0.
+
 ## 2.4.5 - 28 May 2026
 ### Changed
 * Deployments to Azure App Service are now performed through the [Azure App Service extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), simplifying the deployment flow and reducing duplicated code. [#473](https://github.com/microsoft/vscode-containers/pull/473)

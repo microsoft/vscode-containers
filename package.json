@@ -24,7 +24,7 @@
     },
     "packageManager": "pnpm@11.8.0",
     "engines": {
-        "vscode": "^1.105.0"
+        "vscode": "^1.109.0"
     },
     "devDependencies": {
         "@microsoft/vscode-azext-eng": "^1.1.0-alpha.3",

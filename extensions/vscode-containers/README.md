@@ -35,6 +35,14 @@ You can add Docker files to your workspace by opening the Command Palette (<kbd>
 
 The extension can scaffold Docker files for most popular development languages (C#, Node.js, Python, Ruby, Go, and Java) and customizes the generated Docker files accordingly. When these files are created, we also create the necessary artifacts to provide first-class debugging support for Node.js, Python, and .NET (C#).
 
+### Using Container Tools with GitHub Copilot
+
+When GitHub Copilot is available, Container Tools provides automatic best-practice guidance for creating and editing Dockerfiles, Containerfiles, and Compose files.
+
+Use the `/container-best-practices` skill to containerize a project or review, modernize, optimize, and validate existing container configuration. You can also select the **Containers** agent in the Chat agent picker for an ongoing container-focused conversation, such as troubleshooting a build or adding a service to a Compose application.
+
+Before Copilot suggests or runs a container command, Container Tools provides it with your configured container and Compose clients. This ensures that generated commands use Docker, Podman, or another configured runtime as appropriate.
+
 ### Container Explorer
 
 The Container Tools extension contributes a Container Explorer view to VS Code. The Container Explorer lets you examine and manage container-related assets: containers, images, volumes, networks, and container registries.
