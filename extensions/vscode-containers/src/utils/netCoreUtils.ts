@@ -26,12 +26,13 @@ export function isFileBasedApp(project: string | undefined): boolean {
  * project file (.csproj/.fsproj), meaning the .NET SDK is the only way to build a container image for it.
  */
 export async function isFileBasedAppFolder(folder: vscode.WorkspaceFolder): Promise<boolean> {
-    const projectFiles = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
+    // We only need to know whether any matching file exists, so cap the search at a single result.
+    const projectFiles = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN], undefined, 1);
     if (projectFiles?.length) {
         return false;
     }
 
-    const fileBasedApps = await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN]);
+    const fileBasedApps = await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN], undefined, 1);
     return !!(fileBasedApps?.length);
 }
 

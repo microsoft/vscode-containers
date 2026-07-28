@@ -15,8 +15,8 @@ export interface Item extends vscode.QuickPickItem {
     absoluteFolderPath: string;
 }
 
-async function getFileUris(folder: vscode.WorkspaceFolder, globPattern: string, excludePattern?: string): Promise<vscode.Uri[]> {
-    return await vscode.workspace.findFiles(new vscode.RelativePattern(folder, globPattern), excludePattern ? new vscode.RelativePattern(folder, excludePattern) : undefined, FILE_SEARCH_MAX_RESULT, undefined);
+async function getFileUris(folder: vscode.WorkspaceFolder, globPattern: string, excludePattern?: string, maxResults: number = FILE_SEARCH_MAX_RESULT): Promise<vscode.Uri[]> {
+    return await vscode.workspace.findFiles(new vscode.RelativePattern(folder, globPattern), excludePattern ? new vscode.RelativePattern(folder, excludePattern) : undefined, maxResults, undefined);
 }
 
 export function createFileItem(rootFolder: vscode.WorkspaceFolder, uri: vscode.Uri): Item {
@@ -58,11 +58,11 @@ function getGlobPatterns(globPatterns: string[], languageId: string): string[] {
     return result;
 }
 
-export async function resolveFilesOfPattern(rootFolder: vscode.WorkspaceFolder, filePatterns: string[], excludePattern?: string)
+export async function resolveFilesOfPattern(rootFolder: vscode.WorkspaceFolder, filePatterns: string[], excludePattern?: string, maxResults?: number)
     : Promise<Item[] | undefined> {
     let uris: vscode.Uri[] = [];
     await Promise.all(filePatterns.map(async (pattern: string) => {
-        uris.push(...await getFileUris(rootFolder, pattern, excludePattern));
+        uris.push(...await getFileUris(rootFolder, pattern, excludePattern, maxResults));
     }));
     // de-dupe
     uris = uris.filter((uri, index) => uris.findIndex(uri2 => uri.toString() === uri2.toString()) === index);
@@ -173,11 +173,19 @@ export async function quickPickProjectFileItem(context: IActionContext, fileUri:
     let items: Item[] = await resolveFilesOfPattern(rootFolder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
 
     // If there are no project files and file-based apps are allowed, fall back to offering the .cs files in the workspace
+    let usingFileBasedApps = false;
     if (!items && includeFileBasedApps) {
         items = await resolveFilesOfPattern(rootFolder, [CS_GLOB_PATTERN]);
+        usingFileBasedApps = !!items;
     }
 
-    const fileItem: Item = await quickPickFileItem(context, items, vscode.l10n.t('Choose a project file.'));
+    // Use a distinct placeholder when offering file-based apps (.cs files), since "project file" is misleading for them.
+    // These are intentionally two separate l10n.t calls so each generates its own string ID.
+    const placeHolder = usingFileBasedApps
+        ? vscode.l10n.t('Choose a file-based app.')
+        : vscode.l10n.t('Choose a project file.');
+
+    const fileItem: Item = await quickPickFileItem(context, items, placeHolder);
 
     if (!fileItem) {
         throw new Error(noProjectFileMessage);
