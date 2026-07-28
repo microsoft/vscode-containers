@@ -962,8 +962,8 @@
             {
                 "type": "python-container",
                 "label": "Containers: Python (internal)",
-                "hiddenWhenLanguageIsNotSupported": true,
-                "languages": []
+                "languages": [],
+                "hiddenWhen": "true"
             }
         ],
         "taskDefinitions": [
