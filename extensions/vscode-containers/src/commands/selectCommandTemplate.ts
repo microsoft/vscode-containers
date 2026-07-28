@@ -6,6 +6,7 @@
 import { IActionContext, IAzureQuickPickItem, IAzureQuickPickOptions, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { PortBinding, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import { quoted } from '@microsoft/vscode-processutils';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
@@ -78,7 +79,7 @@ export async function selectLogsCommand(context: IActionContext, containerName: 
     );
 }
 
-export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder, configurationFile?: string, projectName?: string, envFile?: string): Promise<VoidCommandResponse> {
+export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder | vscode.Uri, configurationFile?: string, projectName?: string, envFile?: string): Promise<VoidCommandResponse> {
     const orchestratorClient = await ext.orchestratorManager.getClient();
     let fullComposeCommand: string;
     if (isComposeV2ableOrchestratorClient(orchestratorClient) && orchestratorClient.composeV2) {
@@ -87,10 +88,12 @@ export async function selectComposeLogsCommand(context: IActionContext, folder: 
         fullComposeCommand = orchestratorClient.commandName;
     }
 
+    const folderName = folder instanceof vscode.Uri ? path.basename(folder.fsPath) : folder.name;
+
     return await selectCommandTemplate(
         context,
         'composeLogs',
-        [folder.name, configurationFile],
+        [folderName, configurationFile],
         folder,
         {
             'configurationFile': configurationFile ? `-f "${configurationFile}"` : '',
@@ -145,7 +148,7 @@ export async function selectCommandTemplate(
     actionContext: IActionContext,
     command: TemplateCommand,
     matchContext: string[],
-    folder: vscode.WorkspaceFolder | undefined,
+    folder: vscode.WorkspaceFolder | vscode.Uri | undefined,
     additionalVariables: { [key: string]: string },
     // The following three are overridable for test purposes, but have default values that cover actual usage
     templatePicker: TemplatePicker = (i, o) => actionContext.ui.showQuickPick(i, o), // Default is the normal ext.ui.showQuickPick (this longer syntax is because doing `ext.ui.showQuickPick` alone doesn't result in the right `this` further down)

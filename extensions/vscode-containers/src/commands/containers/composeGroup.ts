@@ -23,11 +23,7 @@ export async function composeGroupLogs(context: IActionContext, node: ContainerG
             throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
         }
 
-        const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? {
-            uri: Uri.file(workingDirectory),
-            name: path.basename(workingDirectory),
-            index: 0,
-        };
+        const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? Uri.file(workingDirectory);
 
         return selectComposeLogsCommand(context, folder, options.files?.join('" -f "'), options.projectName, options.environmentFile);
     }, node, { follow: true, tail: 1000 });
