@@ -7,16 +7,13 @@ import { normalizeCommandResponseLike } from '@microsoft/vscode-container-client
 import { NoShell } from '@microsoft/vscode-processutils';
 import { DebugAdapterDescriptor, DebugAdapterDescriptorFactory, DebugAdapterExecutable, DebugSession, l10n } from 'vscode';
 import { ext } from '../../extensionVariables';
+import { containerDebugpyPath } from '../../tasks/python/PythonTaskHelper';
 import { ResolvedDebugConfiguration } from '../DebugHelper';
 
 // The debug type used for Python container debugging over stdio. Must match the type
 // contributed in package.json under `contributes.debuggers` and the type set by
 // PythonDebugHelper on the resolved debug configuration.
 export const PythonContainerDebugType = 'python-container';
-
-// The path where the Python extension's bundled debugpy package is mounted inside the container.
-// Kept in sync with PythonTaskHelper, which mounts the debugger folder there.
-const containerDebugpyPath = '/debugpy';
 
 /**
  * Provides a debug adapter that runs debugpy's DAP adapter *inside* the container and
