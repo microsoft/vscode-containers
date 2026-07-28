@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { normalizeCommandResponseLike } from '@microsoft/vscode-container-client';
+import { NoShell } from '@microsoft/vscode-processutils';
 import { DebugAdapterDescriptor, DebugAdapterDescriptorFactory, DebugAdapterExecutable, DebugSession, l10n } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { ResolvedDebugConfiguration } from '../DebugHelper';
@@ -50,9 +51,10 @@ export class PythonContainerDebugAdapterDescriptorFactory implements DebugAdapte
             })
         );
 
-        // DebugAdapterExecutable spawns the process directly (no shell), so flatten any
-        // ShellQuotedString arguments down to their raw string values.
-        const args = commandResponse.args.map((arg) => typeof arg === 'string' ? arg : arg.value);
+        // VS Code spawns the DebugAdapterExecutable directly without a shell, so use NoShell to
+        // flatten the client-generated CommandLineArgs (which may contain ShellQuotedString entries)
+        // into a plain argv array.
+        const args = new NoShell().quote(commandResponse.args);
 
         return new DebugAdapterExecutable(commandResponse.command, args);
     }
