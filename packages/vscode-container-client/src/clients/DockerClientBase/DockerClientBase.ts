@@ -87,7 +87,6 @@ import type {
 } from "../../contracts/ContainerClient";
 import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
 import { asIds } from '../../utils/asIds';
-import { dayjs } from '../../utils/dayjs';
 import { ConfigurableClient } from '../ConfigurableClient';
 import { DockerEventRecordSchema } from './DockerEventRecord';
 import { DockerInfoRecordSchema } from './DockerInfoRecord';
@@ -99,10 +98,8 @@ import { SharedListContainerRecordSchema, normalizeListContainerRecord } from '.
 import { SharedListImageRecordSchema, normalizeListImageRecord } from './SharedListImageRecord';
 import { SharedListNetworkRecordSchema, normalizeListNetworkRecord } from './SharedListNetworkRecord';
 import { DockerVersionRecordSchema } from './DockerVersionRecord';
-import { DockerVolumeRecordSchema } from './DockerVolumeRecord';
-import { parseDockerLikeLabels } from './parseDockerLikeLabels';
+import { DockerVolumeRecordSchema, normalizeDockerVolumeRecord } from './DockerVolumeRecord';
 import { parseListFilesCommandLinuxOutput, parseListFilesCommandWindowsOutput } from './parseListFilesCommandOutput';
-import { tryParseSize } from './tryParseSize';
 import { withContainerPathArg } from './withContainerPathArg';
 import { withDockerAddHostArg } from './withDockerAddHostArg';
 import { withDockerBuildArg } from './withDockerBuildArg';
@@ -1097,28 +1094,8 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         output: string,
         strict: boolean,
     ): Promise<ListVolumeItem[]> {
-        return this.parsePerLineJson(output, strict, (volumeJson) => {
-            const rawVolume = DockerVolumeRecordSchema.parse(JSON.parse(volumeJson));
-
-            // Parse the labels assigned to the volumes and normalize to key value pairs
-            const labels = parseDockerLikeLabels(rawVolume.Labels);
-
-            const createdAt = rawVolume.CreatedAt
-                ? dayjs.utc(rawVolume.CreatedAt)
-                : undefined;
-
-            const size = tryParseSize(rawVolume.Size);
-
-            return {
-                name: rawVolume.Name,
-                driver: rawVolume.Driver,
-                labels,
-                mountpoint: rawVolume.Mountpoint,
-                scope: rawVolume.Scope,
-                createdAt: createdAt?.toDate(),
-                size
-            };
-        });
+        return this.parsePerLineJson(output, strict, (volumeJson) =>
+            normalizeDockerVolumeRecord(DockerVolumeRecordSchema.parse(JSON.parse(volumeJson))));
     }
 
     listVolumes(options: ListVolumesCommandOptions): Promise<PromiseCommandResponse<ListVolumeItem[]>> {
