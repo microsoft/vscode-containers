@@ -1,0 +1,70 @@
+// Dev container for running the nerdctl integration tests in packages/vscode-container-client.
+// Uses the official nerdctl "full" image (bundles containerd, runc, CNI plugins, BuildKit, etc.)
+// and layers the Node.js toolchain on top so the tests can be built and run in-container.
+//
+// This config lives outside a `.devcontainer` folder, so start it explicitly with the devcontainer
+// CLI (https://github.com/devcontainers/cli) from the repository root:
+//
+//   devcontainer up --workspace-folder . --config packages/vscode-container-client/src/test/nerdctl/devcontainer.json --remove-existing-container
+//
+// Then run the nerdctl integration tests inside the container:
+//
+//   devcontainer exec --workspace-folder . --config packages/vscode-container-client/src/test/nerdctl/devcontainer.json bash -lc "cd packages/vscode-container-client && CONTAINER_CLIENT_TYPE=nerdctl pnpm run testintegration"
+{
+    "name": "vscode-containers (nerdctl integration)",
+    // Official nerdctl image. It is Ubuntu-based and ships a full containerd stack.
+    // Use the full distribution tag; it includes buildkitd/buildctl in addition to nerdctl/containerd.
+    "image": "ghcr.io/containerd/nerdctl:latest",
+    "features": {
+        // Match the repo's Node (see .nvmrc -> 22.18, engines.node >= 22) and pin the
+        // pnpm version used by the monorepo (root package.json "packageManager").
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "22.18",
+            "pnpmVersion": "11.8.0"
+        }
+    },
+    // nerdctl needs a rootful containerd, which requires a privileged container so that
+    // containerd/runc/CNI can create cgroups, mounts, and network namespaces.
+    "runArgs": [
+        "--privileged"
+    ],
+    // The workspace is bind-mounted from the host. On Windows, pnpm materializes node_modules using
+    // NTFS directory junctions (top-level package links) and hardlinks into the Windows content
+    // store; neither survives the Windows -> Linux mount translation, so the host's node_modules are
+    // broken inside the container. Overlay every workspace node_modules with a container-local volume
+    // so `pnpm install` builds a clean, Linux-native store/symlink layout that shadows the host's.
+    // (This is a pnpm monorepo, so each workspace package needs its own node_modules volume.)
+    "mounts": [
+        "type=volume,source=vsc-containers-nm-root,target=${containerWorkspaceFolder}/node_modules",
+        "type=volume,source=vsc-containers-nm-vscode-containers,target=${containerWorkspaceFolder}/extensions/vscode-containers/node_modules",
+        "type=volume,source=vsc-containers-nm-vscode-docker,target=${containerWorkspaceFolder}/extensions/vscode-docker/node_modules",
+        "type=volume,source=vsc-containers-nm-processutils,target=${containerWorkspaceFolder}/packages/vscode-processutils/node_modules",
+        "type=volume,source=vsc-containers-nm-container-client,target=${containerWorkspaceFolder}/packages/vscode-container-client/node_modules",
+        "type=volume,source=vsc-containers-nm-docker-registries,target=${containerWorkspaceFolder}/packages/vscode-docker-registries/node_modules",
+        "type=volume,source=vsc-containers-nm-inproc-mcp,target=${containerWorkspaceFolder}/packages/vscode-inproc-mcp/node_modules",
+        "type=volume,source=vsc-containers-nm-compose-language-service,target=${containerWorkspaceFolder}/packages/compose-language-service/node_modules",
+        // pnpm in this environment resolves its store to `${containerWorkspaceFolder}/.pnpm-store`.
+        // Mount that exact path as a volume so the store is container-local and never written into
+        // the host bind mount (even though the path string still appears under /workspaces/...).
+        "type=volume,source=vsc-containers-pnpm-store,target=${containerWorkspaceFolder}/.pnpm-store"
+    ],
+    "containerEnv": {
+        "PNPM_HOME": "/root/.local/share/pnpm",
+        // Rootful nerdctl builds talk to the buildkitd socket here by default, but set it
+        // explicitly so integration tests are deterministic.
+        "BUILDKIT_HOST": "unix:///run/buildkit/buildkitd.sock"
+    },
+    "remoteEnv": {
+        // Keep pnpm's global bin directory on PATH.
+        "PNPM_HOME": "/root/.local/share/pnpm",
+        "PATH": "/root/.local/share/pnpm/bin:${containerEnv:PATH}",
+        "BUILDKIT_HOST": "unix:///run/buildkit/buildkitd.sock"
+    },
+    // Rootful containerd/nerdctl must run as root.
+    "remoteUser": "root",
+    // Install workspace dependencies once the container is created.
+    "postCreateCommand": "pnpm install",
+    // Start containerd and buildkitd (if needed), then wait until nerdctl can talk to containerd
+    // and BuildKit is responsive. BuildImage/PruneImages integration tests require this daemon.
+    "postStartCommand": "bash -lc 'if ! pgrep -x containerd >/dev/null 2>&1; then nohup containerd >/tmp/containerd.log 2>&1 & fi; for i in $(seq 1 30); do nerdctl info >/dev/null 2>&1 && break; sleep 1; done; nerdctl info >/dev/null 2>&1 || { echo \"containerd did not become ready; see /tmp/containerd.log\" >&2; exit 1; }; if ! command -v buildkitd >/dev/null 2>&1; then echo \"buildkitd is not installed in this image\" >&2; exit 1; fi; if ! pgrep -x buildkitd >/dev/null 2>&1; then nohup buildkitd --config /etc/buildkit/buildkitd.toml >/tmp/buildkitd.log 2>&1 & fi; for i in $(seq 1 30); do buildctl --addr unix:///run/buildkit/buildkitd.sock debug workers >/dev/null 2>&1 && exit 0; sleep 1; done; echo \"buildkitd did not become ready; see /tmp/buildkitd.log\" >&2; exit 1'"
+}
