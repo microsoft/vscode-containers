@@ -243,12 +243,12 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
     //#region ListNetworks Command
 
     protected override parseListNetworksCommandOutput(options: ListNetworksCommandOptions, output: string, strict: boolean): Promise<ListNetworkItem[]> {
-        // Podman networks are drastically different from Docker networks in terms of what details are available, especially Podman v3
+        // Podman networks are drastically different from Docker networks in terms of what details are available
         return this.parseInspectJson(output, strict, (item) => {
             const network = PodmanListNetworkRecordSchema.parse(item);
             return {
-                name: network.name || network.Name || '',
-                labels: network.Labels ?? {},
+                name: network.name || '',
+                labels: network.labels ?? {},
                 createdAt: network.created ? new Date(network.created) : undefined,
                 internal: network.internal,
                 ipv6: network.ipv6_enabled,
@@ -276,7 +276,7 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
     //#region InspectNetworks Command
 
     protected override parseInspectNetworksCommandOutput(options: ListNetworksCommandOptions, output: string, strict: boolean): Promise<InspectNetworksItem[]> {
-        // Podman networks are drastically different from Docker networks in terms of what details are available, especially Podman v3
+        // Podman networks are drastically different from Docker networks in terms of what details are available
         return this.parseInspectJson(output, strict, (item) =>
             normalizePodmanInspectNetworkRecord(PodmanInspectNetworkRecordSchema.parse(item), JSON.stringify(item)));
     }
