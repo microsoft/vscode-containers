@@ -176,7 +176,12 @@ export function normalizeInspectContainerRecord(container: SharedInspectContaine
     const labels = container.Config?.Labels ?? {};
 
     const createdDayjs = dayjs.utc(container.Created);
-    const createdAt = createdDayjs.isValid() ? createdDayjs.toDate() : dayjs.utc().toDate();
+    // Use a single validated baseline for both createdAt and the started/finished
+    // comparisons below. Falling back to "now" only in createdAt while comparing
+    // against an invalid createdDayjs would let isBefore() (which is false for an
+    // invalid operand) wrongly include startedAt/finishedAt values.
+    const createdBaseline = createdDayjs.isValid() ? createdDayjs : dayjs.utc();
+    const createdAt = createdBaseline.toDate();
 
     const startedDayjs = container.State?.StartedAt ? dayjs.utc(container.State.StartedAt) : undefined;
     const finishedDayjs = container.State?.FinishedAt ? dayjs.utc(container.State.FinishedAt) : undefined;
@@ -200,10 +205,10 @@ export function normalizeInspectContainerRecord(container: SharedInspectContaine
         currentDirectory: container.Config?.WorkingDir || undefined,
         createdAt,
         // Only include startedAt/finishedAt if they are the same as or after createdAt
-        startedAt: startedDayjs?.isValid() && !startedDayjs.isBefore(createdDayjs)
+        startedAt: startedDayjs?.isValid() && !startedDayjs.isBefore(createdBaseline)
             ? startedDayjs.toDate()
             : undefined,
-        finishedAt: finishedDayjs?.isValid() && !finishedDayjs.isBefore(createdDayjs)
+        finishedAt: finishedDayjs?.isValid() && !finishedDayjs.isBefore(createdBaseline)
             ? finishedDayjs.toDate()
             : undefined,
         raw,

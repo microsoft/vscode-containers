@@ -51,3 +51,65 @@ describe('(unit) SharedInspectContainerRecordSchema mounts', () => {
     });
 });
 
+describe('(unit) SharedInspectContainerRecordSchema timestamps', () => {
+    const baseRecord = {
+        Id: 'abc123',
+        Name: '/my-container',
+        Image: 'alpine:latest',
+    };
+
+    it('Should include startedAt/finishedAt when they are at or after a valid Created', () => {
+        const raw = JSON.stringify({
+            ...baseRecord,
+            Created: '2026-01-10T00:00:00Z',
+            State: {
+                StartedAt: '2026-01-10T00:00:05Z',
+                FinishedAt: '2026-01-10T00:00:10Z',
+            },
+        });
+
+        const parsed = SharedInspectContainerRecordSchema.parse(JSON.parse(raw));
+        const normalized = normalizeInspectContainerRecord(parsed, raw, { defaultVolumeDriver: 'local' });
+
+        expect(normalized.startedAt).to.be.a('Date');
+        expect(normalized.finishedAt).to.be.a('Date');
+    });
+
+    it('Should exclude startedAt/finishedAt that are before a valid Created', () => {
+        const raw = JSON.stringify({
+            ...baseRecord,
+            Created: '2026-01-10T00:00:10Z',
+            State: {
+                StartedAt: '2026-01-10T00:00:00Z',
+                FinishedAt: '2026-01-10T00:00:05Z',
+            },
+        });
+
+        const parsed = SharedInspectContainerRecordSchema.parse(JSON.parse(raw));
+        const normalized = normalizeInspectContainerRecord(parsed, raw, { defaultVolumeDriver: 'local' });
+
+        expect(normalized.startedAt).to.be.undefined;
+        expect(normalized.finishedAt).to.be.undefined;
+    });
+
+    it('Should not include startedAt/finishedAt from before now when Created is invalid', () => {
+        // An invalid Created falls back to "now"; started/finished timestamps from
+        // the past must be compared against that same baseline and excluded.
+        const raw = JSON.stringify({
+            ...baseRecord,
+            Created: '',
+            State: {
+                StartedAt: '2000-01-01T00:00:00Z',
+                FinishedAt: '2000-01-01T00:00:05Z',
+            },
+        });
+
+        const parsed = SharedInspectContainerRecordSchema.parse(JSON.parse(raw));
+        const normalized = normalizeInspectContainerRecord(parsed, raw, { defaultVolumeDriver: 'local' });
+
+        expect(normalized.createdAt).to.be.a('Date');
+        expect(normalized.startedAt).to.be.undefined;
+        expect(normalized.finishedAt).to.be.undefined;
+    });
+});
+

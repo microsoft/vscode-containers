@@ -146,6 +146,7 @@ describe('(unit) ZodTransforms', () => {
         });
 
         it('Should return only originalName for empty/undefined input', () => {
+            expect(imageNameSchema.parse('')).to.deep.equal({ originalName: '' });
             expect(imageNameSchema.parse(undefined)).to.deep.equal({ originalName: undefined });
             expect(imageNameSchema.parse(null)).to.deep.equal({ originalName: undefined });
         });
