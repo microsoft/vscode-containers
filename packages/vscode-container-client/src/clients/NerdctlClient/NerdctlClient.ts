@@ -26,6 +26,8 @@ import type {
     InspectVolumesItem,
     ListContainersCommandOptions,
     ListContainersItem,
+    ListImagesCommandOptions,
+    ListImagesItem,
     ListNetworksCommandOptions,
     RunContainerCommandOptions,
     VersionItem
@@ -44,7 +46,8 @@ import { NerdctlEventRecordSchema, getActorFromEventPayload, parseContainerdTopi
 import { withNerdctlExposedPortsArg } from './withNerdctlExposedPortsArg';
 import { SharedInspectContainerRecordSchema, normalizeInspectContainerRecord } from '../DockerClientBase/SharedInspectContainerRecord';
 import { SharedInspectVolumeRecordSchema, normalizeInspectVolumeRecord } from '../DockerClientBase/SharedInspectVolumeRecord';
-import { SharedListContainerRecordSchema, normalizeListContainerRecord } from '../DockerClientBase/SharedListContainerRecord';
+import { NerdctlListContainerOptions, SharedListContainerRecordSchema, normalizeListContainerRecord } from '../DockerClientBase/SharedListContainerRecord';
+import { NerdctlListImageOptions, SharedListImageRecordSchema, normalizeListImageRecord } from '../DockerClientBase/SharedListImageRecord';
 import { NerdctlVersionRecordSchema } from './NerdctlVersionRecord';
 
 export class NerdctlClient extends DockerClientBase implements IContainersClient {
@@ -357,11 +360,20 @@ export class NerdctlClient extends DockerClientBase implements IContainersClient
 
     //#endregion
 
+    //#region ListImages Command
+
+    protected override parseListImagesCommandOutput(_options: ListImagesCommandOptions, output: string, strict: boolean): Promise<ListImagesItem[]> {
+        return this.parsePerLineJson(output, strict, (imageJson) =>
+            normalizeListImageRecord(SharedListImageRecordSchema.parse(JSON.parse(imageJson)), NerdctlListImageOptions));
+    }
+
+    //#endregion
+
     //#region ListContainers Command
 
     protected override parseListContainersCommandOutput(_options: ListContainersCommandOptions, output: string, strict: boolean): Promise<ListContainersItem[]> {
         return this.parsePerLineJson(output, strict, (containerJson) =>
-            normalizeListContainerRecord(SharedListContainerRecordSchema.parse(JSON.parse(containerJson)), strict, { stateStyle: 'nerdctl', validateDate: true, nerdctlNetworks: true, throwOnUnparseablePort: false }));
+            normalizeListContainerRecord(SharedListContainerRecordSchema.parse(JSON.parse(containerJson)), strict, NerdctlListContainerOptions));
     }
 
     //#endregion

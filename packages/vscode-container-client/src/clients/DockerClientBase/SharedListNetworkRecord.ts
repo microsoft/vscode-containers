@@ -22,9 +22,11 @@ export const SharedListNetworkRecordSchema = z.object({
     Name: z.string(),
     Driver: z.optional(z.string()),
     Scope: z.optional(z.string()),
-    // "true"/"false" strings transformed to booleans
-    IPv6: z.optional(booleanStringSchema),
-    Internal: z.optional(booleanStringSchema),
+    // "true"/"false" strings transformed to booleans. Wrapped in `z.catch` so an
+    // empty or unrecognized value falls back to `false` (matching the previous
+    // `=== 'true'` comparison) instead of failing the whole network record.
+    IPv6: z.optional(z.catch(booleanStringSchema, false)),
+    Internal: z.optional(z.catch(booleanStringSchema, false)),
     // "key=value,key2=value2" string transformed to a record
     Labels: z.optional(labelsStringSchema),
     // Date string transformed to Date | undefined

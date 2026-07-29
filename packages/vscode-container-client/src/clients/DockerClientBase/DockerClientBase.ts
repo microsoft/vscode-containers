@@ -94,8 +94,8 @@ import { SharedInspectContainerRecordSchema, normalizeInspectContainerRecord } f
 import { SharedInspectImageRecordSchema, normalizeInspectImageRecord } from './SharedInspectImageRecord';
 import { SharedInspectNetworkRecordSchema, normalizeInspectNetworkRecord } from './SharedInspectNetworkRecord';
 import { SharedInspectVolumeRecordSchema, normalizeInspectVolumeRecord } from './SharedInspectVolumeRecord';
-import { SharedListContainerRecordSchema, normalizeListContainerRecord } from './SharedListContainerRecord';
-import { SharedListImageRecordSchema, normalizeListImageRecord } from './SharedListImageRecord';
+import { DockerListContainerOptions, SharedListContainerRecordSchema, normalizeListContainerRecord } from './SharedListContainerRecord';
+import { DockerListImageOptions, SharedListImageRecordSchema, normalizeListImageRecord } from './SharedListImageRecord';
 import { SharedListNetworkRecordSchema, normalizeListNetworkRecord } from './SharedListNetworkRecord';
 import { SharedListVolumeRecordSchema, normalizeListVolumeRecord } from './SharedListVolumeRecord';
 import { DockerVersionRecordSchema } from './DockerVersionRecord';
@@ -501,7 +501,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         strict: boolean,
     ): Promise<Array<ListImagesItem>> {
         return this.parsePerLineJson(output, strict, (imageJson) =>
-            normalizeListImageRecord(SharedListImageRecordSchema.parse(JSON.parse(imageJson))));
+            normalizeListImageRecord(SharedListImageRecordSchema.parse(JSON.parse(imageJson)), DockerListImageOptions));
     }
 
     /**
@@ -800,7 +800,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         strict: boolean,
     ): Promise<Array<ListContainersItem>> {
         return this.parsePerLineJson(output, strict, (containerJson) =>
-            normalizeListContainerRecord(SharedListContainerRecordSchema.parse(JSON.parse(containerJson)), strict));
+            normalizeListContainerRecord(SharedListContainerRecordSchema.parse(JSON.parse(containerJson)), strict, DockerListContainerOptions));
     }
 
     listContainers(options: ListContainersCommandOptions): Promise<PromiseCommandResponse<Array<ListContainersItem>>> {

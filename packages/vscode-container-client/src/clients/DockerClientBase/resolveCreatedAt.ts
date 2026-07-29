@@ -18,14 +18,23 @@ export function resolveCreatedAtBaseline(raw: string | number | undefined): Dayj
 }
 
 /**
- * Resolve a list-style created-at string to a Date.
+ * How a list-style created-at value should be resolved.
  *
- * Docker parses leniently: an invalid date becomes an `Invalid Date` and a
- * missing date becomes the current time. When {@link validateDate} is set (used
- * by runtimes such as nerdctl), a missing/invalid date throws in strict mode and
- * otherwise falls back to the current time (less misleading than an Invalid Date).
+ * - `lenient` reproduces Docker's behavior: an invalid date becomes an
+ *   `Invalid Date` and a missing date becomes the current time.
+ * - `validated` (used by runtimes such as nerdctl) throws in strict mode when
+ *   the date is missing or invalid, and otherwise falls back to the current time
+ *   (less misleading than an Invalid Date).
  */
-export function resolveCreatedAt(raw: string | undefined, strict: boolean, validateDate: boolean): Date {
+export type CreatedAtMode = 'lenient' | 'validated';
+
+/**
+ * Resolve a list-style created-at string to a Date, per the given
+ * {@link CreatedAtMode}.
+ */
+export function resolveCreatedAt(raw: string | undefined, strict: boolean, mode: CreatedAtMode): Date {
+    const validateDate = mode === 'validated';
+
     if (raw) {
         const parsed = dayjs.utc(raw);
         if (parsed.isValid()) {

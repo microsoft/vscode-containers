@@ -8,7 +8,7 @@ import type { ListContainersItem, PortBinding } from '../../contracts/ContainerC
 import { labelsStringSchema } from '../../contracts/ZodTransforms';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { parseDockerRawPortString } from './parseDockerRawPortString';
-import { resolveCreatedAt } from './resolveCreatedAt';
+import { resolveCreatedAt, type CreatedAtMode } from './resolveCreatedAt';
 
 /**
  * A single, tolerant schema for the Docker-compatible `ps`/`container ls`
@@ -46,11 +46,11 @@ export interface NormalizeListContainerOptions {
      */
     stateStyle?: 'docker' | 'nerdctl';
     /**
-     * Validate the creation date. Docker parses leniently (an invalid date
-     * becomes an `Invalid Date`); nerdctl throws in strict mode and otherwise
-     * falls back to the current time.
+     * How to resolve the creation date. Docker parses leniently (an invalid date
+     * becomes an `Invalid Date`); nerdctl validates, throwing in strict mode and
+     * otherwise falling back to the current time.
      */
-    validateDate?: boolean;
+    createdAtMode?: CreatedAtMode;
     /**
      * Trim and drop empty entries when splitting the `Networks` string, and fall
      * back to the `nerdctl/networks` label when `Networks` is absent. Docker
@@ -63,6 +63,27 @@ export interface NormalizeListContainerOptions {
      */
     throwOnUnparseablePort?: boolean;
 }
+
+/**
+ * The list-container normalizer settings used by Docker (and Docker-compatible
+ * runtimes that do not override them).
+ */
+export const DockerListContainerOptions: NormalizeListContainerOptions = {
+    stateStyle: 'docker',
+    createdAtMode: 'lenient',
+    nerdctlNetworks: false,
+    throwOnUnparseablePort: true,
+};
+
+/**
+ * The list-container normalizer settings used by nerdctl.
+ */
+export const NerdctlListContainerOptions: NormalizeListContainerOptions = {
+    stateStyle: 'nerdctl',
+    createdAtMode: 'validated',
+    nerdctlNetworks: true,
+    throwOnUnparseablePort: false,
+};
 
 /**
  * Normalizes a Docker-style container state. Prefers the explicit `State` field
@@ -181,10 +202,10 @@ function resolvePorts(portsStr: string | undefined, strict: boolean, throwOnUnpa
  * {@link ListContainersItem}. Behavior is identical across runtimes except for
  * the knobs described by {@link NormalizeListContainerOptions}.
  */
-export function normalizeListContainerRecord(container: SharedListContainerRecord, strict: boolean, options: NormalizeListContainerOptions = {}): ListContainersItem {
+export function normalizeListContainerRecord(container: SharedListContainerRecord, strict: boolean, options: NormalizeListContainerOptions = DockerListContainerOptions): ListContainersItem {
     const labels = container.Labels ?? {};
 
-    const name = (container.Names ?? '').split(',')[0]?.trim() ?? '';
+    const name = container.Names.split(',')[0]?.trim() ?? '';
 
     const ports = resolvePorts(container.Ports, strict, options.throwOnUnparseablePort ?? true);
 
@@ -199,7 +220,7 @@ export function normalizeListContainerRecord(container: SharedListContainerRecor
         networks = (container.Networks ?? '').split(',');
     }
 
-    const createdAt = resolveCreatedAt(container.CreatedAt, strict, options.validateDate ?? false);
+    const createdAt = resolveCreatedAt(container.CreatedAt, strict, options.createdAtMode ?? 'lenient');
 
     const state = options.stateStyle === 'nerdctl'
         ? normalizeNerdctlContainerState(container.State || container.Status)

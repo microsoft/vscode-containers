@@ -82,6 +82,24 @@ describe('(unit) ZodTransforms', () => {
         it('Should preserve equals signs in label values', () => {
             expect(labelsStringSchema.parse('foo=a=b,baz=qux')).to.deep.equal({ foo: 'a=b', baz: 'qux' });
         });
+
+        it('Should parse an empty label value', () => {
+            expect(labelsStringSchema.parse('foo=,baz=qux')).to.deep.equal({ foo: '', baz: 'qux' });
+        });
+
+        it('Should preserve multiple commas in a single label value', () => {
+            expect(labelsStringSchema.parse('files=/a.yml,/b.yml,/c.yml,project=demo')).to.deep.equal({
+                files: '/a.yml,/b.yml,/c.yml',
+                project: 'demo',
+            });
+        });
+
+        it('Should preserve commas in the final label value', () => {
+            expect(labelsStringSchema.parse('project=demo,files=/a.yml,/b.yml')).to.deep.equal({
+                project: 'demo',
+                files: '/a.yml,/b.yml',
+            });
+        });
     });
 
     describe('labelsSchema', () => {

@@ -35,10 +35,11 @@ export async function validateContainerExists(client: IContainersClient, runner:
     if (reference.containerId) {
         return containers.find(c => c.id === reference.containerId);
     } else if (reference.containerName) {
+        const containerName = reference.containerName;
+        const normalizedContainerName = normalizeContainerNameForRuntimeComparison(containerName);
         return containers.find(c =>
-            c.name === reference.containerName ||
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            normalizeContainerNameForRuntimeComparison(c.name) === normalizeContainerNameForRuntimeComparison(reference.containerName!)
+            c.name === containerName ||
+            normalizeContainerNameForRuntimeComparison(c.name) === normalizedContainerName
         );
     }
 

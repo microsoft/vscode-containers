@@ -81,13 +81,10 @@ export const labelsStringSchema = z.pipe(z.string(), z.transform(parseLabelsStri
  * Schema that handles labels as either a string (to be parsed) or already an object.
  * This is common in Docker/nerdctl outputs where labels can come in either format.
  */
-export const labelsSchema = z.pipe(
-    z.union([
-        labelsStringSchema,
-        z.record(z.string(), z.string()),
-    ]),
-    z.transform((val): Labels => val ?? {}),
-);
+export const labelsSchema = z.union([
+    labelsStringSchema,
+    z.record(z.string(), z.string()),
+]);
 
 /**
  * Schema that normalizes OS type strings to 'linux' | 'windows' | undefined.
