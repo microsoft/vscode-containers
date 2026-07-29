@@ -27,8 +27,6 @@ import type {
     ListContainersCommandOptions,
     ListContainersItem,
     ListNetworksCommandOptions,
-    ListVolumeItem,
-    ListVolumesCommandOptions,
     RunContainerCommandOptions,
     VersionItem
 } from '../../contracts/ContainerClient';
@@ -387,28 +385,6 @@ export class NerdctlClient extends DockerClientBase implements IContainersClient
             // Note: nerdctl doesn't support --no-trunc for network ls
             withDockerJsonFormatArg(this.defaultFormatForJson),
         )();
-    }
-
-    //#endregion
-
-    //#region ListVolumes Command
-
-    protected override parseListVolumesCommandOutput(_options: ListVolumesCommandOptions, output: string, strict: boolean): Promise<ListVolumeItem[]> {
-        return this.parsePerLineJson(output, strict, (volumeJson) => {
-            // The schema already normalizes Labels (string/record -> record) and
-            // CreatedAt (string -> Date), so no further parsing is needed here.
-            const rawVolume = SharedInspectVolumeRecordSchema.parse(JSON.parse(volumeJson));
-
-            return {
-                name: rawVolume.Name,
-                driver: rawVolume.Driver || 'local',
-                labels: rawVolume.Labels ?? {},
-                mountpoint: rawVolume.Mountpoint || '',
-                scope: rawVolume.Scope || 'local',
-                createdAt: rawVolume.CreatedAt,
-                size: undefined, // nerdctl doesn't always provide size in list
-            };
-        });
     }
 
     //#endregion

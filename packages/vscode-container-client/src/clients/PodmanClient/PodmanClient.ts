@@ -21,8 +21,6 @@ import type {
     ListImagesItem,
     ListNetworkItem,
     ListNetworksCommandOptions,
-    ListVolumeItem,
-    ListVolumesCommandOptions,
     PortBinding,
     PruneContainersCommandOptions,
     PruneContainersItem,
@@ -39,7 +37,6 @@ import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { DockerClientBase } from '../DockerClientBase/DockerClientBase';
 import { PodmanEventRecordSchema } from './PodmanEventRecord';
 import { PodmanInspectNetworkRecordSchema, normalizePodmanInspectNetworkRecord } from './PodmanInspectNetworkRecord';
-import { SharedInspectVolumeRecordSchema, normalizeInspectVolumeRecord } from '../DockerClientBase/SharedInspectVolumeRecord';
 import { PodmanListContainerRecordSchema } from './PodmanListContainerRecord';
 import { type PodmanListImageRecord, PodmanListImageRecordSchema } from './PodmanListImageRecord';
 import { PodmanListNetworkRecordSchema } from './PodmanListNetworkRecord';
@@ -285,14 +282,6 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
     }
 
     //#endregion
-
-    //#region ListVolumes Command
-
-    protected override parseListVolumesCommandOutput(options: ListVolumesCommandOptions, output: string, strict: boolean): Promise<ListVolumeItem[]> {
-        // Podman volume inspect is identical to volume list
-        return this.parseInspectJson(output, strict, (item) =>
-            normalizeInspectVolumeRecord(SharedInspectVolumeRecordSchema.parse(item), JSON.stringify(item)));
-    }
 
     //#endregion
 

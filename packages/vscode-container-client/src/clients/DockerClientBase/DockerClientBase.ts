@@ -97,8 +97,8 @@ import { SharedInspectVolumeRecordSchema, normalizeInspectVolumeRecord } from '.
 import { SharedListContainerRecordSchema, normalizeListContainerRecord } from './SharedListContainerRecord';
 import { SharedListImageRecordSchema, normalizeListImageRecord } from './SharedListImageRecord';
 import { SharedListNetworkRecordSchema, normalizeListNetworkRecord } from './SharedListNetworkRecord';
+import { SharedListVolumeRecordSchema, normalizeListVolumeRecord } from './SharedListVolumeRecord';
 import { DockerVersionRecordSchema } from './DockerVersionRecord';
-import { DockerVolumeRecordSchema, normalizeDockerVolumeRecord } from './DockerVolumeRecord';
 import { parseListFilesCommandLinuxOutput, parseListFilesCommandWindowsOutput } from './parseListFilesCommandOutput';
 import { withContainerPathArg } from './withContainerPathArg';
 import { withDockerAddHostArg } from './withDockerAddHostArg';
@@ -1094,8 +1094,8 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         output: string,
         strict: boolean,
     ): Promise<ListVolumeItem[]> {
-        return this.parsePerLineJson(output, strict, (volumeJson) =>
-            normalizeDockerVolumeRecord(DockerVolumeRecordSchema.parse(JSON.parse(volumeJson))));
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeListVolumeRecord(SharedListVolumeRecordSchema.parse(item)));
     }
 
     listVolumes(options: ListVolumesCommandOptions): Promise<PromiseCommandResponse<ListVolumeItem[]>> {
