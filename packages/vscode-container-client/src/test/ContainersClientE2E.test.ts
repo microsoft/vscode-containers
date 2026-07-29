@@ -490,9 +490,12 @@ describe('(integration) ContainersClientE2E', function () {
                 expect(container.networks.some(n => n.name === testContainerNetworkName)).to.be.true;
             }
 
-            // Validate the bind mount
+            // Validate the bind mount. On Windows, machine-based runtimes (e.g. Podman/Docker
+            // Desktop) run in a Linux VM and report the bind source as a translated `/mnt/<drive>`
+            // path rather than the original `D:\...` host path, so normalize both sides via
+            // wslifyPath before comparing (it is a no-op for already-Linux paths).
             expect(container.mounts).to.be.an('array');
-            expect(container.mounts.some(m => m.type === 'bind' && m.source === testContainerBindMountSource && m.destination === '/data1' && m.readOnly === true)).to.be.true;
+            expect(container.mounts.some(m => m.type === 'bind' && wslifyPath(m.source) === wslifyPath(testContainerBindMountSource) && m.destination === '/data1' && m.readOnly === true)).to.be.true;
 
             // Validate the volume
             expect(container.mounts).to.be.an('array');
