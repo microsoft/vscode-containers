@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { parseDockerLikeImageName } from '../utils/parseDockerLikeImageName';
+import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 
 describe('(unit) parseDockerLikeImageName', () => {
     describe('Should parse valid image names', () => {

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { conditional } from '../utils/conditional';
+import { conditional } from '../../utils/conditional';
 
 describe('(unit) conditional', () => {
     it('should include string and expression when expression is truthy', () => {

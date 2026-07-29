@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { parseDockerLikeLabels } from '../clients/DockerClientBase/parseDockerLikeLabels';
+import { parseDockerLikeLabels } from '../../../clients/DockerClientBase/parseDockerLikeLabels';
 
 describe('(unit) parseDockerLikeLabels', () => {
     it('Should parse an empty string correctly', () => {

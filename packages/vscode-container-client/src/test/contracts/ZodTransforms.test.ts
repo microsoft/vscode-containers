@@ -15,7 +15,7 @@ import {
     osTypeStringSchema,
     sizeSchema,
     stringArraySchema,
-} from '../contracts/ZodTransforms';
+} from '../../contracts/ZodTransforms';
 
 describe('(unit) ZodTransforms', () => {
     describe('dateStringSchema', () => {

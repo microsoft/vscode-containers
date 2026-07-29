@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
+import { NerdctlClient } from '../../../clients/NerdctlClient/NerdctlClient';
 
 /**
  * The output-parsing helpers live on DockerClientBase as protected members.

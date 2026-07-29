@@ -6,9 +6,9 @@
 import * as z from 'zod/mini';
 import type { ListContainersItem, PortBinding } from '../../contracts/ContainerClient';
 import { labelsStringSchema } from '../../contracts/ZodTransforms';
-import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { parseDockerRawPortString } from './parseDockerRawPortString';
+import { resolveCreatedAt } from './resolveCreatedAt';
 
 /**
  * A single, tolerant schema for the Docker-compatible `ps`/`container ls`
@@ -151,28 +151,6 @@ function extractNetworksFromLabels(labels: Record<string, string>): string[] {
         // Ignore parse errors
     }
     return [];
-}
-
-function resolveCreatedAt(raw: string | undefined, strict: boolean, validateDate: boolean): Date {
-    if (raw) {
-        const parsed = dayjs.utc(raw);
-        if (parsed.isValid()) {
-            return parsed.toDate();
-        }
-        if (validateDate) {
-            if (strict) {
-                throw new Error(`Invalid container creation date: ${raw}`);
-            }
-            return new Date(); // Use current time as fallback (less misleading than an Invalid Date)
-        }
-        return parsed.toDate(); // Docker: preserve the (invalid) parse result
-    }
-
-    if (validateDate && strict) {
-        throw new Error('Container creation date is missing');
-    }
-    // Docker: dayjs.utc(undefined) yields the current time
-    return validateDate ? new Date() : dayjs.utc(raw).toDate();
 }
 
 function resolvePorts(portsStr: string | undefined, strict: boolean, throwOnUnparseablePort: boolean): PortBinding[] {

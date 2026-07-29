@@ -11,6 +11,7 @@ import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { normalizeIpAddress } from './normalizeIpAddress';
 import { parseDockerLikeEnvironmentVariables } from './parseDockerLikeEnvironmentVariables';
 import { parseExposedPortKey } from './parseDockerRawPortString';
+import { resolveCreatedAtBaseline } from './resolveCreatedAt';
 
 /**
  * A single, tolerant schema for the Docker-compatible `inspect` output emitted
@@ -175,12 +176,7 @@ export function normalizeInspectContainerRecord(container: SharedInspectContaine
 
     const labels = container.Config?.Labels ?? {};
 
-    const createdDayjs = dayjs.utc(container.Created);
-    // Use a single validated baseline for both createdAt and the started/finished
-    // comparisons below. Falling back to "now" only in createdAt while comparing
-    // against an invalid createdDayjs would let isBefore() (which is false for an
-    // invalid operand) wrongly include startedAt/finishedAt values.
-    const createdBaseline = createdDayjs.isValid() ? createdDayjs : dayjs.utc();
+    const createdBaseline = resolveCreatedAtBaseline(container.Created);
     const createdAt = createdBaseline.toDate();
 
     const startedDayjs = container.State?.StartedAt ? dayjs.utc(container.State.StartedAt) : undefined;

@@ -8,7 +8,7 @@ import {
     NerdctlEventRecordSchema,
     getActorFromEventPayload,
     parseContainerdTopic,
-} from '../clients/NerdctlClient/NerdctlEventRecord';
+} from '../../../clients/NerdctlClient/NerdctlEventRecord';
 
 describe('(unit) parseContainerdTopic', () => {
     it('Should map known containerd topics to Docker-like type/action', () => {

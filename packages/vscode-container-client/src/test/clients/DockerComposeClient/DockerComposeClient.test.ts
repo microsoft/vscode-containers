@@ -6,11 +6,11 @@
 import { Bash, Cmd, NoShell, Powershell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 
-import { DockerComposeClient } from '../clients/DockerComposeClient/DockerComposeClient';
+import { DockerComposeClient } from '../../../clients/DockerComposeClient/DockerComposeClient';
 import type {
     CommonOrchestratorCommandOptions,
     UpCommandOptions
-} from '../contracts/ContainerOrchestratorClient';
+} from '../../../contracts/ContainerOrchestratorClient';
 
 const commonOptions: CommonOrchestratorCommandOptions = {
     files: ['docker-compose.yml'],

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { wslifyPath } from '../utils/wslifyPath';
+import { wslifyPath } from '../../utils/wslifyPath';
 
 describe('(unit) wslifyPath', () => {
     it('Should wslify Windows paths correctly', () => {

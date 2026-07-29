@@ -7,7 +7,7 @@ import { expect } from 'chai';
 import {
     SharedInspectContainerRecordSchema,
     normalizeInspectContainerRecord,
-} from '../clients/DockerClientBase/SharedInspectContainerRecord';
+} from '../../../clients/DockerClientBase/SharedInspectContainerRecord';
 
 describe('(unit) SharedInspectContainerRecordSchema mounts', () => {
     const baseRecord = {

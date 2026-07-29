@@ -5,12 +5,12 @@
 
 import { NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
-import { NerdctlComposeClient } from '../clients/NerdctlComposeClient/NerdctlComposeClient';
+import { NerdctlComposeClient } from '../../../clients/NerdctlComposeClient/NerdctlComposeClient';
 import type {
     CommonOrchestratorCommandOptions,
     DownCommandOptions,
     UpCommandOptions,
-} from '../contracts/ContainerOrchestratorClient';
+} from '../../../contracts/ContainerOrchestratorClient';
 
 const commonOptions: CommonOrchestratorCommandOptions = {
     files: ['docker-compose.yml'],

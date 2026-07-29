@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { parseDockerRawPortString } from '../clients/DockerClientBase/parseDockerRawPortString';
-import type { PortBinding } from '../contracts/ContainerClient';
+import { parseDockerRawPortString } from '../../../clients/DockerClientBase/parseDockerRawPortString';
+import type { PortBinding } from '../../../contracts/ContainerClient';
 
 describe('(unit) parseDockerRawPortString', () => {
     const validCases: Array<{ input: string; expected: PortBinding }> = [

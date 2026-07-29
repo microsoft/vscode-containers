@@ -5,7 +5,7 @@
 
 import { NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
-import { withNerdctlExposedPortsArg } from '../clients/NerdctlClient/withNerdctlExposedPortsArg';
+import { withNerdctlExposedPortsArg } from '../../../clients/NerdctlClient/withNerdctlExposedPortsArg';
 
 function quote(exposePorts: Array<number> | undefined, publishAllPorts: boolean | undefined): string[] {
     return new NoShell(false).quote(withNerdctlExposedPortsArg(exposePorts, publishAllPorts)());

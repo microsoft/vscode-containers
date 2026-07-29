@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { normalizeIpAddress } from '../clients/DockerClientBase/normalizeIpAddress';
+import { normalizeIpAddress } from '../../../clients/DockerClientBase/normalizeIpAddress';
 
 describe('(unit) normalizeIpAddress', () => {
     it('Should not change IPv4 addresses', () => {
