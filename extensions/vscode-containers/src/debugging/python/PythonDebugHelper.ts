@@ -83,6 +83,12 @@ export class PythonDebugHelper implements DebugHelper {
             type: PythonContainerDebugType,
             request: 'launch',
             pathMappings: debugConfiguration.python.pathMappings,
+            // debugpy's DAP adapter runs *inside* the container (Linux), but the VS Code client runs
+            // on the host. Tell debugpy which OS the client's paths use so it can correctly translate
+            // breakpoint paths via `pathMappings` (e.g. Windows `d:\src\app.py` <-> container
+            // `/app/app.py`). Without this, pydevd assumes the client OS matches the server (Linux)
+            // and drive-letter casing/separators never match, so no breakpoint path is translated.
+            clientOS: process.platform === 'win32' ? 'windows' : 'unix',
             justMyCode: debugConfiguration.python.justMyCode ?? true,
             django: debugConfiguration.python.django || projectType === 'django',
             fastapi: debugConfiguration.python.fastapi || projectType === 'fastapi',
