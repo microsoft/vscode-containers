@@ -24,7 +24,8 @@ export const SharedListImageRecordSchema = z.object({
     // Date string transformed to Date with fallback to current time
     CreatedAt: z.optional(dateStringWithFallbackSchema),
     // Size (bytes number or human-readable string) transformed to number | undefined
-    Size: z.optional(sizeSchema),
+    // `sizeSchema` is nullish-fronted, so the key is already optional.
+    Size: sizeSchema,
 });
 
 export type SharedListImageRecord = z.infer<typeof SharedListImageRecordSchema>;

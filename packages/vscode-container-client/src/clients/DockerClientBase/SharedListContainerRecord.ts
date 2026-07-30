@@ -5,8 +5,7 @@
 
 import * as z from 'zod/mini';
 import type { ListContainersItem, PortBinding } from '../../contracts/ContainerClient';
-import { labelsStringSchema } from '../../contracts/ZodTransforms';
-import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
+import { imageNameSchema, labelsStringSchema } from '../../contracts/ZodTransforms';
 import { parseDockerRawPortString } from './parseDockerRawPortString';
 import { resolveCreatedAt, type CreatedAtMode } from './resolveCreatedAt';
 
@@ -21,7 +20,8 @@ import { resolveCreatedAt, type CreatedAtMode } from './resolveCreatedAt';
 export const SharedListContainerRecordSchema = z.object({
     ID: z.string(),
     Names: z.string(),
-    Image: z.string(),
+    // Raw image reference parsed into an ImageNameInfo by the shared transform
+    Image: imageNameSchema,
     Ports: z.optional(z.string()),
     Networks: z.optional(z.string()),
     // "key=value,key2=value2" string transformed to a record
@@ -230,7 +230,7 @@ export function normalizeListContainerRecord(container: SharedListContainerRecor
         id: container.ID,
         name,
         labels,
-        image: parseDockerLikeImageName(container.Image),
+        image: container.Image,
         ports,
         networks,
         createdAt,

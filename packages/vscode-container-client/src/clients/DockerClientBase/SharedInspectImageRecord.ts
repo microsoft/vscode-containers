@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { toArray } from '@microsoft/vscode-processutils';
 import * as z from 'zod/mini';
 import type { ImageNameInfo, InspectImagesItem, PortBinding } from '../../contracts/ContainerClient';
-import { architectureStringSchema, dateStringSchema, osTypeStringSchema } from '../../contracts/ZodTransforms';
+import { architectureStringSchema, dateStringSchema, osTypeStringSchema, stringArraySchema } from '../../contracts/ZodTransforms';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { parseDockerLikeEnvironmentVariables } from './parseDockerLikeEnvironmentVariables';
 import { parseExposedPortKey } from './parseDockerRawPortString';
@@ -25,8 +24,9 @@ import { parseExposedPortKey } from './parseDockerRawPortString';
  */
 
 const InspectImageConfigSchema = z.object({
-    Entrypoint: z.optional(z.union([z.array(z.string()), z.string(), z.null()])),
-    Cmd: z.optional(z.union([z.array(z.string()), z.string(), z.null()])),
+    // Single string or array coalesced to string[] by the shared transform
+    Entrypoint: stringArraySchema,
+    Cmd: stringArraySchema,
     Env: z.optional(z.nullable(z.array(z.string()))),
     Labels: z.optional(z.nullable(z.record(z.string(), z.string()))),
     ExposedPorts: z.optional(z.nullable(z.record(z.string(), z.unknown()))),
@@ -90,8 +90,8 @@ export function normalizeInspectImageRecord(image: SharedInspectImageRecord, raw
         ports,
         volumes,
         labels,
-        entrypoint: toArray(image.Config?.Entrypoint || []),
-        command: toArray(image.Config?.Cmd || []),
+        entrypoint: image.Config?.Entrypoint ?? [],
+        command: image.Config?.Cmd ?? [],
         currentDirectory: image.Config?.WorkingDir || undefined,
         // Architecture and OS are already normalized by the schema
         architecture: image.Architecture,

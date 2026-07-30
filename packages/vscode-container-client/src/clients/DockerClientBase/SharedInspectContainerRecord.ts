@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { toArray } from '@microsoft/vscode-processutils';
 import * as z from 'zod/mini';
 import type { InspectContainersItem, InspectContainersItemBindMount, InspectContainersItemMount, InspectContainersItemNetwork, InspectContainersItemVolumeMount, PortBinding } from '../../contracts/ContainerClient';
+import { stringArraySchema } from '../../contracts/ZodTransforms';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { normalizeIpAddress } from './normalizeIpAddress';
@@ -58,8 +58,9 @@ const InspectContainerNetworkSchema = z.object({
 
 const InspectContainerConfigSchema = z.object({
     Image: z.optional(z.string()),
-    Entrypoint: z.optional(z.union([z.array(z.string()), z.string(), z.null()])),
-    Cmd: z.optional(z.union([z.array(z.string()), z.string(), z.null()])),
+    // Single string or array coalesced to string[] by the shared transform
+    Entrypoint: stringArraySchema,
+    Cmd: stringArraySchema,
     Env: z.optional(z.nullable(z.array(z.string()))),
     Labels: z.optional(z.nullable(z.record(z.string(), z.string()))),
     WorkingDir: z.optional(z.nullable(z.string())),
@@ -196,8 +197,8 @@ export function normalizeInspectContainerRecord(container: SharedInspectContaine
         ports,
         mounts,
         labels,
-        entrypoint: toArray(container.Config?.Entrypoint ?? []),
-        command: toArray(container.Config?.Cmd ?? []),
+        entrypoint: container.Config?.Entrypoint ?? [],
+        command: container.Config?.Cmd ?? [],
         currentDirectory: container.Config?.WorkingDir || undefined,
         createdAt,
         // Only include startedAt/finishedAt if they are the same as or after createdAt

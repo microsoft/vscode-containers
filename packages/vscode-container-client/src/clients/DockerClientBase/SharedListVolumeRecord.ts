@@ -29,7 +29,8 @@ export const SharedListVolumeRecordSchema = z.object({
     // Date string transformed to Date; undefined when absent/invalid
     CreatedAt: z.optional(dateStringSchema),
     // Byte count or human-readable size string transformed to a number
-    Size: z.optional(sizeSchema),
+    // `sizeSchema` is nullish-fronted, so the key is already optional.
+    Size: sizeSchema,
 });
 
 export type SharedListVolumeRecord = z.infer<typeof SharedListVolumeRecordSchema>;
