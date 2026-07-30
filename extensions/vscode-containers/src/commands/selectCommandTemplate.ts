@@ -93,10 +93,10 @@ export async function selectComposeLogsCommand(context: IActionContext, folder: 
     return await selectCommandTemplate(
         context,
         'composeLogs',
-        [folderName, configurationFile],
+        [folderName, configurationFile || ''],
         folder,
         {
-            'configurationFile': configurationFile ? `-f "${configurationFile}"` : '',
+            'configurationFile': configurationFile || '',
             'projectName': projectName ? `-p "${projectName}"` : '',
             'environmentFile': envFile ? `--env-file "${envFile}"` : '',
             'composeCommand': fullComposeCommand

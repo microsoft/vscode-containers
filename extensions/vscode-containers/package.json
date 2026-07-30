@@ -3372,6 +3372,7 @@
                 "containers.scaffolding.templatePath",
                 "containers.containerCommand",
                 "containers.composeCommand",
+                "containers.commands.composeLogs",
                 "containers.containerClient",
                 "containers.orchestratorClient"
             ]

@@ -25,7 +25,8 @@ export async function composeGroupLogs(context: IActionContext, node: ContainerG
 
         const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? Uri.file(workingDirectory);
 
-        return selectComposeLogsCommand(context, folder, options.files?.join('" -f "'), options.projectName, options.environmentFile);
+        const composeFilesString = options.files?.map(file => `-f "${file}"`).join(' ');
+        return selectComposeLogsCommand(context, folder, composeFilesString, options.projectName, options.environmentFile);
     }, node, { follow: true, tail: 1000 });
 }
 export async function composeGroupStart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
