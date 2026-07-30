@@ -29,7 +29,7 @@ export class NetSdkRunTaskProvider extends DockerTaskProvider {
         const projectFolderPath = path.dirname(projectPath);
 
         // use dotnet to build the image
-        const { command: buildCommand, args: buildArgs } = await getNetSdkBuildCommand();
+        const { command: buildCommand, args: buildArgs } = await getNetSdkBuildCommand(projectPath);
         await context.terminal.execAsyncInTerminal(
             buildCommand,
             buildArgs,

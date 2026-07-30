@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DockerClient, PodmanClient, RunContainerBindMount, RunContainerCommandOptions } from "@microsoft/vscode-container-client";
-import { CommandLineArgs, composeArgs, withArg, withNamedArg } from '@microsoft/vscode-processutils';
+import { CommandLineArgs, composeArgs, withArg, withNamedArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import * as os from 'os';
 import * as vscode from 'vscode';
 import { configPrefix } from "../../constants";
 import { vsDbgInstallBasePath } from "../../debugging/netcore/VsDbgHelper";
 import { ext } from "../../extensionVariables";
 import { getImageNameWithTag } from "../../utils/getValidImageName";
+import { isFileBasedApp } from "../../utils/netCoreUtils";
 import { getDockerOSType } from "../../utils/osUtils";
 import { defaultVsCodeLabels } from "../TaskDefinitionBase";
 import { getDefaultContainerName } from '../TaskHelper';
@@ -32,15 +33,23 @@ export type RidCpuArchitecture =
 export const NetSdkRunTaskType = 'dotnet-container-sdk';
 const NetSdkDefaultImageTag = 'dev'; // intentionally default to dev tag for phase 1 of this feature
 
-export async function getNetSdkBuildCommand(): Promise<{ command: string, args: CommandLineArgs }> {
+export async function getNetSdkBuildCommand(projectPath?: string): Promise<{ command: string, args: CommandLineArgs }> {
+    // File-based apps enable PublishAot by default, which produces a native executable instead of a
+    // managed .dll. Disable it so we get a debuggable image that runs the app with `dotnet`.
+    const publishAot = isFileBasedApp(projectPath) ? 'false' : undefined;
+
     const args = composeArgs(
         withArg('publish'),
+        withNamedArg('-p:PublishAot', publishAot, { assignValue: true }),
         withNamedArg('--os', await normalizeOsToRidOs()),
         withNamedArg('--arch', await normalizeArchitectureToRidArchitecture()),
         withArg('/t:PublishContainer'),
         withNamedArg('--configuration', 'Debug'),
         withNamedArg('-p:ContainerImageTag', NetSdkDefaultImageTag, { assignValue: true }),
         withNamedArg('-p:LocalRegistry', getLocalRegistry(), { assignValue: true }),
+        // The project/file is passed last. It is required for file-based apps (there is no .csproj in the
+        // folder for `dotnet publish` to discover) and is harmless for project-based apps.
+        withQuotedArg(projectPath),
     )();
 
     return { command: 'dotnet', args: args };

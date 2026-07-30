@@ -8,6 +8,7 @@ import { CancellationToken, commands, debug, DebugConfiguration, DebugConfigurat
 import { CSPROJ_GLOB_PATTERN, DockerOrchestration, FSPROJ_GLOB_PATTERN } from '../constants';
 import { ext } from '../extensionVariables';
 import { getAssociatedDockerRunTask } from '../tasks/TaskHelper';
+import { isFileBasedAppFolder } from '../utils/netCoreUtils';
 import { resolveFilesOfPattern } from '../utils/quickPickFile';
 import { DebugHelper, DockerDebugContext, ResolvedDebugConfiguration } from './DebugHelper';
 import { DockerPlatform, getDebugPlatform } from './DockerDebugPlatformHelper';
@@ -196,9 +197,9 @@ export class DockerDebugConfigurationProvider implements DebugConfigurationProvi
         // NOTE: We can not determine the language from `DockerDebugContext`, so we need to check the
         //       type of files inside the folder here to determine the language.
 
-        // check if it's a .NET Core project
+        // check if it's a .NET project (project-based .csproj/.fsproj or a file-based app: a single .cs file)
         const csProjUris = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN]);
-        if (csProjUris) {
+        if (csProjUris || await isFileBasedAppFolder(folder)) {
             return await netSdkDebugHelper.provideDebugConfigurations(
                 {
                     actionContext,

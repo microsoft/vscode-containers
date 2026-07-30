@@ -4,11 +4,38 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { parseError } from '@microsoft/vscode-azext-utils';
-import { CommandLineArgs, composeArgs, withArg, withQuotedArg } from '@microsoft/vscode-processutils';
+import { CommandLineArgs, composeArgs, withArg, withFlagArg, withQuotedArg } from '@microsoft/vscode-processutils';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as z from 'zod/mini';
+import { CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN, NET_BUILD_OUTPUT_EXCLUDE_PATTERN } from '../constants';
 import { execAsync } from './execAsync';
+import { resolveFilesOfPattern } from './quickPickFile';
+
+/**
+ * Determines whether the given .NET "project" is actually a file-based app: a single C# file
+ * (e.g. `app.cs`) that can be run directly with `dotnet run app.cs` without a `.csproj`.
+ * {@link https://devblogs.microsoft.com/dotnet/announcing-dotnet-run-app/}
+ */
+export function isFileBasedApp(project: string | undefined): boolean {
+    return !!project && path.extname(project).toLowerCase() === '.cs';
+}
+
+/**
+ * Determines whether the folder is a file-based .NET app: it contains a single-file app (.cs) and no
+ * project file (.csproj/.fsproj), meaning the .NET SDK is the only way to build a container image for it.
+ */
+export async function isFileBasedAppFolder(folder: vscode.WorkspaceFolder): Promise<boolean> {
+    // We only need to know whether any matching file exists, so cap the search at a single result.
+    const projectFiles = await resolveFilesOfPattern(folder, [CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN], undefined, 1);
+    if (projectFiles?.length) {
+        return false;
+    }
+
+    // Exclude bin/obj so generated .cs files (e.g. *.AssemblyInfo.cs) don't get mistaken for a file-based app.
+    const fileBasedApps = await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN], NET_BUILD_OUTPUT_EXCLUDE_PATTERN, 1);
+    return !!(fileBasedApps?.length);
+}
 
 interface NetCoreCommonProjectInfo {
     assemblyName: string;
@@ -49,7 +76,9 @@ const RawNetCoreProjectInfoSchema = z.object({
 
 export async function getNetCoreProjectInfo(project: string, additionalProperties?: CommandLineArgs): Promise<NetCoreProjectInfo> {
     const args = composeArgs(
-        withArg('build', '--no-restore'),
+        withArg('build'),
+        // File-based apps (single .cs file) have no prior restore, so we must allow the implicit restore.
+        withFlagArg('--no-restore', !isFileBasedApp(project)),
         withArg('-target:ComputeContainerConfig'),
         withArg('-getProperty:AssemblyName,TargetFramework,TargetFrameworks,OutputPath,EnableSdkContainerSupport,ContainerWorkingDirectory,ContainerRepository'),
         withArg(...(additionalProperties ?? [])),

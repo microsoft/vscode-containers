@@ -12,7 +12,7 @@ import { AllNetContainerBuildOptions, NetContainerBuildOptionsKey } from "../../
 import { NetSdkRunTaskDefinition, netSdkRunTaskProvider } from "../../tasks/netSdk/NetSdkRunTaskProvider";
 import { normalizeArchitectureToRidArchitecture, normalizeOsToRidOs } from "../../tasks/netSdk/netSdkTaskUtils";
 import { NetCoreTaskHelper } from "../../tasks/netcore/NetCoreTaskHelper";
-import { getNetCoreProjectInfo } from "../../utils/netCoreUtils";
+import { getNetCoreProjectInfo, isFileBasedApp, isFileBasedAppFolder } from "../../utils/netCoreUtils";
 import { getDockerOSType } from "../../utils/osUtils";
 import { PlatformOS } from "../../utils/platform";
 import { resolveVariables, unresolveWorkspaceFolder } from "../../utils/resolveVariables";
@@ -35,6 +35,9 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
             ...context.actionContext,
             scaffoldType: 'debugging',
             workspaceFolder: context.folder,
+            // File-based apps (a single .cs file with no .csproj/.fsproj) can only be built with the .NET SDK,
+            // so we skip the "SDK vs Dockerfile" prompt for them.
+            isFileBasedApp: await isFileBasedAppFolder(context.folder),
         };
 
         await netContainerBuild(netCoreBuildContext); // prompt user whether to use .NET container SDK build
@@ -110,10 +113,14 @@ export class NetSdkDebugHelper extends NetCoreDebugHelper {
     protected override async getProjectProperties(debugConfiguration: DockerDebugConfiguration, folder?: WorkspaceFolder): Promise<NetSdkProjectProperties> {
         const ridOS = await normalizeOsToRidOs();
         const ridArchitecture = await normalizeArchitectureToRidArchitecture();
+        const resolvedAppProject = resolveVariables(debugConfiguration.netCore?.appProject, folder);
+        // File-based apps default to PublishAot, which changes the computed container configuration. Disable it
+        // so the properties match the debuggable (managed) image we build.
+        const publishAot = isFileBasedApp(resolvedAppProject) ? 'false' : undefined;
         const additionalProperties = composeArgs(
             withNamedArg('-p:ContainerRuntimeIdentifier', `"${ridOS}-${ridArchitecture}"`, { assignValue: true }), // We have to pre-quote the RID because we cannot simultaneously use `assignValue` and `shouldQuote`
+            withNamedArg('-p:PublishAot', publishAot, { assignValue: true }),
         )();
-        const resolvedAppProject = resolveVariables(debugConfiguration.netCore?.appProject, folder);
 
         const projectInfo = await getNetCoreProjectInfo(resolvedAppProject, additionalProperties);
 

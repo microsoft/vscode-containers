@@ -25,6 +25,12 @@ export class NetSdkChooseBuildStep extends TelemetryPromptStep<NetChooseBuildTyp
     public async prompt(wizardContext: NetChooseBuildTypeContext): Promise<void> {
         await this.ensureCSharpExtension(wizardContext);
 
+        // File-based apps (a single .cs file) have no Dockerfile flow, so force the .NET SDK build without prompting.
+        if (wizardContext.isFileBasedApp) {
+            wizardContext.containerBuildOption = AllNetContainerBuildOptions[1];
+            return;
+        }
+
         // get workspace momento storage
         const containerBuildOption = await ext.context.workspaceState.get<NetContainerBuildOption>(NetContainerBuildOptionsKey);
 
