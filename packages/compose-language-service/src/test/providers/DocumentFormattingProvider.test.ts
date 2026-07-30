@@ -65,6 +65,27 @@ volumes:
             await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
         });
 
+        it('Should NOT break YAML anchors', async () => {
+            // See https://github.com/microsoft/vscode-containers/issues/537
+            // The anchor must stay inline with its key and not be pushed onto a new line
+            const testObject = `version: "3.5"
+
+x-anchor: &anchor
+  FOO: bar
+
+services:
+  example:
+    <<: *anchor
+    image: alpine
+`;
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+
+            const expected2Space = testObject; // Output will be unchanged, anchors must not be broken
+
+            await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
+        });
+
         it('Should NOT wrap long string lines', async () => {
             const testObject = `version: '123'
 services:
@@ -80,6 +101,22 @@ services:
             const uri = testConnection.sendTextAsYamlDocument(testObject);
 
             const expected2Space = testObject; // Output will be unchanged, wrapping must not occur
+
+            await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
+        });
+
+        it('Should NOT round large integers', async () => {
+            const testObject = `version: '123'
+services:
+  foo:
+    image: bar
+    environment:
+      discord_id: 1147053346671102335
+`;
+
+            const uri = testConnection.sendTextAsYamlDocument(testObject);
+
+            const expected2Space = testObject; // Output will be unchanged, the large integer must not be rounded
 
             await requestDocumentFormattingAndCompare(testConnection, uri, 2, expected2Space);
         });

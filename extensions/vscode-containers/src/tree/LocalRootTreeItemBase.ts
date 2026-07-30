@@ -97,6 +97,14 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
             ext.activityMeasurementService.recordActivity('overallnoedit');
 
             this._currentItems = await this.getCachedItems(context, clearCache);
+            this.groupBySetting = this.getTreeSetting(groupByKey, this.groupBySettingInfo);
+            context.telemetry.properties.groupBySetting = this.groupBySetting;
+            this.sortBySetting = this.getTreeSetting(sortByKey, this.sortBySettingInfo);
+            context.telemetry.properties.sortBySetting = this.sortBySetting;
+            this.labelSetting = this.getTreeSetting(labelKey, this.labelSettingInfo);
+            context.telemetry.properties.labelSetting = this.labelSetting;
+            this.descriptionSetting = this.getTreeArraySetting(descriptionKey, this.descriptionSettingInfo);
+            context.telemetry.properties.descriptionSetting = this.descriptionSetting.toString();
 
             const filter = getTreeFilter(this.treePrefix);
             if (filter.isActive && this._currentItems) {
@@ -123,15 +131,6 @@ export abstract class LocalRootTreeItemBase<TItem extends AnyContainerObject, TP
             context.telemetry.properties.noItems = 'true';
             return this.getTreeItemForEmptyList();
         } else {
-            this.groupBySetting = this.getTreeSetting(groupByKey, this.groupBySettingInfo);
-            context.telemetry.properties.groupBySetting = this.groupBySetting;
-            this.sortBySetting = this.getTreeSetting(sortByKey, this.sortBySettingInfo);
-            context.telemetry.properties.sortBySetting = this.sortBySetting;
-            this.labelSetting = this.getTreeSetting(labelKey, this.labelSettingInfo);
-            context.telemetry.properties.labelSetting = this.labelSetting;
-            this.descriptionSetting = this.getTreeArraySetting(descriptionKey, this.descriptionSettingInfo);
-            context.telemetry.properties.descriptionSetting = this.descriptionSetting.toString();
-
             return this.groupItems(this._currentItems);
         }
     }

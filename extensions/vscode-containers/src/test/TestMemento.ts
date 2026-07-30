@@ -6,18 +6,23 @@
 import * as vscode from 'vscode';
 
 export class TestMemento implements vscode.Memento {
-    private readonly values: { [key: string]: never } = {};
+    private readonly values: Record<string, unknown> = {};
 
     keys(): readonly string[] {
         return Object.keys(this.values);
     }
 
     get<T>(key: string, defaultValue?: T): T | undefined {
-        return this.values[key] ?? defaultValue;
+        return (this.values[key] as T | undefined) ?? defaultValue;
     }
 
-    update(key: string, value: never): Thenable<void> {
-        this.values[key] = value;
+    update(key: string, value: unknown): Thenable<void> {
+        if (value === undefined) {
+            delete this.values[key];
+        } else {
+            this.values[key] = value;
+        }
+
         return Promise.resolve();
     }
 }
