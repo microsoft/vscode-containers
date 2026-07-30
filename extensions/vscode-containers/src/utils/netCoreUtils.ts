@@ -8,7 +8,7 @@ import { CommandLineArgs, composeArgs, withArg, withFlagArg, withQuotedArg } fro
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as z from 'zod/mini';
-import { CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN } from '../constants';
+import { CS_GLOB_PATTERN, CSPROJ_GLOB_PATTERN, FSPROJ_GLOB_PATTERN, NET_BUILD_OUTPUT_EXCLUDE_PATTERN } from '../constants';
 import { execAsync } from './execAsync';
 import { resolveFilesOfPattern } from './quickPickFile';
 
@@ -32,7 +32,8 @@ export async function isFileBasedAppFolder(folder: vscode.WorkspaceFolder): Prom
         return false;
     }
 
-    const fileBasedApps = await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN], undefined, 1);
+    // Exclude bin/obj so generated .cs files (e.g. *.AssemblyInfo.cs) don't get mistaken for a file-based app.
+    const fileBasedApps = await resolveFilesOfPattern(folder, [CS_GLOB_PATTERN], NET_BUILD_OUTPUT_EXCLUDE_PATTERN, 1);
     return !!(fileBasedApps?.length);
 }
 
