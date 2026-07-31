@@ -35,6 +35,21 @@ export const dateStringWithFallbackSchema = z.pipe(z.string(), z.transform((str)
 }));
 
 /**
+ * Schema that transforms a Unix epoch (seconds) number into a Date.
+ *
+ * Some runtimes (`wslc`) emit numeric timestamps instead of the Docker-style
+ * date strings that {@link dateStringSchema} handles.
+ */
+export const unixEpochSecondsSchema = z.pipe(z.number(), z.transform((seconds): Date => dayjs.unix(seconds).toDate()));
+
+/**
+ * Schema that accepts either a Docker-style date string or a Unix epoch
+ * (seconds) number and transforms it to a Date. Yields `undefined` for an
+ * unparseable string, matching {@link dateStringSchema}.
+ */
+export const dateStringOrEpochSchema = z.union([dateStringSchema, unixEpochSecondsSchema]);
+
+/**
  * Schema that transforms boolean-like strings (e.g. "true"/"false") to booleans.
  * Backed by Zod v4's `z.stringbool()`.
  */

@@ -43,6 +43,11 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
     this.timeout(10000); // Set a longer timeout for integration tests
 
     before(async function () {
+        // wslc has no Compose/orchestrator equivalent, so skip the orchestrator suite entirely.
+        if (clientTypeToTest === 'wslc') {
+            this.skip();
+        }
+
         if (clientTypeToTest === 'docker') {
             containerClient = new DockerClient(); // Used for validating that the containers are created and removed correctly
             client = new DockerComposeClient();

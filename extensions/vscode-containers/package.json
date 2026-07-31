@@ -2552,13 +2552,15 @@
                         "",
                         "com.microsoft.visualstudio.containers.docker",
                         "com.microsoft.visualstudio.containers.podman",
-                        "com.microsoft.visualstudio.containers.nerdctl"
+                        "com.microsoft.visualstudio.containers.nerdctl",
+                        "com.microsoft.visualstudio.containers.wslc"
                     ],
                     "enumItemLabels": [
                         "Default",
                         "Docker",
                         "Podman",
-                        "Nerdctl"
+                        "Nerdctl",
+                        "WSLC (Windows only, preview)"
                     ]
                 },
                 "containers.orchestratorClient": {

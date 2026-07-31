@@ -4,52 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { registerTelemetryHandler } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, NerdctlClient, NerdctlComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
+import { getContainerClientTelemetryName, getOrchestratorClientTelemetryName } from '../runtimes/officialRuntimeRegistrations';
 
 export function registerRuntimeTelemetryHandler(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(registerTelemetryHandler(context => {
         const config = vscode.workspace.getConfiguration(configPrefix);
-        const containerClientId = config.get<string>('containerClient', '');
-        const orchestratorClientId = config.get<string>('orchestratorClient', '');
 
-        switch (containerClientId) {
-            case undefined:
-            case '':
-                context.telemetry.properties.containerClient = 'default';
-                break;
-            case DockerClient.ClientId:
-                context.telemetry.properties.containerClient = DockerClient.prototype.constructor.name;
-                break;
-            case PodmanClient.ClientId:
-                context.telemetry.properties.containerClient = PodmanClient.prototype.constructor.name;
-                break;
-            case NerdctlClient.ClientId:
-                context.telemetry.properties.containerClient = NerdctlClient.prototype.constructor.name;
-                break;
-            default:
-                context.telemetry.properties.containerClient = 'unknown';
-                break;
-        }
-
-        switch (orchestratorClientId) {
-            case undefined:
-            case '':
-                context.telemetry.properties.orchestratorClient = 'default';
-                break;
-            case DockerComposeClient.ClientId:
-                context.telemetry.properties.orchestratorClient = DockerComposeClient.prototype.constructor.name;
-                break;
-            case PodmanComposeClient.ClientId:
-                context.telemetry.properties.orchestratorClient = PodmanComposeClient.prototype.constructor.name;
-                break;
-            case NerdctlComposeClient.ClientId:
-                context.telemetry.properties.orchestratorClient = NerdctlComposeClient.prototype.constructor.name;
-                break;
-            default:
-                context.telemetry.properties.orchestratorClient = 'unknown';
-                break;
-        }
+        context.telemetry.properties.containerClient = getContainerClientTelemetryName(config.get<string>('containerClient', ''));
+        context.telemetry.properties.orchestratorClient = getOrchestratorClientTelemetryName(config.get<string>('orchestratorClient', ''));
     }));
 }

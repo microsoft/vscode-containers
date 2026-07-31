@@ -4,13 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import type { InspectNetworksItem } from '../../contracts/ContainerClient';
-import { dateStringSchema } from '../../contracts/ZodTransforms';
+import type { InspectNetworksItem, ListNetworkItem } from '../../contracts/ContainerClient';
+import { dateStringOrEpochSchema } from '../../contracts/ZodTransforms';
 
 /**
  * A single, tolerant schema for the Docker-compatible network `inspect` output
- * emitted by Docker and nerdctl. Docker emits every field; nerdctl may omit most
- * of them, so they are modeled as optional and backfilled by the normalizer.
+ * emitted by Docker, nerdctl, and wslc. Docker emits every field; nerdctl and
+ * wslc may omit most of them, so they are modeled as optional and backfilled by
+ * the normalizer.
+ *
+ * `wslc network list` emits this same inspect-style shape rather than Docker's
+ * flat `network ls` shape, so it shares this schema (via
+ * {@link normalizeInspectNetworkRecordAsListItem}) instead of
+ * `SharedListNetworkRecordSchema`.
  *
  * Podman's `network inspect` uses a drastically different, lower-cased shape
  * (`name`/`id`/`created`/`ipv6_enabled`, no IPAM/scope/attachable/ingress) and
@@ -23,15 +29,15 @@ const NetworkIpamConfigSchema = z.object({
 
 const NetworkIpamSchema = z.object({
     Driver: z.optional(z.string()),
-    Config: z.optional(z.array(NetworkIpamConfigSchema)),
+    Config: z.nullish(z.array(NetworkIpamConfigSchema)),
 });
 
 export const SharedInspectNetworkRecordSchema = z.object({
     Name: z.string(),
     Id: z.optional(z.string()),
     Driver: z.optional(z.string()),
-    // Date string transformed to Date | undefined
-    Created: z.optional(dateStringSchema),
+    // Date string (or, for wslc, a Unix epoch in seconds) transformed to Date | undefined
+    Created: z.optional(dateStringOrEpochSchema),
     Scope: z.optional(z.string()),
     Internal: z.optional(z.boolean()),
     EnableIPv6: z.optional(z.boolean()),
@@ -72,5 +78,23 @@ export function normalizeInspectNetworkRecord(network: SharedInspectNetworkRecor
             config: ipamConfig,
         } : undefined,
         raw,
+    };
+}
+
+/**
+ * Normalize a parsed {@link SharedInspectNetworkRecord} to the common
+ * {@link ListNetworkItem}. Used by runtimes (wslc) whose `network list` emits the
+ * inspect-style object shape rather than Docker's flat `network ls` shape.
+ */
+export function normalizeInspectNetworkRecordAsListItem(network: SharedInspectNetworkRecord): ListNetworkItem {
+    return {
+        id: network.Id,
+        name: network.Name,
+        driver: network.Driver,
+        scope: network.Scope,
+        labels: network.Labels ?? {},
+        ipv6: network.EnableIPv6,
+        internal: network.Internal,
+        createdAt: network.Created,
     };
 }

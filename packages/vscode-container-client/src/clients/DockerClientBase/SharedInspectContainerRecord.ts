@@ -15,7 +15,7 @@ import { resolveCreatedAtBaseline } from './resolveCreatedAt';
 
 /**
  * A single, tolerant schema for the Docker-compatible `inspect` output emitted
- * by Docker, Podman, and nerdctl. Every field that any of the three runtimes may
+ * by Docker, Podman, nerdctl, and wslc. Every field that any of the runtimes may
  * omit is modeled as optional/nullable so that the strict Docker output remains a
  * subset of this shape. Unrecognized mount types (e.g. `tmpfs`, `npipe`) are
  * coerced to `null` via {@link z.catch} so a single odd mount does not fail the
@@ -32,15 +32,20 @@ const InspectContainerBindMountSchema = z.object({
     Source: z.string(),
     Destination: z.string(),
     RW: z.optional(z.boolean()),
+    // wslc spells the read/write flag `ReadWrite`
+    ReadWrite: z.optional(z.boolean()),
 });
 
 const InspectContainerVolumeMountSchema = z.object({
     Type: z.literal('volume'),
-    Name: z.string(),
-    Source: z.string(),
+    // Docker/Podman/nerdctl always emit both; wslc may emit only one of them
+    Name: z.optional(z.string()),
+    Source: z.optional(z.string()),
     Destination: z.string(),
     Driver: z.optional(z.string()),
     RW: z.optional(z.boolean()),
+    // wslc spells the read/write flag `ReadWrite`
+    ReadWrite: z.optional(z.boolean()),
 });
 
 const InspectContainerMountSchema = z.catch(z.nullable(z.union([
@@ -86,7 +91,8 @@ const InspectContainerStateSchema = z.object({
 export const SharedInspectContainerRecordSchema = z.object({
     Id: z.string(),
     Name: z.string(),
-    Image: z.string(),
+    // Docker/Podman/nerdctl always emit the image id; wslc may omit it
+    Image: z.optional(z.string()),
     Platform: z.optional(z.string()),
     Created: z.optional(z.string()),
     Mounts: z.optional(z.array(InspectContainerMountSchema)),
@@ -94,6 +100,10 @@ export const SharedInspectContainerRecordSchema = z.object({
     Config: z.optional(InspectContainerConfigSchema),
     HostConfig: z.optional(InspectContainerHostConfigSchema),
     NetworkSettings: z.optional(InspectContainerNetworkSettingsSchema),
+    // wslc repeats the port bindings at the top level in addition to NetworkSettings
+    Ports: z.optional(z.nullable(z.record(z.string(), z.nullable(z.array(InspectContainerPortHostSchema))))),
+    // wslc surfaces labels at the top level rather than (only) under Config
+    Labels: z.optional(z.nullable(z.record(z.string(), z.string()))),
 });
 
 export type SharedInspectContainerRecord = z.infer<typeof SharedInspectContainerRecordSchema>;
@@ -112,21 +122,24 @@ export interface NormalizeInspectContainerOptions {
 
 function normalizeMounts(mounts: ReadonlyArray<InspectContainerMount>, options: NormalizeInspectContainerOptions): InspectContainersItemMount[] {
     return mounts.reduce<Array<InspectContainersItemMount>>((curMounts, mount) => {
+        // `RW` (Docker/Podman/nerdctl) and `ReadWrite` (wslc) mean the same thing
+        const readOnly = (mount?.RW ?? mount?.ReadWrite) === false;
+
         switch (mount?.Type) {
             case 'bind':
                 return [...curMounts, {
                     type: 'bind',
                     source: mount.Source,
                     destination: mount.Destination,
-                    readOnly: mount.RW === false,
+                    readOnly,
                 } satisfies InspectContainersItemBindMount];
             case 'volume':
                 return [...curMounts, {
                     type: 'volume',
-                    source: mount.Name,
+                    source: mount.Name || mount.Source || '',
                     destination: mount.Destination,
                     driver: mount.Driver || options.defaultVolumeDriver || '',
-                    readOnly: mount.RW === false,
+                    readOnly,
                 } satisfies InspectContainersItemVolumeMount];
             default:
                 // Skip unknown/unrecognized mount types (e.g. tmpfs, npipe)
@@ -154,8 +167,10 @@ export function normalizeInspectContainerRecord(container: SharedInspectContaine
         } satisfies InspectContainersItemNetwork;
     });
 
-    // Parse the exposed ports for the container and normalize to PortBinding records
-    const ports = Object.entries(container.NetworkSettings?.Ports ?? {})
+    // Parse the exposed ports for the container and normalize to PortBinding records.
+    // Some runtimes (wslc) repeat the bindings at the top level; NetworkSettings wins on conflict.
+    const rawPorts = { ...(container.Ports ?? {}), ...(container.NetworkSettings?.Ports ?? {}) };
+    const ports = Object.entries(rawPorts)
         .map<PortBinding | null>(([rawPort, hostBinding]) => {
             const parsedKey = parseExposedPortKey(rawPort);
             if (!parsedKey) {
@@ -175,7 +190,8 @@ export function normalizeInspectContainerRecord(container: SharedInspectContaine
     // Parse the volume and bind mounts and normalize to InspectContainersItemMount records
     const mounts = normalizeMounts(container.Mounts ?? [], options);
 
-    const labels = container.Config?.Labels ?? {};
+    // Config.Labels for Docker/Podman/nerdctl, top-level Labels for wslc
+    const labels = container.Config?.Labels ?? container.Labels ?? {};
 
     const createdBaseline = resolveCreatedAtBaseline(container.Created);
     const createdAt = createdBaseline.toDate();
@@ -187,7 +203,7 @@ export function normalizeInspectContainerRecord(container: SharedInspectContaine
     return {
         id: container.Id,
         name: container.Name,
-        imageId: container.Image,
+        imageId: container.Image ?? '',
         image: parseDockerLikeImageName(container.Config?.Image || container.Image),
         isolation: container.HostConfig?.Isolation,
         status: container.State?.Status,

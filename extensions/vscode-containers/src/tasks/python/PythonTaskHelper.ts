@@ -12,7 +12,8 @@ import { DockerBuildOptions } from "../DockerBuildTaskDefinitionBase";
 import { DockerBuildTaskDefinition } from "../DockerBuildTaskProvider";
 import { DockerContainerVolume, DockerRunOptions, DockerRunTaskDefinitionBase } from "../DockerRunTaskDefinitionBase";
 import { DockerRunTaskDefinition } from "../DockerRunTaskProvider";
-import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, getDefaultContainerName, getDefaultImageName, inferImageName } from "../TaskHelper";
+import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, inferImageName } from "../TaskHelper";
+import { getDefaultContainerName, getDefaultImageName } from "../../utils/getValidImageName";
 import { PythonExtensionHelper } from "./PythonExtensionHelper";
 
 // The path where the Python extension's bundled debugpy package is mounted inside the container.

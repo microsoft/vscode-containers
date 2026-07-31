@@ -10,7 +10,7 @@ import { CancellationToken, ConfigurationTarget, ExtensionContext, QuickPickItem
 import { DebugConfigurationBase } from '../debugging/DockerDebugConfigurationBase';
 import { DockerDebugConfiguration } from '../debugging/DockerDebugConfigurationProvider';
 import { DockerPlatform } from '../debugging/DockerDebugPlatformHelper';
-import { getValidImageName, getValidImageNameWithTag } from '../utils/getValidImageName';
+import { getDefaultImageName } from '../utils/getValidImageName';
 import { pathNormalize } from '../utils/pathNormalize';
 import { resolveVariables } from '../utils/resolveVariables';
 import { DockerBuildOptions } from './DockerBuildTaskDefinitionBase';
@@ -201,16 +201,6 @@ export function inferImageName(runOptions: DockerRunTaskDefinition, context: Doc
     return (runOptions && runOptions.dockerRun && runOptions.dockerRun.image)
         || (context && context.buildDefinition && context.buildDefinition.dockerBuild && context.buildDefinition.dockerBuild.tag)
         || getDefaultImageName(defaultNameHint, defaultTag);
-}
-
-export function getDefaultImageName(nameHint: string, tag?: 'dev' | 'latest'): string {
-    tag = tag || 'latest';
-    return getValidImageNameWithTag(nameHint, tag);
-}
-
-export function getDefaultContainerName(nameHint: string, tag?: 'dev' | 'latest'): string {
-    tag = tag || 'dev';
-    return `${getValidImageName(nameHint)}-${tag}`;
 }
 
 export async function recursiveFindTaskByType(allTasks: TaskDefinitionBase[], type: string, node: DebugConfigurationBase | TaskDefinitionBase): Promise<TaskDefinitionBase | undefined> {
