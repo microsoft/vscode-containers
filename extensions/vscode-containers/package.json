@@ -3368,11 +3368,11 @@
                 "containers.commands.composeUp",
                 "containers.commands.composeUpSubset",
                 "containers.commands.composeDown",
+                "containers.commands.composeLogs",
                 "containers.environment",
                 "containers.scaffolding.templatePath",
                 "containers.containerCommand",
                 "containers.composeCommand",
-                "containers.commands.composeLogs",
                 "containers.containerClient",
                 "containers.orchestratorClient"
             ]
