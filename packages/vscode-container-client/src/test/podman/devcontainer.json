@@ -1,0 +1,62 @@
+// Dev container for running the podman integration tests in packages/vscode-container-client.
+// Uses the Podman stable image and layers Node.js on top so tests can be built and run in-container.
+//
+// This config lives outside a `.devcontainer` folder, so start it explicitly with the devcontainer
+// CLI (https://github.com/devcontainers/cli) from the repository root:
+//
+//   devcontainer up --workspace-folder . --config packages/vscode-container-client/src/test/podman/devcontainer.json --remove-existing-container
+//
+// Then run the podman integration tests inside the container:
+//
+//   devcontainer exec --workspace-folder . --config packages/vscode-container-client/src/test/podman/devcontainer.json bash -lc "cd packages/vscode-container-client && CONTAINER_CLIENT_TYPE=podman pnpm run testintegration"
+{
+    "name": "vscode-containers (podman integration)",
+    "image": "quay.io/podman/stable:latest",
+    "features": {
+        // Match the repo's Node (see .nvmrc -> 22.18, engines.node >= 22) and pin the
+        // pnpm version used by the monorepo (root package.json "packageManager").
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "22.18",
+            "pnpmVersion": "11.8.0"
+        }
+    },
+    // Podman-in-container requires privileged mode for nested cgroups/namespaces/storage.
+    "runArgs": [
+        "--privileged"
+    ],
+    // Reuse the same workspace dependency cache volumes as the nerdctl devcontainer so installs are
+    // shared and warm across both runtimes. Both containers run as root, so UID/GID mismatch is not
+    // an issue for these caches.
+    "mounts": [
+        "type=volume,source=vsc-containers-nm-root,target=${containerWorkspaceFolder}/node_modules",
+        "type=volume,source=vsc-containers-nm-vscode-containers,target=${containerWorkspaceFolder}/extensions/vscode-containers/node_modules",
+        "type=volume,source=vsc-containers-nm-vscode-docker,target=${containerWorkspaceFolder}/extensions/vscode-docker/node_modules",
+        "type=volume,source=vsc-containers-nm-processutils,target=${containerWorkspaceFolder}/packages/vscode-processutils/node_modules",
+        "type=volume,source=vsc-containers-nm-container-client,target=${containerWorkspaceFolder}/packages/vscode-container-client/node_modules",
+        "type=volume,source=vsc-containers-nm-docker-registries,target=${containerWorkspaceFolder}/packages/vscode-docker-registries/node_modules",
+        "type=volume,source=vsc-containers-nm-inproc-mcp,target=${containerWorkspaceFolder}/packages/vscode-inproc-mcp/node_modules",
+        "type=volume,source=vsc-containers-nm-compose-language-service,target=${containerWorkspaceFolder}/packages/compose-language-service/node_modules",
+        // pnpm resolves its store to `${containerWorkspaceFolder}/.pnpm-store` here; mount that exact
+        // path as a volume so the store stays container-local instead of writing into the host repo.
+        "type=volume,source=vsc-containers-pnpm-store,target=${containerWorkspaceFolder}/.pnpm-store",
+        // Persist podman image/container storage across rebuilds and keep it off the bind mount.
+        "type=volume,source=vsc-containers-podman-lib-containers,target=/var/lib/containers"
+    ],
+    "containerEnv": {
+        "PNPM_HOME": "/root/.local/share/pnpm",
+        // Force `podman compose` to use the provider we install below.
+        "PODMAN_COMPOSE_PROVIDER": "podman-compose"
+    },
+    "remoteEnv": {
+        // Keep pnpm's global bin directory on PATH.
+        "PNPM_HOME": "/root/.local/share/pnpm",
+        "PATH": "/root/.local/share/pnpm/bin:${containerEnv:PATH}",
+        "PODMAN_COMPOSE_PROVIDER": "podman-compose"
+    },
+    // Rootful podman must run as root.
+    "remoteUser": "root",
+    // Install a compose provider if missing, then install workspace dependencies.
+    "postCreateCommand": "bash -lc 'set -e; if ! podman compose version >/dev/null 2>&1; then if command -v dnf >/dev/null 2>&1; then dnf install -y podman-compose; elif command -v yum >/dev/null 2>&1; then yum install -y podman-compose; elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y podman-compose; else echo \"No supported package manager found to install podman-compose\" >&2; exit 1; fi; fi; podman compose version >/dev/null; pnpm install'",
+    // Validate Podman is ready at startup; fail fast with its diagnostics if not.
+    "postStartCommand": "bash -lc 'podman info >/tmp/podman-info.log 2>&1 || { cat /tmp/podman-info.log >&2; exit 1; }'"
+}

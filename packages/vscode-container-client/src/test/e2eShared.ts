@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IContainersClient, ListContainersItem } from '../contracts/ContainerClient';
 import type { ICommandRunnerFactory } from '../contracts/CommandRunner';
+import type { IContainersClient, ListContainersItem } from '../contracts/ContainerClient';
 
 export type ClientType = 'docker' | 'podman' | 'finch' | 'nerdctl';
 
@@ -20,6 +20,13 @@ export type ClientType = 'docker' | 'podman' | 'finch' | 'nerdctl';
  */
 export const KeepAliveShellCommand = "trap 'exit 0' TERM; while true; do sleep 1; done";
 
+function normalizeContainerNameForRuntimeComparison(name: string): string {
+    // Compose implementations disagree on generated container-name separators:
+    // Docker/nerdctl typically use hyphens, while podman-compose often uses underscores.
+    // Case can also vary depending on project-name normalization.
+    return name.toLowerCase().replaceAll('_', '-');
+}
+
 export async function validateContainerExists(client: IContainersClient, runner: ICommandRunnerFactory, reference: { containerId?: string, containerName?: string }): Promise<ListContainersItem | undefined> {
     const containers = await runner.getCommandRunner()(
         client.listContainers({ all: true })
@@ -28,7 +35,12 @@ export async function validateContainerExists(client: IContainersClient, runner:
     if (reference.containerId) {
         return containers.find(c => c.id === reference.containerId);
     } else if (reference.containerName) {
-        return containers.find(c => c.name === reference.containerName);
+        const containerName = reference.containerName;
+        const normalizedContainerName = normalizeContainerNameForRuntimeComparison(containerName);
+        return containers.find(c =>
+            c.name === containerName ||
+            normalizeContainerNameForRuntimeComparison(c.name) === normalizedContainerName
+        );
     }
 
     throw new Error('Either containerId or containerName must be provided');

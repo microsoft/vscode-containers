@@ -22,20 +22,13 @@ import type {
     InfoItem,
     InspectContainersCommandOptions,
     InspectContainersItem,
-    InspectImagesCommandOptions,
-    InspectImagesItem,
-    InspectNetworksCommandOptions,
-    InspectNetworksItem,
     InspectVolumesCommandOptions,
     InspectVolumesItem,
     ListContainersCommandOptions,
     ListContainersItem,
     ListImagesCommandOptions,
     ListImagesItem,
-    ListNetworkItem,
     ListNetworksCommandOptions,
-    ListVolumeItem,
-    ListVolumesCommandOptions,
     RunContainerCommandOptions,
     VersionItem
 } from '../../contracts/ContainerClient';
@@ -51,13 +44,10 @@ import { withDockerPlatformArg } from '../DockerClientBase/withDockerPlatformArg
 import { withDockerPortsArg } from '../DockerClientBase/withDockerPortsArg';
 import { NerdctlEventRecordSchema, getActorFromEventPayload, parseContainerdTopic } from './NerdctlEventRecord';
 import { withNerdctlExposedPortsArg } from './withNerdctlExposedPortsArg';
-import { NerdctlInspectContainerRecordSchema, normalizeNerdctlInspectContainerRecord } from './NerdctlInspectContainerRecord';
-import { NerdctlInspectImageRecordSchema, normalizeNerdctlInspectImageRecord } from './NerdctlInspectImageRecord';
-import { NerdctlInspectNetworkRecordSchema, normalizeNerdctlInspectNetworkRecord } from './NerdctlInspectNetworkRecord';
-import { NerdctlInspectVolumeRecordSchema, normalizeNerdctlInspectVolumeRecord } from './NerdctlInspectVolumeRecord';
-import { NerdctlListContainerRecordSchema, normalizeNerdctlListContainerRecord } from './NerdctlListContainerRecord';
-import { NerdctlListImageRecordSchema, normalizeNerdctlListImageRecord } from './NerdctlListImageRecord';
-import { NerdctlListNetworkRecordSchema, normalizeNerdctlListNetworkRecord } from './NerdctlListNetworkRecord';
+import { SharedInspectContainerRecordSchema, normalizeInspectContainerRecord } from '../DockerClientBase/SharedInspectContainerRecord';
+import { SharedInspectVolumeRecordSchema, normalizeInspectVolumeRecord } from '../DockerClientBase/SharedInspectVolumeRecord';
+import { NerdctlListContainerOptions, SharedListContainerRecordSchema, normalizeListContainerRecord } from '../DockerClientBase/SharedListContainerRecord';
+import { NerdctlListImageOptions, SharedListImageRecordSchema, normalizeListImageRecord } from '../DockerClientBase/SharedListImageRecord';
 import { NerdctlVersionRecordSchema } from './NerdctlVersionRecord';
 
 export class NerdctlClient extends DockerClientBase implements IContainersClient {
@@ -374,20 +364,7 @@ export class NerdctlClient extends DockerClientBase implements IContainersClient
 
     protected override parseListImagesCommandOutput(_options: ListImagesCommandOptions, output: string, strict: boolean): Promise<ListImagesItem[]> {
         return this.parsePerLineJson(output, strict, (imageJson) =>
-            normalizeNerdctlListImageRecord(NerdctlListImageRecordSchema.parse(JSON.parse(imageJson))));
-    }
-
-    //#endregion
-
-    //#region InspectImages Command
-
-    protected override parseInspectImagesCommandOutput(
-        _options: InspectImagesCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<Array<InspectImagesItem>> {
-        return this.parseInspectJson(output, strict, (item) =>
-            normalizeNerdctlInspectImageRecord(NerdctlInspectImageRecordSchema.parse(item), JSON.stringify(item)));
+            normalizeListImageRecord(SharedListImageRecordSchema.parse(JSON.parse(imageJson)), NerdctlListImageOptions));
     }
 
     //#endregion
@@ -396,7 +373,7 @@ export class NerdctlClient extends DockerClientBase implements IContainersClient
 
     protected override parseListContainersCommandOutput(_options: ListContainersCommandOptions, output: string, strict: boolean): Promise<ListContainersItem[]> {
         return this.parsePerLineJson(output, strict, (containerJson) =>
-            normalizeNerdctlListContainerRecord(NerdctlListContainerRecordSchema.parse(JSON.parse(containerJson)), strict));
+            normalizeListContainerRecord(SharedListContainerRecordSchema.parse(JSON.parse(containerJson)), strict, NerdctlListContainerOptions));
     }
 
     //#endregion
@@ -405,7 +382,7 @@ export class NerdctlClient extends DockerClientBase implements IContainersClient
 
     protected override parseInspectContainersCommandOutput(_options: InspectContainersCommandOptions, output: string, strict: boolean): Promise<InspectContainersItem[]> {
         return this.parseInspectJson(output, strict, (item) =>
-            normalizeNerdctlInspectContainerRecord(NerdctlInspectContainerRecordSchema.parse(item), JSON.stringify(item)));
+            normalizeInspectContainerRecord(SharedInspectContainerRecordSchema.parse(item), JSON.stringify(item), { defaultVolumeDriver: 'local' }));
     }
 
     //#endregion
@@ -422,49 +399,13 @@ export class NerdctlClient extends DockerClientBase implements IContainersClient
         )();
     }
 
-    protected override parseListNetworksCommandOutput(_options: ListNetworksCommandOptions, output: string, strict: boolean): Promise<ListNetworkItem[]> {
-        return this.parsePerLineJson(output, strict, (networkJson) =>
-            normalizeNerdctlListNetworkRecord(NerdctlListNetworkRecordSchema.parse(JSON.parse(networkJson))));
-    }
-
-    //#endregion
-
-    //#region InspectNetworks Command
-
-    protected override parseInspectNetworksCommandOutput(_options: InspectNetworksCommandOptions, output: string, strict: boolean): Promise<InspectNetworksItem[]> {
-        return this.parseInspectJson(output, strict, (item) =>
-            normalizeNerdctlInspectNetworkRecord(NerdctlInspectNetworkRecordSchema.parse(item), JSON.stringify(item)));
-    }
-
-    //#endregion
-
-    //#region ListVolumes Command
-
-    protected override parseListVolumesCommandOutput(_options: ListVolumesCommandOptions, output: string, strict: boolean): Promise<ListVolumeItem[]> {
-        return this.parsePerLineJson(output, strict, (volumeJson) => {
-            // The schema already normalizes Labels (string/record -> record) and
-            // CreatedAt (string -> Date), so no further parsing is needed here.
-            const rawVolume = NerdctlInspectVolumeRecordSchema.parse(JSON.parse(volumeJson));
-
-            return {
-                name: rawVolume.Name,
-                driver: rawVolume.Driver || 'local',
-                labels: rawVolume.Labels ?? {},
-                mountpoint: rawVolume.Mountpoint || '',
-                scope: rawVolume.Scope || 'local',
-                createdAt: rawVolume.CreatedAt,
-                size: undefined, // nerdctl doesn't always provide size in list
-            };
-        });
-    }
-
     //#endregion
 
     //#region InspectVolumes Command
 
     protected override parseInspectVolumesCommandOutput(_options: InspectVolumesCommandOptions, output: string, strict: boolean): Promise<InspectVolumesItem[]> {
         return this.parseInspectJson(output, strict, (item) =>
-            normalizeNerdctlInspectVolumeRecord(NerdctlInspectVolumeRecordSchema.parse(item), JSON.stringify(item)));
+            normalizeInspectVolumeRecord(SharedInspectVolumeRecordSchema.parse(item), JSON.stringify(item), { defaultDriver: 'local', defaultScope: 'local' }));
     }
 
     //#endregion

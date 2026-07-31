@@ -23,6 +23,7 @@
         "lint": "eslint --max-warnings 0",
         "package": "pnpm pack",
         "test": "mocha",
+        "pretestintegration": "pnpm --filter @microsoft/vscode-processutils run build",
         "testintegration": "mocha --grep \"(integration)\"",
         "testintegrationcov": "pnpx nyc --reporter=html mocha --grep \"(integration)\"",
         "clean": "node ../../scripts/clean.mjs"

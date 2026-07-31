@@ -6,6 +6,35 @@
 import type { PortBinding } from '../../contracts/ContainerClient';
 import { normalizeIpAddress } from './normalizeIpAddress';
 
+/**
+ * Normalize a raw protocol token to the supported set. Returns 'tcp' or 'udp'
+ * (case-insensitive) or undefined for anything else (including undefined input).
+ */
+export function normalizeProtocol(protocol: string | undefined): 'tcp' | 'udp' | undefined {
+    switch (protocol?.toLowerCase()) {
+        case 'tcp':
+            return 'tcp';
+        case 'udp':
+            return 'udp';
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * Parse a Docker-style exposed-port key of the form `"<containerPort>/<protocol>"`
+ * (e.g. "80/tcp"). Returns the numeric container port and normalized protocol, or
+ * undefined when the container port is not a finite integer.
+ */
+export function parseExposedPortKey(key: string): { containerPort: number; protocol: 'tcp' | 'udp' | undefined } | undefined {
+    const [port, protocol] = key.split('/');
+    const containerPort = parseInt(port, 10);
+    if (!Number.isFinite(containerPort)) {
+        return undefined;
+    }
+    return { containerPort, protocol: normalizeProtocol(protocol) };
+}
+
 const shortFormRegex = /^(?<containerPort>\d+)\/(?<protocol>tcp|udp)$/i;
 
 // Supports:
@@ -43,7 +72,7 @@ export function parseDockerRawPortString(portString: string): PortBinding | unde
     }
 
     const hostIp = normalizeIpAddress(longMatch.groups.host);
-    const protocol = (longMatch.groups.protocol?.toLowerCase() as 'tcp' | 'udp' | undefined) ?? 'tcp';
+    const protocol = normalizeProtocol(longMatch.groups.protocol) ?? 'tcp';
 
     return {
         ...(hostIp !== undefined ? { hostIp } : {}),
