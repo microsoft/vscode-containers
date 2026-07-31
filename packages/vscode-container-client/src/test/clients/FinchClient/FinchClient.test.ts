@@ -14,22 +14,28 @@ class TestFinchClient extends FinchClient {
     }
 }
 
-// The real shape of `finch version --format '{{json .}}'`
+// The real shape of `finch version --format '{{json .}}'`, captured from Finch v1.17.2.
+// Note the `v` prefix on versions, and that `NerdctlClient` carries its own nested
+// `Components` array (not modelled in the schema; Zod strips it).
 const finchVersionOutput = JSON.stringify({
     Client: {
-        Version: 'v1.7.0',
-        GitCommit: '0123456789abcdef0123456789abcdef01234567',
+        Version: 'v1.17.2',
+        GitCommit: 'c0f8e88c60793fa0a92030136c2281bdbf06683c',
         NerdctlClient: {
-            Version: '2.0.3',
-            GitCommit: 'fedcba9876543210fedcba9876543210fedcba98',
+            Version: 'v2.2.2',
+            GitCommit: '20bbfaa940ddc532b8587ac6aeef88e76c8abf77',
+            GoVersion: 'go1.25.8',
             Os: 'linux',
             Arch: 'amd64',
+            Components: [
+                { Name: 'buildctl', Version: 'v0.28.1', Details: { GitCommit: '45b038cd0b2ec2d34013ce0f085522276f7ee0d8' } },
+            ],
         },
     },
     Server: {
         Components: [
-            { Name: 'containerd', Version: '1.7.24' },
-            { Name: 'runc', Version: '1.2.2' },
+            { Name: 'containerd', Version: 'v2.2.1', Details: { GitCommit: 'dea7da592f5d1d2b7755e3a161be07f43fad8f75' } },
+            { Name: 'runc', Version: '1.4.0', Details: { GitCommit: 'v1.4.0-0-g8bd78a9' } },
         ],
     },
 });
@@ -37,13 +43,13 @@ const finchVersionOutput = JSON.stringify({
 // The shape of `nerdctl version --format '{{json .}}'`, i.e. no `Client.NerdctlClient`
 const nerdctlVersionOutput = JSON.stringify({
     Client: {
-        Version: '2.0.3',
+        Version: 'v2.2.2',
         Os: 'linux',
         Arch: 'amd64',
     },
     Server: {
         Components: [
-            { Name: 'containerd', Version: '1.7.24' },
+            { Name: 'containerd', Version: 'v2.2.1' },
         ],
     },
 });
@@ -68,15 +74,15 @@ describe('(unit) FinchClient', () => {
         it('Should report the nerdctl version from the Finch version output', async () => {
             const version = await client.parseVersion(finchVersionOutput, true);
 
-            expect(version.client).to.equal('2.0.3');
-            expect(version.server).to.equal('1.7.24');
+            expect(version.client).to.equal('v2.2.2');
+            expect(version.server).to.equal('v2.2.1');
         });
 
         it('Should fall back to Client.Version when NerdctlClient is absent', async () => {
             const version = await client.parseVersion(nerdctlVersionOutput, true);
 
-            expect(version.client).to.equal('2.0.3');
-            expect(version.server).to.equal('1.7.24');
+            expect(version.client).to.equal('v2.2.2');
+            expect(version.server).to.equal('v2.2.1');
         });
 
         it('Should throw on unparseable output when strict', () => {
