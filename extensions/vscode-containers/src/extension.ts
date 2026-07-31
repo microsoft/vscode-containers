@@ -6,7 +6,7 @@
 import type { TelemetryEvent } from '@microsoft/compose-language-service/client';
 import { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } from '@microsoft/compose-language-service/vscode';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
+import { DockerClient, DockerComposeClient, NerdctlClient, NerdctlComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
@@ -194,8 +194,10 @@ function registerContainerClients(): void {
     ext.context.subscriptions.push(
         ext.runtimeManager.registerRuntimeClient(new DockerClient()),
         ext.runtimeManager.registerRuntimeClient(new PodmanClient()),
+        ext.runtimeManager.registerRuntimeClient(new NerdctlClient()),
         ext.orchestratorManager.registerRuntimeClient(new DockerComposeClient()),
         ext.orchestratorManager.registerRuntimeClient(new PodmanComposeClient()),
+        ext.orchestratorManager.registerRuntimeClient(new NerdctlComposeClient()),
     );
 }
 
