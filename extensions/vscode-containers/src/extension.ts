@@ -6,7 +6,6 @@
 import type { TelemetryEvent } from '@microsoft/compose-language-service/client';
 import { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } from '@microsoft/compose-language-service/vscode';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, PodmanClient, PodmanComposeClient, WslcClient } from '@microsoft/vscode-container-client';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
@@ -22,6 +21,7 @@ import { ext } from './extensionVariables';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
 import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
+import { getSupportedRuntimeRegistrations } from './runtimes/officialRuntimeRegistrations';
 import { registerTaskProviders } from './tasks/TaskHelper';
 import { ActivityMeasurementService } from './telemetry/ActivityMeasurementService';
 import { registerFileListeners } from './telemetry/registerFileListeners';
@@ -31,7 +31,6 @@ import { AzExtLogOutputChannelWrapper } from './utils/AzExtLogOutputChannelWrapp
 import { logDockerEnvironment, logSystemInfo } from './utils/diagnostics';
 import { getLanguageClient } from './utils/lazyPackages';
 import { migrateDockerToContainersSettingsIfNeeded } from './utils/migration/settings';
-import { isWindows } from './utils/osUtils';
 import { registerDockerContextStatusBarEvent } from './utils/registerDockerContextStatusBarItems';
 
 let dockerfileLanguageClient: LanguageClient;
@@ -191,20 +190,18 @@ function registerContainerClients(): void {
         ext.orchestratorManager = new OrchestratorRuntimeManager()
     );
 
-    // Register the clients
-    ext.context.subscriptions.push(
-        ext.runtimeManager.registerRuntimeClient(new DockerClient()),
-        ext.runtimeManager.registerRuntimeClient(new PodmanClient()),
-        ext.orchestratorManager.registerRuntimeClient(new DockerComposeClient()),
-        ext.orchestratorManager.registerRuntimeClient(new PodmanComposeClient()),
-    );
-
-    // WSLC (Windows Subsystem for Linux Container CLI) is only available on Windows;
-    // only register the client on Windows hosts so it can never be selected/used elsewhere.
-    if (isWindows()) {
+    // Register the clients. Runtimes unsupported on this platform (e.g. wslc off Windows) are
+    // skipped so they can never be selected or used.
+    for (const registration of getSupportedRuntimeRegistrations()) {
         ext.context.subscriptions.push(
-            ext.runtimeManager.registerRuntimeClient(new WslcClient()),
+            ext.runtimeManager.registerRuntimeClient(new registration.containerClient()),
         );
+
+        if (registration.orchestratorClient) {
+            ext.context.subscriptions.push(
+                ext.orchestratorManager.registerRuntimeClient(new registration.orchestratorClient()),
+            );
+        }
     }
 }
 

@@ -4,28 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, IContainerOrchestratorClient, IContainersClient, PodmanClient, PodmanComposeClient, WslcClient } from '@microsoft/vscode-container-client';
+import { IContainerOrchestratorClient, IContainersClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
-import { isWindows } from '../utils/osUtils';
+import { getSupportedRuntimeRegistrations } from '../runtimes/officialRuntimeRegistrations';
 
 interface IContainerRuntimePair {
     containerClient: IContainersClient;
-    // wslc has no compose/orchestrator counterpart, so the orchestrator half is optional.
+    // Not every runtime has a compose/orchestrator counterpart, so this half is optional.
     orchestratorClient?: IContainerOrchestratorClient;
 }
 
 export async function chooseContainerRuntime(context: IActionContext): Promise<void> {
-    const runtimePairOptions: IContainerRuntimePair[] = [
-        { containerClient: new DockerClient(), orchestratorClient: new DockerComposeClient() },
-        { containerClient: new PodmanClient(), orchestratorClient: new PodmanComposeClient() },
-    ];
-
-    // WSLC is Windows-only and has no orchestrator counterpart; selecting it leaves the
-    // orchestrator (compose) setting unchanged.
-    if (isWindows()) {
-        runtimePairOptions.push({ containerClient: new WslcClient() });
-    }
+    const runtimePairOptions: IContainerRuntimePair[] = getSupportedRuntimeRegistrations().map((registration) => ({
+        containerClient: new registration.containerClient(),
+        orchestratorClient: registration.orchestratorClient ? new registration.orchestratorClient() : undefined,
+    }));
 
     const configuration = vscode.workspace.getConfiguration(configPrefix);
     const oldContainerClientValue = configuration.get<string | undefined>('containerClient');
