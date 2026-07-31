@@ -52,8 +52,7 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
     }
 
     public async getClient(): Promise<TClient> {
-        const config = vscode.workspace.getConfiguration(configPrefix);
-        const effectiveClientId = config.get<string | undefined>(this.clientSettingName) || this.defaultClientId;
+        const effectiveClientId = this.getSelectedClientId();
 
         const runtimeClient = await this.waitForClientToBeRegistered(effectiveClientId);
 
@@ -77,6 +76,16 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
 
     private getOverrideSettingValue(): string | undefined {
         return vscode.workspace.getConfiguration(configPrefix).get<string | undefined>(this.overrideCommandSettingName);
+    }
+
+    /**
+     * The ID of the currently-selected runtime client, resolved from the `clientSettingName`
+     * setting and falling back to `defaultClientId` when unset. Exposed so callers (subclasses and
+     * consumers such as the .NET SDK task) can reason about the selection through the runtime
+     * manager rather than re-reading the setting directly.
+     */
+    public getSelectedClientId(): string {
+        return vscode.workspace.getConfiguration(configPrefix).get<string | undefined>(this.clientSettingName) || this.defaultClientId;
     }
 
     private waitForClientToBeRegistered(clientId: string): Promise<TClient> {

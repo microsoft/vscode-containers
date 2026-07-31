@@ -9,6 +9,7 @@ export * from './clients/NerdctlClient/NerdctlClient';
 export * from './clients/NerdctlComposeClient/NerdctlComposeClient';
 export * from './clients/PodmanClient/PodmanClient';
 export * from './clients/PodmanComposeClient/PodmanComposeClient';
+export * from './clients/WslcClient/WslcClient';
 export * from './commandRunners/shellStream';
 export * from './commandRunners/wslStream';
 export * from './contracts/CommandRunner';

@@ -708,7 +708,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
             withNamedArg('--network', options.network),
             withNamedArg('--network-alias', options.networkAlias),
             withDockerAddHostArg(options.addHost),
-            withDockerMountsArg(options.mounts),
+            this.getRunContainerMountsArg(options.mounts),
             withDockerLabelsArg(options.labels),
             withDockerEnvArg(options.environmentVariables),
             withNamedArg('--env-file', options.environmentFiles),
@@ -719,6 +719,16 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
             withArg(options.imageRef),
             typeof options.command === 'string' ? withVerbatimArg(options.command) : withArg(...(toArray(options.command ?? []))),
         )();
+    }
+
+    /**
+     * Build the mount-related arguments for {@link getRunContainerCommandArgs}.
+     * Docker-like clients use `--mount type=...,source=...,destination=...[,readonly]`.
+     * Subclasses can override this to emit a different flag (e.g. `--volume`) for
+     * runtimes that don't support `--mount`.
+     */
+    protected getRunContainerMountsArg(mounts: RunContainerCommandOptions['mounts']) {
+        return withDockerMountsArg(mounts);
     }
 
     /**
@@ -756,7 +766,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         return composeArgs(
             withArg('container', 'exec'),
             withFlagArg('--interactive', options.interactive),
-            withFlagArg('--detached', options.detached),
+            withFlagArg('--detach', options.detached),
             withFlagArg('--tty', options.tty),
             withDockerEnvArg(options.environmentVariables),
             withArg(options.container),
@@ -1428,7 +1438,6 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         return this.getExecContainerCommandArgs(
             {
                 container: options.container,
-                interactive: true,
                 command,
             }
         );
@@ -1478,7 +1487,6 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         return this.getExecContainerCommandArgs(
             {
                 container: options.container,
-                interactive: true,
                 command,
             }
         );
@@ -1520,7 +1528,6 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
             return this.getExecContainerCommandArgs(
                 {
                     container: options.container,
-                    interactive: true,
                     command,
                 }
             );

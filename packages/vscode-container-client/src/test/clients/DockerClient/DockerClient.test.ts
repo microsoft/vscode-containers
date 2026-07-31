@@ -150,6 +150,23 @@ test_network2`, true);
             expect(results).to.not.have.property('spaceReclaimed');
         });
     });
+
+    describe('file commands run non-interactively', () => {
+        it('#listFiles() does not pass --interactive', async () => {
+            const commandResult = await client.listFiles({ container: 'abc', path: '/etc', operatingSystem: 'linux' });
+            expect(commandResult.args.map(a => typeof a === 'string' ? a : a.value)).to.not.include('--interactive');
+        });
+
+        it('#statPath() does not pass --interactive', async () => {
+            const commandResult = await client.statPath({ container: 'abc', path: '/etc/hosts', operatingSystem: 'linux' });
+            expect(commandResult.args.map(a => typeof a === 'string' ? a : a.value)).to.not.include('--interactive');
+        });
+
+        it('#readFile() (windows) does not pass --interactive', async () => {
+            const commandResult = await client.readFile({ container: 'abc', path: 'C:\\hosts', operatingSystem: 'windows' });
+            expect(commandResult.args.map(a => typeof a === 'string' ? a : a.value)).to.not.include('--interactive');
+        });
+    });
 });
 
 describe('(unit) DockerClient s\'more', () => {

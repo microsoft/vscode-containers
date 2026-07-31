@@ -36,6 +36,21 @@
             "preLaunchTask": "Extension: ESBuild+Watch",
         },
         {
+            "name": "Container client unit tests",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/packages/vscode-container-client",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "run",
+                "test"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "Build: vscode-processutils",
+        },
+        {
             "name": "Container client integration tests",
             "type": "node",
             "request": "launch",
@@ -46,7 +61,7 @@
                 "testintegration"
             ],
             "env": {
-                "CONTAINER_CLIENT_TYPE": "${input:containerRuntime}", // Set to 'docker', 'podman', or 'nerdctl'
+                "CONTAINER_CLIENT_TYPE": "${input:containerRuntime}", // Set to 'docker', 'podman', 'nerdctl', 'finch', or 'wslc' ('wslc' is Windows-only)
                 "RUN_IN_WSL": "0", // Set to 1 if running in WSL
                 "DOCKER_HUB_USERNAME": "${input:dockerHubUsername}",
                 "DOCKER_HUB_PAT": "${input:dockerHubPAT}"
@@ -61,11 +76,13 @@
         {
             "id": "containerRuntime",
             "type": "pickString",
-            "description": "Select the container runtime to use for integration tests",
+            "description": "Select the container runtime to use for integration tests ('wslc' is Windows-only)",
             "options": [
                 "docker",
                 "podman",
-                "nerdctl"
+                "nerdctl",
+                "finch",
+                "wslc"
             ],
             "default": "docker"
         },

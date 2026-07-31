@@ -2551,12 +2551,14 @@
                     "enum": [
                         "",
                         "com.microsoft.visualstudio.containers.docker",
-                        "com.microsoft.visualstudio.containers.podman"
+                        "com.microsoft.visualstudio.containers.podman",
+                        "com.microsoft.visualstudio.containers.wslc"
                     ],
                     "enumItemLabels": [
                         "Default",
                         "Docker",
-                        "Podman"
+                        "Podman",
+                        "WSLC (Windows only, preview)"
                     ]
                 },
                 "containers.orchestratorClient": {
