@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, IContainerOrchestratorClient, IContainersClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
+import { DockerClient, DockerComposeClient, IContainerOrchestratorClient, IContainersClient, NerdctlClient, NerdctlComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 
@@ -17,6 +17,7 @@ export async function chooseContainerRuntime(context: IActionContext): Promise<v
     const runtimePairOptions: IContainerRuntimePair[] = [
         { containerClient: new DockerClient(), orchestratorClient: new DockerComposeClient() },
         { containerClient: new PodmanClient(), orchestratorClient: new PodmanComposeClient() },
+        { containerClient: new NerdctlClient(), orchestratorClient: new NerdctlComposeClient() },
     ];
 
     const configuration = vscode.workspace.getConfiguration(configPrefix);
