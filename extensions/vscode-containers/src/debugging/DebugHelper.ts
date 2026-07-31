@@ -14,6 +14,7 @@ import { registerServerReadyAction } from './DockerServerReadyAction';
 import { netCoreDebugHelper } from './netcore/NetCoreDebugHelper';
 import { netSdkDebugHelper } from './netSdk/NetSdkDebugHelper';
 import { nodeDebugHelper } from './node/NodeDebugHelper';
+import { PythonContainerDebugAdapterDescriptorFactory, PythonContainerDebugType } from './python/PythonContainerDebugAdapterDescriptorFactory';
 import { pythonDebugHelper } from './python/PythonDebugHelper';
 
 export interface DockerDebugContext { // Same as DockerTaskContext but intentionally does not extend it, since we never need to pass a DockerDebugContext to tasks
@@ -56,6 +57,15 @@ export function registerDebugProvider(ctx: ExtensionContext): void {
                     netSdk: netSdkDebugHelper
                 }
             )
+        )
+    );
+
+    // Python container debugging runs the debugpy adapter inside the container and communicates
+    // over stdio; register the factory that produces that `<runtime> exec -i ...` adapter.
+    ctx.subscriptions.push(
+        debug.registerDebugAdapterDescriptorFactory(
+            PythonContainerDebugType,
+            new PythonContainerDebugAdapterDescriptorFactory()
         )
     );
 

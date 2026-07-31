@@ -958,6 +958,12 @@
                         }
                     }
                 ]
+            },
+            {
+                "type": "python-container",
+                "label": "%vscode-containers.debug.pythonContainer.label%",
+                "languages": [],
+                "hiddenWhen": "true"
             }
         ],
         "taskDefinitions": [
