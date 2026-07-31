@@ -93,7 +93,7 @@ import { DockerInfoRecordSchema } from './DockerInfoRecord';
 import { SharedInspectContainerRecordSchema, normalizeInspectContainerRecord } from './SharedInspectContainerRecord';
 import { SharedInspectImageRecordSchema, normalizeInspectImageRecord } from './SharedInspectImageRecord';
 import { SharedInspectNetworkRecordSchema, normalizeInspectNetworkRecord } from './SharedInspectNetworkRecord';
-import { SharedInspectVolumeRecordSchema, normalizeInspectVolumeRecord } from './SharedInspectVolumeRecord';
+import { SharedInspectVolumeRecordSchema, normalizeInspectVolumeRecord, type NormalizeInspectVolumeOptions } from './SharedInspectVolumeRecord';
 import { DockerListContainerOptions, SharedListContainerRecordSchema, normalizeListContainerRecord } from './SharedListContainerRecord';
 import { DockerListImageOptions, SharedListImageRecordSchema, normalizeListImageRecord } from './SharedListImageRecord';
 import { SharedListNetworkRecordSchema, normalizeListNetworkRecord } from './SharedListNetworkRecord';
@@ -134,6 +134,20 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
      * The default argument given to `--format`
      */
     protected readonly defaultFormatForJson: string = "{{json .}}";
+
+    /**
+     * Runtime-specific defaults applied when normalizing volume `inspect` output.
+     * Overridden by clients whose CLI omits fields that Docker always emits.
+     */
+    protected readonly inspectVolumeOptions: NormalizeInspectVolumeOptions = {};
+
+    /**
+     * The regex used to extract pruned volume names/ids from `volume prune`
+     * output, or `undefined` when each line is the name/id itself (the Docker
+     * behavior). Overridden by clients that decorate the lines (e.g. wslc's
+     * `Deleted: <name>`).
+     */
+    protected readonly pruneVolumeResourceRegex: RegExp | undefined = undefined;
 
     //#region Output parsing helpers
 
@@ -1178,7 +1192,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         strict: boolean,
     ): Promise<PruneVolumesItem> {
         const deletedVolumes = parsePruneLikeOutput(output, {
-            resourceRegex: undefined, // the line is the volume name or ID itself
+            resourceRegex: this.pruneVolumeResourceRegex,
         });
 
         return Promise.resolve({
@@ -1214,7 +1228,7 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         strict: boolean,
     ): Promise<Array<InspectVolumesItem>> {
         return this.parseInspectJson(output, strict, (item) =>
-            normalizeInspectVolumeRecord(SharedInspectVolumeRecordSchema.parse(item), JSON.stringify(item)));
+            normalizeInspectVolumeRecord(SharedInspectVolumeRecordSchema.parse(item), JSON.stringify(item), this.inspectVolumeOptions));
     }
 
     inspectVolumes(options: InspectVolumesCommandOptions): Promise<PromiseCommandResponse<Array<InspectVolumesItem>>> {

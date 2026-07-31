@@ -346,6 +346,11 @@ describe('(unit) WslcClient', () => {
             const item = await response.parse('whatever', false);
             expect(item).to.have.property('osType', 'linux');
         });
+
+        it('Runs `--version` because the output is not used', async () => {
+            const response = await client.info({});
+            expect(asStrings(response.args)).to.deep.equal(['--version']);
+        });
     });
 
     describe('#createNetwork()', () => {

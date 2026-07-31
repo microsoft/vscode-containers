@@ -26,7 +26,6 @@ import type {
     InspectNetworksCommandOptions,
     InspectNetworksItem,
     InspectVolumesCommandOptions,
-    InspectVolumesItem,
     ListContainersCommandOptions,
     ListContainersItem,
     ListImagesCommandOptions,
@@ -40,7 +39,6 @@ import type {
     PruneNetworksCommandOptions,
     PruneNetworksItem,
     PruneVolumesCommandOptions,
-    PruneVolumesItem,
     PullImageCommandOptions,
     ReadFileCommandOptions,
     RemoveContainersCommandOptions,
@@ -55,12 +53,10 @@ import type {
 import { asIds } from '../../utils/asIds';
 import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
 import { DockerClientBase } from '../DockerClientBase/DockerClientBase';
-import { matchesLabelFilters } from '../DockerClientBase/matchesLabelFilters';
+import { filterByLabelsAndDriver } from '../DockerClientBase/filterByLabelsAndDriver';
 import { parsePruneLikeOutput } from '../DockerClientBase/parsePruneLikeOutput';
 import { normalizeInspectNetworkRecord, normalizeInspectNetworkRecordAsListItem, SharedInspectNetworkRecordSchema } from '../DockerClientBase/SharedInspectNetworkRecord';
-import { normalizeInspectVolumeRecord, SharedInspectVolumeRecordSchema } from '../DockerClientBase/SharedInspectVolumeRecord';
 import { normalizeListImageRecord } from '../DockerClientBase/SharedListImageRecord';
-import { normalizeListVolumeRecord, SharedListVolumeRecordSchema } from '../DockerClientBase/SharedListVolumeRecord';
 import { withContainerPathArg } from '../DockerClientBase/withContainerPathArg';
 import { withDockerBuildArg } from '../DockerClientBase/withDockerBuildArg';
 import { withDockerEnvArg } from '../DockerClientBase/withDockerEnvArg';
@@ -105,6 +101,16 @@ export class WslcClient extends DockerClientBase {
      */
     protected readonly defaultFormatForJson: string = 'json';
 
+    /**
+     * wslc omits `Scope` from volume `inspect` output; its volumes are always local.
+     */
+    protected override readonly inspectVolumeOptions = { defaultScope: 'local' };
+
+    /**
+     * wslc reports pruned volumes as `Deleted: <name>` rather than a bare name.
+     */
+    protected override readonly pruneVolumeResourceRegex = WslcPruneDeletedRegex;
+
     public constructor(
         commandName: string = 'wslc',
         displayName: string = 'WSLC',
@@ -118,12 +124,28 @@ export class WslcClient extends DockerClientBase {
         );
     }
 
+    /**
+     * wslc uses a single top-level `inspect --type <type>` verb for every object type
+     * (rather than Docker's `<type> inspect --format`). It accepts multiple ids and returns
+     * a JSON array; a missing id makes it exit non-zero (surfaced as an error by the runner)
+     * rather than being silently dropped. The output is standard Docker-like inspect JSON,
+     * so the base parsers apply unchanged.
+     */
+    private getWslcInspectCommandArgs(type: 'container' | 'image' | 'volume' | 'network', ids: Array<string>): CommandLineArgs {
+        return composeArgs(
+            withArg('inspect'),
+            withNamedArg('--type', type),
+            withArg(...ids),
+        )();
+    }
+
     //#region Information Commands
 
     // wslc has no `info` subcommand. WSL containers are always Linux, so return a synthetic
-    // record so callers depending on `osType` keep working without throwing.
+    // record so callers depending on `osType` keep working without throwing. `--version` is
+    // the cheapest command that proves the CLI is present; its output is not used.
     protected override getInfoCommandArgs(options: InfoCommandOptions): CommandLineArgs {
-        return composeArgs(withArg('version'))();
+        return composeArgs(withArg('--version'))();
     }
 
     protected override parseInfoCommandOutput(output: string, strict: boolean): Promise<InfoItem> {
@@ -236,17 +258,8 @@ export class WslcClient extends DockerClientBase {
         return Promise.resolve(asIds(output));
     }
 
-    // The inspect args differ from the base (`inspect --type image` rather than
-    // `image inspect --format`), but the output is standard Docker-like inspect
-    // JSON, so the base parser applies unchanged.
     protected override getInspectImagesCommandArgs(options: InspectImagesCommandOptions): CommandLineArgs {
-        // wslc `inspect --type image` accepts multiple ids and returns a JSON array. If any id is
-        // missing it exits non-zero (the runner surfaces that as an error), so no id is silently lost.
-        return composeArgs(
-            withArg('inspect'),
-            withNamedArg('--type', 'image'),
-            withArg(...options.imageRefs),
-        )();
+        return this.getWslcInspectCommandArgs('image', options.imageRefs);
     }
 
     //#endregion
@@ -353,17 +366,8 @@ export class WslcClient extends DockerClientBase {
         return Promise.reject(new CommandNotSupportedError('wslc does not support the restart command.'));
     }
 
-    // The inspect args differ from the base (`inspect --type container` rather than
-    // `container inspect --format`), but the output is standard Docker-like inspect
-    // JSON, so the base parser applies unchanged.
     protected override getInspectContainersCommandArgs(options: InspectContainersCommandOptions): CommandLineArgs {
-        // wslc `inspect --type container` accepts multiple ids and returns a JSON array; a missing
-        // id makes it exit non-zero (surfaced as an error) rather than being silently dropped.
-        return composeArgs(
-            withArg('inspect'),
-            withNamedArg('--type', 'container'),
-            withArg(...options.containers),
-        )();
+        return this.getWslcInspectCommandArgs('container', options.containers);
     }
 
     //#endregion
@@ -384,56 +388,29 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<ListVolumeItem[]> {
-        // wslc emits a JSON array (or a bare object for a single result), so the
-        // inspect-style parser is used here rather than the base's per-line parser.
-        return this.parseInspectJson(output, strict, (item) =>
-            normalizeListVolumeRecord(SharedListVolumeRecordSchema.parse(item)))
-            // wslc can't filter server-side, so honor labels/driver here. `dangling`
-            // needs container-usage info that `volume list` doesn't provide, so it
-            // can't be evaluated client-side and is left unfiltered.
-            .then((items) => items.filter((item) =>
-                matchesLabelFilters(item.labels, options.labels) &&
-                (!options.driver || item.driver === options.driver)));
+        // wslc can't filter server-side, so honor labels/driver here. `dangling` needs
+        // container-usage info that `volume list` doesn't provide, so it can't be
+        // evaluated client-side and is left unfiltered.
+        return super.parseListVolumesCommandOutput(options, output, strict)
+            .then((items) => filterByLabelsAndDriver(items, options));
     }
 
     protected override getInspectVolumesCommandArgs(options: InspectVolumesCommandOptions): CommandLineArgs {
-        // wslc `inspect --type volume` accepts multiple names and returns a JSON array; a missing
-        // name makes it exit non-zero (surfaced as an error) rather than being silently dropped.
-        return composeArgs(
-            withArg('inspect'),
-            withNamedArg('--type', 'volume'),
-            withArg(...options.volumes),
-        )();
+        return this.getWslcInspectCommandArgs('volume', options.volumes);
     }
 
-    protected override parseInspectVolumesCommandOutput(
-        options: InspectVolumesCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<Array<InspectVolumesItem>> {
-        return this.parseInspectJson(output, strict, (item) =>
-            normalizeInspectVolumeRecord(SharedInspectVolumeRecordSchema.parse(item), JSON.stringify(item), { defaultScope: 'local' }));
-    }
+    // The inspect args differ from the base, but the output is standard Docker-like
+    // inspect JSON, so the base parser applies unchanged (with `inspectVolumeOptions`
+    // supplying the missing `Scope`).
 
     // wslc `volume prune` accepts `--all` / `--filter` but not `--force`. The contract
     // exposes no options today, so emit the bare verb. Deleted names are reported as
-    // `Deleted: <name>` lines (not the Docker bare-name format).
+    // `Deleted: <name>` lines (not the Docker bare-name format), which the base parser
+    // handles via the `pruneVolumeResourceRegex` override above.
     protected override getPruneVolumesCommandArgs(options: PruneVolumesCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('volume', 'prune'),
         )();
-    }
-
-    protected override parsePruneVolumesCommandOutput(
-        options: PruneVolumesCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<PruneVolumesItem> {
-        const pruned = parsePruneLikeOutput(output, { resourceRegex: WslcPruneDeletedRegex });
-        return Promise.resolve({
-            volumesDeleted: pruned.resources,
-            spaceReclaimed: pruned.spaceReclaimed,
-        });
     }
 
     //#endregion
@@ -470,9 +447,7 @@ export class WslcClient extends DockerClientBase {
         return this.parseInspectJson(output, strict, (item) =>
             normalizeInspectNetworkRecordAsListItem(SharedInspectNetworkRecordSchema.parse(item)))
             // wslc can't filter server-side, so honor labels/driver here.
-            .then((items) => items.filter((item) =>
-                matchesLabelFilters(item.labels, options.labels) &&
-                (!options.driver || item.driver === options.driver)));
+            .then((items) => filterByLabelsAndDriver(items, options));
     }
 
     protected override getRemoveNetworksCommandArgs(options: RemoveNetworksCommandOptions): CommandLineArgs {
@@ -485,13 +460,7 @@ export class WslcClient extends DockerClientBase {
     }
 
     protected override getInspectNetworksCommandArgs(options: InspectNetworksCommandOptions): CommandLineArgs {
-        // wslc `inspect --type network` accepts multiple names and returns a JSON array; a missing
-        // name makes it exit non-zero (surfaced as an error) rather than being silently dropped.
-        return composeArgs(
-            withArg('inspect'),
-            withNamedArg('--type', 'network'),
-            withArg(...options.networks),
-        )();
+        return this.getWslcInspectCommandArgs('network', options.networks);
     }
 
     protected override parseInspectNetworksCommandOutput(
