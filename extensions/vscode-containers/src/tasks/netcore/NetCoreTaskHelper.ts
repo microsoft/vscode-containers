@@ -22,7 +22,8 @@ import { DockerBuildOptions, DockerBuildTaskDefinitionBase } from '../DockerBuil
 import { DockerBuildTaskDefinition } from '../DockerBuildTaskProvider';
 import { DockerContainerVolume, DockerRunOptions, DockerRunTaskDefinitionBase } from '../DockerRunTaskDefinitionBase';
 import { DockerRunTaskDefinition } from '../DockerRunTaskProvider';
-import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, getDefaultContainerName, getDefaultImageName, inferImageName } from '../TaskHelper';
+import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, inferImageName } from '../TaskHelper';
+import { getDefaultContainerName, getDefaultImageName } from '../../utils/getValidImageName';
 import { updateBlazorManifest } from './updateBlazorManifest';
 
 export interface NetCoreTaskOptions {

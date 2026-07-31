@@ -10,11 +10,10 @@ import * as os from 'os';
 import * as path from 'path';
 import { vsDbgInstallBasePath } from "../../debugging/netcore/VsDbgHelper";
 import { ext } from "../../extensionVariables";
-import { getImageNameWithTag } from "../../utils/getValidImageName";
+import { getImageNameWithTag, getDefaultContainerName } from "../../utils/getValidImageName";
 import { isFileBasedApp } from "../../utils/netCoreUtils";
 import { getDockerOSType } from "../../utils/osUtils";
 import { defaultVsCodeLabels } from "../TaskDefinitionBase";
-import { getDefaultContainerName } from '../TaskHelper';
 
 /**
  * Native architecture of the current machine in the RID format

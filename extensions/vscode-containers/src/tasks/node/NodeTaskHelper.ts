@@ -13,7 +13,8 @@ import { DockerBuildOptions, DockerBuildTaskDefinitionBase } from '../DockerBuil
 import { DockerBuildTaskDefinition } from '../DockerBuildTaskProvider';
 import { DockerRunOptions, DockerRunTaskDefinitionBase } from '../DockerRunTaskDefinitionBase';
 import { DockerRunTaskDefinition } from '../DockerRunTaskProvider';
-import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskScaffoldContext, TaskHelper, getDefaultContainerName, getDefaultImageName, inferImageName } from '../TaskHelper';
+import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskScaffoldContext, TaskHelper, inferImageName } from '../TaskHelper';
+import { getDefaultContainerName, getDefaultImageName } from '../../utils/getValidImageName';
 
 export interface NodeTaskBuildOptions {
     package?: string;

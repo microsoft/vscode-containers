@@ -6,7 +6,8 @@
 import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { CancellationToken, ConfigurationTarget, debug, DebugConfiguration, ExtensionContext, l10n, workspace, WorkspaceFolder } from 'vscode';
 import { DockerRunTaskDefinition } from '../tasks/DockerRunTaskProvider';
-import { DockerTaskScaffoldContext, getDefaultContainerName } from '../tasks/TaskHelper';
+import { DockerTaskScaffoldContext } from '../tasks/TaskHelper';
+import { getDefaultContainerName } from '../utils/getValidImageName';
 import { DockerServerReadyAction } from './DockerDebugConfigurationBase';
 import { DockerDebugConfiguration, DockerDebugConfigurationProvider } from './DockerDebugConfigurationProvider';
 import { DockerPlatform } from './DockerDebugPlatformHelper';
