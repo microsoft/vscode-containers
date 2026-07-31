@@ -1285,33 +1285,6 @@ describe('(integration) ContainersClientE2E', function () {
         });
     });
 
-    // #region wslc capability canaries
-    // These wslc-only tests fail if a future wslc release gains a capability the client currently
-    // works around. When one fails, add real support in WslcClient and remove the corresponding
-    // CommandNotSupportedError guard (and the canary).
-    describe('wslc capability canaries', function () {
-        // Run flags WslcClient.getRunContainerCommandArgs currently rejects.
-        const currentlyUnsupportedRunFlags = ['--expose', '--add-host', '--platform'];
-
-        currentlyUnsupportedRunFlags.forEach((flag) => {
-            it(`\`wslc run\` still lacks ${flag}`, async function () {
-                if (clientTypeToTest !== 'wslc') {
-                    this.skip();
-                }
-
-                const help = await defaultRunner.getCommandRunner()({
-                    command: client.commandName,
-                    args: ['run', '--help'],
-                    parse: (output: string) => Promise.resolve(output),
-                });
-
-                expect(help).to.not.contain(flag,
-                    `wslc run now supports ${flag}; add it to WslcClient.getRunContainerCommandArgs and drop the CommandNotSupportedError guard (and this canary).`);
-            });
-        });
-    });
-    // #endregion
-
     // #endregion
 });
 

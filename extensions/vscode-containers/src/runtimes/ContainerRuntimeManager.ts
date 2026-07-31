@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DockerClient, IContainersClient, WslcClient } from '@microsoft/vscode-container-client';
+import { DockerClient, IContainersClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
-import { isWindows } from '../utils/osUtils';
 import { ContextManager, IContextManager } from './ContextManager';
+import { officialRuntimeRegistrations } from './officialRuntimeRegistrations';
 import { RuntimeManager } from './RuntimeManager';
 
 export class ContainerRuntimeManager extends RuntimeManager<IContainersClient> {
@@ -22,25 +22,17 @@ export class ContainerRuntimeManager extends RuntimeManager<IContainersClient> {
     }
 
     public override async getClient(): Promise<IContainersClient> {
-        // WSLC is only registered on Windows, so on other platforms selecting it would otherwise
+        // A runtime that declares an `isSupported` predicate (e.g. wslc, which is Windows-only) is
+        // not registered on machines where it isn't supported, so selecting it there would otherwise
         // fail with a generic "not registered" error after a timeout. Surface a clear message instead.
-        if (this.getSelectedClientId() === WslcClient.ClientId && !isWindows()) {
-            throw new Error(vscode.l10n.t('WSLC is only available on Windows.'));
+        const selectedClientId = this.getSelectedClientId();
+        const registration = officialRuntimeRegistrations.find((r) => r.containerClient.ClientId === selectedClientId);
+        if (registration?.isSupported && !registration.isSupported()) {
+            const displayName = new registration.containerClient().displayName;
+            throw new Error(vscode.l10n.t('The {0} container runtime is not supported on this platform.', displayName));
         }
 
         return super.getClient();
-    }
-
-    protected override reconfigureClient(client: IContainersClient): void {
-        // wslc is a specifically named binary; it deliberately ignores the shared
-        // `containers.containerCommand` override (which only makes sense for the docker/podman
-        // aliases) and always uses its default command name.
-        if (client.id === WslcClient.ClientId) {
-            client.commandName = client.defaultCommandName;
-            return;
-        }
-
-        super.reconfigureClient(client);
     }
 
     public get contextManager(): IContextManager {

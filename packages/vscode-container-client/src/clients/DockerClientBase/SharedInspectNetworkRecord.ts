@@ -29,7 +29,7 @@ const NetworkIpamConfigSchema = z.object({
 
 const NetworkIpamSchema = z.object({
     Driver: z.optional(z.string()),
-    Config: z.optional(z.nullable(z.array(NetworkIpamConfigSchema))),
+    Config: z.nullish(z.array(NetworkIpamConfigSchema)),
 });
 
 export const SharedInspectNetworkRecordSchema = z.object({
