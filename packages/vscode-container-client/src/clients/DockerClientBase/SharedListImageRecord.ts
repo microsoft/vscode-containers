@@ -14,12 +14,15 @@ import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
  * nerdctl may omit them. The size and creation date are normalized by the shared
  * field transforms.
  *
+ * `wslc images` uses different key names (`Id`, `Created` as a Unix epoch) and
+ * maps onto this shape via `WslcListImageRecordSchema`.
+ *
  * Podman's `image ls` output is object-shaped (`Names` array, numeric `Created`)
  * and keeps its own record module rather than sharing this schema.
  */
 export const SharedListImageRecordSchema = z.object({
     ID: z.optional(z.string()),
-    Repository: z.string(),
+    Repository: z.optional(z.string()),
     Tag: z.optional(z.string()),
     // Date string transformed to Date with fallback to current time
     CreatedAt: z.optional(dateStringWithFallbackSchema),
@@ -64,7 +67,11 @@ export const NerdctlListImageOptions: NormalizeListImageOptions = {
 export function normalizeListImageRecord(image: SharedListImageRecord, options: NormalizeListImageOptions = DockerListImageOptions): ListImagesItem {
     const tag = image.Tag?.trim();
     const includeTag = !!tag && !(options.dropNoneTag && tag === '<none>');
-    const repositoryAndTag = `${image.Repository}${includeTag ? `:${tag}` : ''}`;
+    // Runtimes that can omit the repository (wslc) yield an unnamed image rather
+    // than a name composed of just a tag.
+    const repositoryAndTag = image.Repository
+        ? `${image.Repository}${includeTag ? `:${tag}` : ''}`
+        : undefined;
 
     return {
         id: image.ID || '',

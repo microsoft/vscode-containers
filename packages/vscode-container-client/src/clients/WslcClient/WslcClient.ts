@@ -22,9 +22,7 @@ import type {
     InfoCommandOptions,
     InfoItem,
     InspectContainersCommandOptions,
-    InspectContainersItem,
     InspectImagesCommandOptions,
-    InspectImagesItem,
     InspectNetworksCommandOptions,
     InspectNetworksItem,
     InspectVolumesCommandOptions,
@@ -37,7 +35,6 @@ import type {
     ListNetworksCommandOptions,
     ListVolumeItem,
     ListVolumesCommandOptions,
-    PortBinding,
     PruneContainersCommandOptions,
     PruneImagesCommandOptions,
     PruneNetworksCommandOptions,
@@ -57,26 +54,22 @@ import type {
 } from '../../contracts/ContainerClient';
 import { asIds } from '../../utils/asIds';
 import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
-import { dayjs } from '../../utils/dayjs';
-import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { DockerClientBase } from '../DockerClientBase/DockerClientBase';
 import { matchesLabelFilters } from '../DockerClientBase/matchesLabelFilters';
-import { normalizeIpAddress } from '../DockerClientBase/normalizeIpAddress';
 import { parsePruneLikeOutput } from '../DockerClientBase/parsePruneLikeOutput';
+import { normalizeInspectNetworkRecord, normalizeInspectNetworkRecordAsListItem, SharedInspectNetworkRecordSchema } from '../DockerClientBase/SharedInspectNetworkRecord';
+import { normalizeInspectVolumeRecord, SharedInspectVolumeRecordSchema } from '../DockerClientBase/SharedInspectVolumeRecord';
+import { normalizeListImageRecord } from '../DockerClientBase/SharedListImageRecord';
+import { normalizeListVolumeRecord, SharedListVolumeRecordSchema } from '../DockerClientBase/SharedListVolumeRecord';
+import { withContainerPathArg } from '../DockerClientBase/withContainerPathArg';
 import { withDockerBuildArg } from '../DockerClientBase/withDockerBuildArg';
 import { withDockerEnvArg } from '../DockerClientBase/withDockerEnvArg';
 import { withDockerBooleanFilterArg, withDockerFilterArg } from '../DockerClientBase/withDockerFilterArg';
 import { withDockerLabelFilterArgs } from '../DockerClientBase/withDockerLabelFilterArgs';
 import { withDockerLabelsArg } from '../DockerClientBase/withDockerLabelsArg';
 import { withDockerPortsArg } from '../DockerClientBase/withDockerPortsArg';
-import { withContainerPathArg } from '../DockerClientBase/withContainerPathArg';
-import { WslcInspectContainerRecordSchema, normalizeWslcInspectContainerRecord } from './WslcInspectContainerRecord';
-import { WslcInspectImageRecordSchema, normalizeWslcInspectImageRecord } from './WslcInspectImageRecord';
-import { WslcInspectVolumeRecordSchema, normalizeWslcInspectVolumeRecord } from './WslcInspectVolumeRecord';
-import { mapWslcContainerState, WslcListContainerRecordSchema } from './WslcListContainerRecord';
+import { normalizeWslcListContainerRecord, WslcListContainerRecordSchema } from './WslcListContainerRecord';
 import { WslcListImageRecordSchema } from './WslcListImageRecord';
-import { normalizeWslcListVolumeRecord, WslcListVolumeRecordSchema } from './WslcListVolumeRecord';
-import { normalizeWslcInspectNetworkRecord, normalizeWslcListNetworkRecord, WslcNetworkRecordSchema } from './WslcNetworkRecord';
 
 /**
  * wslc reports pruned resources as `Deleted: <name>` lines, unlike the Docker CLI
@@ -203,36 +196,10 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<ListImagesItem>> {
-        const images = new Array<ListImagesItem>();
-        try {
-            const parsed: unknown = JSON.parse(output);
-            const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-            for (const raw of rawArray) {
-                try {
-                    // Validate per-record so one malformed entry doesn't discard the whole list.
-                    const rawImage = WslcListImageRecordSchema.parse(raw);
-                    const repositoryAndTag = rawImage.Repository
-                        ? `${rawImage.Repository}${rawImage.Tag ? `:${rawImage.Tag}` : ''}`
-                        : undefined;
-                    images.push({
-                        id: rawImage.Id,
-                        image: parseDockerLikeImageName(repositoryAndTag),
-                        createdAt: dayjs.unix(rawImage.Created).toDate(),
-                        size: rawImage.Size,
-                    });
-                } catch (err) {
-                    if (strict) {
-                        throw err;
-                    }
-                }
-            }
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
-
-        return Promise.resolve(images);
+        // wslc emits a JSON array (or a bare object for a single result), so the
+        // inspect-style parser is used here rather than the base's per-line parser.
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeListImageRecord(WslcListImageRecordSchema.parse(item)));
     }
 
     protected override getRemoveImagesCommandArgs(options: RemoveImagesCommandOptions): CommandLineArgs {
@@ -269,6 +236,9 @@ export class WslcClient extends DockerClientBase {
         return Promise.resolve(asIds(output));
     }
 
+    // The inspect args differ from the base (`inspect --type image` rather than
+    // `image inspect --format`), but the output is standard Docker-like inspect
+    // JSON, so the base parser applies unchanged.
     protected override getInspectImagesCommandArgs(options: InspectImagesCommandOptions): CommandLineArgs {
         // wslc `inspect --type image` accepts multiple ids and returns a JSON array. If any id is
         // missing it exits non-zero (the runner surfaces that as an error), so no id is silently lost.
@@ -277,34 +247,6 @@ export class WslcClient extends DockerClientBase {
             withNamedArg('--type', 'image'),
             withArg(...options.imageRefs),
         )();
-    }
-
-    protected override parseInspectImagesCommandOutput(
-        options: InspectImagesCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<Array<InspectImagesItem>> {
-        const items: InspectImagesItem[] = [];
-        const trimmed = output.trim();
-        if (!trimmed) {
-            return Promise.resolve(items);
-        }
-        try {
-            const parsed: unknown = JSON.parse(trimmed);
-            const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-            for (const raw of rawArray) {
-                try {
-                    // Validate per-record so one malformed entry doesn't discard the whole result.
-                    const record = WslcInspectImageRecordSchema.parse(raw);
-                    items.push(normalizeWslcInspectImageRecord(record, JSON.stringify(raw)));
-                } catch (err) {
-                    if (strict) { throw err; }
-                }
-            }
-        } catch (err) {
-            if (strict) { throw err; }
-        }
-        return Promise.resolve(items);
     }
 
     //#endregion
@@ -334,62 +276,10 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<ListContainersItem>> {
-        const containers = new Array<ListContainersItem>();
-        try {
-            const parsed: unknown = JSON.parse(output);
-            const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-            for (const raw of rawArray) {
-                try {
-                    // Validate per-record so one malformed entry doesn't discard the whole list.
-                    const rawContainer = WslcListContainerRecordSchema.parse(raw);
-                    const state = mapWslcContainerState(rawContainer.State);
-                    const ports: PortBinding[] = (rawContainer.Ports ?? []).flatMap(p => {
-                        // wslc can emit a binding without a ContainerPort; skip it rather than
-                        // fabricating containerPort: 0, since containerPort is required by the contract.
-                        if (p.ContainerPort === undefined) {
-                            return [];
-                        }
-                        // Match the Docker port parser: when wslc doesn't report a bind address,
-                        // omit hostIp rather than fabricating one, so an all-interfaces publish
-                        // isn't mislabeled as loopback (127.0.0.1).
-                        const hostIp = normalizeIpAddress(p.BindingAddress);
-                        return [{
-                            containerPort: p.ContainerPort,
-                            ...(hostIp !== undefined ? { hostIp } : {}),
-                            hostPort: p.HostPort,
-                            // wslc encodes the protocol as an IANA protocol number (6 = TCP, 17 = UDP).
-                            protocol: p.Protocol === 6
-                                ? 'tcp'
-                                : p.Protocol === 17
-                                    ? 'udp'
-                                    : undefined,
-                        }];
-                    });
-
-                    containers.push({
-                        id: rawContainer.Id,
-                        name: rawContainer.Name ?? '',
-                        image: parseDockerLikeImageName(rawContainer.Image),
-                        labels: rawContainer.Labels ?? {},
-                        createdAt: dayjs.unix(rawContainer.CreatedAt).toDate(),
-                        ports,
-                        networks: rawContainer.Networks ?? [],
-                        state,
-                        status: undefined,
-                    });
-                } catch (err) {
-                    if (strict) {
-                        throw err;
-                    }
-                }
-            }
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
-
-        return Promise.resolve(containers);
+        // wslc emits a JSON array (or a bare object for a single result), so the
+        // inspect-style parser is used here rather than the base's per-line parser.
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeWslcListContainerRecord(WslcListContainerRecordSchema.parse(item)));
     }
 
     protected override getRemoveContainersCommandArgs(options: RemoveContainersCommandOptions): CommandLineArgs {
@@ -463,6 +353,9 @@ export class WslcClient extends DockerClientBase {
         return Promise.reject(new CommandNotSupportedError('wslc does not support the restart command.'));
     }
 
+    // The inspect args differ from the base (`inspect --type container` rather than
+    // `container inspect --format`), but the output is standard Docker-like inspect
+    // JSON, so the base parser applies unchanged.
     protected override getInspectContainersCommandArgs(options: InspectContainersCommandOptions): CommandLineArgs {
         // wslc `inspect --type container` accepts multiple ids and returns a JSON array; a missing
         // id makes it exit non-zero (surfaced as an error) rather than being silently dropped.
@@ -471,34 +364,6 @@ export class WslcClient extends DockerClientBase {
             withNamedArg('--type', 'container'),
             withArg(...options.containers),
         )();
-    }
-
-    protected override parseInspectContainersCommandOutput(
-        options: InspectContainersCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<Array<InspectContainersItem>> {
-        const items: InspectContainersItem[] = [];
-        const trimmed = output.trim();
-        if (!trimmed) {
-            return Promise.resolve(items);
-        }
-        try {
-            const parsed: unknown = JSON.parse(trimmed);
-            const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-            for (const raw of rawArray) {
-                try {
-                    // Validate per-record so one malformed entry doesn't discard the whole result.
-                    const record = WslcInspectContainerRecordSchema.parse(raw);
-                    items.push(normalizeWslcInspectContainerRecord(record, JSON.stringify(raw)));
-                } catch (err) {
-                    if (strict) { throw err; }
-                }
-            }
-        } catch (err) {
-            if (strict) { throw err; }
-        }
-        return Promise.resolve(items);
     }
 
     //#endregion
@@ -519,38 +384,16 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<ListVolumeItem[]> {
-        const items: ListVolumeItem[] = [];
-        const trimmed = output.trim();
-        if (trimmed) {
-            try {
-                const parsed: unknown = JSON.parse(trimmed);
-                const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-                for (const raw of rawArray) {
-                    try {
-                        // Validate per-record so one malformed entry doesn't discard the whole list.
-                        const record = WslcListVolumeRecordSchema.parse(raw);
-                        const item = normalizeWslcListVolumeRecord(record);
-
-                        // wslc can't filter server-side, so honor labels/driver here. `dangling`
-                        // needs container-usage info that `volume list` doesn't provide, so it
-                        // can't be evaluated client-side and is left unfiltered.
-                        if (!matchesLabelFilters(item.labels, options.labels)) {
-                            continue;
-                        }
-                        if (options.driver && item.driver !== options.driver) {
-                            continue;
-                        }
-
-                        items.push(item);
-                    } catch (err) {
-                        if (strict) { throw err; }
-                    }
-                }
-            } catch (err) {
-                if (strict) { throw err; }
-            }
-        }
-        return Promise.resolve(items);
+        // wslc emits a JSON array (or a bare object for a single result), so the
+        // inspect-style parser is used here rather than the base's per-line parser.
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeListVolumeRecord(SharedListVolumeRecordSchema.parse(item)))
+            // wslc can't filter server-side, so honor labels/driver here. `dangling`
+            // needs container-usage info that `volume list` doesn't provide, so it
+            // can't be evaluated client-side and is left unfiltered.
+            .then((items) => items.filter((item) =>
+                matchesLabelFilters(item.labels, options.labels) &&
+                (!options.driver || item.driver === options.driver)));
     }
 
     protected override getInspectVolumesCommandArgs(options: InspectVolumesCommandOptions): CommandLineArgs {
@@ -568,27 +411,8 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<InspectVolumesItem>> {
-        const items: InspectVolumesItem[] = [];
-        const trimmed = output.trim();
-        if (!trimmed) {
-            return Promise.resolve(items);
-        }
-        try {
-            const parsed: unknown = JSON.parse(trimmed);
-            const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-            for (const raw of rawArray) {
-                try {
-                    // Validate per-record so one malformed entry doesn't discard the whole result.
-                    const record = WslcInspectVolumeRecordSchema.parse(raw);
-                    items.push(normalizeWslcInspectVolumeRecord(record, JSON.stringify(raw)));
-                } catch (err) {
-                    if (strict) { throw err; }
-                }
-            }
-        } catch (err) {
-            if (strict) { throw err; }
-        }
-        return Promise.resolve(items);
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeInspectVolumeRecord(SharedInspectVolumeRecordSchema.parse(item), JSON.stringify(item), { defaultScope: 'local' }));
     }
 
     // wslc `volume prune` accepts `--all` / `--filter` but not `--force`. The contract
@@ -641,37 +465,14 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<ListNetworkItem>> {
-        const items: ListNetworkItem[] = [];
-        const trimmed = output.trim();
-        if (!trimmed) {
-            return Promise.resolve(items);
-        }
-        try {
-            const parsed: unknown = JSON.parse(trimmed);
-            const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-            for (const raw of rawArray) {
-                try {
-                    // Validate per-record so one malformed entry doesn't discard the whole list.
-                    const record = WslcNetworkRecordSchema.parse(raw);
-                    const item = normalizeWslcListNetworkRecord(record);
-
-                    // wslc can't filter server-side, so honor labels/driver here.
-                    if (!matchesLabelFilters(item.labels, options.labels)) {
-                        continue;
-                    }
-                    if (options.driver && item.driver !== options.driver) {
-                        continue;
-                    }
-
-                    items.push(item);
-                } catch (err) {
-                    if (strict) { throw err; }
-                }
-            }
-        } catch (err) {
-            if (strict) { throw err; }
-        }
-        return Promise.resolve(items);
+        // wslc `network list` emits the inspect-style object shape, so it shares the
+        // inspect schema rather than the Docker `network ls` one.
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeInspectNetworkRecordAsListItem(SharedInspectNetworkRecordSchema.parse(item)))
+            // wslc can't filter server-side, so honor labels/driver here.
+            .then((items) => items.filter((item) =>
+                matchesLabelFilters(item.labels, options.labels) &&
+                (!options.driver || item.driver === options.driver)));
     }
 
     protected override getRemoveNetworksCommandArgs(options: RemoveNetworksCommandOptions): CommandLineArgs {
@@ -698,27 +499,8 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<InspectNetworksItem>> {
-        const items: InspectNetworksItem[] = [];
-        const trimmed = output.trim();
-        if (!trimmed) {
-            return Promise.resolve(items);
-        }
-        try {
-            const parsed: unknown = JSON.parse(trimmed);
-            const rawArray: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-            for (const raw of rawArray) {
-                try {
-                    // Validate per-record so one malformed entry doesn't discard the whole result.
-                    const record = WslcNetworkRecordSchema.parse(raw);
-                    items.push(normalizeWslcInspectNetworkRecord(record, JSON.stringify(raw)));
-                } catch (err) {
-                    if (strict) { throw err; }
-                }
-            }
-        } catch (err) {
-            if (strict) { throw err; }
-        }
-        return Promise.resolve(items);
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeInspectNetworkRecord(SharedInspectNetworkRecordSchema.parse(item), JSON.stringify(item)));
     }
 
     // wslc `network prune` accepts `--filter` but not `--force`. The contract exposes no

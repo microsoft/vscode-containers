@@ -7,8 +7,8 @@ import { type CommandLineArgs, NoShell } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { WslcClient } from '../clients/WslcClient/WslcClient';
-import { CommandNotSupportedError } from '../utils/CommandNotSupportedError';
+import { WslcClient } from '../../../clients/WslcClient/WslcClient';
+import { CommandNotSupportedError } from '../../../utils/CommandNotSupportedError';
 
 // NoShell(false).quote() returns the raw, unquoted arg values (platform-independent), which is what
 // these arg-shape assertions compare against.

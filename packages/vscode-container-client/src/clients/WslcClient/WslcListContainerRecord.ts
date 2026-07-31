@@ -4,6 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
+import type { ListContainersItem, PortBinding } from '../../contracts/ContainerClient';
+import { imageNameSchema, unixEpochSecondsSchema } from '../../contracts/ZodTransforms';
+import { normalizeIpAddress } from '../DockerClientBase/normalizeIpAddress';
 
 const WslcListContainerPortBindingSchema = z.object({
     // wslc emits the host bind address as `BindingAddress` and the protocol as an
@@ -14,11 +17,20 @@ const WslcListContainerPortBindingSchema = z.object({
     Protocol: z.optional(z.number()),
 });
 
+/**
+ * `wslc list --format json` emits an object-shaped record (structured `Ports`
+ * array, numeric `State`, epoch `CreatedAt`, `Networks`/`Labels` collections)
+ * rather than the flat, comma-delimited strings that Docker's `container ls`
+ * produces, so it keeps its own record module instead of sharing
+ * `SharedListContainerRecordSchema`.
+ */
 export const WslcListContainerRecordSchema = z.object({
     Id: z.string(),
     Name: z.optional(z.string()),
-    Image: z.optional(z.string()),
-    CreatedAt: z.number(),
+    // Raw image reference parsed into an ImageNameInfo by the shared transform
+    Image: imageNameSchema,
+    // Epoch seconds transformed to a Date by the shared transform
+    CreatedAt: unixEpochSecondsSchema,
     StateChangedAt: z.optional(z.number()),
     // State is a numeric enum from wslc; we map it via mapWslcContainerState below.
     State: z.optional(z.number()),
@@ -49,4 +61,61 @@ export function mapWslcContainerState(state: number | undefined): string {
         default:
             return 'unknown';
     }
+}
+
+/**
+ * Map the IANA protocol number wslc reports for a port binding onto the protocol
+ * names used by the {@link PortBinding} contract.
+ */
+function mapWslcProtocol(protocol: number | undefined): 'tcp' | 'udp' | undefined {
+    switch (protocol) {
+        case 6:
+            return 'tcp';
+        case 17:
+            return 'udp';
+        default:
+            return undefined;
+    }
+}
+
+function normalizePorts(rawPorts: WslcListContainerRecord['Ports']): PortBinding[] {
+    return (rawPorts ?? []).flatMap((port) => {
+        // wslc can emit a binding without a ContainerPort; skip it rather than
+        // fabricating containerPort: 0, since containerPort is required by the contract.
+        if (port.ContainerPort === undefined) {
+            return [];
+        }
+
+        // Match the Docker port parser: when wslc doesn't report a bind address,
+        // omit hostIp rather than fabricating one, so an all-interfaces publish
+        // isn't mislabeled as loopback (127.0.0.1).
+        const hostIp = normalizeIpAddress(port.BindingAddress);
+
+        return [{
+            containerPort: port.ContainerPort,
+            ...(hostIp !== undefined ? { hostIp } : {}),
+            hostPort: port.HostPort,
+            protocol: mapWslcProtocol(port.Protocol),
+        } satisfies PortBinding];
+    });
+}
+
+/**
+ * Normalize a parsed {@link WslcListContainerRecord} to the common
+ * {@link ListContainersItem}. The image name and creation date are already
+ * normalized by the schema transforms.
+ */
+export function normalizeWslcListContainerRecord(container: WslcListContainerRecord): ListContainersItem {
+    return {
+        id: container.Id,
+        name: container.Name ?? '',
+        image: container.Image,
+        labels: container.Labels ?? {},
+        createdAt: container.CreatedAt,
+        ports: normalizePorts(container.Ports),
+        networks: container.Networks ?? [],
+        state: mapWslcContainerState(container.State),
+        // wslc `list` has no human-readable status string
+        status: undefined,
+    };
 }

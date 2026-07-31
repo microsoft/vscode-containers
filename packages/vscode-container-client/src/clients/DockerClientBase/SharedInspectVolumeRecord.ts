@@ -9,7 +9,7 @@ import { dateStringWithFallbackSchema, labelsSchema } from '../../contracts/ZodT
 
 /**
  * A single, tolerant schema for the Docker-compatible volume `inspect` output
- * emitted by Docker, Podman, and nerdctl. Docker and Podman always emit
+ * emitted by Docker, Podman, nerdctl, and wslc. Docker and Podman always emit
  * `Driver`, `Mountpoint`, and `Scope`; nerdctl may omit them, so they are
  * modeled as optional and backfilled by the normalizer.
  *
@@ -25,6 +25,8 @@ export const SharedInspectVolumeRecordSchema = z.object({
     // Labels can be a record, empty string, or "key=value,key2=value2" string
     Labels: z.optional(z.nullable(labelsSchema)),
     Options: z.optional(z.nullable(z.record(z.string(), z.unknown()))),
+    // wslc spells the driver options `DriverOpts`
+    DriverOpts: z.optional(z.nullable(z.record(z.string(), z.unknown()))),
     // Date string transformed to Date with fallback to current time
     CreatedAt: z.optional(dateStringWithFallbackSchema),
 });
@@ -61,7 +63,7 @@ export function normalizeInspectVolumeRecord(volume: SharedInspectVolumeRecord, 
         mountpoint: volume.Mountpoint || '',
         scope: volume.Scope || options.defaultScope || '',
         labels: volume.Labels ?? {},
-        options: volume.Options ?? {},
+        options: volume.Options ?? volume.DriverOpts ?? {},
         createdAt: volume.CreatedAt ?? new Date(),
         raw,
     };
