@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DockerClient, DockerComposeClient, IContainerOrchestratorClient, IContainersClient, NerdctlClient, NerdctlComposeClient, PodmanClient, PodmanComposeClient, WslcClient } from '@microsoft/vscode-container-client';
+import { DockerClient, DockerComposeClient, FinchClient, FinchComposeClient, IContainerOrchestratorClient, IContainersClient, NerdctlClient, NerdctlComposeClient, PodmanClient, PodmanComposeClient, WslcClient } from '@microsoft/vscode-container-client';
 import { isWindows } from '../utils/osUtils';
 
 /**
@@ -40,6 +40,7 @@ export const officialRuntimeRegistrations: readonly OfficialRuntimeRegistration[
     { containerClient: DockerClient, orchestratorClient: DockerComposeClient },
     { containerClient: PodmanClient, orchestratorClient: PodmanComposeClient },
     { containerClient: NerdctlClient, orchestratorClient: NerdctlComposeClient },
+    { containerClient: FinchClient, orchestratorClient: FinchComposeClient },
     // The WSL Container CLI is Windows-only and has no compose counterpart.
     { containerClient: WslcClient, isSupported: isWindows },
 ];

@@ -5,6 +5,8 @@
 
 export * from './clients/DockerClient/DockerClient';
 export * from './clients/DockerComposeClient/DockerComposeClient';
+export * from './clients/FinchClient/FinchClient';
+export * from './clients/FinchComposeClient/FinchComposeClient';
 export * from './clients/NerdctlClient/NerdctlClient';
 export * from './clients/NerdctlComposeClient/NerdctlComposeClient';
 export * from './clients/PodmanClient/PodmanClient';

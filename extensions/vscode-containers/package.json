@@ -2553,6 +2553,7 @@
                         "com.microsoft.visualstudio.containers.docker",
                         "com.microsoft.visualstudio.containers.podman",
                         "com.microsoft.visualstudio.containers.nerdctl",
+                        "com.microsoft.visualstudio.containers.finch",
                         "com.microsoft.visualstudio.containers.wslc"
                     ],
                     "enumItemLabels": [
@@ -2560,6 +2561,7 @@
                         "Docker",
                         "Podman",
                         "Nerdctl",
+                        "Finch",
                         "WSLC (Windows only, preview)"
                     ]
                 },
@@ -2571,13 +2573,15 @@
                         "",
                         "com.microsoft.visualstudio.orchestrators.dockercompose",
                         "com.microsoft.visualstudio.orchestrators.podmancompose",
-                        "com.microsoft.visualstudio.orchestrators.nerdctlcompose"
+                        "com.microsoft.visualstudio.orchestrators.nerdctlcompose",
+                        "com.microsoft.visualstudio.orchestrators.finchcompose"
                     ],
                     "enumItemLabels": [
                         "Default",
                         "Docker Compose",
                         "Podman Compose",
-                        "Nerdctl Compose"
+                        "Nerdctl Compose",
+                        "Finch Compose"
                     ]
                 }
             }
