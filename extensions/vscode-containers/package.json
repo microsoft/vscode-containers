@@ -438,27 +438,27 @@
                 },
                 {
                     "command": "vscode-containers.containers.composeGroup.logs",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
+                    "when": "view == vscode-containers.views.containers && (viewItem =~ /composeGroup$/i || viewItem == composeProfileGroup)",
                     "group": "composeGroup_1_general@1"
                 },
                 {
                     "command": "vscode-containers.containers.composeGroup.start",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
+                    "when": "view == vscode-containers.views.containers && (viewItem =~ /composeGroup$/i || viewItem == composeProfileGroup)",
                     "group": "composeGroup_1_general@2"
                 },
                 {
                     "command": "vscode-containers.containers.composeGroup.stop",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
+                    "when": "view == vscode-containers.views.containers && (viewItem =~ /composeGroup$/i || viewItem == composeProfileGroup)",
                     "group": "composeGroup_1_general@3"
                 },
                 {
                     "command": "vscode-containers.containers.composeGroup.restart",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
+                    "when": "view == vscode-containers.views.containers && (viewItem =~ /composeGroup$/i || viewItem == composeProfileGroup)",
                     "group": "composeGroup_2_destructive@1"
                 },
                 {
                     "command": "vscode-containers.containers.composeGroup.down",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
+                    "when": "view == vscode-containers.views.containers && (viewItem =~ /composeGroup$/i || viewItem == composeProfileGroup)",
                     "group": "composeGroup_2_destructive@2"
                 },
                 {

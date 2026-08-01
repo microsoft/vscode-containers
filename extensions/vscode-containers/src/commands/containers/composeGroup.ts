@@ -3,17 +3,20 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IActionContext } from '@microsoft/vscode-azext-utils';
+import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
 import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as path from 'path';
 import { l10n, Uri, workspace } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
+import { ComposeProfileGroupTreeItem } from '../../tree/containers/ComposeProfileGroupTreeItem';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
 import { selectComposeLogsCommand } from '../selectCommandTemplate';
 
-export async function composeGroupLogs(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
+type ComposeGroupNode = ContainerGroupTreeItem | ComposeProfileGroupTreeItem;
+
+export async function composeGroupLogs(context: IActionContext, node: ComposeGroupNode): Promise<void> {
     return composeGroup<LogsCommandOptions>(context, async (client, options) => {
         const labels = await getComposeGroupLabels(node);
         const workingDirectory = labels && getComposeWorkingDirectory(labels);
@@ -27,22 +30,23 @@ export async function composeGroupLogs(context: IActionContext, node: ContainerG
 
         const composeFilesString = options.files?.map(file => `-f "${file}"`).join(' ');
         return selectComposeLogsCommand(context, folder, composeFilesString, options.projectName, options.environmentFile);
-    }, node, { follow: true, tail: 1000 });
-}
-export async function composeGroupStart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.start(options), node);
+    }, node, { follow: true, tail: 1000 }, 'logs');
 }
 
-export async function composeGroupStop(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.stop(options), node);
+export async function composeGroupStart(context: IActionContext, node: ComposeGroupNode): Promise<void> {
+    return composeGroup(context, (client, options) => client.start(options), node, undefined, 'start');
 }
 
-export async function composeGroupRestart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.restart(options), node);
+export async function composeGroupStop(context: IActionContext, node: ComposeGroupNode): Promise<void> {
+    return composeGroup(context, (client, options) => client.stop(options), node, undefined, 'stop');
 }
 
-export async function composeGroupDown(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.down(options), node);
+export async function composeGroupRestart(context: IActionContext, node: ComposeGroupNode): Promise<void> {
+    return composeGroup(context, (client, options) => client.restart(options), node, undefined, 'restart');
+}
+
+export async function composeGroupDown(context: IActionContext, node: ComposeGroupNode): Promise<void> {
+    return composeGroup(context, (client, options) => client.down(options), node, undefined, 'down');
 }
 
 type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit<TOptions, keyof CommonOrchestratorCommandOptions>;
@@ -50,8 +54,9 @@ type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit
 async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     context: IActionContext,
     composeCommandCallback: (client: IContainerOrchestratorClient, options: TOptions) => Promise<VoidCommandResponse>,
-    node: ContainerGroupTreeItem,
-    additionalOptions?: AdditionalOptions<TOptions>
+    node: ComposeGroupNode,
+    additionalOptions?: AdditionalOptions<TOptions>,
+    commandName: string = '<command>'
 ): Promise<void> {
     if (!node) {
         await ext.containersTree.refresh(context);
@@ -73,10 +78,36 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
         throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
     }
 
+    let profileArg: string[] | undefined;
+    let servicesArg: string[] | undefined;
+
+    if (node instanceof ComposeProfileGroupTreeItem && node.profileName) {
+        // Ask the user whether to apply the command with the profile flag (which includes default
+        // services too), only to the explicit service names in this profile (excluding defaults),
+        // or strictly to services exclusive to this profile.
+        const scope = await pickComposeProfileCommandScope(context, node, commandName);
+        if (scope === 'profile') {
+            // Use --profile flag: command affects both this profile's services AND default services
+            profileArg = [node.profileName];
+        } else if (scope === 'exclusive') {
+            // Use explicit service list for EXCLUSIVE services only
+            servicesArg = node.getExclusiveServiceNames();
+            if (servicesArg.length === 0) {
+                context.errorHandling.suppressReportIssue = true;
+                throw new Error(l10n.t('There are no services exclusive to the "{0}" profile.', node.label));
+            }
+        } else {
+            // Use explicit service list: command affects only the services belonging to this profile
+            servicesArg = node.getServiceNames();
+        }
+    }
+
     const options: TOptions = {
         files: orchestratorFiles,
         projectName: projectName,
         environmentFile: envFile,
+        ...(profileArg ? { profiles: profileArg } : {}),
+        ...(servicesArg?.length ? { services: servicesArg } : {}),
         ...additionalOptions,
     } as TOptions;
 
@@ -99,9 +130,26 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
  * parsing, so we can still locate a container in the group from the list labels, but we
  * must `inspect` it to recover the accurate, verbatim label values (compose files, etc).
  */
-async function getComposeGroupLabels(node: ContainerGroupTreeItem): Promise<{ [key: string]: string } | undefined> {
-    // Find a container in the group that carries the compose project config files label
-    const container = (node.ChildTreeItems as ContainerTreeItem[]).find(c => c.labels?.['com.docker.compose.project.config_files']);
+async function getComposeGroupLabels(node: ComposeGroupNode): Promise<{ [key: string]: string } | undefined> {
+    // Find a container in the group that carries the compose project config files label.
+    // For ComposeProfileGroupTreeItem the direct children are ContainerTreeItem instances.
+    // For ContainerGroupTreeItem with profile sub-groups the direct children may be
+    // ComposeProfileGroupTreeItem instances, so we search one level deeper in that case.
+    let container = (node.ChildTreeItems as ContainerTreeItem[])
+        .find(c => c instanceof ContainerTreeItem && c.labels?.['com.docker.compose.project.config_files']) as ContainerTreeItem | undefined;
+
+    if (!container && node instanceof ContainerGroupTreeItem) {
+        // ContainerGroupTreeItem may have ComposeProfileGroupTreeItem children; search their children too
+        for (const child of node.ChildTreeItems) {
+            if (child instanceof ComposeProfileGroupTreeItem) {
+                container = (child.ChildTreeItems as ContainerTreeItem[])
+                    .find(c => c instanceof ContainerTreeItem && c.labels?.['com.docker.compose.project.config_files']) as ContainerTreeItem | undefined;
+                if (container) {
+                    break;
+                }
+            }
+        }
+    }
 
     if (!container) {
         return undefined;
@@ -112,6 +160,42 @@ async function getComposeGroupLabels(node: ContainerGroupTreeItem): Promise<{ [k
     );
 
     return inspectResult?.[0]?.labels;
+}
+
+/**
+ * Prompts the user to choose how the compose action should apply to a profile.
+ * Returns 'profile' to use the --profile flag (includes default services too),
+ * 'services' to apply only to the specific services in this profile,
+ * or 'exclusive' to apply only to services that belong strictly to this profile.
+ */
+async function pickComposeProfileCommandScope(context: IActionContext, node: ComposeProfileGroupTreeItem, commandName: string): Promise<'profile' | 'services' | 'exclusive'> {
+    const exclusiveNames = node.getExclusiveServiceNames();
+
+    const picks: IAzureQuickPickItem<'profile' | 'services' | 'exclusive'>[] = [
+        {
+            label: l10n.t('Apply to this profile and default services'),
+            description: l10n.t('Runs: docker compose --profile {0} {1}', node.label, commandName),
+            data: 'profile'
+        },
+        {
+            label: l10n.t('Apply only to services in this profile'),
+            description: l10n.t('Runs: docker compose {0} {1}', commandName, node.getServiceNames().join(' ')),
+            data: 'services'
+        },
+        {
+            label: l10n.t('Apply only to exclusive services'),
+            description: exclusiveNames.length
+                ? l10n.t('Runs: docker compose {0} {1}', commandName, exclusiveNames.join(' '))
+                : l10n.t('No services are exclusive to this profile'),
+            data: 'exclusive'
+        },
+    ];
+
+    const selection = await context.ui.showQuickPick(picks, {
+        placeHolder: l10n.t('How should this compose action apply to profile "{0}"?', node.label),
+    });
+
+    return selection.data;
 }
 
 // Exported only for unit testing; not intended to be called outside this module.
