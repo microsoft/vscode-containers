@@ -1,3 +1,9 @@
+## 1.1.0 - 3 August 2026
+### Added
+* Added client for Nerdctl. [#119](https://github.com/microsoft/vscode-containers/issues/119)
+* Added client for WSL-native containers (`wslc`). [#501](https://github.com/microsoft/vscode-containers/issues/501)
+* Added client for Finch. [#568](https://github.com/microsoft/vscode-containers/pull/568)
+
 ## 1.0.0 - 28 July 2026
 ### Breaking Changes
 * Added a required readonly `defaultCommandName` property to `ClientIdentity` (and therefore the `ContainerClient` interface implemented by all clients). Consumers implementing these interfaces directly must now provide this property; those extending `ConfigurableClient` get it automatically.
