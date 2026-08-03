@@ -6,17 +6,29 @@
 import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as path from 'path';
-import { l10n } from 'vscode';
+import { l10n, Uri, workspace } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
+import { selectComposeLogsCommand } from '../selectCommandTemplate';
 
 export async function composeGroupLogs(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    // Since we're not interested in the output, we can pretend this is a `VoidCommandResponse`
-    return composeGroup<LogsCommandOptions>(context, (client, options) => client.logs(options) as Promise<VoidCommandResponse>, node, { follow: true, tail: 1000 });
-}
+    return composeGroup<LogsCommandOptions>(context, async (client, options) => {
+        const labels = await getComposeGroupLabels(node);
+        const workingDirectory = labels && getComposeWorkingDirectory(labels);
 
+        if (!workingDirectory) {
+            context.errorHandling.suppressReportIssue = true;
+            throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
+        }
+
+        const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? Uri.file(workingDirectory);
+
+        const composeFilesString = options.files?.map(file => `-f "${file}"`).join(' ');
+        return selectComposeLogsCommand(context, folder, composeFilesString, options.projectName, options.environmentFile);
+    }, node, { follow: true, tail: 1000 });
+}
 export async function composeGroupStart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
     return composeGroup(context, (client, options) => client.start(options), node);
 }
