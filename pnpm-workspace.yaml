@@ -25,6 +25,8 @@ overrides:
   # 0.2.33 has no "type" field (CommonJS) and bundles correctly.
   vscode-tas-client: 0.1.84
   tas-client: 0.2.33
+  brace-expansion@>=2.0.0 <2.1.3: ^2.1.3
+  brace-expansion@>=4.0.0 <5.0.8: ^5.0.8
 
 publicHoistPattern:
   # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
@@ -54,3 +56,7 @@ catalog:
   tsx: ^4.22.4
   vscode-languageclient: ^10.1.0
   zod: ^4.1.13
+
+minimumReleaseAgeExclude:
+  - brace-expansion@2.1.3
+  - brace-expansion@5.0.8
