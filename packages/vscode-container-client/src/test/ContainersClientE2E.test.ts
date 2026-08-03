@@ -10,6 +10,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as stream from 'stream';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
+import { FinchClient } from '../clients/FinchClient/FinchClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
 import { WslcClient } from '../clients/WslcClient/WslcClient';
@@ -61,7 +62,7 @@ describe('(integration) ContainersClientE2E', function () {
         } else if (clientTypeToTest === 'podman') {
             client = new PodmanClient();
         } else if (clientTypeToTest === 'finch') {
-            client = new NerdctlClient('finch', 'Finch', 'Runs container commands using the Finch CLI');
+            client = new FinchClient();
         } else if (clientTypeToTest === 'nerdctl') {
             client = new NerdctlClient('nerdctl', 'Nerdctl', 'Runs container commands using the nerdctl CLI');
         } else if (clientTypeToTest === 'wslc') {

@@ -71,14 +71,18 @@ export class NerdctlClient extends DockerClientBase implements IContainersClient
      * name of the client
      * @param description (Optional, with default) The human-friendly description of
      * the client
+     * @param clientId (Optional, default {@link NerdctlClient.ClientId}) The ID the
+     * client will be registered under. Subclasses must pass their own ID, since a
+     * redeclared `static ClientId` is not picked up by this constructor.
      */
     public constructor(
         commandName: string = 'nerdctl',
         displayName: string = 'Nerdctl',
-        description: string = 'Runs container commands using the nerdctl CLI'
+        description: string = 'Runs container commands using the nerdctl CLI',
+        clientId: string = NerdctlClient.ClientId
     ) {
         super(
-            NerdctlClient.ClientId,
+            clientId,
             commandName,
             displayName,
             description
