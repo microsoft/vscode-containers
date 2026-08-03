@@ -15,8 +15,8 @@ class TestFinchClient extends FinchClient {
 }
 
 // The real shape of `finch version --format '{{json .}}'`, captured from Finch v1.17.2.
-// Note the `v` prefix on versions, and that `NerdctlClient` carries its own nested
-// `Components` array (not modelled in the schema; Zod strips it).
+// Note the `v` prefix on versions, that the Finch version is `Client.Version`, and that
+// the nerdctl version is nested under `Client.NerdctlClient`.
 const finchVersionOutput = JSON.stringify({
     Client: {
         Version: 'v1.17.2',
@@ -71,14 +71,18 @@ describe('(unit) FinchClient', () => {
     describe('parseVersionCommandOutput', () => {
         const client = new TestFinchClient();
 
-        it('Should report the nerdctl version from the Finch version output', async () => {
+        // Finch's version output differs from nerdctl's, so pin the behavior even though
+        // the parsing is inherited: `client` must be the Finch version (the CLI being
+        // invoked, consistent with `finch -v` and every other client), not the nested
+        // nerdctl version.
+        it('Should report the Finch version, not the nested nerdctl version', async () => {
             const version = await client.parseVersion(finchVersionOutput, true);
 
-            expect(version.client).to.equal('v2.2.2');
+            expect(version.client).to.equal('v1.17.2');
             expect(version.server).to.equal('v2.2.1');
         });
 
-        it('Should fall back to Client.Version when NerdctlClient is absent', async () => {
+        it('Should still parse the plain nerdctl version shape', async () => {
             const version = await client.parseVersion(nerdctlVersionOutput, true);
 
             expect(version.client).to.equal('v2.2.2');

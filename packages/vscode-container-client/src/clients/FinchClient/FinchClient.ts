@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IContainersClient, VersionItem } from '../../contracts/ContainerClient';
+import type { IContainersClient } from '../../contracts/ContainerClient';
 import { NerdctlClient } from '../NerdctlClient/NerdctlClient';
-import { FinchVersionRecordSchema } from './FinchVersionRecord';
 
 /**
  * A client for the Finch CLI. Finch is a thin wrapper around nerdctl (running in a
@@ -32,41 +31,21 @@ export class FinchClient extends NerdctlClient implements IContainersClient {
 
     //#region Version Command
 
-    /**
-     * `finch version` is one of the few commands Finch implements itself instead of
-     * forwarding to nerdctl, and it nests the nerdctl version under
-     * `Client.NerdctlClient` while reporting the Finch version as `Client.Version`.
-     * The nerdctl version is reported as the client version, for consistency with what
-     * the rest of the extension expects a container client version to mean.
-     */
-    protected override parseVersionCommandOutput(output: string, strict: boolean): Promise<VersionItem> {
-        try {
-            const version = FinchVersionRecordSchema.parse(JSON.parse(output));
-
-            // Prefer the nerdctl version, but fall back to `Client.Version` (the Finch
-            // version) in case `NerdctlClient` is absent, e.g. on older Finch releases
-            const clientVersion = version.Client.NerdctlClient?.Version || version.Client.Version;
-
-            // Finch passes `Server` through from nerdctl unmodified
-            const serverComponent = version.Server?.Components?.find(c =>
-                c.Name.toLowerCase() === 'containerd' || c.Name.toLowerCase() === 'server'
-            );
-
-            return Promise.resolve({
-                client: clientVersion || 'unknown',
-                server: serverComponent?.Version,
-            });
-        } catch {
-            if (strict) {
-                throw new Error('Failed to parse Finch version output');
-            }
-
-            return Promise.resolve({
-                client: 'unknown',
-                server: undefined,
-            });
-        }
-    }
+    // `version` is one of the few commands Finch implements itself rather than
+    // forwarding to nerdctl. Its output nests the nerdctl version under
+    // `Client.NerdctlClient` and reports the Finch version as `Client.Version`:
+    //
+    //   { "Client": { "Version": "v1.17.2",                    // Finch
+    //                 "NerdctlClient": { "Version": "v2.2.2" } // nerdctl
+    //               },
+    //     "Server": { "Components": [ { "Name": "containerd", ... } ] } }
+    //
+    // No override is needed. The inherited nerdctl parsing reads `Client.Version`,
+    // which is the Finch version -- the version of the CLI actually being invoked,
+    // matching both `finch -v` (used by `checkInstall`) and every other client, which
+    // all report their own CLI version. `Server` is passed through from nerdctl
+    // unmodified, so the containerd component lookup works as-is. The nerdctl version
+    // is deliberately not surfaced; it is an implementation detail of the VM.
 
     //#endregion
 }
