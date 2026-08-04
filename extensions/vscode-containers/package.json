@@ -2594,7 +2594,8 @@
                         "com.microsoft.visualstudio.containers.podman",
                         "com.microsoft.visualstudio.containers.nerdctl",
                         "com.microsoft.visualstudio.containers.finch",
-                        "com.microsoft.visualstudio.containers.wslc"
+                        "com.microsoft.visualstudio.containers.wslc",
+                        "com.microsoft.visualstudio.containers.applecontainer"
                     ],
                     "enumItemLabels": [
                         "Default",
@@ -2602,7 +2603,8 @@
                         "Podman",
                         "Nerdctl",
                         "Finch",
-                        "WSLC (Windows only, preview)"
+                        "WSLC (Windows only, preview)",
+                        "Container (macOS only, preview)"
                     ]
                 },
                 "containers.orchestratorClient": {
