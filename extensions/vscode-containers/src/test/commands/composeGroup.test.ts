@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { getComposeEnvFile, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory } from '../../commands/containers/composeGroup';
+import { findContainerWithComposeConfig, getComposeEnvFile, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory, getProjectLabel } from '../../commands/containers/composeGroup';
+import { ComposeProfileGroupTreeItem } from '../../tree/containers/ComposeProfileGroupTreeItem';
+import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
+import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
 
 suite("(unit) composeGroup", () => {
     suite("getComposeFiles", () => {
@@ -121,6 +124,39 @@ suite("(unit) composeGroup", () => {
             expect(getComposeProjectName({})).to.be.undefined;
             expect(getComposeWorkingDirectory({})).to.be.undefined;
             expect(getComposeEnvFile({})).to.be.undefined;
+        });
+    });
+
+    suite("profile sub-group utilities", () => {
+        test("getProjectLabel returns parent label for ComposeProfileGroupTreeItem", () => {
+            const parent = Object.create(ContainerGroupTreeItem.prototype) as ContainerGroupTreeItem;
+            Object.defineProperty(parent, 'label', { value: 'my-compose-project' });
+
+            const profileNode = Object.create(ComposeProfileGroupTreeItem.prototype) as ComposeProfileGroupTreeItem;
+            Object.defineProperty(profileNode, 'label', { value: 'dev-profile' });
+            Object.defineProperty(profileNode, 'parent', { value: parent });
+
+            expect(getProjectLabel(profileNode)).to.equal('my-compose-project');
+            expect(getProjectLabel(parent)).to.equal('my-compose-project');
+        });
+
+        test("findContainerWithComposeConfig searches direct children and profile sub-groups", () => {
+            const containerWithLabels = Object.create(ContainerTreeItem.prototype) as ContainerTreeItem;
+            Object.defineProperty(containerWithLabels, 'labels', {
+                value: { 'com.docker.compose.project.config_files': '/path/to/docker-compose.yml' }
+            });
+
+            const containerWithoutLabels = Object.create(ContainerTreeItem.prototype) as ContainerTreeItem;
+            Object.defineProperty(containerWithoutLabels, 'labels', { value: {} });
+
+            const profileGroup = Object.create(ComposeProfileGroupTreeItem.prototype) as ComposeProfileGroupTreeItem;
+            Object.defineProperty(profileGroup, 'ChildTreeItems', { value: [containerWithoutLabels, containerWithLabels] });
+
+            const rootGroup = Object.create(ContainerGroupTreeItem.prototype) as ContainerGroupTreeItem;
+            Object.defineProperty(rootGroup, 'ChildTreeItems', { value: [profileGroup] });
+
+            const result = findContainerWithComposeConfig(rootGroup);
+            expect(result).to.equal(containerWithLabels);
         });
     });
 });

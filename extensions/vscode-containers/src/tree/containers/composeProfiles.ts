@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as path from 'path';
 import { CommandLineArgs, ShellQuoting } from '@microsoft/vscode-processutils';
 import { ext } from '../../extensionVariables';
 import { isComposeV2ableOrchestratorClient } from '../../runtimes/OrchestratorRuntimeManager';
@@ -17,6 +18,7 @@ import { ContainerTreeItem } from './ContainerTreeItem';
 export function getComposeSourceFiles(labels: { [key: string]: string }): string[] | undefined {
     return labels['com.docker.compose.project.config_files']
         ?.split(',')
+        ?.map(f => path.isAbsolute(f) ? f : path.parse(f).base)
         ?.filter(file => !!file);
 }
 
@@ -64,24 +66,24 @@ export async function getComposeServiceProfiles(
             'json',
         ];
 
-        ext.outputChannel.appendLine(`[DEBUG] getComposeServiceProfiles args: ${client.commandName} ${JSON.stringify(args)} in cwd: ${workingDirectory}`);
+        ext.outputChannel.debug(`getComposeServiceProfiles args: ${client.commandName} ${JSON.stringify(args)} in cwd: ${workingDirectory}`);
 
         const { stdout } = await execAsync(client.commandName, args, {
             cwd: workingDirectory,
             allowUnsafeExecutablePath: true,
         });
 
-        ext.outputChannel.appendLine(`[DEBUG] getComposeServiceProfiles stdout: ${stdout?.substring(0, 200)}...`);
+        ext.outputChannel.debug(`getComposeServiceProfiles stdout length: ${stdout?.length ?? 0}`);
 
         if (!stdout) {
-            ext.outputChannel.appendLine(`[DEBUG] getComposeServiceProfiles stdout was empty.`);
+            ext.outputChannel.debug('getComposeServiceProfiles stdout was empty.');
             return undefined;
         }
 
         // Extract JSON to avoid SyntaxError if docker compose prints warnings (like 'Found orphan containers') to stdout
         const jsonMatch = stdout.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-            ext.outputChannel.appendLine(`[DEBUG] getComposeServiceProfiles failed to find JSON in stdout.`);
+            ext.outputChannel.debug('getComposeServiceProfiles failed to find JSON in stdout.');
             return undefined;
         }
 
@@ -94,7 +96,7 @@ export async function getComposeServiceProfiles(
         };
 
         if (!config.services) {
-            ext.outputChannel.appendLine(`[DEBUG] getComposeServiceProfiles JSON did not contain 'services' property.`);
+            ext.outputChannel.debug('getComposeServiceProfiles JSON did not contain \'services\' property.');
             return undefined;
         }
 
@@ -109,10 +111,10 @@ export async function getComposeServiceProfiles(
             }
         }
 
-        ext.outputChannel.appendLine(`[DEBUG] getComposeServiceProfiles foundProfiles: ${foundProfiles}`);
+        ext.outputChannel.debug(`getComposeServiceProfiles foundProfiles: ${foundProfiles}`);
         return foundProfiles ? serviceProfiles : undefined;
     } catch (err) {
-        ext.outputChannel.error(`getComposeServiceProfiles failed: ${err}`);
+        ext.outputChannel.debug(`getComposeServiceProfiles failed: ${String(err)}`);
         // The `--format json` flag requires Docker Compose v2.15+; if it fails (older versions,
         // unsupported runtimes, JSON parse errors, etc.) we fall back to flat service listing
         // with no profile grouping.

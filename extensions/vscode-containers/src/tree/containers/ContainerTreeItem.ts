@@ -71,7 +71,7 @@ export class ContainerTreeItem extends ToolTipParentTreeItem implements MultiSel
     public get description(): string | undefined {
         let desc = ext.containersRoot.getTreeItemDescription(this._item);
         if (this.composeProfiles.length > 1) {
-            desc = desc ? `${desc} (Shared)` : '(Shared)';
+            desc = desc ? vscode.l10n.t('{0} (Shared)', desc) : vscode.l10n.t('(Shared)');
         }
         return desc;
     }
