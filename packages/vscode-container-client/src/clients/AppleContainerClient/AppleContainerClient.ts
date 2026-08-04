@@ -30,6 +30,7 @@ import type {
     RemoveContainersCommandOptions,
     RestartContainersCommandOptions,
     RunContainerCommandOptions,
+    StartContainersCommandOptions,
     StopContainersCommandOptions,
     VersionCommandOptions,
     VersionItem,
@@ -271,6 +272,23 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         );
     }
 
+    // `container start` accepts exactly one positional container ID -- confirmed: a second ID
+    // errors with "Unexpected argument '<id>'" and *neither* container ends up started. The
+    // "Start" tree command can multi-select several stopped containers into one
+    // `startContainers({ container: [...] })` call, but a single command invocation here can't
+    // fan out to N separate CLI calls, so reject a multi-container request outright rather than
+    // silently starting only the first (or none).
+    protected override getStartContainersCommandArgs(options: StartContainersCommandOptions): CommandLineArgs {
+        if (options.container.length > 1) {
+            throw new CommandNotSupportedError('container start only supports starting one container at a time.');
+        }
+
+        return composeArgs(
+            withArg('start'),
+            withArg(...options.container),
+        )();
+    }
+
     protected override getListContainersCommandArgs(options: ListContainersCommandOptions): CommandLineArgs {
         // No --filter flag exists for `list`. `--all` is passed whenever a filter that needs
         // to see non-running containers is requested; the default (no --all) already limits
@@ -301,7 +319,7 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         if (options.running && item.state !== 'running') {
             return false;
         }
-        if (options.exited && item.state !== 'stopped') {
+        if (options.exited && item.state !== 'exited') {
             return false;
         }
         if (options.names && options.names.length > 0 && !options.names.includes(item.name)) {

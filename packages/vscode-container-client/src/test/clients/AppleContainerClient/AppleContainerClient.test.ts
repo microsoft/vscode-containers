@@ -311,6 +311,18 @@ describe('(unit) AppleContainerClient', () => {
             expect(items).to.have.lengthOf(0);
         });
 
+        it("Maps `status.state: 'stopped'` to Docker's 'exited' (not passed through as-is)", async () => {
+            // container's own vocabulary is just 'running'/'stopped' (confirmed for a stopped-after-
+            // running container AND a created-but-never-started one -- there's no separate "created"
+            // state). Passing 'stopped' through unmapped landed in getContainerStateIcon's `default:`
+            // arm, which renders the *running* icon -- see ContainerProperties.ts. Regression coverage
+            // for that bug: 'stopped' must become 'exited', a state getContainerStateIcon recognizes.
+            const stopped = { ...pocContainerListRecord, status: { ...pocContainerListRecord.status, state: 'stopped', networks: [] } };
+            const response = await client.listContainers({ all: true });
+            const items = await response.parse(JSON.stringify([stopped]), true);
+            expect(items[0].state).to.equal('exited');
+        });
+
         it('Filters by name client-side', async () => {
             const response = await client.listContainers({ names: ['not-poc-test'] });
             const items = await response.parse(JSON.stringify([pocContainerListRecord]), true);
@@ -325,6 +337,17 @@ describe('(unit) AppleContainerClient', () => {
             const response2 = await client.listContainers({ labels: { keep: 'no' } });
             const items2 = await response2.parse(JSON.stringify([withLabel]), true);
             expect(items2).to.have.lengthOf(0);
+        });
+    });
+
+    describe('#startContainers()', () => {
+        it('Produces bare `start <id>` args (not `container start`)', async () => {
+            const response = await client.startContainers({ container: ['abc'] });
+            expect(asStrings(response.args)).to.deep.equal(['start', 'abc']);
+        });
+
+        it('Throws when more than one container is requested (confirmed CLI limitation)', async () => {
+            await expectRejection(() => client.startContainers({ container: ['abc', 'def'] }));
         });
     });
 

@@ -36,6 +36,22 @@ export const AppleContainerListContainerRecordSchema = z.object({
 export type AppleContainerListContainerRecord = z.infer<typeof AppleContainerListContainerRecordSchema>;
 
 /**
+ * `container` only ever reports `status.state` as `"running"` or `"stopped"` -- confirmed for
+ * a running container, a container stopped after running, and a `container create`d-but-never-
+ * started container (all three produce one of those two strings; there is no separate
+ * "created" state, matching the CLI having no `pause`/`unpause` and hence no "paused" state
+ * either). The rest of the extension keys off Docker's vocabulary instead (see
+ * `getContainerStateIcon` in `ContainerProperties.ts`, whose switch has no `"stopped"` case) --
+ * passing `"stopped"` through unmapped landed in that switch's `default:` arm, which is the
+ * *running*-icon case, so a stopped container rendered with the running/start icon. Map onto
+ * Docker's `"exited"` instead so state-dependent UI (icons, context-menu start/stop visibility)
+ * reads correctly.
+ */
+function mapAppleContainerState(state: string | undefined): string {
+    return state === 'running' ? 'running' : 'exited';
+}
+
+/**
  * Normalize a parsed {@link AppleContainerListContainerRecord} to the common
  * {@link ListContainersItem}.
  */
@@ -54,9 +70,7 @@ export function normalizeAppleContainerListContainerRecord(container: AppleConta
             .map((attachment) => attachment.network)
             .filter((name): name is string => !!name),
         createdAt: container.configuration.creationDate ?? new Date(0),
-        // Observed values: 'running', 'stopped'. Passed through as-is; the contract's `state`
-        // is a loosely-typed string, and no other values have been observed to map.
-        state: container.status.state ?? 'unknown',
+        state: mapAppleContainerState(container.status.state),
         // No human-readable status string (e.g. Docker's "Up 5 minutes") is emitted.
         status: undefined,
     };
