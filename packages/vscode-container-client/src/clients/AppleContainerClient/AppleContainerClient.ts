@@ -18,6 +18,10 @@ import type {
     EventStreamCommandOptions,
     InfoCommandOptions,
     InfoItem,
+    InspectContainersCommandOptions,
+    InspectContainersItem,
+    InspectImagesCommandOptions,
+    InspectImagesItem,
     ListContainersCommandOptions,
     ListContainersItem,
     ListImagesCommandOptions,
@@ -38,6 +42,8 @@ import { withDockerLabelsArg } from '../DockerClientBase/withDockerLabelsArg';
 import { withDockerPlatformArg } from '../DockerClientBase/withDockerPlatformArg';
 import { withDockerPortsArg } from '../DockerClientBase/withDockerPortsArg';
 import { matchesLabelFilters } from '../DockerClientBase/matchesLabelFilters';
+import { AppleContainerInspectContainerRecordSchema, normalizeAppleContainerInspectContainerRecord } from './AppleContainerInspectContainerRecord';
+import { AppleContainerInspectImageRecordSchema, normalizeAppleContainerInspectImageRecord } from './AppleContainerInspectImageRecord';
 import { AppleContainerListContainerRecordSchema, normalizeAppleContainerListContainerRecord } from './AppleContainerListContainerRecord';
 import { AppleContainerListImageRecordSchema, normalizeAppleContainerListImageRecord } from './AppleContainerListImageRecord';
 
@@ -194,6 +200,24 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         return true;
     }
 
+    // No --format flag exists for `image inspect` (confirmed: errors with "Unknown option
+    // '--format'"); JSON is the only output it produces.
+    protected override getInspectImagesCommandArgs(options: InspectImagesCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('image', 'inspect'),
+            withArg(...options.imageRefs),
+        )();
+    }
+
+    protected override parseInspectImagesCommandOutput(
+        options: InspectImagesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<InspectImagesItem>> {
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeAppleContainerInspectImageRecord(AppleContainerInspectImageRecordSchema.parse(item), JSON.stringify(item)));
+    }
+
     //#endregion
 
     //#region Container Commands
@@ -309,6 +333,24 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
     // There is no `restart` subcommand.
     public override restartContainers(options: RestartContainersCommandOptions): Promise<PromiseCommandResponse<Array<string>>> {
         return Promise.reject(new CommandNotSupportedError('container does not support the restart command.'));
+    }
+
+    // Bare `inspect` (not `container inspect`), and no --format flag exists (confirmed: errors
+    // with "Unknown option '--format'"); JSON is the only output it produces.
+    protected override getInspectContainersCommandArgs(options: InspectContainersCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('inspect'),
+            withArg(...options.containers),
+        )();
+    }
+
+    protected override parseInspectContainersCommandOutput(
+        options: InspectContainersCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<InspectContainersItem>> {
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeAppleContainerInspectContainerRecord(AppleContainerInspectContainerRecordSchema.parse(item), JSON.stringify(item)));
     }
 
     //#endregion

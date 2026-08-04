@@ -27,6 +27,14 @@ const AppleContainerImageVariantSchema = z.object({
  * same-sized-ish `platform.architecture: "unknown"` attestation/provenance blob (~86KB,
  * confirmed present for every real platform in a multi-arch pull); those are excluded from
  * the size sum since they aren't part of the image itself.
+ *
+ * Unlike every other client this extension supports, `container` has no ID-based image
+ * addressing at all: `image inspect`/`image rm`/`run` reject a bare digest, a `sha256:`-
+ * prefixed digest, and even `name@sha256:digest` (all confirmed to fail with "image not
+ * found"); only a `name:tag` reference resolves. `ListImagesItem.id` round-trips into those
+ * commands elsewhere in the extension (tooltip inspection, image-ancestor container filtering),
+ * so it's set to the name:tag reference here rather than the manifest digest -- the only value
+ * that's actually usable as a CLI argument for this runtime.
  */
 export const AppleContainerListImageRecordSchema = z.object({
     id: z.string(),
@@ -49,7 +57,10 @@ export function normalizeAppleContainerListImageRecord(image: AppleContainerList
         .reduce((total, variant) => total + (variant.size ?? 0), 0);
 
     return {
-        id: image.id,
+        // Falls back to the (functionally unusable) digest only for images with no name --
+        // ListImagesItem.id must be a non-empty string, and such images can't be individually
+        // referenced by this CLI at all regardless of what string is put here.
+        id: image.configuration.name ?? image.id,
         image: parseDockerLikeImageName(image.configuration.name),
         createdAt: image.configuration.creationDate ?? new Date(0),
         size: size > 0 ? size : undefined,
