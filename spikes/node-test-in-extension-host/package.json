@@ -1,0 +1,17 @@
+{
+  "name": "node-test-in-extension-host-spike",
+  "displayName": "node:test in extension host (spike)",
+  "description": "Proves node:test can replace Mocha + @vscode/test-cli inside the VS Code extension host.",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "spike",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./src/extension.js",
+  "activationEvents": [],
+  "contributes": {},
+  "scripts": {
+    "test": "node scripts/run-tests.mjs"
+  }
+}
