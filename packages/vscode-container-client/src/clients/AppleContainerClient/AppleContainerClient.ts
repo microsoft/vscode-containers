@@ -6,6 +6,7 @@
 import {
     type CommandLineArgs,
     composeArgs,
+    toArray,
     withArg,
     withFlagArg,
     withNamedArg,
@@ -16,6 +17,7 @@ import type {
     CheckInstallCommandOptions,
     EventItem,
     EventStreamCommandOptions,
+    ExecContainerCommandOptions,
     InfoCommandOptions,
     InfoItem,
     InspectContainersCommandOptions,
@@ -26,6 +28,7 @@ import type {
     ListContainersItem,
     ListImagesCommandOptions,
     ListImagesItem,
+    LogsForContainerCommandOptions,
     PullImageCommandOptions,
     RemoveContainersCommandOptions,
     RestartContainersCommandOptions,
@@ -270,6 +273,41 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
                     .filter((part) => !!part)
                     .join(',')),
         );
+    }
+
+    // Bare `exec` (not `container exec`). Otherwise identical to the Docker-shaped default --
+    // -i/--interactive, -d/--detach, -t/--tty, -e/--env all match.
+    protected override getExecContainerCommandArgs(options: ExecContainerCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('exec'),
+            withFlagArg('--interactive', options.interactive),
+            withFlagArg('--detach', options.detached),
+            withFlagArg('--tty', options.tty),
+            withDockerEnvArg(options.environmentVariables),
+            withArg(options.container),
+            typeof options.command === 'string' ? withVerbatimArg(options.command) : withArg(...toArray(options.command)),
+        )();
+    }
+
+    // Bare `logs` (not `container logs`). `-n <count>` is the tail flag (not `--tail`), and
+    // there is no `--timestamps`/`--since`/`--until` support at all.
+    protected override getLogsForContainerCommandArgs(options: LogsForContainerCommandOptions): CommandLineArgs {
+        if (options.timestamps) {
+            throw new CommandNotSupportedError('container logs does not support timestamps.');
+        }
+        if (options.since) {
+            throw new CommandNotSupportedError('container logs does not support --since.');
+        }
+        if (options.until) {
+            throw new CommandNotSupportedError('container logs does not support --until.');
+        }
+
+        return composeArgs(
+            withArg('logs'),
+            withFlagArg('--follow', options.follow),
+            withNamedArg('-n', options.tail?.toString()),
+            withArg(options.container),
+        )();
     }
 
     // `container start` accepts exactly one positional container ID -- confirmed: a second ID

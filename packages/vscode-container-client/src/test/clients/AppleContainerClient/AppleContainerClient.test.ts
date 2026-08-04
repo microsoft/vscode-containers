@@ -283,6 +283,60 @@ describe('(unit) AppleContainerClient', () => {
         });
     });
 
+    describe('#execContainer()', () => {
+        it('Produces bare `exec` args (not `container exec`)', async () => {
+            const response = await client.execContainer({ container: 'abc', command: ['echo', 'hi'] });
+            expect(response.command).to.equal('container');
+            expect(asStrings(response.args)).to.deep.equal(['exec', 'abc', 'echo', 'hi']);
+        });
+
+        it('Emits -i/-t/-d/--env flags matching Apple\'s own naming', async () => {
+            const response = await client.execContainer({
+                container: 'abc',
+                interactive: true,
+                detached: true,
+                tty: true,
+                environmentVariables: { FOO: 'bar' },
+                command: ['sh'],
+            });
+            const args = asStrings(response.args);
+            expect(args).to.include('--interactive');
+            expect(args).to.include('--detach');
+            expect(args).to.include('--tty');
+            expect(args).to.include('--env');
+            expect(args).to.include('FOO=bar');
+        });
+    });
+
+    describe('#logsForContainer()', () => {
+        it('Produces bare `logs` args (not `container logs`)', async () => {
+            const response = await client.logsForContainer({ container: 'abc' });
+            expect(asStrings(response.args)).to.deep.equal(['logs', 'abc']);
+        });
+
+        it('Maps `tail` to `-n` (not `--tail`)', async () => {
+            const response = await client.logsForContainer({ container: 'abc', tail: 10 });
+            expect(asStrings(response.args)).to.deep.equal(['logs', '-n', '10', 'abc']);
+        });
+
+        it('Emits --follow when requested', async () => {
+            const response = await client.logsForContainer({ container: 'abc', follow: true });
+            expect(asStrings(response.args)).to.include('--follow');
+        });
+
+        it('Throws when timestamps is requested (confirmed unsupported)', async () => {
+            await expectRejection(() => client.logsForContainer({ container: 'abc', timestamps: true }));
+        });
+
+        it('Throws when since is requested (confirmed unsupported)', async () => {
+            await expectRejection(() => client.logsForContainer({ container: 'abc', since: '10m' }));
+        });
+
+        it('Throws when until is requested (confirmed unsupported)', async () => {
+            await expectRejection(() => client.logsForContainer({ container: 'abc', until: '1m' }));
+        });
+    });
+
     describe('#listContainers()', () => {
         it('Produces `list --format json` args with no --filter flags', async () => {
             const response = await client.listContainers({ labels: { foo: 'bar' }, names: ['x'] });
