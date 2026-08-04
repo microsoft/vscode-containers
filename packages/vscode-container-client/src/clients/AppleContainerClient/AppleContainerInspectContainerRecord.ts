@@ -49,29 +49,29 @@ export const AppleContainerInspectContainerRecordSchema = z.object({
 
 export type AppleContainerInspectContainerRecord = z.infer<typeof AppleContainerInspectContainerRecordSchema>;
 
-function stripDigestPrefix(digest: string | undefined): string {
-    return digest?.replace(/^sha256:/, '') ?? '';
-}
-
 /**
  * Normalize a parsed {@link AppleContainerInspectContainerRecord} to the common
  * {@link InspectContainersItem}.
  */
 export function normalizeAppleContainerInspectContainerRecord(container: AppleContainerInspectContainerRecord, raw: string): InspectContainersItem {
     const initProcess = container.configuration.initProcess;
-    const networks: InspectContainersItemNetwork[] = (container.status.networks ?? []).map((network) => ({
-        name: network.network ?? '',
-        gateway: network.ipv4Gateway,
-        ipAddress: network.ipv4Address,
-        macAddress: network.macAddress,
-    }));
+    const networks: InspectContainersItemNetwork[] = (container.status.networks ?? [])
+        .filter((network): network is typeof network & { network: string } => !!network.network)
+        .map((network) => ({
+            name: network.network,
+            gateway: network.ipv4Gateway,
+            ipAddress: network.ipv4Address,
+            macAddress: network.macAddress,
+        }));
 
     return {
         id: container.id,
         // The `container` CLI has no name distinct from the container's ID; see the same note
         // in AppleContainerListContainerRecord.ts.
         name: container.id,
-        imageId: stripDigestPrefix(container.configuration.image.descriptor?.digest),
+        // Kept in the same `sha256:<digest>` form as SharedInspectContainerRecord -- consumers
+        // (ImageTreeItem, ContainerTreeItem, askCopilot) slice this assuming that prefix.
+        imageId: container.configuration.image.descriptor?.digest ?? '',
         image: parseDockerLikeImageName(container.configuration.image.reference),
         isolation: undefined,
         status: undefined,

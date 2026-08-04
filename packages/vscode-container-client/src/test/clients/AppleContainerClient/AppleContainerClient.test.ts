@@ -434,8 +434,8 @@ describe('(unit) AppleContainerClient', () => {
             expect(items[0].environmentVariables).to.deep.equal({ PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' });
             expect(items[0].networks).to.have.lengthOf(1);
             expect(items[0].networks[0]).to.include({ name: 'default', ipAddress: '192.168.65.2/24' });
-            // imageId strips the sha256: prefix.
-            expect(items[0].imageId).to.equal('28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b');
+            // imageId keeps the sha256: prefix (matches SharedInspectContainerRecord's form).
+            expect(items[0].imageId).to.equal('sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b');
         });
     });
 });

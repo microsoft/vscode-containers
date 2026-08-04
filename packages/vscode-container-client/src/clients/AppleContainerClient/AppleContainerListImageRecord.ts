@@ -52,9 +52,8 @@ export type AppleContainerListImageRecord = z.infer<typeof AppleContainerListIma
  * {@link ListImagesItem}.
  */
 export function normalizeAppleContainerListImageRecord(image: AppleContainerListImageRecord): ListImagesItem {
-    const size = (image.variants ?? [])
-        .filter((variant) => variant.platform?.architecture !== 'unknown')
-        .reduce((total, variant) => total + (variant.size ?? 0), 0);
+    const realVariants = (image.variants ?? [])
+        .filter((variant) => variant.platform?.architecture !== 'unknown');
 
     return {
         // Falls back to the (functionally unusable) digest only for images with no name --
@@ -63,6 +62,8 @@ export function normalizeAppleContainerListImageRecord(image: AppleContainerList
         id: image.configuration.name ?? image.id,
         image: parseDockerLikeImageName(image.configuration.name),
         createdAt: image.configuration.creationDate ?? new Date(0),
-        size: size > 0 ? size : undefined,
+        // Only undefined when no real (non-"unknown") variants were reported -- a real variant
+        // summing to 0 bytes is a legitimate size, not an "unknown" sentinel.
+        size: realVariants.length > 0 ? realVariants.reduce((total, variant) => total + (variant.size ?? 0), 0) : undefined,
     };
 }
