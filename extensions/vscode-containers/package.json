@@ -3399,7 +3399,7 @@
         "build": "pnpm run --parallel \"/^build:(esbuild|check)$/\"",
         "build:esbuild": "node esbuild.mjs",
         "build:check": "tsc --noEmit",
-        "package": "vsce package --no-dependencies",
+        "package": "pnpx @vscode/vsce@latest package --no-dependencies",
         "test": "vscode-test",
         "clean": "node ../../scripts/clean.mjs"
     },

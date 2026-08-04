@@ -10,7 +10,6 @@ packages:
 minimumReleaseAge: 10080 # One week in minutes
 
 allowBuilds:
-  "@vscode/vsce-sign": true
   esbuild: true
   keytar: true
 
