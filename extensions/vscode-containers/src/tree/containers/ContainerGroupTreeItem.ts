@@ -83,7 +83,7 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
         const composeFiles = labels ? getComposeSourceFiles(labels) : undefined;
         const projectName = labels?.['com.docker.compose.project'];
 
-        ext.outputChannel.appendLine(`[DEBUG] ContainerGroupTreeItem: workingDirectory=${workingDirectory}, composeFiles=${JSON.stringify(composeFiles)}`);
+        ext.outputChannel.debug(`ContainerGroupTreeItem: workingDirectory=${workingDirectory}, composeFiles=${JSON.stringify(composeFiles)}`);
 
         if (!workingDirectory || !composeFiles?.length) {
             return super.loadMoreChildrenImpl(clearCache);
@@ -105,11 +105,9 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
             }
 
             for (const profile of profiles) {
-                if (!profileContainers.has(profile)) {
-                    profileContainers.set(profile, [container.containerItem as DockerContainerInfo]);
-                } else {
-                    profileContainers.set(profile, [...profileContainers.get(profile)!, container.containerItem as DockerContainerInfo]);
-                }
+                const existing = profileContainers.get(profile) ?? [];
+                existing.push(container.containerItem as DockerContainerInfo);
+                profileContainers.set(profile, existing);
             }
         }
 

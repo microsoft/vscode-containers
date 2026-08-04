@@ -23,30 +23,30 @@ export async function composeGroupLogs(context: IActionContext, node: ComposeGro
 
         if (!workingDirectory) {
             context.errorHandling.suppressReportIssue = true;
-            throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
+            throw new Error(l10n.t('Unable to determine compose project info for group \'{0}\'.', getProjectLabel(node)));
         }
 
         const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? Uri.file(workingDirectory);
 
         const composeFilesString = options.files?.map(file => `-f "${file}"`).join(' ');
         return selectComposeLogsCommand(context, folder, composeFilesString, options.projectName, options.environmentFile);
-    }, node, { follow: true, tail: 1000 }, 'logs');
+    }, node, 'logs', { follow: true, tail: 1000 });
 }
 
 export async function composeGroupStart(context: IActionContext, node: ComposeGroupNode): Promise<void> {
-    return composeGroup(context, (client, options) => client.start(options), node, undefined, 'start');
+    return composeGroup(context, (client, options) => client.start(options), node, 'start');
 }
 
 export async function composeGroupStop(context: IActionContext, node: ComposeGroupNode): Promise<void> {
-    return composeGroup(context, (client, options) => client.stop(options), node, undefined, 'stop');
+    return composeGroup(context, (client, options) => client.stop(options), node, 'stop');
 }
 
 export async function composeGroupRestart(context: IActionContext, node: ComposeGroupNode): Promise<void> {
-    return composeGroup(context, (client, options) => client.restart(options), node, undefined, 'restart');
+    return composeGroup(context, (client, options) => client.restart(options), node, 'restart');
 }
 
 export async function composeGroupDown(context: IActionContext, node: ComposeGroupNode): Promise<void> {
-    return composeGroup(context, (client, options) => client.down(options), node, undefined, 'down');
+    return composeGroup(context, (client, options) => client.down(options), node, 'down');
 }
 
 type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit<TOptions, keyof CommonOrchestratorCommandOptions>;
@@ -55,8 +55,8 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     context: IActionContext,
     composeCommandCallback: (client: IContainerOrchestratorClient, options: TOptions) => Promise<VoidCommandResponse>,
     node: ComposeGroupNode,
-    additionalOptions?: AdditionalOptions<TOptions>,
-    commandName: string = '<command>'
+    commandName: string = '<command>',
+    additionalOptions?: AdditionalOptions<TOptions>
 ): Promise<void> {
     if (!node) {
         await ext.containersTree.refresh(context);
@@ -75,7 +75,7 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
 
     if (!workingDirectory || !orchestratorFiles || !projectName) {
         context.errorHandling.suppressReportIssue = true;
-        throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
+        throw new Error(l10n.t('Unable to determine compose project info for group \'{0}\'.', getProjectLabel(node)));
     }
 
     let profileArg: string[] | undefined;
@@ -130,7 +130,16 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
  * parsing, so we can still locate a container in the group from the list labels, but we
  * must `inspect` it to recover the accurate, verbatim label values (compose files, etc).
  */
-async function getComposeGroupLabels(node: ComposeGroupNode): Promise<{ [key: string]: string } | undefined> {
+// Exported only for unit testing; not intended to be called outside this module.
+export function getProjectLabel(node: ComposeGroupNode): string {
+    if (node instanceof ComposeProfileGroupTreeItem && node.parent?.label) {
+        return node.parent.label;
+    }
+    return node.label;
+}
+
+// Exported only for unit testing; not intended to be called outside this module.
+export function findContainerWithComposeConfig(node: ComposeGroupNode): ContainerTreeItem | undefined {
     // Find a container in the group that carries the compose project config files label.
     // For ComposeProfileGroupTreeItem the direct children are ContainerTreeItem instances.
     // For ContainerGroupTreeItem with profile sub-groups the direct children may be
@@ -151,6 +160,11 @@ async function getComposeGroupLabels(node: ComposeGroupNode): Promise<{ [key: st
         }
     }
 
+    return container;
+}
+
+async function getComposeGroupLabels(node: ComposeGroupNode): Promise<{ [key: string]: string } | undefined> {
+    const container = findContainerWithComposeConfig(node);
     if (!container) {
         return undefined;
     }
