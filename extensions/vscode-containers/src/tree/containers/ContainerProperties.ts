@@ -8,6 +8,7 @@ import { l10n, ThemeColor, ThemeIcon, workspace } from "vscode";
 import { configPrefix } from "../../constants";
 import { commonProperties, CommonProperty, getCommonPropertyValue } from "../settings/CommonProperties";
 import { ITreePropertyInfo } from "../settings/ITreeSettingInfo";
+import { ComposeProjectNameLabel } from "../../utils/composeLabels";
 
 export type ContainerProperty = Exclude<CommonProperty, 'Size'> | 'Image' | 'Compose Project Name' | 'ContainerId' | 'ContainerName' | 'Networks' | 'Ports' | 'State' | 'Status' | 'Label';
 
@@ -64,7 +65,7 @@ export function getContainerPropertyValue(item: ListContainersItem, property: Co
             // This normalizes things like "10 seconds" and "Less than a second" to "Less than a minute", meaning the refreshes don't happen constantly
             return item.status?.replace(/(\d+ seconds?)|(Less than a second)/i, l10n.t('Less than a minute'));
         case 'Compose Project Name':
-            return getLabelGroup(item, 'com.docker.compose.project', NonComposeGroupName);
+            return getLabelGroup(item, ComposeProjectNameLabel, NonComposeGroupName);
         case 'Image':
             return item.image.originalName;
         case 'Label':

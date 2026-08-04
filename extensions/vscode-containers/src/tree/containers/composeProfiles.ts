@@ -3,30 +3,18 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as path from 'path';
 import { CommandLineArgs, ShellQuoting } from '@microsoft/vscode-processutils';
 import { ext } from '../../extensionVariables';
 import { isComposeV2ableOrchestratorClient } from '../../runtimes/OrchestratorRuntimeManager';
+import { getComposeServiceName } from '../../utils/composeLabels';
 import { execAsync } from '../../utils/execAsync';
 import { ContainerTreeItem } from './ContainerTreeItem';
-
-/**
- * Extracts the list of compose config source files from a container's labels.
- * Uses the `com.docker.compose.project.config_files` label which Docker Compose sets
- * on all containers it manages.
- */
-export function getComposeSourceFiles(labels: { [key: string]: string }): string[] | undefined {
-    return labels['com.docker.compose.project.config_files']
-        ?.split(',')
-        ?.map(f => path.isAbsolute(f) ? f : path.parse(f).base)
-        ?.filter(file => !!file);
-}
 
 /**
  * Gets the compose service name from a ContainerTreeItem.
  */
 export function getComposeContainerServiceName(container: ContainerTreeItem): string | undefined {
-    return container.labels?.['com.docker.compose.service'] || undefined;
+    return getComposeServiceName(container.labels);
 }
 
 /**
@@ -66,24 +54,18 @@ export async function getComposeServiceProfiles(
             'json',
         ];
 
-        ext.outputChannel.debug(`getComposeServiceProfiles args: ${client.commandName} ${JSON.stringify(args)} in cwd: ${workingDirectory}`);
-
         const { stdout } = await execAsync(client.commandName, args, {
             cwd: workingDirectory,
             allowUnsafeExecutablePath: true,
         });
 
-        ext.outputChannel.debug(`getComposeServiceProfiles stdout length: ${stdout?.length ?? 0}`);
-
         if (!stdout) {
-            ext.outputChannel.debug('getComposeServiceProfiles stdout was empty.');
             return undefined;
         }
 
         // Extract JSON to avoid SyntaxError if docker compose prints warnings (like 'Found orphan containers') to stdout
         const jsonMatch = stdout.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-            ext.outputChannel.debug('getComposeServiceProfiles failed to find JSON in stdout.');
             return undefined;
         }
 
@@ -96,7 +78,6 @@ export async function getComposeServiceProfiles(
         };
 
         if (!config.services) {
-            ext.outputChannel.debug('getComposeServiceProfiles JSON did not contain \'services\' property.');
             return undefined;
         }
 
@@ -111,10 +92,9 @@ export async function getComposeServiceProfiles(
             }
         }
 
-        ext.outputChannel.debug(`getComposeServiceProfiles foundProfiles: ${foundProfiles}`);
         return foundProfiles ? serviceProfiles : undefined;
     } catch (err) {
-        ext.outputChannel.debug(`getComposeServiceProfiles failed: ${String(err)}`);
+        ext.outputChannel.debug(`Failed to resolve compose profiles: ${String(err)}`);
         // The `--format json` flag requires Docker Compose v2.15+; if it fails (older versions,
         // unsupported runtimes, JSON parse errors, etc.) we fall back to flat service listing
         // with no profile grouping.

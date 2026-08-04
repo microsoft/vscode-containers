@@ -9,6 +9,7 @@ import type { ContainerGroupTreeItem } from "./ContainerGroupTreeItem";
 import { ContainerTreeItem } from "./ContainerTreeItem";
 import { DockerContainerInfo } from "./ContainersTreeItem";
 import { getComposeProfilesForContainer } from "./composeProfiles";
+import { getComposeServiceName } from "../../utils/composeLabels";
 
 /**
  * A tree item that represents a Docker Compose profile group (or the "Default" group
@@ -105,7 +106,7 @@ export class ComposeProfileGroupTreeItem extends AzExtParentTreeItem {
         const serviceNames = new Set<string>();
 
         for (const item of this._items) {
-            const serviceName = item.labels?.['com.docker.compose.service'];
+            const serviceName = getComposeServiceName(item.labels);
             if (serviceName) {
                 serviceNames.add(serviceName);
             }

@@ -10,7 +10,8 @@ import { LocalGroupTreeItemBase } from "../LocalGroupTreeItemBase";
 import { LocalRootTreeItemBase } from "../LocalRootTreeItemBase";
 import { getCommonGroupIcon } from "../settings/CommonProperties";
 import { ComposeProfileGroupTreeItem } from './ComposeProfileGroupTreeItem';
-import { getComposeProfilesForContainer, getComposeServiceProfiles, getComposeSourceFiles } from './composeProfiles';
+import { getComposeProfilesForContainer, getComposeServiceProfiles } from './composeProfiles';
+import { ComposeConfigFilesLabel, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory } from '../../utils/composeLabels';
 import { ContainerProperty, getContainerStateIcon, NonComposeGroupName } from "./ContainerProperties";
 import { DockerContainerInfo } from "./ContainersTreeItem";
 import { ContainerTreeItem } from './ContainerTreeItem';
@@ -73,11 +74,9 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
 
         const containers = super.ChildTreeItems as ContainerTreeItem[];
         const labels = await this.getComposeGroupLabels(containers);
-        const workingDirectory = labels && labels['com.docker.compose.project.working_dir'];
-        const composeFiles = labels ? getComposeSourceFiles(labels) : undefined;
-        const projectName = labels?.['com.docker.compose.project'];
-
-        ext.outputChannel.debug(`ContainerGroupTreeItem: workingDirectory=${workingDirectory}, composeFiles=${JSON.stringify(composeFiles)}`);
+        const workingDirectory = getComposeWorkingDirectory(labels);
+        const composeFiles = getComposeFiles(labels);
+        const projectName = getComposeProjectName(labels);
 
         if (!workingDirectory || !composeFiles?.length) {
             return super.loadMoreChildrenImpl(clearCache);
@@ -187,7 +186,7 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
     }
 
     private async getComposeGroupLabels(containers: ContainerTreeItem[]): Promise<{ [key: string]: string } | undefined> {
-        const container = containers.find(c => c.labels?.['com.docker.compose.project.config_files']);
+        const container = containers.find(c => c.labels?.[ComposeConfigFilesLabel]);
         if (!container) {
             return undefined;
         }

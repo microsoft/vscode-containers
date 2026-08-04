@@ -5,13 +5,13 @@
 
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
 import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
-import * as path from 'path';
 import { l10n, Uri, workspace } from 'vscode';
 import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ComposeProfileGroupTreeItem } from '../../tree/containers/ComposeProfileGroupTreeItem';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
+import { ComposeConfigFilesLabel, getComposeEnvFile, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory } from '../../utils/composeLabels';
 import { selectComposeLogsCommand } from '../selectCommandTemplate';
 
 type ComposeGroupNode = ContainerGroupTreeItem | ComposeProfileGroupTreeItem;
@@ -78,29 +78,7 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
         throw new Error(l10n.t('Unable to determine compose project info for group \'{0}\'.', getProjectLabel(node)));
     }
 
-    let profileArg: string[] | undefined;
-    let servicesArg: string[] | undefined;
-
-    if (node instanceof ComposeProfileGroupTreeItem && node.profileName) {
-        // Ask the user whether to apply the command with the profile flag (which includes default
-        // services too), only to the explicit service names in this profile (excluding defaults),
-        // or strictly to services exclusive to this profile.
-        const scope = await pickComposeProfileCommandScope(context, node, commandName);
-        if (scope === 'profile') {
-            // Use --profile flag: command affects both this profile's services AND default services
-            profileArg = [node.profileName];
-        } else if (scope === 'exclusive') {
-            // Use explicit service list for EXCLUSIVE services only
-            servicesArg = node.getExclusiveServiceNames();
-            if (servicesArg.length === 0) {
-                context.errorHandling.suppressReportIssue = true;
-                throw new Error(l10n.t('There are no services exclusive to the "{0}" profile.', node.label));
-            }
-        } else {
-            // Use explicit service list: command affects only the services belonging to this profile
-            servicesArg = node.getServiceNames();
-        }
-    }
+    const { profileArg, servicesArg } = await resolveComposeProfileArguments(context, node, commandName);
 
     const options: TOptions = {
         files: orchestratorFiles,
@@ -145,14 +123,14 @@ export function findContainerWithComposeConfig(node: ComposeGroupNode): Containe
     // For ContainerGroupTreeItem with profile sub-groups the direct children may be
     // ComposeProfileGroupTreeItem instances, so we search one level deeper in that case.
     let container = (node.ChildTreeItems as ContainerTreeItem[])
-        .find(c => c instanceof ContainerTreeItem && c.labels?.['com.docker.compose.project.config_files']) as ContainerTreeItem | undefined;
+        .find(c => c instanceof ContainerTreeItem && c.labels?.[ComposeConfigFilesLabel]) as ContainerTreeItem | undefined;
 
     if (!container && node instanceof ContainerGroupTreeItem) {
         // ContainerGroupTreeItem may have ComposeProfileGroupTreeItem children; search their children too
         for (const child of node.ChildTreeItems) {
             if (child instanceof ComposeProfileGroupTreeItem) {
                 container = (child.ChildTreeItems as ContainerTreeItem[])
-                    .find(c => c instanceof ContainerTreeItem && c.labels?.['com.docker.compose.project.config_files']) as ContainerTreeItem | undefined;
+                    .find(c => c instanceof ContainerTreeItem && c.labels?.[ComposeConfigFilesLabel]) as ContainerTreeItem | undefined;
                 if (container) {
                     break;
                 }
@@ -182,7 +160,8 @@ async function getComposeGroupLabels(node: ComposeGroupNode): Promise<{ [key: st
  * 'services' to apply only to the specific services in this profile,
  * or 'exclusive' to apply only to services that belong strictly to this profile.
  */
-async function pickComposeProfileCommandScope(context: IActionContext, node: ComposeProfileGroupTreeItem, commandName: string): Promise<'profile' | 'services' | 'exclusive'> {
+// Exported only for unit testing; not intended to be called outside this module.
+export async function pickComposeProfileCommandScope(context: IActionContext, node: ComposeProfileGroupTreeItem, commandName: string): Promise<'profile' | 'services' | 'exclusive'> {
     const exclusiveNames = node.getExclusiveServiceNames();
 
     const picks: IAzureQuickPickItem<'profile' | 'services' | 'exclusive'>[] = [
@@ -213,31 +192,35 @@ async function pickComposeProfileCommandScope(context: IActionContext, node: Com
 }
 
 // Exported only for unit testing; not intended to be called outside this module.
-export function getComposeWorkingDirectory(labels: { [key: string]: string }): string | undefined {
-    // The `com.docker.compose.project.working_dir` label gives the working directory in which to execute the compose command
-    return labels['com.docker.compose.project.working_dir'] || undefined;
+export async function resolveComposeProfileArguments(
+    context: IActionContext,
+    node: ComposeGroupNode,
+    commandName: string
+): Promise<{ profileArg?: string[]; servicesArg?: string[] }> {
+    let profileArg: string[] | undefined;
+    let servicesArg: string[] | undefined;
+
+    if (node instanceof ComposeProfileGroupTreeItem && node.profileName) {
+        // Ask the user whether to apply the command with the profile flag (which includes default
+        // services too), only to the explicit service names in this profile (excluding defaults),
+        // or strictly to services exclusive to this profile.
+        const scope = await pickComposeProfileCommandScope(context, node, commandName);
+        if (scope === 'profile') {
+            // Use --profile flag: command affects both this profile's services AND default services
+            profileArg = [node.profileName];
+        } else if (scope === 'exclusive') {
+            // Use explicit service list for EXCLUSIVE services only
+            servicesArg = node.getExclusiveServiceNames();
+            if (servicesArg.length === 0) {
+                context.errorHandling.suppressReportIssue = true;
+                throw new Error(l10n.t('There are no services exclusive to the "{0}" profile.', node.label));
+            }
+        } else {
+            // Use explicit service list: command affects only the services belonging to this profile
+            servicesArg = node.getServiceNames();
+        }
+    }
+
+    return { profileArg, servicesArg };
 }
 
-// Exported only for unit testing; not intended to be called outside this module.
-export function getComposeFiles(labels: { [key: string]: string }): string[] | undefined {
-    // The `com.docker.compose.project.config_files` label gives all the compose files (within the working directory) used to up this container
-
-    // Paths may be subpaths, but working dir generally always directly contains the config files, so unless the file is already absolute, let's cut off the subfolder and get just the file name
-    // (In short, the working dir may not be the same as the cwd when the docker-compose up command was called, BUT the files are relative to that cwd)
-    // Note, it appears compose v2 *always* uses absolute paths, both for this and `working_dir`
-    return labels['com.docker.compose.project.config_files']
-        ?.split(',')
-        ?.map(f => path.isAbsolute(f) ? f : path.parse(f).base);
-}
-
-// Exported only for unit testing; not intended to be called outside this module.
-export function getComposeProjectName(labels: { [key: string]: string }): string | undefined {
-    // The `com.docker.compose.project` label gives the project name
-    return labels['com.docker.compose.project'] || undefined;
-}
-
-// Exported only for unit testing; not intended to be called outside this module.
-export function getComposeEnvFile(labels: { [key: string]: string }): string | undefined {
-    // The `com.docker.compose.project.environment_file` label gives the environment file absolute path
-    return labels['com.docker.compose.project.environment_file'] || undefined;
-}
