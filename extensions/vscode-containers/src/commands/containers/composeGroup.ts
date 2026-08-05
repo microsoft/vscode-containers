@@ -29,7 +29,9 @@ export async function composeGroupLogs(context: IActionContext, node: ComposeGro
         const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? Uri.file(workingDirectory);
 
         const composeFilesString = options.files?.map(file => `-f "${file}"`).join(' ');
-        return selectComposeLogsCommand(context, folder, composeFilesString, options.projectName, options.environmentFile);
+        const profileListString = options.profiles?.map(profile => `--profile "${profile}"`).join(' ');
+        const serviceListString = options.services?.join(' ');
+        return selectComposeLogsCommand(context, folder, composeFilesString, options.projectName, options.environmentFile, profileListString, serviceListString);
     }, node, 'logs', { follow: true, tail: 1000 });
 }
 

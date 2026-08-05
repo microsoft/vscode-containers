@@ -1846,7 +1846,7 @@
                     "default": [
                         {
                             "label": "Compose Logs",
-                            "template": "${composeCommand} ${configurationFile} ${projectName} ${environmentFile} logs --tail 1000 -f"
+                            "template": "${composeCommand} ${profileList} ${configurationFile} ${projectName} ${environmentFile} logs --tail 1000 -f ${serviceList}"
                         }
                     ],
                     "description": "%vscode-containers.config.template.composeLogs.description%",
