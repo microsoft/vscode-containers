@@ -81,7 +81,7 @@
     "vscode-containers.tasks.docker-run.dockerRun.ports.description": "Ports that are going to be mapped on the host.",
     "vscode-containers.tasks.docker-run.dockerRun.ports.hostPort": "Port number to be bound on the host.",
     "vscode-containers.tasks.docker-run.dockerRun.ports.containerPort": "Port number of the container to be bound.",
-    "vscode-containers.tasks.docker-run.dockerRun.ports.protocol": "Specific protocol for the binding (`tcp | udp`).",
+    "vscode-containers.tasks.docker-run.dockerRun.ports.protocol": "Specific protocol for the binding (`tcp | udp | sctp`).",
     "vscode-containers.tasks.docker-run.dockerRun.portsPublishAll": "Whether to publish all exposed container ports to random ports on the host.",
     "vscode-containers.tasks.docker-run.dockerRun.remove": "Whether to clean up the container and remove the file system when the container exits.",
     "vscode-containers.tasks.docker-run.dockerRun.extraHosts.description": "Hosts to be added to the container's `hosts` file for DNS resolution.",

@@ -6,7 +6,7 @@
 import * as z from 'zod/mini';
 import type { ListContainersItem, PortBinding } from '../../contracts/ContainerClient';
 import { imageNameSchema, labelsStringSchema } from '../../contracts/ZodTransforms';
-import { parseDockerRawPortString } from './parseDockerRawPortString';
+import { expandDockerRawPortString } from './parseDockerRawPortString';
 import { resolveCreatedAt, type CreatedAtMode } from './resolveCreatedAt';
 
 /**
@@ -186,9 +186,9 @@ function resolvePorts(portsStr: string | undefined, strict: boolean, throwOnUnpa
             continue;
         }
 
-        const parsed = parseDockerRawPortString(trimmed);
+        const parsed = expandDockerRawPortString(trimmed);
         if (parsed) {
-            ports.push(parsed);
+            ports.push(...parsed);
         } else if (strict && throwOnUnparseablePort) {
             throw new Error('Invalid container JSON');
         }

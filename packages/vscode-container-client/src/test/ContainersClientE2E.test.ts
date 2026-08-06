@@ -41,6 +41,7 @@ const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_
  */
 export const KeepAliveEntrypoint = 'tail';
 export const KeepAliveCommand = ['-f', '/dev/null'];
+const dockerPortRange = [55000, 55001, 55002];
 
 // wslc does not support the `--expose` flag on `run`, but it does support
 // network create/list/inspect/remove/prune.
@@ -395,7 +396,10 @@ describe('(integration) ContainersClientE2E', function () {
                     ],
                     ports: clientTypeToTest === 'nerdctl'
                         ? [{ hostPort: 8080, containerPort: 80 }, { hostPort: 3000, containerPort: 3000 }]
-                        : [{ hostPort: 8080, containerPort: 80 }],
+                        : clientTypeToTest === 'docker' ? [
+                            { hostPort: 8080, containerPort: 80 },
+                            ...dockerPortRange.map(port => ({ hostPort: port, containerPort: port })),
+                        ] : [{ hostPort: 8080, containerPort: 80 }],
                     // wslc has no --expose flag; rootless nerdctl cannot auto-allocate host ports
                     exposePorts: (clientTypeToTest === 'nerdctl' || !supportsExposeFlag) ? undefined : [3000],
                     publishAllPorts: clientTypeToTest === 'nerdctl' ? undefined : true, // Rootless nerdctl cannot auto-allocate host ports
@@ -465,6 +469,11 @@ describe('(integration) ContainersClientE2E', function () {
                 expect(container.ports.length).to.be.greaterThanOrEqual(0);
             } else {
                 expect(container.ports.some(p => p.hostPort === 8080 && p.containerPort === 80)).to.be.true;
+                if (clientTypeToTest === 'docker') {
+                    for (const port of dockerPortRange) {
+                        expect(container.ports.some(p => p.hostPort === port && p.containerPort === port)).to.be.true;
+                    }
+                }
                 if (supportsExposeFlag) {
                     // Exposed port with random binding - Finch uses -p <containerPort> as equivalent to --expose + --publish-all
                     // wslc has no --expose flag, so no random-binding port to validate
