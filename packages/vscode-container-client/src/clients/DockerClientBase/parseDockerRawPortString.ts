@@ -37,6 +37,7 @@ export function parseExposedPortKey(key: string): { containerPort: number; proto
 
 const shortFormRegex = /^(?<containerPort>\d+)\/(?<protocol>tcp|udp)$/i;
 const shortRangeFormRegex = /^(?<containerPortStart>\d+)-(?<containerPortEnd>\d+)\/(?<protocol>tcp|udp)$/i;
+const maxPort = 65535;
 
 // Supports:
 // - hostPort->containerPort[/protocol]
@@ -100,7 +101,7 @@ export function parseDockerRawPortStringList(portString: string): PortBinding[] 
     if (shortRangeMatch?.groups) {
         const containerPortStart = Number.parseInt(shortRangeMatch.groups.containerPortStart, 10);
         const containerPortEnd = Number.parseInt(shortRangeMatch.groups.containerPortEnd, 10);
-        if (containerPortEnd < containerPortStart) {
+        if (!isValidPortRange(containerPortStart, containerPortEnd)) {
             return undefined;
         }
 
@@ -122,7 +123,11 @@ export function parseDockerRawPortStringList(portString: string): PortBinding[] 
     const containerPortEnd = Number.parseInt(longRangeMatch.groups.containerPortEnd, 10);
     const hostRangeLength = hostPortEnd - hostPortStart;
     const containerRangeLength = containerPortEnd - containerPortStart;
-    if (hostRangeLength < 0 || hostRangeLength !== containerRangeLength) {
+    if (
+        !isValidPortRange(hostPortStart, hostPortEnd)
+        || !isValidPortRange(containerPortStart, containerPortEnd)
+        || hostRangeLength !== containerRangeLength
+    ) {
         return undefined;
     }
 
@@ -137,4 +142,12 @@ export function parseDockerRawPortStringList(portString: string): PortBinding[] 
             protocol,
         }),
     );
+}
+
+function isValidPortRange(start: number, end: number): boolean {
+    return Number.isSafeInteger(start)
+        && Number.isSafeInteger(end)
+        && start >= 0
+        && end >= start
+        && end <= maxPort;
 }

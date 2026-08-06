@@ -87,5 +87,8 @@ describe('(unit) parseDockerRawPortString', () => {
     it('Should reject invalid port ranges', () => {
         expect(parseDockerRawPortStringList('10002-10000/tcp')).to.be.undefined;
         expect(parseDockerRawPortStringList('10000-10001->10000-10002/tcp')).to.be.undefined;
+        expect(parseDockerRawPortStringList('1-999999999999/tcp')).to.be.undefined;
+        expect(parseDockerRawPortStringList('1-999999999999->1-999999999999/tcp')).to.be.undefined;
+        expect(parseDockerRawPortStringList('65535-65536/tcp')).to.be.undefined;
     });
 });
