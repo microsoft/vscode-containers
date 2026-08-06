@@ -29,7 +29,7 @@ async function expectRejection(promiseOrFn: Promise<unknown> | (() => Promise<un
 }
 
 // Fixtures below are trimmed from real `container` CLI 1.2.0 output captured on real Apple
-// Silicon hardware (see apple-container-poc-plan.md at the repo root), not hand-guessed shapes.
+// Silicon hardware, not hand-guessed shapes.
 
 const alpineImageListRecord = {
     id: '28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b',
@@ -95,6 +95,96 @@ const pocContainerInspectRecord = {
     },
 };
 
+// Captured from a real `container run -d --mount type=volume,source=poc-vol,destination=/data
+// -p 8080:80 alpine:3.19 sleep 300` (CLI 1.2.0).
+const mountedPublishedContainerRecord = {
+    id: 'poc-mount-test2',
+    configuration: {
+        creationDate: '2026-08-06T04:39:50Z',
+        image: {
+            descriptor: { digest: 'sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1', mediaType: 'application/vnd.oci.image.index.v1+json', size: 8077 },
+            reference: 'docker.io/library/alpine:3.19',
+        },
+        initProcess: {
+            arguments: ['300'],
+            environment: ['PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'],
+            executable: 'sleep',
+            workingDirectory: '/',
+        },
+        labels: {},
+        mounts: [
+            {
+                destination: '/data',
+                options: [],
+                source: '/Users/victorpuga/Library/Application Support/com.apple.container/volumes/poc-vol/volume.img',
+                type: { volume: { name: 'poc-vol' } },
+            },
+        ],
+        networks: [{ network: 'default', options: { hostname: 'poc-mount-test2', mtu: 1280 } }],
+        publishedPorts: [{ containerPort: 80, count: 1, hostAddress: '0.0.0.0', hostPort: 8080, proto: 'tcp' }],
+    },
+    status: {
+        networks: [],
+        startedDate: '2026-08-06T04:39:51Z',
+        state: 'running',
+    },
+};
+
+// Captured from a real `container run -d --mount type=bind,source=$PWD/bindhost,
+// destination=/hostdata,readonly alpine:3.19 sleep 300`.
+const readonlyBindMount = {
+    destination: '/hostdata',
+    options: ['ro'],
+    source: '/Users/victorpuga/bindhost',
+    type: { virtiofs: {} },
+};
+
+// Captured from a real `container run -d -p 9090:80 -p 127.0.0.1:9091:81/udp ...`.
+const multiPublishedPorts = [
+    { containerPort: 80, count: 1, hostAddress: '0.0.0.0', hostPort: 9090, proto: 'tcp' },
+    { containerPort: 81, count: 1, hostAddress: '127.0.0.1', hostPort: 9091, proto: 'udp' },
+];
+
+const alpineVolumeListRecord = {
+    id: 'poc-vol',
+    configuration: {
+        creationDate: '2026-08-06T04:39:04Z',
+        driver: 'local',
+        format: 'ext4',
+        labels: {},
+        name: 'poc-vol',
+        options: {},
+        sizeInBytes: 549755813888,
+        source: '/Users/victorpuga/Library/Application Support/com.apple.container/volumes/poc-vol/volume.img',
+    },
+};
+
+const defaultNetworkListRecord = {
+    id: 'default',
+    configuration: {
+        creationDate: '2026-08-06T04:38:28Z',
+        labels: { 'com.apple.container.resource.role': 'builtin' },
+        mode: 'nat',
+        name: 'default',
+        options: {},
+        plugin: 'container-network-vmnet',
+    },
+    status: { ipv4Gateway: '192.168.64.1', ipv4Subnet: '192.168.64.0/24', ipv6Subnet: 'fd57:9cd7:94e6:49e0::/64' },
+};
+
+const internalNetworkListRecord = {
+    id: 'poc-net-internal',
+    configuration: {
+        creationDate: '2026-08-06T04:47:15Z',
+        labels: {},
+        mode: 'hostOnly',
+        name: 'poc-net-internal',
+        options: {},
+        plugin: 'container-network-vmnet',
+    },
+    status: { ipv4Gateway: '192.168.128.1', ipv4Subnet: '192.168.128.0/24', ipv6Subnet: 'fdb1:d6d8:6480:99dd::/64' },
+};
+
 describe('(unit) AppleContainerClient', () => {
     const client = new AppleContainerClient();
 
@@ -141,6 +231,18 @@ describe('(unit) AppleContainerClient', () => {
 
         it('restartContainers rejects with CommandNotSupportedError', async () => {
             await expectRejection(client.restartContainers({ container: ['abc'] }));
+        });
+    });
+
+    describe('#login()/#logout()', () => {
+        it('Produces `registry login` args (not top-level `login`, which does not exist)', async () => {
+            const response = await client.login({ registry: 'ghcr.io', username: 'me', passwordStdIn: true });
+            expect(asStrings(response.args)).to.deep.equal(['registry', 'login', '--username', 'me', '--password-stdin', 'ghcr.io']);
+        });
+
+        it('Produces `registry logout` args (not top-level `logout`)', async () => {
+            const response = await client.logout({ registry: 'ghcr.io' });
+            expect(asStrings(response.args)).to.deep.equal(['registry', 'logout', 'ghcr.io']);
         });
     });
 
@@ -220,6 +322,31 @@ describe('(unit) AppleContainerClient', () => {
         });
     });
 
+    describe('#pruneImages()', () => {
+        it('Produces `image prune` args without --force (confirmed unsupported)', async () => {
+            const response = await client.pruneImages({});
+            expect(asStrings(response.args)).to.deep.equal(['image', 'prune']);
+        });
+
+        it('Includes --all when requested', async () => {
+            const response = await client.pruneImages({ all: true });
+            expect(asStrings(response.args)).to.include('--all');
+        });
+
+        it('Parses "Reclaimed X in disk space" + "deleted <digest>" lines (real 1.2.0 output)', async () => {
+            const response = await client.pruneImages({});
+            const output = 'Reclaimed 81.2 MB in disk space\n'
+                + 'deleted 65d86f451d12fb1de9db57a9226a899d80a0897cf0f1645faa565be3a268e621\n'
+                + 'deleted 3be987e6cde1d07e873c012bf6cfe941e6e85d16ca5fc5b8bedc675451d2de67\n';
+            const result = await response.parse(output, true);
+            expect(result.imageRefsDeleted).to.deep.equal([
+                '65d86f451d12fb1de9db57a9226a899d80a0897cf0f1645faa565be3a268e621',
+                '3be987e6cde1d07e873c012bf6cfe941e6e85d16ca5fc5b8bedc675451d2de67',
+            ]);
+            expect(result.spaceReclaimed).to.equal(Math.round(81.2 * 1024 * 1024));
+        });
+    });
+
     describe('#runContainer()', () => {
         it('Emits supported flags with bare `run` (not `container run`)', async () => {
             const response = await client.runContainer({
@@ -252,15 +379,14 @@ describe('(unit) AppleContainerClient', () => {
             expect(args).to.include('alpine:latest');
         });
 
-        it('Emits --mount with target= (not destination=)', async () => {
+        it('Emits --mount with destination= (confirmed accepted by the real CLI)', async () => {
             const response = await client.runContainer({
                 imageRef: 'alpine:latest',
                 mounts: [{ type: 'bind', source: '/host/src', destination: '/src', readOnly: true }],
             });
             const args = asStrings(response.args);
             expect(args).to.include('--mount');
-            expect(args).to.include('type=bind,source=/host/src,target=/src,readonly');
-            expect(args).to.not.include('destination=/src');
+            expect(args).to.include('type=bind,source=/host/src,destination=/src,readonly');
         });
 
         it('Throws when publishAllPorts is set', async () => {
@@ -419,6 +545,21 @@ describe('(unit) AppleContainerClient', () => {
         });
     });
 
+    describe('#pruneContainers()', () => {
+        it('Produces `prune` args without --force (confirmed unsupported; also drops the base\'s wrong `container prune` noun)', async () => {
+            const response = await client.pruneContainers({});
+            expect(asStrings(response.args)).to.deep.equal(['prune']);
+        });
+
+        it('Parses "Reclaimed X in disk space" + one hyphenated name per line (real 1.2.0 output)', async () => {
+            const response = await client.pruneContainers({});
+            const output = 'Reclaimed 4.12 GB in disk space\npoc-bind-test\nprune-container-test\npoc-mount-test2\n';
+            const result = await response.parse(output, true);
+            expect(result.containersDeleted).to.deep.equal(['poc-bind-test', 'prune-container-test', 'poc-mount-test2']);
+            expect(result.spaceReclaimed).to.equal(Math.round(4.12 * 1024 * 1024 * 1024));
+        });
+    });
+
     describe('#inspectContainers()', () => {
         it('Produces bare `inspect` args with no --format flag (confirmed unsupported)', async () => {
             const response = await client.inspectContainers({ containers: ['poc-test'] });
@@ -436,6 +577,219 @@ describe('(unit) AppleContainerClient', () => {
             expect(items[0].networks[0]).to.include({ name: 'default', ipAddress: '192.168.65.2/24' });
             // imageId keeps the sha256: prefix (matches SharedInspectContainerRecord's form).
             expect(items[0].imageId).to.equal('sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b');
+        });
+
+        it('Parses published ports (from configuration.publishedPorts)', async () => {
+            const response = await client.inspectContainers({ containers: ['poc-mount-test2'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items[0].ports).to.deep.equal([{ containerPort: 80, hostPort: 8080, hostIp: '0.0.0.0', protocol: 'tcp' }]);
+        });
+
+        it('Expands a port range (`count` > 1) into `count` individual bindings', async () => {
+            const ranged = { ...mountedPublishedContainerRecord, configuration: { ...mountedPublishedContainerRecord.configuration, publishedPorts: [{ containerPort: 80, count: 3, hostAddress: '0.0.0.0', hostPort: 9090, proto: 'tcp' }] } };
+            const response = await client.inspectContainers({ containers: ['poc-mount-test2'] });
+            const items = await response.parse(JSON.stringify([ranged]), true);
+            expect(items[0].ports).to.deep.equal([
+                { containerPort: 80, hostPort: 9090, hostIp: '0.0.0.0', protocol: 'tcp' },
+                { containerPort: 81, hostPort: 9091, hostIp: '0.0.0.0', protocol: 'tcp' },
+                { containerPort: 82, hostPort: 9092, hostIp: '0.0.0.0', protocol: 'tcp' },
+            ]);
+        });
+
+        it('Parses a udp port with a specific host IP', async () => {
+            const withUdp = { ...mountedPublishedContainerRecord, configuration: { ...mountedPublishedContainerRecord.configuration, publishedPorts: multiPublishedPorts } };
+            const response = await client.inspectContainers({ containers: ['poc-mount-test2'] });
+            const items = await response.parse(JSON.stringify([withUdp]), true);
+            expect(items[0].ports).to.deep.equal([
+                { containerPort: 80, hostPort: 9090, hostIp: '0.0.0.0', protocol: 'tcp' },
+                { containerPort: 81, hostPort: 9091, hostIp: '127.0.0.1', protocol: 'udp' },
+            ]);
+        });
+
+        it('Parses a volume mount, using the volume name (not the backing file path) as source', async () => {
+            const response = await client.inspectContainers({ containers: ['poc-mount-test2'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items[0].mounts).to.deep.equal([{ type: 'volume', source: 'poc-vol', destination: '/data', readOnly: false }]);
+        });
+
+        it('Parses a readonly bind mount, reading readOnly from `options` (not a dedicated field)', async () => {
+            const withBind = { ...mountedPublishedContainerRecord, configuration: { ...mountedPublishedContainerRecord.configuration, mounts: [readonlyBindMount] } };
+            const response = await client.inspectContainers({ containers: ['poc-mount-test2'] });
+            const items = await response.parse(JSON.stringify([withBind]), true);
+            expect(items[0].mounts).to.deep.equal([{ type: 'bind', source: '/Users/victorpuga/bindhost', destination: '/hostdata', readOnly: true }]);
+        });
+    });
+
+    describe('imageAncestors/volumes/networks list filters', () => {
+        it('Filters by imageAncestors matching the name:tag reference (the value ImageTreeItem.imageId actually passes)', async () => {
+            const response = await client.listContainers({ imageAncestors: ['docker.io/library/alpine:3.19'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items).to.have.lengthOf(1);
+        });
+
+        it('Filters by imageAncestors matching the manifest digest as a fallback', async () => {
+            const response = await client.listContainers({ imageAncestors: ['sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items).to.have.lengthOf(1);
+        });
+
+        it('Excludes non-matching imageAncestors', async () => {
+            const response = await client.listContainers({ imageAncestors: ['docker.io/library/busybox:latest'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items).to.have.lengthOf(0);
+        });
+
+        it('Filters by volumes matching a mount\'s `type.volume.name`', async () => {
+            const response = await client.listContainers({ volumes: ['poc-vol'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items).to.have.lengthOf(1);
+        });
+
+        it('Excludes non-matching volumes', async () => {
+            const response = await client.listContainers({ volumes: ['other-vol'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items).to.have.lengthOf(0);
+        });
+
+        it('Filters by networks matching the already-normalized item.networks', async () => {
+            const response = await client.listContainers({ networks: ['default'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items).to.have.lengthOf(1);
+        });
+
+        it('Excludes non-matching networks', async () => {
+            const response = await client.listContainers({ networks: ['other-net'] });
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items).to.have.lengthOf(0);
+        });
+    });
+
+    describe('#listContainers() published ports', () => {
+        it('Parses published ports (list output carries configuration.publishedPorts too)', async () => {
+            const response = await client.listContainers({});
+            const items = await response.parse(JSON.stringify([mountedPublishedContainerRecord]), true);
+            expect(items[0].ports).to.deep.equal([{ containerPort: 80, hostPort: 8080, hostIp: '0.0.0.0', protocol: 'tcp' }]);
+        });
+    });
+
+    describe('#createVolume()', () => {
+        it('Produces `volume create <name>` args (no --driver flag exists)', async () => {
+            const response = await client.createVolume({ name: 'my-vol' });
+            expect(asStrings(response.args)).to.deep.equal(['volume', 'create', 'my-vol']);
+        });
+
+        it('Throws when a driver is requested (confirmed unsupported)', async () => {
+            await expectRejection(() => client.createVolume({ name: 'my-vol', driver: 'somedriver' }));
+        });
+    });
+
+    describe('#listVolumes()', () => {
+        it('Produces `volume list --format json` args with no --filter flags', async () => {
+            const response = await client.listVolumes({ driver: 'local', labels: { foo: 'bar' } });
+            expect(asStrings(response.args)).to.deep.equal(['volume', 'list', '--format', 'json']);
+        });
+
+        it('Parses the nested volume shape', async () => {
+            const response = await client.listVolumes({});
+            const items = await response.parse(JSON.stringify([alpineVolumeListRecord]), true);
+            expect(items).to.have.lengthOf(1);
+            expect(items[0]).to.include({ name: 'poc-vol', driver: 'local', scope: 'local', size: 549755813888 });
+        });
+
+        it('Filters by driver client-side', async () => {
+            const response = await client.listVolumes({ driver: 'nfs' });
+            const items = await response.parse(JSON.stringify([alpineVolumeListRecord]), true);
+            expect(items).to.have.lengthOf(0);
+        });
+    });
+
+    describe('#removeVolumes()', () => {
+        it('Produces `volume delete` args (not `volume rm`, no --force)', async () => {
+            const response = await client.removeVolumes({ volumes: ['my-vol'], force: true });
+            expect(asStrings(response.args)).to.deep.equal(['volume', 'delete', 'my-vol']);
+        });
+    });
+
+    describe('#pruneVolumes()', () => {
+        it('Produces `volume prune` args with no options at all (confirmed unsupported)', async () => {
+            const response = await client.pruneVolumes({});
+            expect(asStrings(response.args)).to.deep.equal(['volume', 'prune']);
+        });
+
+        it('Parses "Reclaimed X in disk space" with no per-volume deleted-name list (real 1.2.0 output)', async () => {
+            const response = await client.pruneVolumes({});
+            const result = await response.parse('Reclaimed 69.4 MB in disk space\n', true);
+            expect(result.spaceReclaimed).to.equal(Math.round(69.4 * 1024 * 1024));
+            expect(result.volumesDeleted).to.be.undefined;
+        });
+    });
+
+    describe('#inspectVolumes()', () => {
+        it('Produces bare `volume inspect` args with no --format flag (confirmed unsupported)', async () => {
+            const response = await client.inspectVolumes({ volumes: ['poc-vol'] });
+            expect(asStrings(response.args)).to.deep.equal(['volume', 'inspect', 'poc-vol']);
+        });
+
+        it('Parses the same nested shape `volume list` uses', async () => {
+            const response = await client.inspectVolumes({ volumes: ['poc-vol'] });
+            const items = await response.parse(JSON.stringify([alpineVolumeListRecord]), true);
+            expect(items[0]).to.include({ name: 'poc-vol', driver: 'local', mountpoint: alpineVolumeListRecord.configuration.source, scope: 'local' });
+        });
+    });
+
+    describe('#createNetwork()', () => {
+        it('Produces `network create <name>` args, mapping driver onto --plugin (no --driver flag exists)', async () => {
+            const response = await client.createNetwork({ name: 'my-net', driver: 'container-network-vmnet' });
+            expect(asStrings(response.args)).to.deep.equal(['network', 'create', '--plugin', 'container-network-vmnet', 'my-net']);
+        });
+    });
+
+    describe('#listNetworks()', () => {
+        it('Produces `network list --format json` args with no --filter flags', async () => {
+            const response = await client.listNetworks({ driver: 'container-network-vmnet' });
+            expect(asStrings(response.args)).to.deep.equal(['network', 'list', '--format', 'json']);
+        });
+
+        it('Parses the nested network shape, including `internal` from mode', async () => {
+            const response = await client.listNetworks({});
+            const items = await response.parse(JSON.stringify([defaultNetworkListRecord, internalNetworkListRecord]), true);
+            expect(items).to.have.lengthOf(2);
+            expect(items[0]).to.include({ name: 'default', driver: 'container-network-vmnet', internal: false });
+            expect(items[1]).to.include({ name: 'poc-net-internal', internal: true });
+        });
+    });
+
+    describe('#removeNetworks()', () => {
+        it('Produces `network delete` args (not `network remove`, no --force)', async () => {
+            const response = await client.removeNetworks({ networks: ['my-net'], force: true });
+            expect(asStrings(response.args)).to.deep.equal(['network', 'delete', 'my-net']);
+        });
+    });
+
+    describe('#pruneNetworks()', () => {
+        it('Produces `network prune` args with no options at all (confirmed unsupported)', async () => {
+            const response = await client.pruneNetworks({});
+            expect(asStrings(response.args)).to.deep.equal(['network', 'prune']);
+        });
+
+        it('Parses one bare deleted-network name per line, with no "Reclaimed" summary at all (real 1.2.0 output)', async () => {
+            const response = await client.pruneNetworks({});
+            const result = await response.parse('prune-net-1\nprune-net-2\n', true);
+            expect(result.networksDeleted).to.deep.equal(['prune-net-1', 'prune-net-2']);
+        });
+    });
+
+    describe('#inspectNetworks()', () => {
+        it('Produces bare `network inspect` args with no --format flag (confirmed unsupported)', async () => {
+            const response = await client.inspectNetworks({ networks: ['default'] });
+            expect(asStrings(response.args)).to.deep.equal(['network', 'inspect', 'default']);
+        });
+
+        it('Parses the same nested shape `network list` uses, including IPAM from status', async () => {
+            const response = await client.inspectNetworks({ networks: ['default'] });
+            const items = await response.parse(JSON.stringify([defaultNetworkListRecord]), true);
+            expect(items[0]).to.include({ name: 'default', driver: 'container-network-vmnet' });
+            expect(items[0].ipam).to.deep.equal({ driver: 'default', config: [{ subnet: '192.168.64.0/24', gateway: '192.168.64.1' }] });
         });
     });
 });

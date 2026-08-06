@@ -7,9 +7,22 @@ import * as z from 'zod/mini';
 import type { ListContainersItem } from '../../contracts/ContainerClient';
 import { dateStringWithFallbackSchema } from '../../contracts/ZodTransforms';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
+import { AppleContainerPublishedPortSchema, normalizeAppleContainerPublishedPorts } from './AppleContainerPublishedPort';
 
 const AppleContainerNetworkAttachmentSchema = z.object({
     network: z.optional(z.string()),
+});
+
+/**
+ * Only the `type.volume.name` sliver is needed here (to match the `volumes` list filter) --
+ * see `AppleContainerInspectContainerRecord.ts` for the full mount shape used by `inspect`.
+ */
+const AppleContainerMountVolumeRefSchema = z.object({
+    type: z.optional(z.object({
+        volume: z.optional(z.object({
+            name: z.optional(z.string()),
+        })),
+    })),
 });
 
 /**
@@ -24,9 +37,14 @@ export const AppleContainerListContainerRecordSchema = z.object({
         creationDate: z.optional(dateStringWithFallbackSchema),
         image: z.object({
             reference: z.optional(z.string()),
+            descriptor: z.optional(z.object({
+                digest: z.optional(z.string()),
+            })),
         }),
         labels: z.optional(z.record(z.string(), z.string())),
         networks: z.optional(z.array(AppleContainerNetworkAttachmentSchema)),
+        mounts: z.optional(z.array(AppleContainerMountVolumeRefSchema)),
+        publishedPorts: z.optional(z.array(AppleContainerPublishedPortSchema)),
     }),
     status: z.object({
         state: z.optional(z.string()),
@@ -63,9 +81,7 @@ export function normalizeAppleContainerListContainerRecord(container: AppleConta
         name: container.id,
         labels: container.configuration.labels ?? {},
         image: parseDockerLikeImageName(container.configuration.image.reference),
-        // `configuration.publishedPorts` shape hasn't been captured against a real `--publish`
-        // run yet; left empty rather than guessing field names. Fill in once verified.
-        ports: [],
+        ports: normalizeAppleContainerPublishedPorts(container.configuration.publishedPorts),
         networks: (container.configuration.networks ?? [])
             .map((attachment) => attachment.network)
             .filter((name): name is string => !!name),

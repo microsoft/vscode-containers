@@ -15,6 +15,8 @@ import {
 import type { GeneratorCommandResponse, PromiseCommandResponse } from '../../contracts/CommandRunner';
 import type {
     CheckInstallCommandOptions,
+    CreateNetworkCommandOptions,
+    CreateVolumeCommandOptions,
     EventItem,
     EventStreamCommandOptions,
     ExecContainerCommandOptions,
@@ -24,13 +26,33 @@ import type {
     InspectContainersItem,
     InspectImagesCommandOptions,
     InspectImagesItem,
+    InspectNetworksCommandOptions,
+    InspectNetworksItem,
+    InspectVolumesCommandOptions,
+    InspectVolumesItem,
     ListContainersCommandOptions,
     ListContainersItem,
     ListImagesCommandOptions,
     ListImagesItem,
+    ListNetworkItem,
+    ListNetworksCommandOptions,
+    ListVolumeItem,
+    ListVolumesCommandOptions,
+    LoginCommandOptions,
+    LogoutCommandOptions,
     LogsForContainerCommandOptions,
+    PruneContainersCommandOptions,
+    PruneContainersItem,
+    PruneImagesCommandOptions,
+    PruneImagesItem,
+    PruneNetworksCommandOptions,
+    PruneNetworksItem,
+    PruneVolumesCommandOptions,
+    PruneVolumesItem,
     PullImageCommandOptions,
     RemoveContainersCommandOptions,
+    RemoveNetworksCommandOptions,
+    RemoveVolumesCommandOptions,
     RestartContainersCommandOptions,
     RunContainerCommandOptions,
     StartContainersCommandOptions,
@@ -41,23 +63,52 @@ import type {
 import type { IContainersClient } from '../../contracts/ContainerClient';
 import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
 import { DockerClientBase } from '../DockerClientBase/DockerClientBase';
+import { filterByLabelsAndDriver } from '../DockerClientBase/filterByLabelsAndDriver';
+import { matchesLabelFilters } from '../DockerClientBase/matchesLabelFilters';
+import { parsePruneLikeOutput } from '../DockerClientBase/parsePruneLikeOutput';
+import { tryParseSize } from '../DockerClientBase/tryParseSize';
 import { withDockerEnvArg } from '../DockerClientBase/withDockerEnvArg';
 import { withDockerLabelsArg } from '../DockerClientBase/withDockerLabelsArg';
+import { withDockerMountsArg } from '../DockerClientBase/withDockerMountsArg';
 import { withDockerPlatformArg } from '../DockerClientBase/withDockerPlatformArg';
 import { withDockerPortsArg } from '../DockerClientBase/withDockerPortsArg';
-import { matchesLabelFilters } from '../DockerClientBase/matchesLabelFilters';
 import { AppleContainerInspectContainerRecordSchema, normalizeAppleContainerInspectContainerRecord } from './AppleContainerInspectContainerRecord';
 import { AppleContainerInspectImageRecordSchema, normalizeAppleContainerInspectImageRecord } from './AppleContainerInspectImageRecord';
-import { AppleContainerListContainerRecordSchema, normalizeAppleContainerListContainerRecord } from './AppleContainerListContainerRecord';
+import { AppleContainerListContainerRecordSchema, normalizeAppleContainerListContainerRecord, type AppleContainerListContainerRecord } from './AppleContainerListContainerRecord';
 import { AppleContainerListImageRecordSchema, normalizeAppleContainerListImageRecord } from './AppleContainerListImageRecord';
+import { AppleContainerListNetworkRecordSchema, normalizeAppleContainerListNetworkRecord, normalizeAppleContainerInspectNetworkRecord } from './AppleContainerListNetworkRecord';
+import { AppleContainerListVolumeRecordSchema, normalizeAppleContainerListVolumeRecord, normalizeAppleContainerInspectVolumeRecord } from './AppleContainerListVolumeRecord';
+
+/**
+ * `container prune`/`image prune`/`volume prune`/`network prune` all report a
+ * `Reclaimed X in disk space` summary line (not Docker's `Total reclaimed space:`); `volume
+ * prune` and `network prune` omit it entirely for volumes (no size line at all) and include it
+ * for networks... -- see the per-command overrides below for the exact shape of each, since no
+ * two of the four are identical.
+ */
+const AppleContainerReclaimedSpaceRegex = /^Reclaimed\s+([\d.]+\s*[KMGT]?B)\s+in disk space$/im;
+
+function parseAppleContainerReclaimedSpace(output: string): number | undefined {
+    const match = AppleContainerReclaimedSpaceRegex.exec(output);
+    return match ? tryParseSize(match[1]) : undefined;
+}
+
+// Bare resource names/IDs, one per line -- used for `container prune`'s deleted-container list.
+// Docker's default `parsePruneLikeOutput` resource regex (`^(\w+)$`) doesn't allow the hyphens
+// container names commonly have (e.g. `poc-mount-test2`), so this client needs its own.
+const AppleContainerPruneResourceRegex = /^([\w.-]+)$/gm;
+
+// `image prune` reports each deleted image as `deleted <digest>` (lowercase, space-separated,
+// no `sha256:` prefix) -- confirmed against real output, distinct from Docker's `deleted:
+// sha256:<digest>`.
+const AppleContainerPruneDeletedImageRegex = /^deleted\s+(\S+)$/img;
 
 /**
  * {@link AppleContainerClient} implements {@link IContainersClient} for Apple's `container`
  * CLI (macOS 26+, Apple Silicon only -- see https://github.com/apple/container). It extends
  * {@link DockerClientBase} for its output-parsing helpers, but its command surface is not
  * Docker-CLI-compatible enough to inherit much else -- most command-building methods are
- * overridden. All behavior below was verified against real CLI 1.2.0 output; see
- * `apple-container-poc-plan.md` at the repo root for the raw captures.
+ * overridden. All behavior below was verified against real CLI 1.2.0 output.
  *
  * Key differences vs. Docker:
  * - The binary itself is the container noun -- container-object verbs are top-level
@@ -150,6 +201,30 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
 
     //#endregion
 
+    //#region Auth Commands
+
+    // There is no top-level `login`/`logout` -- confirmed: `container help login` errors with
+    // "unknown command 'login'". The real path is `container registry login`/`registry
+    // logout`, which otherwise matches the base's Docker-shaped args (`--username`,
+    // `--password-stdin`, a trailing registry argument).
+    protected override getLoginCommandArgs(options: LoginCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('registry', 'login'),
+            withNamedArg('--username', options.username),
+            withArg('--password-stdin'),
+            withArg(options.registry),
+        )();
+    }
+
+    protected override getLogoutCommandArgs(options: LogoutCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('registry', 'logout'),
+            withArg(options.registry),
+        )();
+    }
+
+    //#endregion
+
     //#region Image Commands
 
     protected override getPullImageCommandArgs(options: PullImageCommandOptions): CommandLineArgs {
@@ -222,6 +297,27 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
             normalizeAppleContainerInspectImageRecord(AppleContainerInspectImageRecordSchema.parse(item), JSON.stringify(item)));
     }
 
+    // `image prune` accepts `--all` but not `--force` (confirmed: errors with "Unknown option
+    // '--force'"), unlike the base which always passes `--force`. Real output: a "Reclaimed X
+    // in disk space" summary line, then one `deleted <digest>` line per removed image.
+    protected override getPruneImagesCommandArgs(options: PruneImagesCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('image', 'prune'),
+            withFlagArg('--all', options.all),
+        )();
+    }
+
+    protected override parsePruneImagesCommandOutput(
+        options: PruneImagesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<PruneImagesItem> {
+        return Promise.resolve({
+            imageRefsDeleted: parsePruneLikeOutput(output, { resourceRegex: AppleContainerPruneDeletedImageRegex }).resources,
+            spaceReclaimed: parseAppleContainerReclaimedSpace(output),
+        });
+    }
+
     //#endregion
 
     //#region Container Commands
@@ -249,7 +345,7 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
             withNamedArg('--name', options.name),
             withDockerPortsArg(options.ports),
             withNamedArg('--network', options.network),
-            this.getRunContainerMountsArg(options.mounts),
+            withDockerMountsArg(options.mounts),
             withDockerLabelsArg(options.labels),
             withDockerEnvArg(options.environmentVariables),
             withNamedArg('--env-file', options.environmentFiles),
@@ -261,18 +357,6 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
                 ? withVerbatimArg(options.command)
                 : withArg(...(options.command ?? [])),
         )();
-    }
-
-    // `container run --mount` uses `target=` for the in-container path, not Docker's
-    // `destination=`.
-    protected override getRunContainerMountsArg(mounts: RunContainerCommandOptions['mounts']) {
-        return withNamedArg(
-            '--mount',
-            (mounts ?? []).map((mount) =>
-                [`type=${mount.type}`, `source=${mount.source}`, `target=${mount.destination}`, mount.readOnly ? 'readonly' : '']
-                    .filter((part) => !!part)
-                    .join(',')),
-        );
     }
 
     // Bare `exec` (not `container exec`). Otherwise identical to the Docker-shaped default --
@@ -344,16 +428,31 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         output: string,
         strict: boolean,
     ): Promise<Array<ListContainersItem>> {
-        return this.parseInspectJson(output, strict, (item) =>
-            normalizeAppleContainerListContainerRecord(AppleContainerListContainerRecordSchema.parse(item)))
-            .then((items) => items.filter((item) => this.matchesListContainersOptions(item, options)));
+        const results = new Array<ListContainersItem>();
+
+        for (const raw of this.parseJsonArrayOrLines(output, strict)) {
+            try {
+                const record = AppleContainerListContainerRecordSchema.parse(raw);
+                const item = normalizeAppleContainerListContainerRecord(record);
+                if (this.matchesListContainersOptions(record, item, options)) {
+                    results.push(item);
+                }
+            } catch (err) {
+                if (strict) {
+                    throw err;
+                }
+            }
+        }
+
+        return Promise.resolve(results);
     }
 
-    // `imageAncestors`/`volumes`/`networks` filters have no client-side equivalent that can be
-    // derived safely from `list` output (no resolved image digest or volume attachment info is
-    // present) and are left unfiltered -- deferred along with the rest of the volume/network
-    // command surface.
-    private matchesListContainersOptions(item: ListContainersItem, options: ListContainersCommandOptions): boolean {
+    // `networks` is matched against the already-normalized `item.networks`. `imageAncestors`/
+    // `volumes` need the raw record instead -- ListContainersItem carries neither an image
+    // digest/reference nor per-mount volume names -- so both the raw record and the normalized
+    // item are threaded through here (confirmed available: `configuration.image.{reference,
+    // descriptor.digest}` and `configuration.mounts[].type.volume.name`).
+    private matchesListContainersOptions(record: AppleContainerListContainerRecord, item: ListContainersItem, options: ListContainersCommandOptions): boolean {
         if (options.running && item.state !== 'running') {
             return false;
         }
@@ -365,6 +464,29 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         }
         if (!matchesLabelFilters(item.labels, options.labels)) {
             return false;
+        }
+        if (options.networks && options.networks.length > 0 && !options.networks.some((network) => item.networks.includes(network))) {
+            return false;
+        }
+        if (options.imageAncestors && options.imageAncestors.length > 0) {
+            // `ListImagesItem.id` for this runtime is the `name:tag` reference, not a digest
+            // (see AppleContainerListImageRecord.ts), and that's what callers like
+            // ImageTreeItem pass as `imageAncestors` -- so match the reference primarily, with
+            // the manifest digest as a fallback in case a caller ever passes one instead.
+            const reference = record.configuration.image.reference;
+            const digest = record.configuration.image.descriptor?.digest;
+            if (!options.imageAncestors.some((ancestor) => ancestor === reference || ancestor === digest)) {
+                return false;
+            }
+        }
+        if (options.volumes && options.volumes.length > 0) {
+            const volumeNames = new Set(
+                (record.configuration.mounts ?? [])
+                    .map((mount) => mount.type?.volume?.name)
+                    .filter((name): name is string => !!name));
+            if (!options.volumes.some((volume) => volumeNames.has(volume))) {
+                return false;
+            }
         }
 
         return true;
@@ -391,6 +513,27 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         return Promise.reject(new CommandNotSupportedError('container does not support the restart command.'));
     }
 
+    // The base builds `container prune` for this (Docker's noun-prefixed `docker container
+    // prune`), which becomes `container container prune` here since the binary itself is
+    // already the container noun -- confirmed to error. The real verb is bare `prune`, and it
+    // accepts no `--force` at all (confirmed: errors with "Unknown option '--force'"). Real
+    // output: a "Reclaimed X in disk space" summary line, then one deleted-container name per
+    // line.
+    protected override getPruneContainersCommandArgs(options: PruneContainersCommandOptions): CommandLineArgs {
+        return composeArgs(withArg('prune'))();
+    }
+
+    protected override parsePruneContainersCommandOutput(
+        options: PruneContainersCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<PruneContainersItem> {
+        return Promise.resolve({
+            containersDeleted: parsePruneLikeOutput(output, { resourceRegex: AppleContainerPruneResourceRegex }).resources,
+            spaceReclaimed: parseAppleContainerReclaimedSpace(output),
+        });
+    }
+
     // Bare `inspect` (not `container inspect`), and no --format flag exists (confirmed: errors
     // with "Unknown option '--format'"); JSON is the only output it produces.
     protected override getInspectContainersCommandArgs(options: InspectContainersCommandOptions): CommandLineArgs {
@@ -407,6 +550,166 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
     ): Promise<Array<InspectContainersItem>> {
         return this.parseInspectJson(output, strict, (item) =>
             normalizeAppleContainerInspectContainerRecord(AppleContainerInspectContainerRecordSchema.parse(item), JSON.stringify(item)));
+    }
+
+    //#endregion
+
+    //#region Volume Commands
+
+    // `volume create` has no `--driver` flag at all (confirmed via --help: only --label,
+    // --opt, -s exist); reject rather than silently dropping a driver the caller explicitly
+    // asked for.
+    protected override getCreateVolumeCommandArgs(options: CreateVolumeCommandOptions): CommandLineArgs {
+        if (options.driver) {
+            throw new CommandNotSupportedError('container volume create does not support a driver.');
+        }
+
+        return composeArgs(
+            withArg('volume', 'create'),
+            withArg(options.name),
+        )();
+    }
+
+    // No --filter flag exists for `volume list` (confirmed via --help); `dangling` has no
+    // equivalent in the captured output (no container-attachment info is present) and is left
+    // unfiltered, while `driver`/`labels` are applied client-side.
+    protected override getListVolumesCommandArgs(options: ListVolumesCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('volume', 'list'),
+            withNamedArg('--format', this.defaultFormatForJson),
+        )();
+    }
+
+    protected override parseListVolumesCommandOutput(
+        options: ListVolumesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<ListVolumeItem>> {
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeAppleContainerListVolumeRecord(AppleContainerListVolumeRecordSchema.parse(item)))
+            .then((items) => filterByLabelsAndDriver(items, options));
+    }
+
+    // `volume delete` (not `rm`) accepts no `--force` (confirmed via --help).
+    protected override getRemoveVolumesCommandArgs(options: RemoveVolumesCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('volume', 'delete'),
+            withArg(...options.volumes),
+        )();
+    }
+
+    // `volume prune` accepts no options at all (confirmed via --help: no --force, no
+    // --filter). Real output is just a "Reclaimed X in disk space" summary line -- unlike
+    // container/image prune, there's no per-volume deleted-name list at all.
+    protected override getPruneVolumesCommandArgs(options: PruneVolumesCommandOptions): CommandLineArgs {
+        return composeArgs(withArg('volume', 'prune'))();
+    }
+
+    protected override parsePruneVolumesCommandOutput(
+        options: PruneVolumesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<PruneVolumesItem> {
+        return Promise.resolve({
+            spaceReclaimed: parseAppleContainerReclaimedSpace(output),
+        });
+    }
+
+    // Bare `volume inspect` (no --format flag at all -- confirmed via --help; only JSON is
+    // produced), and its output shares the exact shape `volume list` uses.
+    protected override getInspectVolumesCommandArgs(options: InspectVolumesCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('volume', 'inspect'),
+            withArg(...options.volumes),
+        )();
+    }
+
+    protected override parseInspectVolumesCommandOutput(
+        options: InspectVolumesCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<InspectVolumesItem>> {
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeAppleContainerInspectVolumeRecord(AppleContainerListVolumeRecordSchema.parse(item), JSON.stringify(item)));
+    }
+
+    //#endregion
+
+    //#region Network Commands
+
+    // `network create` has no `--driver` flag; `--plugin` is the closest equivalent
+    // (confirmed via --help) -- it selects the network backend rather than acting as a
+    // Docker-style driver name, but it's the only knob `options.driver` can map onto.
+    protected override getCreateNetworkCommandArgs(options: CreateNetworkCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'create'),
+            withNamedArg('--plugin', options.driver),
+            withArg(options.name),
+        )();
+    }
+
+    // No --filter flag exists for `network list` (confirmed via --help); `driver`/`labels`
+    // are applied client-side.
+    protected override getListNetworksCommandArgs(options: ListNetworksCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'list'),
+            withNamedArg('--format', this.defaultFormatForJson),
+        )();
+    }
+
+    protected override parseListNetworksCommandOutput(
+        options: ListNetworksCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<ListNetworkItem>> {
+        // Unlike wslc, `network list` emits a JSON array sharing `network inspect`'s nested
+        // shape, not per-line Docker-style objects.
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeAppleContainerListNetworkRecord(AppleContainerListNetworkRecordSchema.parse(item)))
+            .then((items) => filterByLabelsAndDriver(items, options));
+    }
+
+    // `network delete` (not `remove`) accepts no `--force` (confirmed via --help).
+    protected override getRemoveNetworksCommandArgs(options: RemoveNetworksCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'delete'),
+            withArg(...options.networks),
+        )();
+    }
+
+    // `network prune` accepts no options at all (confirmed via --help). Unlike container/
+    // image/volume prune, its output has no "Reclaimed X in disk space" summary line at all --
+    // just one deleted-network name per line (confirmed against real output).
+    protected override getPruneNetworksCommandArgs(options: PruneNetworksCommandOptions): CommandLineArgs {
+        return composeArgs(withArg('network', 'prune'))();
+    }
+
+    protected override parsePruneNetworksCommandOutput(
+        options: PruneNetworksCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<PruneNetworksItem> {
+        return Promise.resolve({
+            networksDeleted: parsePruneLikeOutput(output, { resourceRegex: AppleContainerPruneResourceRegex }).resources,
+        });
+    }
+
+    // Bare `network inspect` (no --format flag at all -- confirmed via --help; only JSON is
+    // produced), and its output shares the exact shape `network list` uses.
+    protected override getInspectNetworksCommandArgs(options: InspectNetworksCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('network', 'inspect'),
+            withArg(...options.networks),
+        )();
+    }
+
+    protected override parseInspectNetworksCommandOutput(
+        options: InspectNetworksCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<InspectNetworksItem>> {
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizeAppleContainerInspectNetworkRecord(AppleContainerListNetworkRecordSchema.parse(item), JSON.stringify(item)));
     }
 
     //#endregion

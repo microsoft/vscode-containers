@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as z from 'zod/mini';
-import type { InspectContainersItem, InspectContainersItemNetwork } from '../../contracts/ContainerClient';
+import type { InspectContainersItem, InspectContainersItemMount, InspectContainersItemNetwork } from '../../contracts/ContainerClient';
 import { dateStringWithFallbackSchema } from '../../contracts/ZodTransforms';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { parseDockerLikeEnvironmentVariables } from '../DockerClientBase/parseDockerLikeEnvironmentVariables';
+import { AppleContainerPublishedPortSchema, normalizeAppleContainerPublishedPorts } from './AppleContainerPublishedPort';
 
 const AppleContainerStatusNetworkSchema = z.object({
     network: z.optional(z.string()),
@@ -15,6 +16,38 @@ const AppleContainerStatusNetworkSchema = z.object({
     ipv4Gateway: z.optional(z.string()),
     macAddress: z.optional(z.string()),
 });
+
+/**
+ * `configuration.mounts[]` -- a volume mount reports its volume name under
+ * `type.volume.name` (the sibling top-level `source` is the host-side backing file, not usable
+ * as a `--mount source=` value); anything else (confirmed: a bind mount reports `type.virtiofs:
+ * {}`) is treated as a bind mount using the top-level `source` path. `readOnly` isn't a
+ * dedicated field -- a `readonly` mount adds `"ro"` to `options` (confirmed against a real
+ * `--mount ...,readonly` bind mount).
+ */
+const AppleContainerMountSchema = z.object({
+    destination: z.optional(z.string()),
+    source: z.optional(z.string()),
+    options: z.optional(z.array(z.string())),
+    type: z.optional(z.object({
+        volume: z.optional(z.object({
+            name: z.optional(z.string()),
+        })),
+    })),
+});
+
+function normalizeAppleContainerMounts(mounts: Array<z.infer<typeof AppleContainerMountSchema>> | undefined): Array<InspectContainersItemMount> {
+    return (mounts ?? [])
+        .filter((mount): mount is typeof mount & { destination: string } => !!mount.destination)
+        .map((mount) => {
+            const readOnly = (mount.options ?? []).includes('ro');
+            const volumeName = mount.type?.volume?.name;
+
+            return volumeName
+                ? { type: 'volume' as const, source: volumeName, destination: mount.destination, readOnly }
+                : { type: 'bind' as const, source: mount.source ?? '', destination: mount.destination, readOnly };
+        });
+}
 
 /**
  * `container inspect <id>` emits the same nested shape as `container list` (see
@@ -40,6 +73,8 @@ export const AppleContainerInspectContainerRecordSchema = z.object({
             workingDirectory: z.optional(z.string()),
         })),
         labels: z.optional(z.record(z.string(), z.string())),
+        mounts: z.optional(z.array(AppleContainerMountSchema)),
+        publishedPorts: z.optional(z.array(AppleContainerPublishedPortSchema)),
     }),
     status: z.object({
         startedDate: z.optional(dateStringWithFallbackSchema),
@@ -79,10 +114,8 @@ export function normalizeAppleContainerInspectContainerRecord(container: AppleCo
         networks,
         ipAddress: networks[0]?.ipAddress,
         operatingSystem: 'linux',
-        // `configuration.publishedPorts`/`.mounts` shapes haven't been captured against real
-        // `--publish`/`--mount` runs yet; left empty rather than guessing field names.
-        ports: [],
-        mounts: [],
+        ports: normalizeAppleContainerPublishedPorts(container.configuration.publishedPorts),
+        mounts: normalizeAppleContainerMounts(container.configuration.mounts),
         labels: container.configuration.labels ?? {},
         // Apple Container has no separate entrypoint/cmd split in inspect output -- only the
         // fully resolved init process (executable + arguments) is reported.

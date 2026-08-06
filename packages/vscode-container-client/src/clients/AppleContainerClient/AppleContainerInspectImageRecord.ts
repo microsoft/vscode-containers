@@ -67,14 +67,19 @@ function selectPrimaryVariant(variants: AppleContainerInspectImageRecord['varian
 export function normalizeAppleContainerInspectImageRecord(image: AppleContainerInspectImageRecord, raw: string): InspectImagesItem {
     const variant = selectPrimaryVariant(image.variants);
     const config = variant?.config?.config;
+    const nameInfo = parseDockerLikeImageName(image.configuration.name);
+    const digest = image.configuration.descriptor?.digest;
+    // Matches the `repository@sha256:...` form SharedInspectImageRecord uses, rather than a
+    // bare digest.
+    const repository = nameInfo.registry ? `${nameInfo.registry}/${nameInfo.image}` : nameInfo.image;
 
     return {
         // `container` has no ID-based image addressing (see the note in
         // AppleContainerListImageRecord.ts); mirror that file's `id` choice so this stays a
         // usable CLI reference rather than an inert digest.
         id: image.configuration.name ?? image.id,
-        image: parseDockerLikeImageName(image.configuration.name),
-        repoDigests: image.configuration.descriptor?.digest ? [image.configuration.descriptor.digest] : [],
+        image: nameInfo,
+        repoDigests: repository && digest ? [`${repository}@${digest}`] : [],
         // `image inspect` doesn't distinguish local-only images from ones pulled from a
         // registry; every inspectable image is on-disk, so this is always true.
         isLocalImage: true,
