@@ -6,7 +6,7 @@
 import * as z from 'zod/mini';
 import type { ListContainersItem, PortBinding } from '../../contracts/ContainerClient';
 import { imageNameSchema, labelsStringSchema } from '../../contracts/ZodTransforms';
-import { parseDockerRawPortStringList } from './parseDockerRawPortString';
+import { expandDockerRawPortString } from './parseDockerRawPortString';
 import { resolveCreatedAt, type CreatedAtMode } from './resolveCreatedAt';
 
 /**
@@ -186,7 +186,7 @@ function resolvePorts(portsStr: string | undefined, strict: boolean, throwOnUnpa
             continue;
         }
 
-        const parsed = parseDockerRawPortStringList(trimmed);
+        const parsed = expandDockerRawPortString(trimmed);
         if (parsed) {
             ports.push(...parsed);
         } else if (strict && throwOnUnparseablePort) {

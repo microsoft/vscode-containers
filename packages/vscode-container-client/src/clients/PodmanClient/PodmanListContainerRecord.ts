@@ -10,7 +10,7 @@ const PodmanPortBindingSchema = z.object({
     host_ip: z.optional(z.string()),
     container_port: z.number(),
     host_port: z.optional(z.number()),
-    protocol: z.enum(['udp', 'tcp']),
+    protocol: z.enum(['udp', 'tcp', 'sctp']),
     /* eslint-enable @typescript-eslint/naming-convention */
 });
 

@@ -67,12 +67,14 @@ export function mapWslcContainerState(state: number | undefined): string {
  * Map the IANA protocol number wslc reports for a port binding onto the protocol
  * names used by the {@link PortBinding} contract.
  */
-function mapWslcProtocol(protocol: number | undefined): 'tcp' | 'udp' | undefined {
+function mapWslcProtocol(protocol: number | undefined): PortBinding['protocol'] {
     switch (protocol) {
         case 6:
             return 'tcp';
         case 17:
             return 'udp';
+        case 132:
+            return 'sctp';
         default:
             return undefined;
     }

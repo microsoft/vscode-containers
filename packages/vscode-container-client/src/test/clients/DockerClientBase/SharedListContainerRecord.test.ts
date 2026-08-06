@@ -86,12 +86,13 @@ describe('(unit) normalizeListContainerRecord', () => {
             ID: 'abc123',
             Names: 'azurite',
             Image: 'mcr.microsoft.com/azure-storage/azurite',
-            Ports: '0.0.0.0:10000-10002->10000-10002/tcp, [::]:10000-10002->10000-10002/tcp',
+            Ports: '80/tcp, 0.0.0.0:10000-10002->10000-10002/tcp, [::]:10000-10002->10000-10002/tcp',
         });
 
         const result = normalizeListContainerRecord(parsed, true, DockerListContainerOptions);
 
         expect(result.ports).to.deep.equal([
+            { containerPort: 80, protocol: 'tcp' },
             { hostIp: '0.0.0.0', hostPort: 10000, containerPort: 10000, protocol: 'tcp' },
             { hostIp: '0.0.0.0', hostPort: 10001, containerPort: 10001, protocol: 'tcp' },
             { hostIp: '0.0.0.0', hostPort: 10002, containerPort: 10002, protocol: 'tcp' },

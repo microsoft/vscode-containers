@@ -630,7 +630,7 @@ export type PortBinding = {
     /**
      * The protocol the port uses
      */
-    protocol?: 'udp' | 'tcp';
+    protocol?: 'udp' | 'tcp' | 'sctp';
 };
 
 export type RunContainerBindMount = {
