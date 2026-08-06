@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
-import { parseDockerRawPortString } from '../../../clients/DockerClientBase/parseDockerRawPortString';
+import { parseDockerRawPortString, parseDockerRawPortStringList } from '../../../clients/DockerClientBase/parseDockerRawPortString';
 import type { PortBinding } from '../../../contracts/ContainerClient';
 
 describe('(unit) parseDockerRawPortString', () => {
@@ -66,5 +66,26 @@ describe('(unit) parseDockerRawPortString', () => {
         it(`Should return undefined for invalid format "${input}"`, () => {
             expect(parseDockerRawPortString(input)).to.be.undefined;
         });
+    });
+
+    it('Should expand short-form port ranges', () => {
+        expect(parseDockerRawPortStringList('10000-10002/tcp')).to.deep.equal([
+            { containerPort: 10000, protocol: 'tcp' },
+            { containerPort: 10001, protocol: 'tcp' },
+            { containerPort: 10002, protocol: 'tcp' },
+        ]);
+    });
+
+    it('Should expand long-form port ranges', () => {
+        expect(parseDockerRawPortStringList('[::]:10000-10002->10000-10002/tcp')).to.deep.equal([
+            { hostIp: '::', hostPort: 10000, containerPort: 10000, protocol: 'tcp' },
+            { hostIp: '::', hostPort: 10001, containerPort: 10001, protocol: 'tcp' },
+            { hostIp: '::', hostPort: 10002, containerPort: 10002, protocol: 'tcp' },
+        ]);
+    });
+
+    it('Should reject invalid port ranges', () => {
+        expect(parseDockerRawPortStringList('10002-10000/tcp')).to.be.undefined;
+        expect(parseDockerRawPortStringList('10000-10001->10000-10002/tcp')).to.be.undefined;
     });
 });

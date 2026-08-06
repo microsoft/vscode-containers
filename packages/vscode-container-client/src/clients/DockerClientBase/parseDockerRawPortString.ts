@@ -36,6 +36,7 @@ export function parseExposedPortKey(key: string): { containerPort: number; proto
 }
 
 const shortFormRegex = /^(?<containerPort>\d+)\/(?<protocol>tcp|udp)$/i;
+const shortRangeFormRegex = /^(?<containerPortStart>\d+)-(?<containerPortEnd>\d+)\/(?<protocol>tcp|udp)$/i;
 
 // Supports:
 // - hostPort->containerPort[/protocol]
@@ -46,6 +47,7 @@ const shortFormRegex = /^(?<containerPort>\d+)\/(?<protocol>tcp|udp)$/i;
 //   `:` before the host port, so embedded IPv6 colons are preserved; brackets
 //   (if any) are stripped by normalizeIpAddress.
 const longFormRegex = /^(?:(?<host>\[[^\]]*\]|[^\s]*?):)?(?<hostPort>\d+)\s*->\s*(?<containerPort>\d+)(?:\/(?<protocol>tcp|udp))?$/i;
+const longRangeFormRegex = /^(?:(?<host>\[[^\]]*\]|[^\s]*?):)?(?<hostPortStart>\d+)-(?<hostPortEnd>\d+)\s*->\s*(?<containerPortStart>\d+)-(?<containerPortEnd>\d+)(?:\/(?<protocol>tcp|udp))?$/i;
 
 /**
  * Attempt to parse a Docker-like raw port binding string
@@ -80,4 +82,59 @@ export function parseDockerRawPortString(portString: string): PortBinding | unde
         containerPort: Number.parseInt(longMatch.groups.containerPort, 10),
         protocol,
     };
+}
+
+/**
+ * Parse a Docker-style port string into one or more bindings. Docker compacts
+ * consecutive ports into ranges in `ps` output, such as `10000-10002/tcp` or
+ * `0.0.0.0:10000-10002->10000-10002/tcp`.
+ */
+export function parseDockerRawPortStringList(portString: string): PortBinding[] | undefined {
+    const singlePort = parseDockerRawPortString(portString);
+    if (singlePort) {
+        return [singlePort];
+    }
+
+    const trimmed = portString.trim();
+    const shortRangeMatch = shortRangeFormRegex.exec(trimmed);
+    if (shortRangeMatch?.groups) {
+        const containerPortStart = Number.parseInt(shortRangeMatch.groups.containerPortStart, 10);
+        const containerPortEnd = Number.parseInt(shortRangeMatch.groups.containerPortEnd, 10);
+        if (containerPortEnd < containerPortStart) {
+            return undefined;
+        }
+
+        const protocol = shortRangeMatch.groups.protocol.toLowerCase() as 'tcp' | 'udp';
+        return Array.from(
+            { length: containerPortEnd - containerPortStart + 1 },
+            (_, offset) => ({ containerPort: containerPortStart + offset, protocol }),
+        );
+    }
+
+    const longRangeMatch = longRangeFormRegex.exec(trimmed);
+    if (!longRangeMatch?.groups) {
+        return undefined;
+    }
+
+    const hostPortStart = Number.parseInt(longRangeMatch.groups.hostPortStart, 10);
+    const hostPortEnd = Number.parseInt(longRangeMatch.groups.hostPortEnd, 10);
+    const containerPortStart = Number.parseInt(longRangeMatch.groups.containerPortStart, 10);
+    const containerPortEnd = Number.parseInt(longRangeMatch.groups.containerPortEnd, 10);
+    const hostRangeLength = hostPortEnd - hostPortStart;
+    const containerRangeLength = containerPortEnd - containerPortStart;
+    if (hostRangeLength < 0 || hostRangeLength !== containerRangeLength) {
+        return undefined;
+    }
+
+    const hostIp = normalizeIpAddress(longRangeMatch.groups.host);
+    const protocol = normalizeProtocol(longRangeMatch.groups.protocol) ?? 'tcp';
+    return Array.from(
+        { length: containerRangeLength + 1 },
+        (_, offset) => ({
+            ...(hostIp !== undefined ? { hostIp } : {}),
+            hostPort: hostPortStart + offset,
+            containerPort: containerPortStart + offset,
+            protocol,
+        }),
+    );
 }
