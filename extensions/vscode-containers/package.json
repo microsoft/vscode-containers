@@ -1227,7 +1227,8 @@
                                             "description": "%vscode-containers.tasks.docker-run.dockerRun.ports.protocol%",
                                             "enum": [
                                                 "tcp",
-                                                "udp"
+                                                "udp",
+                                                "sctp"
                                             ]
                                         }
                                     },
