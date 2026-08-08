@@ -100,6 +100,55 @@ describe('ServiceStartupCodeLensProvider', () => {
         });
     });
 
+    describe('Workspace folder scenarios', () => {
+        let workspaceAwareConnection: TestConnection;
+
+        before('Prepare a workspace-folder-aware language server for testing', () => {
+            workspaceAwareConnection = new TestConnection({
+                capabilities: {
+                    workspace: {
+                        workspaceFolders: true,
+                    },
+                },
+                processId: 1,
+                rootUri: null,
+                workspaceFolders: null,
+            });
+        });
+
+        it('Should provide code lenses when the document is within a workspace folder', async () => {
+            const uri = workspaceAwareConnection.sendObjectAsYamlDocument({ services: {} });
+            workspaceAwareConnection.workspaceFolders = [{ uri: 'file:///', name: 'root' }];
+
+            await requestServiceStartupCodeLensesAndCompare(workspaceAwareConnection, uri, [
+                {
+                    range: Range.create(0, 0, 0, 8),
+                    command: {
+                        command: 'vscode-containers.compose.up'
+                    }
+                },
+            ]);
+        });
+
+        it('Should NOT provide code lenses when the document is outside all workspace folders', async () => {
+            const uri = workspaceAwareConnection.sendObjectAsYamlDocument({ services: {} });
+            workspaceAwareConnection.workspaceFolders = [{ uri: 'file:///some/other/folder', name: 'other' }];
+
+            await requestServiceStartupCodeLensesAndCompare(workspaceAwareConnection, uri, undefined);
+        });
+
+        it('Should NOT provide code lenses when there are no open workspace folders', async () => {
+            const uri = workspaceAwareConnection.sendObjectAsYamlDocument({ services: {} });
+            workspaceAwareConnection.workspaceFolders = null;
+
+            await requestServiceStartupCodeLensesAndCompare(workspaceAwareConnection, uri, undefined);
+        });
+
+        after('Cleanup', () => {
+            workspaceAwareConnection.dispose();
+        });
+    });
+
     after('Cleanup', () => {
         testConnection.dispose();
     });
