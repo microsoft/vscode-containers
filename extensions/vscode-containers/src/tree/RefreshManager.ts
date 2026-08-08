@@ -317,6 +317,12 @@ export class RefreshManager extends vscode.Disposable {
 
                 if (reason === 'manual') {
                     // Manual refreshes will not be debounced--they should occur instantly
+                    if (target === 'registries') {
+                        // A user-initiated manual refresh of the registries view should clear the Azure
+                        // subscription/auth cache so that subscription or sign-in changes are reflected
+                        ext.azureRegistryDataProvider.clearCache();
+                    }
+
                     await callback();
                 } else {
                     // Debounce all other refreshes by 500 ms
