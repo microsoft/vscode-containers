@@ -20,7 +20,7 @@ import type { CommandResponseBase, ICommandRunnerFactory } from '../contracts/Co
 import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
 import { FileType } from '../typings/FileType';
 import { wslifyPath } from '../utils/wslifyPath';
-import { type ClientType, validateContainerExists } from './e2eShared';
+import { type ClientType, findConsecutiveFreePorts, validateContainerExists } from './e2eShared';
 
 /**
  * WARNING: This test suite will prune unused images, containers, networks, and volumes.
@@ -41,8 +41,6 @@ const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_
  */
 export const KeepAliveEntrypoint = 'tail';
 export const KeepAliveCommand = ['-f', '/dev/null'];
-const dockerPortRange = [55000, 55001, 55002];
-
 // wslc does not support the `--expose` flag on `run`, but it does support
 // network create/list/inspect/remove/prune.
 const supportsExposeFlag = clientTypeToTest !== 'wslc';
@@ -330,12 +328,21 @@ describe('(integration) ContainersClientE2E', function () {
         let testContainerBindMountSource: string;
         let testContainerId: string;
 
+        // Discovered at runtime rather than hardcoded, because Windows reserves
+        // shifting blocks of ports for WinNAT/Hyper-V that cannot be bound. The
+        // ports must be consecutive so Docker reports them in compacted form.
+        let dockerPortRange: number[] = [];
+
         before('Containers', async function () {
             testContainerBindMountSource = import.meta.dirname;
 
             // If running in WSL, convert the bind mount source path to WSL format
             if (runInWsl) {
                 testContainerBindMountSource = wslifyPath(testContainerBindMountSource);
+            }
+
+            if (clientTypeToTest === 'docker') {
+                dockerPortRange = await findConsecutiveFreePorts(3);
             }
 
             // Pull a small image for testing
