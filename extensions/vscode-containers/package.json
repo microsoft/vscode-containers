@@ -2598,12 +2598,12 @@
                         "com.microsoft.visualstudio.containers.wslc"
                     ],
                     "enumItemLabels": [
-                        "Default",
-                        "Docker",
-                        "Podman",
-                        "Nerdctl",
-                        "Finch",
-                        "WSLC (Windows only, preview)"
+                        "%vscode-containers.config.containers.containerClient.default%",
+                        "%vscode-containers.config.containers.containerClient.docker%",
+                        "%vscode-containers.config.containers.containerClient.podman%",
+                        "%vscode-containers.config.containers.containerClient.nerdctl%",
+                        "%vscode-containers.config.containers.containerClient.finch%",
+                        "%vscode-containers.config.containers.containerClient.wslc%"
                     ]
                 },
                 "containers.orchestratorClient": {
@@ -2618,11 +2618,11 @@
                         "com.microsoft.visualstudio.orchestrators.finchcompose"
                     ],
                     "enumItemLabels": [
-                        "Default",
-                        "Docker Compose",
-                        "Podman Compose",
-                        "Nerdctl Compose",
-                        "Finch Compose"
+                        "%vscode-containers.config.containers.orchestratorClient.default%",
+                        "%vscode-containers.config.containers.orchestratorClient.dockerCompose%",
+                        "%vscode-containers.config.containers.orchestratorClient.podmanCompose%",
+                        "%vscode-containers.config.containers.orchestratorClient.nerdctlCompose%",
+                        "%vscode-containers.config.containers.orchestratorClient.finchCompose%"
                     ]
                 }
             }
