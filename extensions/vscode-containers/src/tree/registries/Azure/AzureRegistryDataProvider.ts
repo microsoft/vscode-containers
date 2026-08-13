@@ -67,10 +67,14 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
             // Only bypass the subscription cache when a cache clear has been explicitly requested (e.g. a
             // user-initiated manual refresh), so that changes to subscriptions or signed-in accounts are
             // reflected without needing to reload the window.
+            // The flag is read and reset together, before awaiting, so that a concurrent call cannot clear the
+            // flag out from under a refresh that has not read it yet. Resetting before the request is safe even
+            // if it fails: the subscription provider invalidates its caches before fetching, so a subsequent
+            // load will go to the source regardless.
             const noCache = this.clearCacheOnNextLoad;
+            this.clearCacheOnNextLoad = false;
 
             const subscriptions = await this.subscriptionProvider.getAvailableSubscriptions({ noCache });
-            this.clearCacheOnNextLoad = false;
             this.sendSubscriptionTelemetryIfNeeded();
 
             return subscriptions.map(sub => {
