@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { autoEsbuildOrWatch, autoSelectEsbuildConfig } from '@microsoft/vscode-azext-eng/esbuild';
-import { fileURLToPath } from 'url';
 
 const { extensionConfig, telemetryConfig } = autoSelectEsbuildConfig();
 
@@ -22,17 +21,6 @@ extensionConfig.alias = {
 /** @type {import('esbuild').BuildOptions} */
 const finalConfig = {
     ...extensionConfig,
-    // Dependencies are bundled from their ESM builds into a CJS output, where esbuild substitutes
-    // `{}` for `import.meta`. Point `import.meta.url` at a real file URL so dependencies that call
-    // `createRequire(import.meta.url)` (e.g. `@azure/storage-common`'s crc64) don't throw on init.
-    define: {
-        ...extensionConfig.define,
-        'import.meta.url': '__importMetaUrl',
-    },
-    inject: [
-        ...(extensionConfig.inject ?? []),
-        fileURLToPath(new URL('./esbuild.importMetaUrlShim.mjs', import.meta.url)),
-    ],
     entryPoints: [
         ...extensionConfig.entryPoints,
         {
