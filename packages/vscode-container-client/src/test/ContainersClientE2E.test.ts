@@ -10,15 +10,17 @@ import * as os from 'os';
 import * as path from 'path';
 import * as stream from 'stream';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
+import { FinchClient } from '../clients/FinchClient/FinchClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
+import { WslcClient } from '../clients/WslcClient/WslcClient';
 import { ShellStreamCommandRunnerFactory, type ShellStreamCommandRunnerOptions } from '../commandRunners/shellStream';
 import { WslShellCommandRunnerFactory, type WslShellCommandRunnerOptions } from '../commandRunners/wslStream';
 import type { CommandResponseBase, ICommandRunnerFactory } from '../contracts/CommandRunner';
 import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
 import { FileType } from '../typings/FileType';
 import { wslifyPath } from '../utils/wslifyPath';
-import { type ClientType, validateContainerExists } from './e2eShared';
+import { type ClientType, findConsecutiveFreePorts, validateContainerExists } from './e2eShared';
 
 /**
  * WARNING: This test suite will prune unused images, containers, networks, and volumes.
@@ -39,6 +41,9 @@ const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_
  */
 export const KeepAliveEntrypoint = 'tail';
 export const KeepAliveCommand = ['-f', '/dev/null'];
+// wslc does not support the `--expose` flag on `run`, but it does support
+// network create/list/inspect/remove/prune.
+const supportsExposeFlag = clientTypeToTest !== 'wslc';
 
 describe('(integration) ContainersClientE2E', function () {
 
@@ -56,9 +61,11 @@ describe('(integration) ContainersClientE2E', function () {
         } else if (clientTypeToTest === 'podman') {
             client = new PodmanClient();
         } else if (clientTypeToTest === 'finch') {
-            client = new NerdctlClient('finch', 'Finch', 'Runs container commands using the Finch CLI');
+            client = new FinchClient();
         } else if (clientTypeToTest === 'nerdctl') {
             client = new NerdctlClient('nerdctl', 'Nerdctl', 'Runs container commands using the nerdctl CLI');
+        } else if (clientTypeToTest === 'wslc') {
+            client = new WslcClient();
         } else {
             throw new Error('Invalid clientTypeToTest');
         }
@@ -321,12 +328,21 @@ describe('(integration) ContainersClientE2E', function () {
         let testContainerBindMountSource: string;
         let testContainerId: string;
 
+        // Discovered at runtime rather than hardcoded, because Windows reserves
+        // shifting blocks of ports for WinNAT/Hyper-V that cannot be bound. The
+        // ports must be consecutive so Docker reports them in compacted form.
+        let dockerPortRange: number[] = [];
+
         before('Containers', async function () {
             testContainerBindMountSource = import.meta.dirname;
 
             // If running in WSL, convert the bind mount source path to WSL format
             if (runInWsl) {
                 testContainerBindMountSource = wslifyPath(testContainerBindMountSource);
+            }
+
+            if (clientTypeToTest === 'docker') {
+                dockerPortRange = await findConsecutiveFreePorts(3);
             }
 
             // Pull a small image for testing
@@ -387,8 +403,12 @@ describe('(integration) ContainersClientE2E', function () {
                     ],
                     ports: clientTypeToTest === 'nerdctl'
                         ? [{ hostPort: 8080, containerPort: 80 }, { hostPort: 3000, containerPort: 3000 }]
-                        : [{ hostPort: 8080, containerPort: 80 }],
-                    exposePorts: clientTypeToTest === 'nerdctl' ? undefined : [3000], // Rootless nerdctl cannot auto-allocate host ports
+                        : clientTypeToTest === 'docker' ? [
+                            { hostPort: 8080, containerPort: 80 },
+                            ...dockerPortRange.map(port => ({ hostPort: port, containerPort: port })),
+                        ] : [{ hostPort: 8080, containerPort: 80 }],
+                    // wslc has no --expose flag; rootless nerdctl cannot auto-allocate host ports
+                    exposePorts: (clientTypeToTest === 'nerdctl' || !supportsExposeFlag) ? undefined : [3000],
                     publishAllPorts: clientTypeToTest === 'nerdctl' ? undefined : true, // Rootless nerdctl cannot auto-allocate host ports
                 })
             ))!;
@@ -441,7 +461,11 @@ describe('(integration) ContainersClientE2E', function () {
 
             // Validate the network
             expect(container.networks).to.be.an('array');
-            expect(container.networks).to.include(testContainerNetworkName);
+            // wslc `list` output does not include per-container networks (they appear in `inspect`),
+            // so only assert membership for runtimes that report it in list view.
+            if (clientTypeToTest !== 'wslc') {
+                expect(container.networks).to.include(testContainerNetworkName);
+            }
 
             // Validate the ports
             expect(container.ports).to.be.an('array');
@@ -452,8 +476,16 @@ describe('(integration) ContainersClientE2E', function () {
                 expect(container.ports.length).to.be.greaterThanOrEqual(0);
             } else {
                 expect(container.ports.some(p => p.hostPort === 8080 && p.containerPort === 80)).to.be.true;
-                // Exposed port with random binding - Finch uses -p <containerPort> as equivalent to --expose + --publish-all
-                expect(container.ports.some(p => p.containerPort === 3000 && !!p.hostPort && p.hostPort > 0 && p.hostPort < 65536)).to.be.true;
+                if (clientTypeToTest === 'docker') {
+                    for (const port of dockerPortRange) {
+                        expect(container.ports.some(p => p.hostPort === port && p.containerPort === port)).to.be.true;
+                    }
+                }
+                if (supportsExposeFlag) {
+                    // Exposed port with random binding - Finch uses -p <containerPort> as equivalent to --expose + --publish-all
+                    // wslc has no --expose flag, so no random-binding port to validate
+                    expect(container.ports.some(p => p.containerPort === 3000 && !!p.hostPort && p.hostPort > 0 && p.hostPort < 65536)).to.be.true;
+                }
             }
 
             // Volumes and bind mounts do not show up in ListContainersCommand, so we won't validate those here
@@ -490,21 +522,29 @@ describe('(integration) ContainersClientE2E', function () {
                 expect(container.networks.some(n => n.name === testContainerNetworkName)).to.be.true;
             }
 
-            // Validate the bind mount
+            // Validate the bind mount. On Windows, machine-based runtimes (e.g. Podman/Docker
+            // Desktop) run in a Linux VM and report the bind source as a translated `/mnt/<drive>`
+            // path rather than the original `D:\...` host path, so normalize both sides via
+            // wslifyPath before comparing (it is a no-op for already-Linux paths).
             expect(container.mounts).to.be.an('array');
-            expect(container.mounts.some(m => m.type === 'bind' && m.source === testContainerBindMountSource && m.destination === '/data1' && m.readOnly === true)).to.be.true;
+            expect(container.mounts.some(m => m.type === 'bind' && wslifyPath(m.source) === wslifyPath(testContainerBindMountSource) && m.destination === '/data1' && m.readOnly === true)).to.be.true;
 
             // Validate the volume
-            expect(container.mounts).to.be.an('array');
-            expect(container.mounts.some(m => m.type === 'volume' && m.source === testContainerVolumeName && m.destination === '/data2' && m.readOnly === false)).to.be.true;
+            // NOTE: wslc omits named-volume mounts from `inspect` output (only bind mounts appear),
+            // even though the volume is functionally mounted. Skip this assertion for wslc.
+            if (clientTypeToTest !== 'wslc') {
+                expect(container.mounts).to.be.an('array');
+                expect(container.mounts.some(m => m.type === 'volume' && m.source === testContainerVolumeName && m.destination === '/data2' && m.readOnly === false)).to.be.true;
+            }
 
             // Validate the ports
             expect(container.ports).to.be.an('array');
             expect(container.ports.some(p => p.hostPort === 8080 && p.containerPort === 80)).to.be.true;
             if (clientTypeToTest === 'nerdctl') {
                 expect(container.ports.some(p => p.hostPort === 3000 && p.containerPort === 3000)).to.be.true;
-            } else {
+            } else if (supportsExposeFlag) {
                 // Exposed port with random binding - Finch uses -p <containerPort> as equivalent to --expose + --publish-all
+                // wslc has no --expose flag, so no random-binding port to validate
                 expect(container.ports.some(p => p.containerPort === 3000 && !!p.hostPort && p.hostPort > 0 && p.hostPort < 65536)).to.be.true;
             }
         });
@@ -595,6 +635,10 @@ describe('(integration) ContainersClientE2E', function () {
         });
 
         it('RestartContainersCommand', async function () {
+            if (clientTypeToTest === 'wslc') {
+                this.skip(); // wslc has no `restart` subcommand
+            }
+
             // Restart the container
             const restartedContainers = await defaultRunner.getCommandRunner()(
                 client.restartContainers({ container: [testContainerId], time: 1 })
@@ -898,6 +942,10 @@ describe('(integration) ContainersClientE2E', function () {
         let container: string | undefined;
 
         before('Events', async function () {
+            if (clientTypeToTest === 'wslc') {
+                this.skip(); // wslc has no `events` subcommand
+            }
+
             // For Docker/Podman: Create a container so that the event stream has something to report
             // when using --since to replay events
             if (clientTypeToTest !== 'finch' && clientTypeToTest !== 'nerdctl') {
@@ -1156,6 +1204,12 @@ describe('(integration) ContainersClientE2E', function () {
             if (clientTypeToTest === 'podman') {
                 this.skip(); // Podman doesn't support file streaming
             }
+            if (clientTypeToTest === 'wslc') {
+                // wslc `container cp` requires the destination to be an existing directory (Docker
+                // allows a file path). The real file-provider path (directory + tar stream) works
+                // and is covered by unit tests; this file-path form is not supported by wslc.
+                this.skip();
+            }
 
             const content = 'Hello from the container!';
             let tempFilePath = path.join(os.tmpdir(), 'hello.txt');
@@ -1189,6 +1243,10 @@ describe('(integration) ContainersClientE2E', function () {
         it('WriteFileCommand (streamed to stdin)', async function () {
             if (clientTypeToTest === 'podman') {
                 this.skip(); // Podman doesn't support file streaming
+            }
+            if (clientTypeToTest === 'wslc') {
+                // See WriteFileCommand above: wslc `container cp` needs a directory destination.
+                this.skip();
             }
 
             // Exercises the stdin write path (`cp - <container>:<path>`) rather than

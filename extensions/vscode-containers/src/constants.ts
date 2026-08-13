@@ -25,6 +25,9 @@ export const YAML_GLOB_PATTERN = '**/*.{[yY][aA][mM][lL],[yY][mM][lL]}';
 export const CSPROJ_GLOB_PATTERN = '**/*.{[cC][sS][pP][rR][oO][jJ]}';
 export const FSPROJ_GLOB_PATTERN = '**/*.{[fF][sS][pP][rR][oO][jJ]}';
 export const VBPROJ_GLOB_PATTERN = '**/*.{[vV][bB][pP][rR][oO][jJ]}';
+export const CS_GLOB_PATTERN = '**/*.{[cC][sS]}'; // Used to detect file-based .NET apps (single .cs file run via `dotnet run app.cs`)
+// Excludes .NET build output folders (bin/obj), which contain generated .cs files (e.g. *.AssemblyInfo.cs, *.GlobalUsings.g.cs)
+export const NET_BUILD_OUTPUT_EXCLUDE_PATTERN = '**/{[bB][iI][nN],[oO][bB][jJ]}/**';
 
 // File search max ammout
 export const FILE_SEARCH_MAX_RESULT = 1000;

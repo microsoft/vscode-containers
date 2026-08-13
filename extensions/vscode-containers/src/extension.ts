@@ -6,7 +6,6 @@
 import type { TelemetryEvent } from '@microsoft/compose-language-service/client';
 import { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } from '@microsoft/compose-language-service/vscode';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { DockerClient, DockerComposeClient, PodmanClient, PodmanComposeClient } from '@microsoft/vscode-container-client';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
@@ -22,6 +21,7 @@ import { ext } from './extensionVariables';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
 import { ContainerFilesProvider } from './runtimes/files/ContainerFilesProvider';
 import { OrchestratorRuntimeManager } from './runtimes/OrchestratorRuntimeManager';
+import { getSupportedRuntimeRegistrations } from './runtimes/officialRuntimeRegistrations';
 import { registerTaskProviders } from './tasks/TaskHelper';
 import { ActivityMeasurementService } from './telemetry/ActivityMeasurementService';
 import { registerFileListeners } from './telemetry/registerFileListeners';
@@ -190,13 +190,19 @@ function registerContainerClients(): void {
         ext.orchestratorManager = new OrchestratorRuntimeManager()
     );
 
-    // Register the clients
-    ext.context.subscriptions.push(
-        ext.runtimeManager.registerRuntimeClient(new DockerClient()),
-        ext.runtimeManager.registerRuntimeClient(new PodmanClient()),
-        ext.orchestratorManager.registerRuntimeClient(new DockerComposeClient()),
-        ext.orchestratorManager.registerRuntimeClient(new PodmanComposeClient()),
-    );
+    // Register the clients. Runtimes unsupported on this platform (e.g. wslc off Windows) are
+    // skipped so they can never be selected or used.
+    for (const registration of getSupportedRuntimeRegistrations()) {
+        ext.context.subscriptions.push(
+            ext.runtimeManager.registerRuntimeClient(new registration.containerClient()),
+        );
+
+        if (registration.orchestratorClient) {
+            ext.context.subscriptions.push(
+                ext.orchestratorManager.registerRuntimeClient(new registration.orchestratorClient()),
+            );
+        }
+    }
 }
 
 //#region Language services

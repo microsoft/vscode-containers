@@ -4,9 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { DisposableLike } from '@microsoft/vscode-processutils';
-import type { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import * as crypto from 'crypto';
-import type * as express from 'express';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -15,7 +13,12 @@ import { getErrorMessage } from '../utils/getErrorMessage';
 import { Lazy } from '../utils/Lazy';
 import type { McpProviderOptions } from './McpProviderOptions';
 
-const transports: Record<string, StreamableHTTPServerTransport> = {};
+type SessionTransport = {
+    handleRequest: (req: Request, options?: { parsedBody?: unknown }) => Promise<Response>;
+    close: () => Promise<void>;
+};
+
+const transports: Record<string, SessionTransport> = {};
 
 /**
  * Starts a new MCP HTTP server instance on a random named pipe (Windows) or Unix socket (Unix).
@@ -30,18 +33,30 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
         const nonce = crypto.randomUUID();
         socketPath = getRandomSocketPath();
 
-        const express = await expressLazy.value;
+        const [{ Hono }, { createAdaptorServer }] = await Promise.all([
+            honoModuleLazy.value,
+            honoNodeServerModuleLazy.value,
+        ]);
 
-        const app = express.default();
+        const app = new Hono();
 
-        app.use(express.default.json());
-        app.use((req, res, next) => authMiddleware(nonce, req, res, next));
+        app.use('/mcp', async (context, next) => {
+            if (context.req.header('authorization') !== `Nonce ${nonce}`) {
+                return new Response('Unauthorized', { status: 401 });
+            }
 
-        app.post('/mcp', (req, res) => handlePost(mcpOptions, req, res));
-        app.get('/mcp', handleGetDelete);
-        app.delete('/mcp', handleGetDelete);
+            return await next();
+        });
 
-        const httpServer = app.listen(socketPath);
+        app.post('/mcp', async (context) => await handlePost(mcpOptions, context.req.raw));
+        app.get('/mcp', async (context) => await handleGetDelete(context.req.raw));
+        app.delete('/mcp', async (context) => await handleGetDelete(context.req.raw));
+
+        const httpServer = createAdaptorServer({
+            fetch: app.fetch,
+            overrideGlobalObjects: false,
+        });
+        httpServer.listen(socketPath);
 
         return {
             disposable: {
@@ -52,10 +67,9 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
                         delete transports[sessionId];
                     }
 
-                    // Close the Express server
+                    // Close the Hono server
                     if (httpServer.listening) {
                         httpServer.close();
-                        httpServer.closeAllConnections();
                     }
 
                     // Clean up the socket path
@@ -65,7 +79,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             serverUri: vscode.Uri.from({
                 scheme: os.platform() === 'win32' ? 'pipe' : 'unix',
                 path: socketPath,
-                fragment: '/mcp', // The express app is configured to serve MCP over the `/mcp` route, and VSCode wants that route in the URI fragment
+                fragment: '/mcp', // The Hono app is configured to serve MCP over the `/mcp` route, and VSCode wants that route in the URI fragment
             }),
             headers: {
                 'Authorization': `Nonce ${nonce}`,
@@ -77,30 +91,30 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
     }
 }
 
-function authMiddleware(nonce: string, req: express.Request, res: express.Response, next: express.NextFunction): void {
-    if (req.headers.authorization !== `Nonce ${nonce}`) {
-        res.status(401).send('Unauthorized');
-        return;
-    }
+async function handlePost(mcpOptions: McpProviderOptions, request: Request): Promise<Response> {
+    const sessionId = getSessionId(request);
+    const { isInitializeRequest, McpServer, WebStandardStreamableHTTPServerTransport } = await mcpServerModuleLazy.value;
 
-    next();
-}
+    let transport: SessionTransport;
+    let parsedBody: unknown;
 
-async function handlePost(mcpOptions: McpProviderOptions, req: express.Request, res: express.Response): Promise<void> {
-    const sessionId = req.headers['mcp-session-id'] as string | undefined;
-
-    const isInitializeRequest = await isInitializeRequestLazy.value;
-    const { StreamableHTTPServerTransport } = await streamableHttpLazy.value;
-
-    let transport: StreamableHTTPServerTransport;
     if (sessionId && transports[sessionId]) {
         // Existing session
         transport = transports[sessionId];
-    } else if (!sessionId && isInitializeRequest(req.body)) {
+    } else if (!sessionId) {
+        const parseResult = await parseJsonBody(request);
+        if ('errorResponse' in parseResult) {
+            return parseResult.errorResponse;
+        }
+
+        parsedBody = parseResult.parsedBody;
+        if (!isInitializeRequest(parsedBody)) {
+            // Invalid request
+            return createJsonRpcErrorResponse(400, 'Bad Request: No valid session ID provided');
+        }
+
         // New session initialization request
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore MCP SDK contains a bug where this type mismatches between CJS and ESM, we must ignore it. We also can't do @ts-expect-error because the error only happens when building CJS.
-        transport = new StreamableHTTPServerTransport({
+        transport = new WebStandardStreamableHTTPServerTransport({
             sessionIdGenerator: () => crypto.randomUUID(),
             onsessioninitialized: (sessionId) => {
                 transports[sessionId] = transport;
@@ -112,7 +126,6 @@ async function handlePost(mcpOptions: McpProviderOptions, req: express.Request, 
             allowedHosts: ['localhost'],
         });
 
-        const { McpServer } = await mcpServerLazy.value;
         const server = new McpServer(
             {
                 name: mcpOptions.id,
@@ -122,49 +135,37 @@ async function handlePost(mcpOptions: McpProviderOptions, req: express.Request, 
         );
 
         try {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore MCP SDK contains a bug where this type mismatches between CJS and ESM, we must ignore it. We also can't do @ts-expect-error because the error only happens when building CJS.
-            await Promise.resolve(mcpOptions.registerTools(server));
+            // ESM and CJS declarations expose nominally distinct McpServer classes.
+            // Both builds share runtime shape, so bridge via the option's parameter type.
+            await Promise.resolve(
+                mcpOptions.registerTools(
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                    server as unknown as Parameters<McpProviderOptions['registerTools']>[0]
+                )
+            );
         } catch (err) {
             // Failed to register tools, return error
-            res.status(500).json({
-                jsonrpc: '2.0',
-                error: {
-                    code: -32000,
-                    message: `Failed to register MCP tools: ${getErrorMessage(err)}`,
-                },
-                id: null,
-            });
-            return;
+            return createJsonRpcErrorResponse(500, `Failed to register MCP tools: ${getErrorMessage(err)}`);
         }
 
-        await server.connect(transport);
+        await server.connect(transport as unknown as Parameters<typeof server.connect>[0]);
     } else {
         // Invalid request
-        res.status(400).json({
-            jsonrpc: '2.0',
-            error: {
-                code: -32000,
-                message: 'Bad Request: No valid session ID provided',
-            },
-            id: null,
-        });
-        return;
+        return createJsonRpcErrorResponse(400, 'Bad Request: No valid session ID provided');
     }
 
-    await transport.handleRequest(req, res, req.body);
+    return await transport.handleRequest(request, parsedBody === undefined ? undefined : { parsedBody });
 }
 
-async function handleGetDelete(req: express.Request, res: express.Response): Promise<void> {
-    const sessionId = req.headers['mcp-session-id'] as string | undefined;
+async function handleGetDelete(request: Request): Promise<Response> {
+    const sessionId = getSessionId(request);
 
     if (!sessionId || !transports[sessionId]) {
-        res.status(400).send('Invalid or missing session ID');
-        return;
+        return new Response('Invalid or missing session ID', { status: 400 });
     }
 
     const transport = transports[sessionId];
-    await transport.handleRequest(req, res);
+    return await transport.handleRequest(request);
 }
 
 function getRandomSocketPath(): string {
@@ -204,11 +205,31 @@ function tryCleanupSocket(socketPath: string | undefined): void {
     }
 }
 
+function getSessionId(request: Request): string | undefined {
+    return request.headers.get('mcp-session-id') ?? undefined;
+}
+
+function createJsonRpcErrorResponse(status: number, message: string): Response {
+    return Response.json({
+        jsonrpc: '2.0',
+        error: {
+            code: -32000,
+            message,
+        },
+        id: null,
+    }, { status });
+}
+
+async function parseJsonBody(request: Request): Promise<{ parsedBody: unknown } | { errorResponse: Response }> {
+    try {
+        const parsedBody: unknown = await request.clone().json();
+        return { parsedBody };
+    } catch {
+        return { errorResponse: createJsonRpcErrorResponse(400, 'Bad Request: Invalid JSON body') };
+    }
+}
+
 // Lazily load some modules that are only needed when an MCP server is actually started
-const expressLazy = new Lazy(async () => await import('express'));
-const streamableHttpLazy = new Lazy(async () => await import('@modelcontextprotocol/sdk/server/streamableHttp.js'));
-const mcpServerLazy = new Lazy(async () => await import('@modelcontextprotocol/sdk/server/mcp.js'));
-const isInitializeRequestLazy = new Lazy(async () => {
-    const { isInitializeRequest } = await import('@modelcontextprotocol/sdk/types.js');
-    return isInitializeRequest;
-});
+const honoModuleLazy = new Lazy(async () => await import('hono'));
+const honoNodeServerModuleLazy = new Lazy(async () => await import('@hono/node-server'));
+const mcpServerModuleLazy = new Lazy(async () => await import('@modelcontextprotocol/server'));

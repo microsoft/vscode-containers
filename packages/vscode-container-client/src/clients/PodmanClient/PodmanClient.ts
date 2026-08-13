@@ -14,20 +14,13 @@ import type {
     EventStreamCommandOptions,
     IContainersClient,
     InfoItem,
-    InspectContainersCommandOptions,
-    InspectContainersItem,
-    InspectImagesCommandOptions,
-    InspectImagesItem,
     InspectNetworksItem,
-    InspectVolumesItem,
     ListContainersCommandOptions,
     ListContainersItem,
     ListImagesCommandOptions,
     ListImagesItem,
     ListNetworkItem,
     ListNetworksCommandOptions,
-    ListVolumeItem,
-    ListVolumesCommandOptions,
     PortBinding,
     PruneContainersCommandOptions,
     PruneContainersItem,
@@ -39,16 +32,12 @@ import type {
     PruneVolumesItem,
     VersionItem
 } from '../../contracts/ContainerClient';
-import { asIds } from '../../utils/asIds';
 import { dayjs } from '../../utils/dayjs';
 import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
 import { DockerClientBase } from '../DockerClientBase/DockerClientBase';
 import { PodmanEventRecordSchema } from './PodmanEventRecord';
-import { PodmanInspectContainerRecordSchema, normalizePodmanInspectContainerRecord } from './PodmanInspectContainerRecord';
-import { PodmanInspectImageRecordSchema, normalizePodmanInspectImageRecord } from './PodmanInspectImageRecord';
 import { PodmanInspectNetworkRecordSchema, normalizePodmanInspectNetworkRecord } from './PodmanInspectNetworkRecord';
-import { PodmanInspectVolumeRecordSchema, normalizePodmanInspectVolumeRecord } from './PodmanInspectVolumeRecord';
-import { type PodmanListContainerRecord, PodmanListContainerRecordSchema } from './PodmanListContainerRecord';
+import { PodmanListContainerRecordSchema } from './PodmanListContainerRecord';
 import { type PodmanListImageRecord, PodmanListImageRecordSchema } from './PodmanListImageRecord';
 import { PodmanListNetworkRecordSchema } from './PodmanListNetworkRecord';
 import { PodmanVersionRecordSchema } from './PodmanVersionRecord';
@@ -200,43 +189,7 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
         output: string,
         strict: boolean,
     ): Promise<PruneImagesItem> {
-        return Promise.resolve({
-            imageRefsDeleted: asIds(output),
-        });
-    }
-
-    //#endregion
-
-    //#region InspectImages Command
-
-    /**
-     * Parse the standard output from a Docker-like inspect images command and
-     * normalize the result
-     * @param options Inspect images command options
-     * @param output The standard out from a Docker-like runtime inspect images command
-     * @param strict Should strict parsing be enforced?
-     * @returns Normalized array of InspectImagesItem records
-     */
-    protected parseInspectImagesCommandOutput(
-        options: InspectImagesCommandOptions,
-        output: string,
-        strict: boolean,
-    ): Promise<Array<InspectImagesItem>> {
-        const results = new Array<InspectImagesItem>();
-
-        try {
-            const resultRaw = z.array(PodmanInspectImageRecordSchema).parse(JSON.parse(output));
-
-            for (const inspect of resultRaw) {
-                results.push(normalizePodmanInspectImageRecord(inspect, output));
-            }
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
-
-        return Promise.resolve(results);
+        return this.resolvePrunedIds(output, (ids) => ({ imageRefsDeleted: ids }));
     }
 
     //#endregion
@@ -244,47 +197,31 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
     //#region ListContainers Command
 
     protected override parseListContainersCommandOutput(options: ListContainersCommandOptions, output: string, strict: boolean): Promise<ListContainersItem[]> {
-        const containers = new Array<ListContainersItem>();
-
-        try {
-            const rawContainers = z.array(PodmanListContainerRecordSchema).parse(JSON.parse(output));
-            rawContainers.forEach((rawContainer: PodmanListContainerRecord) => {
-                try {
-                    const name = rawContainer.Names?.[0].trim();
-                    const createdAt = dayjs.unix(rawContainer.Created).toDate();
-                    const ports: PortBinding[] = (rawContainer.Ports ?? []).map(p => {
-                        return {
-                            containerPort: p.container_port,
-                            hostIp: p.host_ip || "127.0.0.1",
-                            hostPort: p.host_port,
-                            protocol: p.protocol,
-                        };
-                    });
-
-                    containers.push({
-                        id: rawContainer.Id,
-                        image: parseDockerLikeImageName(rawContainer.Image),
-                        name,
-                        labels: rawContainer.Labels ?? {},
-                        createdAt,
-                        ports,
-                        networks: rawContainer.Networks ?? [],
-                        state: rawContainer.State,
-                        status: rawContainer.Status,
-                    });
-                } catch (err) {
-                    if (strict) {
-                        throw err;
-                    }
-                }
+        return this.parseInspectJson(output, strict, (item) => {
+            const rawContainer = PodmanListContainerRecordSchema.parse(item);
+            const name = rawContainer.Names?.[0].trim();
+            const createdAt = dayjs.unix(rawContainer.Created).toDate();
+            const ports: PortBinding[] = (rawContainer.Ports ?? []).map(p => {
+                return {
+                    containerPort: p.container_port,
+                    hostIp: p.host_ip || "127.0.0.1",
+                    hostPort: p.host_port,
+                    protocol: p.protocol,
+                };
             });
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
 
-        return Promise.resolve(containers);
+            return {
+                id: rawContainer.Id,
+                image: parseDockerLikeImageName(rawContainer.Image),
+                name,
+                labels: rawContainer.Labels ?? {},
+                createdAt,
+                ports,
+                networks: rawContainer.Networks ?? [],
+                state: rawContainer.State,
+                status: rawContainer.Status,
+            };
+        });
     }
 
     //#endregion
@@ -296,63 +233,30 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
         output: string,
         strict: boolean,
     ): Promise<PruneContainersItem> {
-        return Promise.resolve({
-            containersDeleted: asIds(output),
-        });
+        return this.resolvePrunedIds(output, (ids) => ({ containersDeleted: ids }));
     }
 
     //#endregion
-
-    //#region InspectContainers Command
-
-    protected override parseInspectContainersCommandOutput(options: InspectContainersCommandOptions, output: string, strict: boolean): Promise<InspectContainersItem[]> {
-        const results = new Array<InspectContainersItem>();
-
-        try {
-            const resultRaw = z.array(PodmanInspectContainerRecordSchema).parse(JSON.parse(output));
-
-            for (const inspect of resultRaw) {
-                results.push(normalizePodmanInspectContainerRecord(inspect, output));
-            }
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
-
-        return Promise.resolve(results);
-    }
 
     //#endregion
 
     //#region ListNetworks Command
 
     protected override parseListNetworksCommandOutput(options: ListNetworksCommandOptions, output: string, strict: boolean): Promise<ListNetworkItem[]> {
-        // Podman networks are drastically different from Docker networks in terms of what details are available, especially Podman v3
-        const results = new Array<ListNetworkItem>();
-
-        try {
-            const resultRaw = z.array(PodmanListNetworkRecordSchema).parse(JSON.parse(output));
-
-            for (const network of resultRaw) {
-                results.push({
-                    name: network.name || network.Name || '',
-                    labels: network.Labels ?? {},
-                    createdAt: network.created ? new Date(network.created) : undefined,
-                    internal: network.internal,
-                    ipv6: network.ipv6_enabled,
-                    driver: network.driver,
-                    id: network.id,
-                    scope: undefined, // Not available from Podman
-                });
-            }
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
-
-        return Promise.resolve(results);
+        // Podman networks are drastically different from Docker networks in terms of what details are available
+        return this.parseInspectJson(output, strict, (item) => {
+            const network = PodmanListNetworkRecordSchema.parse(item);
+            return {
+                name: network.name || '',
+                labels: network.labels ?? {},
+                createdAt: network.created ? new Date(network.created) : undefined,
+                internal: network.internal,
+                ipv6: network.ipv6_enabled,
+                driver: network.driver,
+                id: network.id,
+                scope: undefined, // Not available from Podman
+            };
+        });
     }
 
     //#endregion
@@ -364,9 +268,7 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
         output: string,
         strict: boolean,
     ): Promise<PruneNetworksItem> {
-        return Promise.resolve({
-            networksDeleted: asIds(output),
-        });
+        return this.resolvePrunedIds(output, (ids) => ({ networksDeleted: ids }));
     }
 
     //#endregion
@@ -374,32 +276,12 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
     //#region InspectNetworks Command
 
     protected override parseInspectNetworksCommandOutput(options: ListNetworksCommandOptions, output: string, strict: boolean): Promise<InspectNetworksItem[]> {
-        // Podman networks are drastically different from Docker networks in terms of what details are available, especially Podman v3
-        const results = new Array<InspectNetworksItem>();
-
-        try {
-            const resultRaw = z.array(PodmanInspectNetworkRecordSchema).parse(JSON.parse(output));
-
-            for (const network of resultRaw) {
-                results.push(normalizePodmanInspectNetworkRecord(network, output));
-            }
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
-
-        return Promise.resolve(results);
+        // Podman networks are drastically different from Docker networks in terms of what details are available
+        return this.parseInspectJson(output, strict, (item) =>
+            normalizePodmanInspectNetworkRecord(PodmanInspectNetworkRecordSchema.parse(item), JSON.stringify(item)));
     }
 
     //#endregion
-
-    //#region ListVolumes Command
-
-    protected override parseListVolumesCommandOutput(options: ListVolumesCommandOptions, output: string, strict: boolean): Promise<ListVolumeItem[]> {
-        // Podman volume inspect is identical to volume list
-        return this.parseInspectVolumesCommandOutput(options, output, strict);
-    }
 
     //#endregion
 
@@ -410,30 +292,8 @@ export class PodmanClient extends DockerClientBase implements IContainersClient 
         output: string,
         strict: boolean,
     ): Promise<PruneVolumesItem> {
-        return Promise.resolve({
-            volumesDeleted: asIds(output),
-        });
+        return this.resolvePrunedIds(output, (ids) => ({ volumesDeleted: ids }));
     }
 
     //#endregion
-
-    //#region InspectVolumes Command
-
-    protected override parseInspectVolumesCommandOutput(options: ListVolumesCommandOptions, output: string, strict: boolean): Promise<InspectVolumesItem[]> {
-        const results = new Array<InspectVolumesItem>();
-
-        try {
-            const resultRaw = z.array(PodmanInspectVolumeRecordSchema).parse(JSON.parse(output));
-
-            for (const volume of resultRaw) {
-                results.push(normalizePodmanInspectVolumeRecord(volume, output));
-            }
-        } catch (err) {
-            if (strict) {
-                throw err;
-            }
-        }
-
-        return Promise.resolve(results);
-    }
 }

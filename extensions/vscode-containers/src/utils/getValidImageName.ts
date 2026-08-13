@@ -22,3 +22,14 @@ export function getValidImageNameWithTag(nameHint: string, tag: string): string 
 export function getImageNameWithTag(name: string, tag: string): string {
     return `${name}:${tag}`;
 }
+
+export function getDefaultImageName(nameHint: string, tag?: 'dev' | 'latest'): string {
+    tag = tag || 'latest';
+    return getValidImageNameWithTag(nameHint, tag);
+}
+
+export function getDefaultContainerName(nameHint: string, tag?: 'dev' | 'latest'): string {
+    tag = tag || 'dev';
+    return `${getValidImageName(nameHint)}-${tag}`;
+}
+

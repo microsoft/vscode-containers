@@ -3,9 +3,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { toArray } from '@microsoft/vscode-processutils';
 import * as z from 'zod/mini';
+import { tryParseSize } from '../clients/DockerClientBase/tryParseSize';
 import { dayjs } from '../utils/dayjs';
-import type { Labels } from './ContainerClient';
+import { parseDockerLikeImageName } from '../utils/parseDockerLikeImageName';
+import type { ImageNameInfo, Labels } from './ContainerClient';
 
 /**
  * Schema that transforms a date string to a Date object.
@@ -30,6 +33,21 @@ export const dateStringWithFallbackSchema = z.pipe(z.string(), z.transform((str)
     const parsed = dayjs.utc(str);
     return parsed.isValid() ? parsed.toDate() : dayjs.utc().toDate();
 }));
+
+/**
+ * Schema that transforms a Unix epoch (seconds) number into a Date.
+ *
+ * Some runtimes (`wslc`) emit numeric timestamps instead of the Docker-style
+ * date strings that {@link dateStringSchema} handles.
+ */
+export const unixEpochSecondsSchema = z.pipe(z.number(), z.transform((seconds): Date => dayjs.unix(seconds).toDate()));
+
+/**
+ * Schema that accepts either a Docker-style date string or a Unix epoch
+ * (seconds) number and transforms it to a Date. Yields `undefined` for an
+ * unparseable string, matching {@link dateStringSchema}.
+ */
+export const dateStringOrEpochSchema = z.union([dateStringSchema, unixEpochSecondsSchema]);
 
 /**
  * Schema that transforms boolean-like strings (e.g. "true"/"false") to booleans.
@@ -78,13 +96,10 @@ export const labelsStringSchema = z.pipe(z.string(), z.transform(parseLabelsStri
  * Schema that handles labels as either a string (to be parsed) or already an object.
  * This is common in Docker/nerdctl outputs where labels can come in either format.
  */
-export const labelsSchema = z.pipe(
-    z.union([
-        labelsStringSchema,
-        z.record(z.string(), z.string()),
-    ]),
-    z.transform((val): Labels => val ?? {}),
-);
+export const labelsSchema = z.union([
+    labelsStringSchema,
+    z.record(z.string(), z.string()),
+]);
 
 /**
  * Schema that normalizes OS type strings to 'linux' | 'windows' | undefined.
@@ -115,3 +130,37 @@ export const architectureStringSchema = z.pipe(z.string(), z.transform((str): 'a
     }
     return undefined;
 }));
+
+/**
+ * Schema that transforms a Docker-like size value (a number of bytes or a
+ * human-readable string such as `"12.34 GB"`) into a number of bytes.
+ *
+ * Backed by {@link tryParseSize}; `undefined`/`null`/`"N/A"`/unparseable input
+ * yields `undefined`.
+ */
+export const sizeSchema = z.pipe(
+    z.nullish(z.union([z.string(), z.number()])),
+    z.transform((val): number | undefined => tryParseSize(val ?? undefined)),
+);
+
+/**
+ * Schema that transforms a raw image name string into an {@link ImageNameInfo}
+ * via {@link parseDockerLikeImageName}. A `null`/`undefined`/empty value yields
+ * an {@link ImageNameInfo} with only `originalName` populated.
+ */
+export const imageNameSchema = z.pipe(
+    z.nullish(z.string()),
+    z.transform((val): ImageNameInfo => parseDockerLikeImageName(val ?? undefined)),
+);
+
+/**
+ * Schema that coalesces a value that may be a single string, an array of
+ * strings, or `null`/`undefined` into a `string[]` via {@link toArray}.
+ *
+ * Docker-like `Entrypoint`/`Cmd`/`Env` fields are emitted inconsistently as
+ * either a scalar or an array depending on the runtime and object.
+ */
+export const stringArraySchema = z.pipe(
+    z.nullish(z.union([z.array(z.string()), z.string()])),
+    z.transform((val): string[] => toArray(val ?? [])),
+);

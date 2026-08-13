@@ -9,6 +9,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { DockerComposeClient } from '../clients/DockerComposeClient/DockerComposeClient';
+import { FinchClient } from '../clients/FinchClient/FinchClient';
+import { FinchComposeClient } from '../clients/FinchComposeClient/FinchComposeClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
 import { NerdctlComposeClient } from '../clients/NerdctlComposeClient/NerdctlComposeClient';
 import { PodmanClient } from '../clients/PodmanClient/PodmanClient';
@@ -43,6 +45,11 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
     this.timeout(10000); // Set a longer timeout for integration tests
 
     before(async function () {
+        // wslc has no Compose/orchestrator equivalent, so skip the orchestrator suite entirely.
+        if (clientTypeToTest === 'wslc') {
+            this.skip();
+        }
+
         if (clientTypeToTest === 'docker') {
             containerClient = new DockerClient(); // Used for validating that the containers are created and removed correctly
             client = new DockerComposeClient();
@@ -50,8 +57,8 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
             containerClient = new PodmanClient(); // Used for validating that the containers are created and removed correctly
             client = new PodmanComposeClient();
         } else if (clientTypeToTest === 'finch') {
-            containerClient = new NerdctlClient('finch', 'Finch', 'Runs container commands using the Finch CLI'); // Used for validating that the containers are created and removed correctly
-            client = new NerdctlComposeClient('finch', 'Finch Compose', 'Runs orchestrator commands using the Finch Compose CLI');
+            containerClient = new FinchClient(); // Used for validating that the containers are created and removed correctly
+            client = new FinchComposeClient();
         } else if (clientTypeToTest === 'nerdctl') {
             containerClient = new NerdctlClient('nerdctl', 'Nerdctl', 'Runs container commands using the nerdctl CLI'); // Used for validating that the containers are created and removed correctly
             client = new NerdctlComposeClient('nerdctl', 'Nerdctl Compose', 'Runs orchestrator commands using the nerdctl compose CLI');

@@ -1,7 +1,7 @@
 {
     "name": "@microsoft/vscode-container-client",
     "author": "Microsoft Corporation",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Extensibility model for implementing container runtime providers (shared by VS and VS Code)",
     "license": "MIT",
     "repository": {
@@ -23,6 +23,7 @@
         "lint": "eslint --max-warnings 0",
         "package": "pnpm pack",
         "test": "mocha",
+        "pretestintegration": "pnpm --filter @microsoft/vscode-processutils run build",
         "testintegration": "mocha --grep \"(integration)\"",
         "testintegrationcov": "pnpx nyc --reporter=html mocha --grep \"(integration)\"",
         "clean": "node ../../scripts/clean.mjs"

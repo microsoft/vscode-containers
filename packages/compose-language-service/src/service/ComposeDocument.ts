@@ -150,7 +150,7 @@ export class ComposeDocument {
     };
 
     private buildYamlDocument(): YamlDocument<YamlNode> {
-        const yamlDocument = parseDocument(this.textDocument.getText(), { merge: true, prettyErrors: true, customTags: ComposeCustomTags });
+        const yamlDocument = parseDocument(this.textDocument.getText(), { merge: true, prettyErrors: true, customTags: ComposeCustomTags, intAsBigInt: true });
 
         if (!isDocument(yamlDocument)) {
             throw new ResponseError(ErrorCodes.ParseError, 'Malformed YAML document');

@@ -6,13 +6,14 @@
 import { IActionContext, IAzureQuickPickItem, IAzureQuickPickOptions, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { PortBinding, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import { quoted } from '@microsoft/vscode-processutils';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { ext } from '../extensionVariables';
 import { isComposeV2ableOrchestratorClient } from '../runtimes/OrchestratorRuntimeManager';
 import { resolveVariables } from '../utils/resolveVariables';
 
-type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset';
+type TemplateCommand = 'build' | 'run' | 'runInteractive' | 'attach' | 'logs' | 'composeUp' | 'composeDown' | 'composeUpSubset' | 'composeDownSubset' | 'composeLogs';
 
 type TemplatePicker = (items: IAzureQuickPickItem<CommandTemplate>[], options: IAzureQuickPickOptions) => Promise<IAzureQuickPickItem<CommandTemplate>>;
 
@@ -78,6 +79,31 @@ export async function selectLogsCommand(context: IActionContext, containerName: 
     );
 }
 
+export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder | vscode.Uri, configurationFile?: string, projectName?: string, envFile?: string): Promise<VoidCommandResponse> {
+    const orchestratorClient = await ext.orchestratorManager.getClient();
+    let fullComposeCommand: string;
+    if (isComposeV2ableOrchestratorClient(orchestratorClient) && orchestratorClient.composeV2) {
+        fullComposeCommand = `${orchestratorClient.commandName} compose`;
+    } else {
+        fullComposeCommand = orchestratorClient.commandName;
+    }
+
+    const folderName = folder instanceof vscode.Uri ? path.basename(folder.fsPath) : folder.name;
+
+    return await selectCommandTemplate(
+        context,
+        'composeLogs',
+        [folderName, configurationFile || ''],
+        folder,
+        {
+            'configurationFile': configurationFile || '',
+            'projectName': projectName ? `-p "${projectName}"` : '',
+            'environmentFile': envFile ? `--env-file "${envFile}"` : '',
+            'composeCommand': fullComposeCommand
+        }
+    );
+}
+
 export async function selectComposeCommand(context: IActionContext, folder: vscode.WorkspaceFolder, composeCommand: 'up' | 'down' | 'upSubset' | 'downSubset', configurationFile?: string, detached?: boolean, build?: boolean): Promise<VoidCommandResponse> {
     let template: TemplateCommand;
 
@@ -122,7 +148,7 @@ export async function selectCommandTemplate(
     actionContext: IActionContext,
     command: TemplateCommand,
     matchContext: string[],
-    folder: vscode.WorkspaceFolder | undefined,
+    folder: vscode.WorkspaceFolder | vscode.Uri | undefined,
     additionalVariables: { [key: string]: string },
     // The following three are overridable for test purposes, but have default values that cover actual usage
     templatePicker: TemplatePicker = (i, o) => actionContext.ui.showQuickPick(i, o), // Default is the normal ext.ui.showQuickPick (this longer syntax is because doing `ext.ui.showQuickPick` alone doesn't result in the right `this` further down)

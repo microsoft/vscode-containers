@@ -1,6 +1,8 @@
-## 1.0.0 - 21 July 2026
+## 1.0.0 - 28 July 2026
 ### Changed
 * The repository has been relocated to [microsoft/vscode-containers](https://github.com/microsoft/vscode-containers). The bump to 1.0.0 does not reflect any breaking API changes.
+* Updated to use `@modelcontextprotocol/server` v2.0.0-beta.4.
+* Replaced Express with Hono and `@hono/node-server` for the in-proc HTTP server, routing requests through `WebStandardStreamableHTTPServerTransport`. [#554](https://github.com/microsoft/vscode-containers/pull/554)
 
 ## 0.3.0 - 9 February 2026
 ### Breaking Changes

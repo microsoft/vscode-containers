@@ -5,7 +5,7 @@
 
 import * as os from 'os';
 import * as path from 'path';
-import { WorkspaceFolder, window, workspace } from 'vscode';
+import { Uri, WorkspaceFolder, window, workspace } from 'vscode';
 import { WorkspaceFolderPlaceholder } from '../constants';
 import { cloneObject } from '../utils/cloneObject';
 
@@ -13,7 +13,7 @@ const variableMatcher: RegExp = /\$\{[a-z.\-_:]+\}/ig;
 const configVariableMatcher: RegExp = /\$\{config:([a-z.\-_]+)\}/i;
 const envVariableMatcher: RegExp = /\$\{env:([\w\d]+)\}/i;
 
-export function resolveVariables<T>(target: T, folder?: WorkspaceFolder, additionalVariables?: { [key: string]: string }): T {
+export function resolveVariables<T>(target: T, folder?: WorkspaceFolder | Uri, additionalVariables?: { [key: string]: string }): T {
     if (!target) {
         return target;
     } else if (typeof (target) === 'string') {
@@ -34,18 +34,19 @@ export function resolveVariables<T>(target: T, folder?: WorkspaceFolder, additio
     }
 }
 
-function resolveSingleVariable(variable: string, folder?: WorkspaceFolder, additionalVariables?: { [key: string]: string }): string {
+function resolveSingleVariable(variable: string, folder?: WorkspaceFolder | Uri, additionalVariables?: { [key: string]: string }): string {
     // Replace workspace folder variables
     if (folder) {
+        const folderUri = folder instanceof Uri ? folder : folder.uri;
         switch (variable) {
             /* eslint-disable no-template-curly-in-string */
             case WorkspaceFolderPlaceholder:
             case '${workspaceRoot}':
-                return path.normalize(folder.uri.fsPath);
+                return path.normalize(folderUri.fsPath);
             case '${userHome}':
                 return os.homedir();
             case '${relativeFile}':
-                return path.relative(path.normalize(folder.uri.fsPath), getActiveFilePath());
+                return path.relative(path.normalize(folderUri.fsPath), getActiveFilePath());
             default:
             /* eslint-enable no-template-curly-in-string */
         }

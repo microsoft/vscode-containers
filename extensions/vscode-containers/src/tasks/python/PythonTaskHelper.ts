@@ -12,8 +12,13 @@ import { DockerBuildOptions } from "../DockerBuildTaskDefinitionBase";
 import { DockerBuildTaskDefinition } from "../DockerBuildTaskProvider";
 import { DockerContainerVolume, DockerRunOptions, DockerRunTaskDefinitionBase } from "../DockerRunTaskDefinitionBase";
 import { DockerRunTaskDefinition } from "../DockerRunTaskProvider";
-import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, getDefaultContainerName, getDefaultImageName, inferImageName } from "../TaskHelper";
+import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, inferImageName } from "../TaskHelper";
+import { getDefaultContainerName, getDefaultImageName } from "../../utils/getValidImageName";
 import { PythonExtensionHelper } from "./PythonExtensionHelper";
+
+// The path where the Python extension's bundled debugpy package is mounted inside the container.
+// Shared with PythonContainerDebugAdapterDescriptorFactory, which runs the adapter from this path.
+export const containerDebugpyPath = '/debugpy';
 
 export interface PythonTaskRunOptions {
     file?: string;
@@ -129,7 +134,7 @@ export class PythonTaskHelper implements TaskHelper {
         const volumes = runOptions?.volumes ? [...runOptions.volumes] : [];
         const dbgVolume: DockerContainerVolume = {
             localPath: launcherFolder,
-            containerPath: '/debugpy',
+            containerPath: containerDebugpyPath,
             permissions: 'ro'
         };
 

@@ -14,7 +14,7 @@ export interface DockerContainerExtraHost {
 export interface DockerContainerPort {
     hostPort?: number;
     containerPort: number;
-    protocol?: 'tcp' | 'udp';
+    protocol?: 'tcp' | 'udp' | 'sctp';
 }
 
 export interface DockerContainerVolume {

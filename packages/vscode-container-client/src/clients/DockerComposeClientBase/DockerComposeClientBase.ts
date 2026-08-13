@@ -80,11 +80,10 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator install check command for Docker Compose
      */
     public checkOrchestratorInstall(options: CheckOrchestratorInstallCommandOptions): Promise<PromiseCommandResponse<string>> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getCheckOrchestratorInstallCommandArgs(options),
-            parse: (output) => Promise.resolve(output),
-        });
+        return this.makeCommandResponse(
+            this.getCheckOrchestratorInstallCommandArgs(options),
+            (output) => Promise.resolve(output),
+        );
     }
 
     //#endregion Check orchestrator install command
@@ -116,10 +115,7 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator up command for Docker Compose
      */
     public up(options: UpCommandOptions): Promise<VoidCommandResponse> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getUpCommandArgs(options),
-        });
+        return this.makeVoidCommandResponse(this.getUpCommandArgs(options));
     }
 
     //#endregion Up command
@@ -145,10 +141,7 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator down command for Docker Compose
      */
     public down(options: DownCommandOptions): Promise<VoidCommandResponse> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getDownCommandArgs(options),
-        });
+        return this.makeVoidCommandResponse(this.getDownCommandArgs(options));
     }
 
     //#endregion Down command
@@ -170,10 +163,7 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator start command for Docker Compose
      */
     public start(options: StartCommandOptions): Promise<VoidCommandResponse> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getStartCommandArgs(options),
-        });
+        return this.makeVoidCommandResponse(this.getStartCommandArgs(options));
     }
 
     //#endregion Start command
@@ -196,10 +186,7 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator stop command for Docker Compose
      */
     public stop(options: StopCommandOptions): Promise<VoidCommandResponse> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getStopCommandArgs(options),
-        });
+        return this.makeVoidCommandResponse(this.getStopCommandArgs(options));
     }
 
     //#endregion Stop command
@@ -222,10 +209,7 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator restart command for Docker Compose
      */
     public restart(options: RestartCommandOptions): Promise<VoidCommandResponse> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getRestartCommandArgs(options),
-        });
+        return this.makeVoidCommandResponse(this.getRestartCommandArgs(options));
     }
 
     //#endregion Restart command
@@ -249,11 +233,10 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator logs command for Docker Compose
      */
     public logs(options: LogsCommandOptions): Promise<GeneratorCommandResponse<string>> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getLogsCommandArgs(options),
-            parseStream: (output, strict) => stringStreamToGenerator(output),
-        });
+        return this.makeStreamCommandResponse(
+            this.getLogsCommandArgs(options),
+            (output, strict) => stringStreamToGenerator(output),
+        );
     }
 
     //#endregion Logs command
@@ -282,11 +265,10 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
      * @returns A CommandResponse indicating how to run an orchestrator config command for Docker Compose
      */
     public config(options: ConfigCommandOptions): Promise<PromiseCommandResponse<Array<ConfigItem>>> {
-        return Promise.resolve({
-            command: this.commandName,
-            args: this.getConfigCommandArgs(options),
-            parse: (output, strict) => this.parseConfigCommandOutput(output, strict),
-        });
+        return this.makeCommandResponse(
+            this.getConfigCommandArgs(options),
+            (output, strict) => this.parseConfigCommandOutput(output, strict),
+        );
     }
 
     //#endregion Config command

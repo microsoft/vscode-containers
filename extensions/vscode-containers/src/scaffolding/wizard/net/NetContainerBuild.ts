@@ -10,6 +10,8 @@ import { NetContainerBuildOption, NetSdkChooseBuildStep } from './NetSdkChooseBu
 
 export interface NetChooseBuildTypeContext extends ScaffoldingWizardContext {
     containerBuildOption?: NetContainerBuildOption;
+    // File-based apps (a single .cs file) can only be built with the .NET SDK, so the build-type prompt is skipped for them.
+    isFileBasedApp?: boolean;
 }
 
 export async function netContainerBuild(wizardContext: Partial<NetChooseBuildTypeContext>, apiInput?: NetChooseBuildTypeContext): Promise<void> {

@@ -29,14 +29,18 @@ export class NerdctlComposeClient extends DockerComposeClientBase implements ICo
      * name of the client
      * @param description (Optional, with default) The human-friendly description of
      * the client
+     * @param clientId (Optional, default {@link NerdctlComposeClient.ClientId}) The ID
+     * the client will be registered under. Subclasses must pass their own ID, since a
+     * redeclared `static ClientId` is not picked up by this constructor.
      */
     public constructor(
         commandName: string = 'nerdctl',
         displayName: string = 'Nerdctl Compose',
-        description: string = 'Runs orchestrator commands using the Nerdctl Compose CLI'
+        description: string = 'Runs orchestrator commands using the Nerdctl Compose CLI',
+        clientId: string = NerdctlComposeClient.ClientId
     ) {
         super(
-            NerdctlComposeClient.ClientId,
+            clientId,
             commandName,
             displayName,
             description

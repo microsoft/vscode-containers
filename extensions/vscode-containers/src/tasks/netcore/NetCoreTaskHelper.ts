@@ -16,12 +16,14 @@ import { vsDbgInstallBasePath } from '../../debugging/netcore/VsDbgHelper';
 import { ext } from '../../extensionVariables';
 import { PlatformOS } from '../../utils/platform';
 import { quickPickProjectFileItem } from '../../utils/quickPickFile';
+import { isFileBasedApp } from '../../utils/netCoreUtils';
 import { resolveVariables, unresolveWorkspaceFolder } from '../../utils/resolveVariables';
 import { DockerBuildOptions, DockerBuildTaskDefinitionBase } from '../DockerBuildTaskDefinitionBase';
 import { DockerBuildTaskDefinition } from '../DockerBuildTaskProvider';
 import { DockerContainerVolume, DockerRunOptions, DockerRunTaskDefinitionBase } from '../DockerRunTaskDefinitionBase';
 import { DockerRunTaskDefinition } from '../DockerRunTaskProvider';
-import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, getDefaultContainerName, getDefaultImageName, inferImageName } from '../TaskHelper';
+import { DockerBuildTaskContext, DockerRunTaskContext, DockerTaskContext, DockerTaskScaffoldContext, TaskHelper, addVolumeWithoutConflicts, inferImageName } from '../TaskHelper';
+import { getDefaultContainerName, getDefaultImageName } from '../../utils/getValidImageName';
 import { updateBlazorManifest } from './updateBlazorManifest';
 
 export interface NetCoreTaskOptions {
@@ -176,8 +178,8 @@ export class NetCoreTaskHelper implements TaskHelper {
         if (helperOptions && helperOptions.appProject) {
             result = resolveVariables(helperOptions.appProject, context.folder);
         } else {
-            // Find a .csproj or .fsproj in the folder
-            const item = await quickPickProjectFileItem(context.actionContext, undefined, context.folder, l10n.t('No .NET project file (.csproj or .fsproj) could be found.'));
+            // Find a .csproj or .fsproj in the folder, falling back to a file-based app (single .cs file) if none is found
+            const item = await quickPickProjectFileItem(context.actionContext, undefined, context.folder, l10n.t('No .NET project file (.csproj or .fsproj) or file-based app (.cs) could be found.'), true);
             result = item.absoluteFilePath;
         }
 
@@ -185,9 +187,14 @@ export class NetCoreTaskHelper implements TaskHelper {
     }
 
     public static async isWebApp(appProject: string): Promise<boolean> {
-        const projectContents = await fse.readFile(appProject);
+        const projectContents = (await fse.readFile(appProject)).toString();
 
-        return /Sdk\s*=\s*"Microsoft\.NET\.Sdk\.Web"/ig.test(projectContents.toString());
+        if (isFileBasedApp(appProject)) {
+            // File-based apps declare the SDK with a `#:sdk Microsoft.NET.Sdk.Web` directive instead of a project-level Sdk attribute
+            return /^\s*#:sdk\s+Microsoft\.NET\.Sdk\.Web\b/im.test(projectContents);
+        }
+
+        return /Sdk\s*=\s*"Microsoft\.NET\.Sdk\.Web"/ig.test(projectContents);
     }
 
     private async inferUserSecrets(helperOptions: NetCoreTaskOptions): Promise<boolean> {
