@@ -30,17 +30,59 @@ export async function isDocumentInWorkspace(ctx: ActionContext, documentUri: Doc
  * @param documentUri The URI of the document
  * @param folders The workspace folders reported by the client (may be `null`/`undefined` if none are open)
  * @returns True if the document is within one of the workspace folders, false otherwise
+ * @internal Exported only for tests
  */
 export function isDocumentInWorkspaceFolders(documentUri: DocumentUri, folders: WorkspaceFolder[] | null | undefined): boolean {
     if (!folders?.length) {
         return false;
     }
 
-    return folders.some(folder => uriIsWithinFolder(documentUri, folder.uri));
+    const document = parseUri(documentUri);
+    if (!document) {
+        return false;
+    }
+
+    return folders.some(folder => {
+        const parsedFolder = parseUri(folder.uri);
+        if (!parsedFolder) {
+            return false;
+        }
+
+        // The scheme and authority must match exactly, so that (for example) a `file://` document is
+        // never considered to be within a `vscode-vfs://` folder, or a folder on a different host
+        if (parsedFolder.scheme !== document.scheme || parsedFolder.authority !== document.authority) {
+            return false;
+        }
+
+        // The document is within the folder if the folder's path segments are a prefix of the document's.
+        // Comparing whole segments (rather than raw strings) means a folder at `/foo` is correctly seen as
+        // containing `/foo/compose.yaml`, but not the sibling `/foobar/compose.yaml`.
+        return parsedFolder.segments.every((segment, i) => segment === document.segments[i]);
+    });
 }
 
-function uriIsWithinFolder(documentUri: string, folderUri: string): boolean {
-    // Ensure the folder URI ends with a slash so that a folder like `file:///foo` does not match `file:///foobar`
-    const normalizedFolderUri = folderUri.endsWith('/') ? folderUri : `${folderUri}/`;
-    return documentUri === folderUri || documentUri.startsWith(normalizedFolderUri);
+/**
+ * Parses a URI into the pieces needed to compare it against another URI. LSP models URIs as plain
+ * strings (`DocumentUri` is just a `string` alias) and offers no URI type of its own, so the
+ * platform's WHATWG `URL` is used: it separates the scheme and authority from the path, and
+ * normalizes dot segments (e.g. `/a/b/../c` becomes `/a/c`).
+ * @param uri The URI to parse
+ * @returns The parsed pieces, or `undefined` if the URI is malformed
+ */
+function parseUri(uri: string): { scheme: string, authority: string, segments: string[] } | undefined {
+    try {
+        const url = new URL(uri);
+
+        return {
+            scheme: url.protocol,
+            authority: url.host,
+            // Decoding is done per-segment (after splitting) so that an encoded separator within a
+            // segment can never be mistaken for a real one. This also makes comparison insensitive
+            // to differences in percent-encoding between the document and folder URIs.
+            segments: url.pathname.split('/').filter(segment => !!segment).map(decodeURIComponent),
+        };
+    } catch {
+        // Malformed URI, or malformed percent-encoding within it
+        return undefined;
+    }
 }

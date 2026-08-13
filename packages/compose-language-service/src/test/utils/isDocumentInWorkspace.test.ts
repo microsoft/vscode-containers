@@ -27,6 +27,19 @@ describe('(Unit) isDocumentInWorkspaceFolders', () => {
         it('Should return true when the document is within one of several workspace folders', () => {
             isDocumentInWorkspaceFolders('file:///second/compose.yaml', [folder('file:///first'), folder('file:///second')]).should.be.true;
         });
+
+        it('Should return true when the document and folder differ in percent-encoding', () => {
+            // `%3A` and `%3a` encode the same character, as do `:` and `%3A` in a path
+            isDocumentInWorkspaceFolders('file:///c%3a/workspace/compose.yaml', [folder('file:///c%3A/workspace')]).should.be.true;
+        });
+
+        it('Should return true when the document URI contains dot segments resolving into the folder', () => {
+            isDocumentInWorkspaceFolders('file:///workspace/sub/../compose.yaml', [folder('file:///workspace')]).should.be.true;
+        });
+
+        it('Should return true for any document when the workspace folder is the root', () => {
+            isDocumentInWorkspaceFolders('file:///workspace/compose.yaml', [folder('file:///')]).should.be.true;
+        });
     });
 
     describe('Negative scenarios', () => {
@@ -37,6 +50,26 @@ describe('(Unit) isDocumentInWorkspaceFolders', () => {
         it('Should return false for a sibling folder with a matching prefix', () => {
             // `file:///workspace` should not match `file:///workspace-other`
             isDocumentInWorkspaceFolders('file:///workspace-other/compose.yaml', [folder('file:///workspace')]).should.be.false;
+        });
+
+        it('Should return false when the document URI contains dot segments resolving out of the folder', () => {
+            isDocumentInWorkspaceFolders('file:///workspace/../elsewhere/compose.yaml', [folder('file:///workspace')]).should.be.false;
+        });
+
+        it('Should return false when the schemes differ', () => {
+            isDocumentInWorkspaceFolders('vscode-vfs:///workspace/compose.yaml', [folder('file:///workspace')]).should.be.false;
+        });
+
+        it('Should return false when the authorities differ', () => {
+            isDocumentInWorkspaceFolders('vscode-vfs://other/workspace/compose.yaml', [folder('vscode-vfs://github/workspace')]).should.be.false;
+        });
+
+        it('Should return false when the document URI is malformed', () => {
+            isDocumentInWorkspaceFolders('not a uri', [folder('file:///workspace')]).should.be.false;
+        });
+
+        it('Should return false when a workspace folder URI is malformed', () => {
+            isDocumentInWorkspaceFolders('file:///workspace/compose.yaml', [folder('not a uri')]).should.be.false;
         });
 
         it('Should return false when there are no workspace folders', () => {
