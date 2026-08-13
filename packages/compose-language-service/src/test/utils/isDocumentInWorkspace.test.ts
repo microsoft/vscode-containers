@@ -10,6 +10,9 @@ function folder(uri: string): WorkspaceFolder {
     return { uri, name: uri };
 }
 
+const itOnCaseInsensitivePlatforms = process.platform === 'darwin' || process.platform === 'win32' ? it : it.skip;
+const itOnCaseSensitivePlatforms = process.platform === 'darwin' || process.platform === 'win32' ? it.skip : it;
+
 describe('(Unit) isDocumentInWorkspaceFolders', () => {
     describe('Common scenarios', () => {
         it('Should return true when the document is directly within a workspace folder', () => {
@@ -35,6 +38,14 @@ describe('(Unit) isDocumentInWorkspaceFolders', () => {
 
         it('Should return true when the document URI contains dot segments resolving into the folder', () => {
             isDocumentInWorkspaceFolders('file:///workspace/sub/../compose.yaml', [folder('file:///workspace')]).should.be.true;
+        });
+
+        itOnCaseInsensitivePlatforms('Should compare path segments case-insensitively on Mac and Windows', () => {
+            isDocumentInWorkspaceFolders('file:///workspace/compose.yaml', [folder('file:///Workspace')]).should.be.true;
+        });
+
+        itOnCaseSensitivePlatforms('Should compare path segments case-sensitively on Linux', () => {
+            isDocumentInWorkspaceFolders('file:///workspace/compose.yaml', [folder('file:///Workspace')]).should.be.false;
         });
 
         it('Should return true for any document when the workspace folder is the root', () => {

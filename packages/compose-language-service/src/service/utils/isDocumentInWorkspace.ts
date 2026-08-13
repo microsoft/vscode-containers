@@ -7,6 +7,8 @@ import type { WorkspaceFolder } from 'vscode-languageserver';
 import type { DocumentUri } from 'vscode-languageserver-textdocument';
 import type { ActionContext } from './ActionContext';
 
+const useCaseInsensitivePathComparison = process.platform === 'darwin' || process.platform === 'win32';
+
 /**
  * Determines whether a document is located within one of the workspace folders open in the client.
  * If the client does not support the `workspace/workspaceFolders` request, the document is
@@ -57,7 +59,15 @@ export function isDocumentInWorkspaceFolders(documentUri: DocumentUri, folders: 
         // The document is within the folder if the folder's path segments are a prefix of the document's.
         // Comparing whole segments (rather than raw strings) means a folder at `/foo` is correctly seen as
         // containing `/foo/compose.yaml`, but not the sibling `/foobar/compose.yaml`.
-        return parsedFolder.segments.every((segment, i) => segment === document.segments[i]);
+        return parsedFolder.segments.every((segment, i) => {
+            const documentSegment = document.segments[i];
+
+            if (useCaseInsensitivePathComparison) {
+                return segment.toLowerCase() === documentSegment?.toLowerCase();
+            }
+
+            return segment === documentSegment;
+        });
     });
 }
 
