@@ -58,6 +58,7 @@ export async function scheduleRunRequest(context: IActionContext, requestType: '
         executeSteps: [
             new ScheduleRunRequestExecuteStep(),
         ],
+        title: requestType === 'DockerBuildRequest' ? vscode.l10n.t('Build Image in Azure') : vscode.l10n.t('Run Task in Azure'),
         showLoadingPrompt: true,
     });
 
@@ -110,7 +111,7 @@ class SelectOsTypePromptStep extends AzureWizardPromptStep<ScheduleRunRequestWiz
 class ScheduleRunRequestExecuteStep extends AzureWizardExecuteStep<ScheduleRunRequestWizardContext> {
     public priority: number = 100;
 
-    public async execute(wizardContext: ScheduleRunRequestWizardContext): Promise<void> {
+    public async execute(wizardContext: ScheduleRunRequestWizardContext, progress: vscode.Progress<{ message?: string; increment?: number }>): Promise<void> {
         const rootFolder = nonNullProp(wizardContext, 'rootFolder');
         const fileItem = nonNullProp(wizardContext, 'fileItem');
         const osType = nonNullProp(wizardContext, 'osType');
@@ -131,6 +132,7 @@ class ScheduleRunRequestExecuteStep extends AzureWizardExecuteStep<ScheduleRunRe
             }
 
             const azureRegistryClient = await createArmContainerRegistryClient([wizardContext, createSubscriptionContext(registryItem.subscription)]);
+            progress.report({ message: vscode.l10n.t('Uploading source code...') });
             const uploadedSourceLocation: string = await uploadSourceCode(azureRegistryClient, registryItem.label, resourceGroup, rootUri, tarFilePath);
             ext.outputChannel.info(vscode.l10n.t('Uploaded source code from {0}', tarFilePath));
 
@@ -156,6 +158,7 @@ class ScheduleRunRequestExecuteStep extends AzureWizardExecuteStep<ScheduleRunRe
             // Schedule the run and Clean up.
             ext.outputChannel.info(vscode.l10n.t('Set up run request'));
 
+            progress.report({ message: vscode.l10n.t('Scheduling run...') });
             const run = await azureRegistryClient.registries.beginScheduleRunAndWait(resourceGroup, registryItem.label, runRequest);
             ext.outputChannel.info(vscode.l10n.t('Scheduled run {0}', run.runId));
 
