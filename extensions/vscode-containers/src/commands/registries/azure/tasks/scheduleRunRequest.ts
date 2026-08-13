@@ -12,7 +12,8 @@ import * as readline from 'readline';
 import * as vscode from 'vscode';
 import { CreatePickAcrPromptStep, PickAcrWizardContext } from '../../../images/pushImage/CreatePickAcrPromptStep';
 import { ext } from '../../../../extensionVariables';
-import { AzureRegistryItem } from "../../../../tree/registries/Azure/AzureRegistryDataProvider";
+import { AzureRegistry, AzureRegistryItem } from "../../../../tree/registries/Azure/AzureRegistryDataProvider";
+import { UnifiedRegistryItem } from "../../../../tree/registries/UnifiedRegistryTreeDataProvider";
 import { createArmContainerRegistryClient, getResourceGroupFromId } from "../../../../utils/azureUtils";
 import { getStorageBlob, getTar } from '../../../../utils/lazyPackages';
 import { delay } from '../../../../utils/promiseUtils';
@@ -30,6 +31,7 @@ export enum RootStrategy {
 }
 
 interface ScheduleRunRequestWizardContext extends PickAcrWizardContext {
+    connectedRegistry?: UnifiedRegistryItem<AzureRegistry>;
     fileItem?: Item;
     getRun?: () => Promise<AcrRun>;
     imageName?: string;
@@ -113,7 +115,7 @@ class ScheduleRunRequestExecuteStep extends AzureWizardExecuteStep<ScheduleRunRe
         const fileItem = nonNullProp(wizardContext, 'fileItem');
         const osType = nonNullProp(wizardContext, 'osType');
         const connectedRegistry = nonNullProp(wizardContext, 'connectedRegistry');
-        const registryItem: AzureRegistryItem = connectedRegistry.wrappedItem as AzureRegistryItem;
+        const registryItem: AzureRegistryItem = connectedRegistry.wrappedItem;
         const resourceGroup = getResourceGroupFromId(registryItem.id);
         const tarFilePath: string = getTempSourceArchivePath();
 

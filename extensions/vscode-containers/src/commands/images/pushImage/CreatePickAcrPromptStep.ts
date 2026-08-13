@@ -9,7 +9,7 @@ import * as vscode from 'vscode';
 import { ext } from '../../../extensionVariables';
 import { AzureRegistry, AzureSubscriptionRegistryItem } from '../../../tree/registries/Azure/AzureRegistryDataProvider';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
-import { createAzureRegistry } from '../../registries/azure/tasks/createAzureRegistry';
+import { createAzureRegistry } from '../../registries/azure/createAzureRegistry';
 import { PushImageWizardContext } from './PushImageWizardContext';
 
 export interface PickAcrWizardContext extends IActionContext {
