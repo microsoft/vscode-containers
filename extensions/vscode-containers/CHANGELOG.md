@@ -1,6 +1,6 @@
 ## 2.5.0 - 24 August 2026
 ### Added
-* Support for additional container runtimes: [`nerdctl`](https://github.com/containerd/nerdctl)/[`finch`](https://runfinch.com/) and the new [WSL native container runtime](http://aka.ms/wslc). [#119](https://github.com/microsoft/vscode-containers/issues/119), [#501](https://github.com/microsoft/vscode-containers/issues/501)
+* Support for additional container runtimes: [`nerdctl`](https://github.com/containerd/nerdctl)/[`finch`](https://runfinch.com/) and the new [WSL native container runtime](https://aka.ms/wslc). [#119](https://github.com/microsoft/vscode-containers/issues/119), [#501](https://github.com/microsoft/vscode-containers/issues/501)
 * Docker Swarm stacks are now recognized in the Containers view, so services in a stack are grouped together like Compose projects. [#472](https://github.com/microsoft/vscode-containers/issues/472)
 * Container and image filters are now persisted, so they apply at the workspace level and survive across sessions. [#382](https://github.com/microsoft/vscode-containers/issues/382)
 * The command used for "Compose Logs" can now be customized in settings, like [some other container commands](https://code.visualstudio.com/docs/containers/reference#_command-customization). [#323](https://github.com/microsoft/vscode-containers/issues/323)
