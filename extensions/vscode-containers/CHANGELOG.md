@@ -1,3 +1,19 @@
+## 2.5.0 - 24 August 2026
+### Added
+* Support for additional container runtimes: [`nerdctl`](https://github.com/containerd/nerdctl)/[`finch`](https://runfinch.com/) and the new [WSL native container runtime](https://aka.ms/wslc). [#119](https://github.com/microsoft/vscode-containers/issues/119), [#501](https://github.com/microsoft/vscode-containers/issues/501)
+* Docker Swarm stacks are now recognized in the Containers view, so services in a stack are grouped together like Compose projects. [#472](https://github.com/microsoft/vscode-containers/issues/472)
+* Container and image filters are now persisted, so they apply at the workspace level and survive across sessions. [#382](https://github.com/microsoft/vscode-containers/issues/382)
+* The command used for "Compose Logs" can now be customized in settings, like [some other container commands](https://code.visualstudio.com/docs/containers/reference#_command-customization). [#323](https://github.com/microsoft/vscode-containers/issues/323)
+* Debugging now supports [single-file .NET apps](https://devblogs.microsoft.com/dotnet/announcing-dotnet-run-app/). [#272](https://github.com/microsoft/vscode-containers/issues/272)
+
+### Fixed
+* Dangling images are no longer shown in the Images view with Docker v29.0.0 and above. [#518](https://github.com/microsoft/vscode-containers/pull/518)
+* Python debugging now works when using Podman. [#258](https://github.com/microsoft/vscode-containers/issues/258)
+* Several Compose language service fixes: code lenses are now hidden for compose files outside the workspace, formatting no longer rounds large numbers or breaks YAML anchors. [#535](https://github.com/microsoft/vscode-containers/issues/535), [#536](https://github.com/microsoft/vscode-containers/issues/536), [#537](https://github.com/microsoft/vscode-containers/issues/537)
+
+### Removed
+* Support for Compose V1 (the `docker-compose` command) has been dropped, as it has been out of support for several years. The extension now always uses `docker compose` etc. [#339](https://github.com/microsoft/vscode-containers/issues/339)
+
 ## 2.4.5 - 28 May 2026
 ### Changed
 * Deployments to Azure App Service are now performed through the [Azure App Service extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), simplifying the deployment flow and reducing duplicated code. [#473](https://github.com/microsoft/vscode-containers/pull/473)
