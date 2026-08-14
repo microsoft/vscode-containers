@@ -13,6 +13,7 @@ import { AzureRegistrySkuStep } from '../../../tree/registries/Azure/createWizar
 import { IAzureRegistryWizardContext } from '../../../tree/registries/Azure/createWizard/IAzureRegistryWizardContext';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
 import { getAzExtAzureUtils } from '../../../utils/lazyPackages';
+import { preserveOuterWizard } from '../../../utils/preserveOuterWizard';
 import { subscriptionExperience } from '../../../utils/registryExperience';
 
 export async function createAzureRegistry(context: IActionContext, node?: UnifiedRegistryItem<AzureSubscriptionRegistryItem>): Promise<string> {
@@ -49,7 +50,7 @@ export async function createAzureRegistry(context: IActionContext, node?: Unifie
         }
     );
 
-    await wizard.prompt();
+    await preserveOuterWizard(context, () => wizard.prompt());
     const newRegistryName: string = nonNullProp(wizardContext, 'newRegistryName');
     await wizard.execute();
 

@@ -43,6 +43,11 @@ interface ScheduleRunRequestWizardContext extends PickAcrWizardContext {
 }
 
 export async function scheduleRunRequest(context: IActionContext, requestType: 'DockerBuildRequest' | 'FileTaskRunRequest', uri: vscode.Uri | undefined, rootStrategy?: RootStrategy | undefined): Promise<() => Promise<AcrRun>> {
+    // This is validated at runtime because external extensions call into this method from JavaScript
+    if (requestType !== 'DockerBuildRequest' && requestType !== 'FileTaskRunRequest') {
+        throw new Error(vscode.l10n.t('Run Request Type Currently not supported.'));
+    }
+
     const wizardContext = context as ScheduleRunRequestWizardContext;
     wizardContext.requestType = requestType;
     wizardContext.uri = uri;
@@ -50,7 +55,9 @@ export async function scheduleRunRequest(context: IActionContext, requestType: '
 
     const wizard = new AzureWizard(wizardContext, {
         promptSteps: [
-            new SelectRequestFilesPromptStep(),
+            new SelectRootFolderPromptStep(),
+            new SelectFileItemPromptStep(),
+            new SelectImageNamePromptStep(),
             new SelectSubscriptionPromptStep(),
             new CreatePickAcrPromptStep<ScheduleRunRequestWizardContext>(),
             new SelectOsTypePromptStep(),
@@ -68,22 +75,43 @@ export async function scheduleRunRequest(context: IActionContext, requestType: '
     return nonNullProp(wizardContext, 'getRun');
 }
 
-class SelectRequestFilesPromptStep extends AzureWizardPromptStep<ScheduleRunRequestWizardContext> {
+class SelectRootFolderPromptStep extends AzureWizardPromptStep<ScheduleRunRequestWizardContext> {
     public async prompt(wizardContext: ScheduleRunRequestWizardContext): Promise<void> {
+        const noWorkspacesMessage = wizardContext.requestType === 'DockerBuildRequest' ?
+            vscode.l10n.t('To quick build Dockerfiles you must first open a folder or workspace in VS Code.') :
+            vscode.l10n.t('To run a task from a .yaml file you must first open a folder or workspace in VS Code.');
+
+        wizardContext.rootFolder = await quickPickWorkspaceFolder(wizardContext, noWorkspacesMessage);
+    }
+
+    public shouldPrompt(wizardContext: ScheduleRunRequestWizardContext): boolean {
+        return !wizardContext.rootFolder;
+    }
+}
+
+class SelectFileItemPromptStep extends AzureWizardPromptStep<ScheduleRunRequestWizardContext> {
+    public async prompt(wizardContext: ScheduleRunRequestWizardContext): Promise<void> {
+        const rootFolder = nonNullProp(wizardContext, 'rootFolder');
+
         if (wizardContext.requestType === 'DockerBuildRequest') {
-            wizardContext.rootFolder = await quickPickWorkspaceFolder(wizardContext, vscode.l10n.t('To quick build Dockerfiles you must first open a folder or workspace in VS Code.'));
-            wizardContext.fileItem = await quickPickDockerFileItem(wizardContext, wizardContext.uri, wizardContext.rootFolder);
-            wizardContext.imageName = await quickPickImageName(wizardContext, wizardContext.rootFolder, wizardContext.fileItem);
-        } else if (wizardContext.requestType === 'FileTaskRunRequest') {
-            wizardContext.rootFolder = await quickPickWorkspaceFolder(wizardContext, vscode.l10n.t('To run a task from a .yaml file you must first open a folder or workspace in VS Code.'));
-            wizardContext.fileItem = await quickPickYamlFileItem(wizardContext, wizardContext.uri, wizardContext.rootFolder, vscode.l10n.t('To run a task from a .yaml file you must have yaml file in your VS Code workspace.'));
+            wizardContext.fileItem = await quickPickDockerFileItem(wizardContext, wizardContext.uri, rootFolder);
         } else {
-            throw new Error(vscode.l10n.t('Run Request Type Currently not supported.'));
+            wizardContext.fileItem = await quickPickYamlFileItem(wizardContext, wizardContext.uri, rootFolder, vscode.l10n.t('To run a task from a .yaml file you must have yaml file in your VS Code workspace.'));
         }
     }
 
-    public shouldPrompt(): boolean {
-        return true;
+    public shouldPrompt(wizardContext: ScheduleRunRequestWizardContext): boolean {
+        return !wizardContext.fileItem;
+    }
+}
+
+class SelectImageNamePromptStep extends AzureWizardPromptStep<ScheduleRunRequestWizardContext> {
+    public async prompt(wizardContext: ScheduleRunRequestWizardContext): Promise<void> {
+        wizardContext.imageName = await quickPickImageName(wizardContext, nonNullProp(wizardContext, 'rootFolder'), nonNullProp(wizardContext, 'fileItem'));
+    }
+
+    public shouldPrompt(wizardContext: ScheduleRunRequestWizardContext): boolean {
+        return wizardContext.requestType === 'DockerBuildRequest' && !wizardContext.imageName;
     }
 }
 
@@ -92,8 +120,8 @@ class SelectSubscriptionPromptStep extends AzureWizardPromptStep<ScheduleRunRequ
         wizardContext.azureSubscriptionNode = await subscriptionExperience(wizardContext);
     }
 
-    public shouldPrompt(): boolean {
-        return true;
+    public shouldPrompt(wizardContext: ScheduleRunRequestWizardContext): boolean {
+        return !wizardContext.azureSubscriptionNode;
     }
 }
 
@@ -103,8 +131,8 @@ class SelectOsTypePromptStep extends AzureWizardPromptStep<ScheduleRunRequestWiz
         wizardContext.osType = (await wizardContext.ui.showQuickPick(osPick, { placeHolder: vscode.l10n.t('Select image base OS') })).data;
     }
 
-    public shouldPrompt(): boolean {
-        return true;
+    public shouldPrompt(wizardContext: ScheduleRunRequestWizardContext): boolean {
+        return !wizardContext.osType;
     }
 }
 
@@ -178,7 +206,7 @@ class ScheduleRunRequestExecuteStep extends AzureWizardExecuteStep<ScheduleRunRe
     }
 }
 
-async function quickPickImageName(context: IActionContext, rootFolder: vscode.WorkspaceFolder, dockerFileItem: Item | undefined): Promise<string> {
+async function quickPickImageName(context: IActionContext, rootFolder: vscode.WorkspaceFolder, dockerFileItem: Item): Promise<string> {
     const absFilePath: string = path.join(rootFolder.uri.fsPath, dockerFileItem.relativeFilePath);
     const dockerFileKey = `ACR_buildTag_${absFilePath}`;
     const prevImageName: string | undefined = ext.context.workspaceState.get(dockerFileKey);
