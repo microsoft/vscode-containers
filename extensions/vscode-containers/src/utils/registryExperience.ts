@@ -10,6 +10,7 @@ import { ext } from '../extensionVariables';
 import { AzureSubscriptionRegistryItem } from '../tree/registries/Azure/AzureRegistryDataProvider';
 import { isConnectRegistryTreeItem } from '../tree/registries/ConnectRegistryTreeItem';
 import { UnifiedRegistryItem, UnifiedRegistryTreeDataProvider } from '../tree/registries/UnifiedRegistryTreeDataProvider';
+import { preserveOuterWizard } from './nestedPromptUtils';
 
 export interface RegistryFilter {
     /**
@@ -45,12 +46,12 @@ export async function registryExperience<TNode extends CommonRegistryItem>(conte
         throw new UserCancelledError();
     }
 
-    const unifiedRegistryItem = await runQuickPickWizard<UnifiedRegistryItem<TNode>>(context, {
+    const unifiedRegistryItem = await preserveOuterWizard(context, () => runQuickPickWizard<UnifiedRegistryItem<TNode>>(context, {
         hideStepCount: true,
         promptSteps: [
             new RegistryProviderQuickPickStep(ext.registriesTree, options)
         ],
-    });
+    }));
 
     return unifiedRegistryItem;
 }
