@@ -13,7 +13,7 @@ import { AzureRegistrySkuStep } from '../../../tree/registries/Azure/createWizar
 import { IAzureRegistryWizardContext } from '../../../tree/registries/Azure/createWizard/IAzureRegistryWizardContext';
 import { UnifiedRegistryItem } from '../../../tree/registries/UnifiedRegistryTreeDataProvider';
 import { getAzExtAzureUtils } from '../../../utils/lazyPackages';
-import { preserveOuterWizard } from '../../../utils/preserveOuterWizard';
+import { preserveOuterWizard } from '../../../utils/nestedPromptUtils';
 import { subscriptionExperience } from '../../../utils/registryExperience';
 
 export async function createAzureRegistry(context: IActionContext, node?: UnifiedRegistryItem<AzureSubscriptionRegistryItem>): Promise<string> {

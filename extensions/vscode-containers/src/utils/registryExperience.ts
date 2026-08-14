@@ -10,7 +10,7 @@ import { ext } from '../extensionVariables';
 import { AzureSubscriptionRegistryItem } from '../tree/registries/Azure/AzureRegistryDataProvider';
 import { isConnectRegistryTreeItem } from '../tree/registries/ConnectRegistryTreeItem';
 import { UnifiedRegistryItem, UnifiedRegistryTreeDataProvider } from '../tree/registries/UnifiedRegistryTreeDataProvider';
-import { preserveOuterWizard } from './preserveOuterWizard';
+import { preserveOuterWizard } from './nestedPromptUtils';
 
 export interface RegistryFilter {
     /**
