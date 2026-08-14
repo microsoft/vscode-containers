@@ -5,16 +5,22 @@
 
 import { AzExtTreeItem, IActionContext } from "@microsoft/vscode-azext-utils";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
+import { ext } from '../../extensionVariables';
 import { LocalGroupTreeItemBase } from "../LocalGroupTreeItemBase";
 import { LocalRootTreeItemBase } from "../LocalRootTreeItemBase";
 import { getCommonGroupIcon } from "../settings/CommonProperties";
+import { ComposeProfileGroupTreeItem } from './ComposeProfileGroupTreeItem';
+import { getComposeProfilesForContainer, getComposeServiceProfiles } from './composeProfiles';
+import { ComposeConfigFilesLabel, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory } from '../../utils/composeLabels';
 import { ContainerProperty, getContainerStateIcon, NonComposeGroupName } from "./ContainerProperties";
 import { DockerContainerInfo } from "./ContainersTreeItem";
+import { ContainerTreeItem } from './ContainerTreeItem';
 
 export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContainerInfo, ContainerProperty> {
     public childTypeLabel: string = 'container';
     public declare readonly initialCollapsibleState: TreeItemCollapsibleState | undefined; // TypeScript gets mad if we don't re-declare this here
     public readonly canMultiSelect: boolean = true;
+    private _profileChildren: AzExtTreeItem[] | undefined;
 
     public constructor(parent: LocalRootTreeItemBase<DockerContainerInfo, ContainerProperty>, group: string, items: DockerContainerInfo[]) {
         super(parent, group, items);
@@ -31,6 +37,10 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
         }
 
         return 'containerGroup';
+    }
+
+    public get ChildTreeItems(): AzExtTreeItem[] {
+        return this._profileChildren ?? super.ChildTreeItems;
     }
 
     public get iconPath(): ThemeIcon {
@@ -53,13 +63,109 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
         }
     }
 
+    public async loadMoreChildrenImpl(clearCache: boolean): Promise<AzExtTreeItem[]> {
+        if (clearCache) {
+            this._profileChildren = undefined;
+        }
+
+        if (this.parent.groupBySetting !== 'Compose Project Name' || this.group === NonComposeGroupName) {
+            return super.loadMoreChildrenImpl(clearCache);
+        }
+
+        const containers = super.ChildTreeItems as ContainerTreeItem[];
+        const labels = await this.getComposeGroupLabels(containers);
+        const workingDirectory = getComposeWorkingDirectory(labels);
+        const composeFiles = getComposeFiles(labels);
+        const projectName = getComposeProjectName(labels);
+
+        if (!workingDirectory || !composeFiles?.length) {
+            return super.loadMoreChildrenImpl(clearCache);
+        }
+
+        const serviceProfiles = await getComposeServiceProfiles(workingDirectory, composeFiles, projectName);
+        if (!serviceProfiles) {
+            return super.loadMoreChildrenImpl(clearCache);
+        }
+
+        const defaultContainers: ContainerTreeItem[] = [];
+        const profileContainers = new Map<string, DockerContainerInfo[]>();
+
+        for (const container of containers) {
+            const profiles = getComposeProfilesForContainer(container, serviceProfiles);
+            if (!profiles.length) {
+                defaultContainers.push(container);
+                continue;
+            }
+
+            for (const profile of profiles) {
+                const existing = profileContainers.get(profile) ?? [];
+                existing.push(container.containerItem as DockerContainerInfo);
+                profileContainers.set(profile, existing);
+            }
+        }
+
+        if (profileContainers.size === 0) {
+            return containers;
+        }
+
+        const children: AzExtTreeItem[] = [];
+
+        children.push(...defaultContainers);
+
+        for (const profile of [...profileContainers.keys()].sort((a, b) => a.localeCompare(b))) {
+            children.push(new ComposeProfileGroupTreeItem(this, profile, profileContainers.get(profile) ?? [], profile, serviceProfiles));
+        }
+
+
+        if (children.length > 0) {
+            this._profileChildren = children;
+            return children;
+        }
+
+        return containers;
+    }
+
     public isAncestorOfImpl(expectedContextValue: string | RegExp): boolean {
-        return this.ChildTreeItems.some((container: AzExtTreeItem) => this.matchesValue(container, expectedContextValue));
+        return this.ChildTreeItems.some((container: AzExtTreeItem) => this.matchesValueRecursive(container, expectedContextValue));
     }
 
     private matchesValue(container: AzExtTreeItem, expectedContextValue: (string | RegExp)): boolean {
         return container.contextValue === expectedContextValue
             || (expectedContextValue instanceof RegExp && expectedContextValue.test(container.contextValue));
+    }
+
+    public compareChildrenImpl(item1: AzExtTreeItem, item2: AzExtTreeItem): number {
+        // If we're mixing loose default containers and profile folders, force loose containers to the top
+        if (item1 instanceof ContainerTreeItem && item2 instanceof ComposeProfileGroupTreeItem) {
+            return -1;
+        }
+        if (item1 instanceof ComposeProfileGroupTreeItem && item2 instanceof ContainerTreeItem) {
+            return 1;
+        }
+
+        // Maintain old logic just in case we ever mix undefined profile groups
+        if (item1 instanceof ComposeProfileGroupTreeItem && item2 instanceof ComposeProfileGroupTreeItem) {
+            if (item1.profileName === undefined) {
+                return -1;
+            }
+            if (item2.profileName === undefined) {
+                return 1;
+            }
+        }
+        
+        return super.compareChildrenImpl(item1, item2);
+    }
+
+    private matchesValueRecursive(container: AzExtTreeItem, expectedContextValue: string | RegExp): boolean {
+        if (this.matchesValue(container, expectedContextValue)) {
+            return true;
+        }
+
+        if (container instanceof ComposeProfileGroupTreeItem) {
+            return container.ChildTreeItems.some(child => this.matchesValueRecursive(child, expectedContextValue));
+        }
+
+        return false;
     }
 
     public async deleteTreeItemImpl(context: IActionContext): Promise<void> {
@@ -77,5 +183,18 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
         if (errors.length > 0) {
             throw new Error(errors.join());
         }
+    }
+
+    private async getComposeGroupLabels(containers: ContainerTreeItem[]): Promise<{ [key: string]: string } | undefined> {
+        const container = containers.find(c => c.labels?.[ComposeConfigFilesLabel]);
+        if (!container) {
+            return undefined;
+        }
+
+        const inspectResult = await ext.runWithDefaults(client =>
+            client.inspectContainers({ containers: [container.containerId] })
+        );
+
+        return inspectResult?.[0]?.labels;
     }
 }
