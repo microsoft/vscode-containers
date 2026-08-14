@@ -21,13 +21,17 @@ type UserInputWithWizard = IAzureUserInput & { wizard?: unknown };
  * the outer wizard unregistered for the remainder of its steps, so the outer wizard's later prompts silently
  * lose their title, step count, back button, and cancellation checks. If there is no outer wizard, this is a
  * no-op.
+ *
+ * The callback receives whether an outer wizard is in progress. Nested wizards must not show a loading prompt
+ * of their own in that case--see {@link suppressOuterLoadingPrompt} for why--so the outer wizard's loading
+ * prompt stays visible for the duration of the nested wizard instead.
  */
-export async function preserveOuterWizard<T>(context: IActionContext, callback: () => Promise<T>): Promise<T> {
+export async function preserveOuterWizard<T>(context: IActionContext, callback: (hasOuterWizard: boolean) => Promise<T>): Promise<T> {
     const ui = context.ui as UserInputWithWizard;
     const outerWizard = ui.wizard;
 
     try {
-        return await callback();
+        return await callback(!!outerWizard);
     } finally {
         ui.wizard = outerWizard;
     }
@@ -44,7 +48,9 @@ export async function preserveOuterWizard<T>(context: IActionContext, callback: 
  * silently cancels the outer wizard. If there is no outer wizard, this is a no-op.
  *
  * Note this deliberately isn't combined with {@link preserveOuterWizard}: a nested wizard sharing this context
- * would read the same suppression flag, and would lose its own loading prompt as a result.
+ * would read the same suppression flag, and would lose its own loading prompt as a result. A nested wizard
+ * instead avoids cancelling the outer wizard by not showing a loading prompt at all, so that the outer
+ * wizard's loading prompt is never hidden while the nested wizard runs.
  */
 export async function suppressOuterLoadingPrompt<T>(context: IActionContext, callback: () => Promise<T>): Promise<T> {
     const wizardStateContext = context as WizardStateContext;
