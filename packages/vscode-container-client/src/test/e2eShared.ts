@@ -6,7 +6,7 @@
 import type { ICommandRunnerFactory } from '../contracts/CommandRunner';
 import type { IContainersClient, ListContainersItem } from '../contracts/ContainerClient';
 
-export type ClientType = 'docker' | 'podman' | 'finch' | 'nerdctl' | 'wslc';
+export type ClientType = 'docker' | 'podman' | 'finch' | 'nerdctl' | 'wslc' | 'applecontainer';
 
 /**
  * Shell command that keeps a container alive while responding to SIGTERM for a
