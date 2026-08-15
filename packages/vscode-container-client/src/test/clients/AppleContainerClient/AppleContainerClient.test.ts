@@ -246,6 +246,34 @@ describe('(unit) AppleContainerClient', () => {
         });
     });
 
+    describe('#buildImage()', () => {
+        it('Produces bare `build` args (not `image build`), dropping --iidfile/--disable-content-trust', async () => {
+            const response = await client.buildImage({
+                path: '.',
+                file: 'Dockerfile',
+                stage: 'final',
+                tags: 'alpine:latest',
+                pull: true,
+                labels: { foo: 'bar' },
+                platform: { os: 'linux', architecture: 'arm64' },
+                args: { KEY: 'value' },
+                disableContentTrust: false,
+                imageIdFile: '/tmp/iid',
+            });
+            expect(asStrings(response.args)).to.deep.equal([
+                'build',
+                '--pull',
+                '--file', 'Dockerfile',
+                '--target', 'final',
+                '--tag', 'alpine:latest',
+                '--label', 'foo=bar',
+                '--platform', 'linux/arm64',
+                '--build-arg', 'KEY=value',
+                '.',
+            ]);
+        });
+    });
+
     describe('#pullImage()', () => {
         it('Pins --arch arm64 to avoid the default multi-platform fetch', async () => {
             const response = await client.pullImage({ imageRef: 'alpine:latest' });
@@ -557,6 +585,13 @@ describe('(unit) AppleContainerClient', () => {
             const result = await response.parse(output, true);
             expect(result.containersDeleted).to.deep.equal(['poc-bind-test', 'prune-container-test', 'poc-mount-test2']);
             expect(result.spaceReclaimed).to.equal(Math.round(4.12 * 1024 * 1024 * 1024));
+        });
+    });
+
+    describe('#statsContainers()', () => {
+        it('Produces bare `stats` args without --all (confirmed unsupported; also drops the base\'s wrong `container stats` noun)', async () => {
+            const response = await client.statsContainers({ all: true });
+            expect(asStrings(response.args)).to.deep.equal(['stats']);
         });
     });
 

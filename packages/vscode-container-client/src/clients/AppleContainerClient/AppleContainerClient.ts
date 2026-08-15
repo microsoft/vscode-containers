@@ -10,11 +10,14 @@ import {
     withArg,
     withFlagArg,
     withNamedArg,
+    withQuotedArg,
     withVerbatimArg,
 } from '@microsoft/vscode-processutils';
 import type { GeneratorCommandResponse, PromiseCommandResponse } from '../../contracts/CommandRunner';
 import type {
+    BuildImageCommandOptions,
     CheckInstallCommandOptions,
+    ContainersStatsCommandOptions,
     CreateNetworkCommandOptions,
     CreateVolumeCommandOptions,
     EventItem,
@@ -67,6 +70,7 @@ import { filterByLabelsAndDriver } from '../DockerClientBase/filterByLabelsAndDr
 import { matchesLabelFilters } from '../DockerClientBase/matchesLabelFilters';
 import { parsePruneLikeOutput } from '../DockerClientBase/parsePruneLikeOutput';
 import { tryParseSize } from '../DockerClientBase/tryParseSize';
+import { withDockerBuildArg } from '../DockerClientBase/withDockerBuildArg';
 import { withDockerEnvArg } from '../DockerClientBase/withDockerEnvArg';
 import { withDockerLabelsArg } from '../DockerClientBase/withDockerLabelsArg';
 import { withDockerMountsArg } from '../DockerClientBase/withDockerMountsArg';
@@ -226,6 +230,26 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
     //#endregion
 
     //#region Image Commands
+
+    // The base builds `image build` (Docker's `docker image build`), but `build` is a
+    // top-level verb here, not an `image` subcommand -- confirmed: `container image build`
+    // routes to the `image` help instead of building, and a real `container build --tag x .`
+    // succeeds. `--iidfile` and `--disable-content-trust` are dropped since neither flag
+    // exists on `container build` (confirmed via --help); everything else maps over as-is.
+    protected override getBuildImageCommandArgs(options: BuildImageCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('build'),
+            withFlagArg('--pull', options.pull),
+            withNamedArg('--file', options.file),
+            withNamedArg('--target', options.stage),
+            withNamedArg('--tag', options.tags),
+            withDockerLabelsArg(options.labels),
+            withDockerPlatformArg(options.platform),
+            withDockerBuildArg(options.args),
+            withVerbatimArg(options.customOptions),
+            withQuotedArg(options.path),
+        )();
+    }
 
     protected override getPullImageCommandArgs(options: PullImageCommandOptions): CommandLineArgs {
         if (options.allTags) {
@@ -532,6 +556,15 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
             containersDeleted: parsePruneLikeOutput(output, { resourceRegex: AppleContainerPruneResourceRegex }).resources,
             spaceReclaimed: parseAppleContainerReclaimedSpace(output),
         });
+    }
+
+    // The base builds `container stats` (Docker's `docker container stats`), which becomes
+    // `container container stats` here since the binary itself is already the container noun
+    // -- confirmed to error with "Plugin 'container-container' not found". The real verb is
+    // bare `stats`, and it accepts no `--all` at all (confirmed via --help and a real
+    // "Unknown option '--all'" error); it shows all running containers by default.
+    protected override getStatsContainersCommandArgs(options: ContainersStatsCommandOptions): CommandLineArgs {
+        return composeArgs(withArg('stats'))();
     }
 
     // Bare `inspect` (not `container inspect`), and no --format flag exists (confirmed: errors
