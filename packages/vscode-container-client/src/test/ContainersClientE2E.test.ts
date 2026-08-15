@@ -21,7 +21,7 @@ import type { CommandResponseBase, ICommandRunnerFactory } from '../contracts/Co
 import type { IContainersClient, ListImagesItem, ListNetworkItem, ListVolumeItem } from '../contracts/ContainerClient';
 import { FileType } from '../typings/FileType';
 import { wslifyPath } from '../utils/wslifyPath';
-import { type ClientType, validateContainerExists } from './e2eShared';
+import { type ClientType, findConsecutiveFreePorts, validateContainerExists } from './e2eShared';
 
 /**
  * WARNING: This test suite will prune unused images, containers, networks, and volumes.
@@ -42,7 +42,6 @@ const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_
  */
 export const KeepAliveEntrypoint = 'tail';
 export const KeepAliveCommand = ['-f', '/dev/null'];
-
 // wslc and the Apple `container` CLI don't support the `--expose` flag on `run`, but both
 // support network create/list/inspect/remove/prune.
 const supportsExposeFlag = clientTypeToTest !== 'wslc' && clientTypeToTest !== 'applecontainer';
@@ -339,6 +338,11 @@ describe('(integration) ContainersClientE2E', function () {
         let testContainerBindMountSource: string;
         let testContainerId: string;
 
+        // Discovered at runtime rather than hardcoded, because Windows reserves
+        // shifting blocks of ports for WinNAT/Hyper-V that cannot be bound. The
+        // ports must be consecutive so Docker reports them in compacted form.
+        let dockerPortRange: number[] = [];
+
         before('Containers', async function () {
             if (clientTypeToTest === 'applecontainer') {
                 // The Apple `container` CLI fetches a per-machine kernel + init VM image the
@@ -354,6 +358,10 @@ describe('(integration) ContainersClientE2E', function () {
             // If running in WSL, convert the bind mount source path to WSL format
             if (runInWsl) {
                 testContainerBindMountSource = wslifyPath(testContainerBindMountSource);
+            }
+
+            if (clientTypeToTest === 'docker') {
+                dockerPortRange = await findConsecutiveFreePorts(3);
             }
 
             // Pull a small image for testing
@@ -414,7 +422,10 @@ describe('(integration) ContainersClientE2E', function () {
                     ],
                     ports: clientTypeToTest === 'nerdctl'
                         ? [{ hostPort: 8080, containerPort: 80 }, { hostPort: 3000, containerPort: 3000 }]
-                        : [{ hostPort: 8080, containerPort: 80 }],
+                        : clientTypeToTest === 'docker' ? [
+                            { hostPort: 8080, containerPort: 80 },
+                            ...dockerPortRange.map(port => ({ hostPort: port, containerPort: port })),
+                        ] : [{ hostPort: 8080, containerPort: 80 }],
                     // wslc/applecontainer have no --expose flag; rootless nerdctl cannot auto-allocate host ports
                     exposePorts: (clientTypeToTest === 'nerdctl' || !supportsExposeFlag) ? undefined : [3000],
                     // Rootless nerdctl cannot auto-allocate host ports; the Apple `container` CLI has no
@@ -486,6 +497,11 @@ describe('(integration) ContainersClientE2E', function () {
                 expect(container.ports.length).to.be.greaterThanOrEqual(0);
             } else {
                 expect(container.ports.some(p => p.hostPort === 8080 && p.containerPort === 80)).to.be.true;
+                if (clientTypeToTest === 'docker') {
+                    for (const port of dockerPortRange) {
+                        expect(container.ports.some(p => p.hostPort === port && p.containerPort === port)).to.be.true;
+                    }
+                }
                 if (supportsExposeFlag) {
                     // Exposed port with random binding - Finch uses -p <containerPort> as equivalent to --expose + --publish-all
                     // wslc has no --expose flag, so no random-binding port to validate

@@ -10,6 +10,7 @@ import { ext } from '../extensionVariables';
 import { AzureSubscriptionRegistryItem } from '../tree/registries/Azure/AzureRegistryDataProvider';
 import { isConnectRegistryTreeItem } from '../tree/registries/ConnectRegistryTreeItem';
 import { UnifiedRegistryItem, UnifiedRegistryTreeDataProvider } from '../tree/registries/UnifiedRegistryTreeDataProvider';
+import { preserveOuterWizard } from './nestedPromptUtils';
 
 export interface RegistryFilter {
     /**
@@ -45,12 +46,16 @@ export async function registryExperience<TNode extends CommonRegistryItem>(conte
         throw new UserCancelledError();
     }
 
-    const unifiedRegistryItem = await runQuickPickWizard<UnifiedRegistryItem<TNode>>(context, {
+    const unifiedRegistryItem = await preserveOuterWizard(context, (hasOuterWizard) => runQuickPickWizard<UnifiedRegistryItem<TNode>>(context, {
         hideStepCount: true,
+        // When running inside another wizard, this one must not show a loading prompt of its own: showing it
+        // would hide the outer wizard's, which the outer wizard treats as the user dismissing it. That leaves
+        // the outer wizard's loading prompt up while this one runs, which is what we want anyway.
+        showLoadingPrompt: !hasOuterWizard,
         promptSteps: [
             new RegistryProviderQuickPickStep(ext.registriesTree, options)
         ],
-    });
+    }));
 
     return unifiedRegistryItem;
 }

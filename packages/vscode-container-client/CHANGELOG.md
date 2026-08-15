@@ -1,4 +1,4 @@
-## 1.1.0 - 3 August 2026
+## 1.1.0 - 6 August 2026
 ### Added
 * Added client for Nerdctl. [#119](https://github.com/microsoft/vscode-containers/issues/119)
 * Added client for WSL-native containers (`wslc`). [#501](https://github.com/microsoft/vscode-containers/issues/501)

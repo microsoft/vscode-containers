@@ -26,7 +26,7 @@
     },
     "scripts": {
         "build": "",
-        "package": "vsce package --no-dependencies",
+        "package": "pnpx @vscode/vsce@latest package --no-dependencies",
         "lint": "",
         "test": "",
         "clean": "node ../../scripts/clean.mjs"

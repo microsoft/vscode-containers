@@ -81,6 +81,27 @@ describe('(unit) normalizeListContainerRecord', () => {
         expect(result.name).to.equal('first');
     });
 
+    it('Should normalize compacted Docker port ranges in strict mode', () => {
+        const parsed = SharedListContainerRecordSchema.parse({
+            ID: 'abc123',
+            Names: 'azurite',
+            Image: 'mcr.microsoft.com/azure-storage/azurite',
+            Ports: '80/tcp, 0.0.0.0:10000-10002->10000-10002/tcp, [::]:10000-10002->10000-10002/tcp',
+        });
+
+        const result = normalizeListContainerRecord(parsed, true, DockerListContainerOptions);
+
+        expect(result.ports).to.deep.equal([
+            { containerPort: 80, protocol: 'tcp' },
+            { hostIp: '0.0.0.0', hostPort: 10000, containerPort: 10000, protocol: 'tcp' },
+            { hostIp: '0.0.0.0', hostPort: 10001, containerPort: 10001, protocol: 'tcp' },
+            { hostIp: '0.0.0.0', hostPort: 10002, containerPort: 10002, protocol: 'tcp' },
+            { hostIp: '::', hostPort: 10000, containerPort: 10000, protocol: 'tcp' },
+            { hostIp: '::', hostPort: 10001, containerPort: 10001, protocol: 'tcp' },
+            { hostIp: '::', hostPort: 10002, containerPort: 10002, protocol: 'tcp' },
+        ]);
+    });
+
     it('Should extract nerdctl networks from the nerdctl/networks label when Networks is absent', () => {
         const parsed = SharedListContainerRecordSchema.parse({
             ID: 'abc123',
@@ -122,4 +143,3 @@ describe('(unit) normalizeListContainerRecord', () => {
         expect(result.ports).to.deep.equal([]);
     });
 });
-

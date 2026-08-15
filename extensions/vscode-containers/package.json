@@ -1,6 +1,6 @@
 {
     "name": "vscode-containers",
-    "version": "2.4.5",
+    "version": "2.5.0",
     "publisher": "ms-azuretools",
     "displayName": "Container Tools",
     "description": "Makes it easy to create, manage, and debug containerized applications.",
@@ -1227,7 +1227,8 @@
                                             "description": "%vscode-containers.tasks.docker-run.dockerRun.ports.protocol%",
                                             "enum": [
                                                 "tcp",
-                                                "udp"
+                                                "udp",
+                                                "sctp"
                                             ]
                                         }
                                     },
@@ -2598,13 +2599,13 @@
                         "com.microsoft.visualstudio.containers.applecontainer"
                     ],
                     "enumItemLabels": [
-                        "Default",
-                        "Docker",
-                        "Podman",
-                        "Nerdctl",
-                        "Finch",
-                        "WSLC (Windows only, preview)",
-                        "Container (macOS only, preview)"
+                        "%vscode-containers.config.containers.containerClient.default%",
+                        "%vscode-containers.config.containers.containerClient.docker%",
+                        "%vscode-containers.config.containers.containerClient.podman%",
+                        "%vscode-containers.config.containers.containerClient.nerdctl%",
+                        "%vscode-containers.config.containers.containerClient.finch%",
+                        "%vscode-containers.config.containers.containerClient.wslc%",
+                        "%vscode-containers.config.containers.containerClient.applecontainer%"
                     ]
                 },
                 "containers.orchestratorClient": {
@@ -2619,11 +2620,11 @@
                         "com.microsoft.visualstudio.orchestrators.finchcompose"
                     ],
                     "enumItemLabels": [
-                        "Default",
-                        "Docker Compose",
-                        "Podman Compose",
-                        "Nerdctl Compose",
-                        "Finch Compose"
+                        "%vscode-containers.config.containers.orchestratorClient.default%",
+                        "%vscode-containers.config.containers.orchestratorClient.dockerCompose%",
+                        "%vscode-containers.config.containers.orchestratorClient.podmanCompose%",
+                        "%vscode-containers.config.containers.orchestratorClient.nerdctlCompose%",
+                        "%vscode-containers.config.containers.orchestratorClient.finchCompose%"
                     ]
                 }
             }
@@ -3401,7 +3402,7 @@
         "build": "pnpm run --parallel \"/^build:(esbuild|check)$/\"",
         "build:esbuild": "node esbuild.mjs",
         "build:check": "tsc --noEmit",
-        "package": "vsce package --no-dependencies",
+        "package": "pnpx @vscode/vsce@latest package --no-dependencies",
         "test": "vscode-test",
         "clean": "node ../../scripts/clean.mjs"
     },

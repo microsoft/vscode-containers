@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { IActionContext } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { isMac } from './osUtils';
 
@@ -11,11 +11,9 @@ export async function quickPickWorkspaceFolder(context: IActionContext, noWorksp
     if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length === 1) {
         return vscode.workspace.workspaceFolders[0];
     } else if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 1) {
-        const selected = await vscode.window.showWorkspaceFolderPick();
-        if (!selected) {
-            throw new UserCancelledError();
-        }
-        return selected;
+        // Must go through `context.ui` rather than `vscode.window` directly, otherwise a wizard's loading
+        // quick pick will be hidden by this prompt and interpret that as the user cancelling the wizard
+        return await context.ui.showWorkspaceFolderPick({ placeHolder: vscode.l10n.t('Select a workspace folder') });
     } else {
         context.errorHandling.suppressReportIssue = true;
         context.errorHandling.buttons = [
