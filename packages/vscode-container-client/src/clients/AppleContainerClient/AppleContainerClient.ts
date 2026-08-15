@@ -53,6 +53,7 @@ import type {
     PruneVolumesCommandOptions,
     PruneVolumesItem,
     PullImageCommandOptions,
+    ReadFileCommandOptions,
     RemoveContainersCommandOptions,
     RemoveNetworksCommandOptions,
     RemoveVolumesCommandOptions,
@@ -62,6 +63,7 @@ import type {
     StopContainersCommandOptions,
     VersionCommandOptions,
     VersionItem,
+    WriteFileCommandOptions,
 } from '../../contracts/ContainerClient';
 import type { IContainersClient } from '../../contracts/ContainerClient';
 import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
@@ -70,6 +72,7 @@ import { filterByLabelsAndDriver } from '../DockerClientBase/filterByLabelsAndDr
 import { matchesLabelFilters } from '../DockerClientBase/matchesLabelFilters';
 import { parsePruneLikeOutput } from '../DockerClientBase/parsePruneLikeOutput';
 import { tryParseSize } from '../DockerClientBase/tryParseSize';
+import { withContainerPathArg } from '../DockerClientBase/withContainerPathArg';
 import { withDockerBuildArg } from '../DockerClientBase/withDockerBuildArg';
 import { withDockerEnvArg } from '../DockerClientBase/withDockerEnvArg';
 import { withDockerLabelsArg } from '../DockerClientBase/withDockerLabelsArg';
@@ -743,6 +746,49 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
     ): Promise<Array<InspectNetworksItem>> {
         return this.parseInspectJson(output, strict, (item) =>
             normalizeAppleContainerInspectNetworkRecord(AppleContainerListNetworkRecordSchema.parse(item), JSON.stringify(item)));
+    }
+
+    //#endregion
+
+    //#region File Commands
+
+    // `container cp` supports neither a stdin nor a stdout `-` -- confirmed: `container cp
+    // c:/etc/hostname -` just writes a local file literally named `-` and streams nothing, and
+    // the equivalent stdin write silently drops the piped content. Read the file by tarring it
+    // inside the container via `exec` instead, so the caller still gets the single-entry tarball
+    // stream it expects (mirrors WslcClient, which has the same `cp` gap). Requires `tar` in the
+    // image; this client only ever runs Linux containers.
+    protected override getReadFileCommandArgs(options: ReadFileCommandOptions): CommandLineArgs {
+        const containerPath = options.path.replace(/\/+$/, '');
+        const lastSlash = containerPath.lastIndexOf('/');
+        const directory = lastSlash <= 0 ? '/' : containerPath.slice(0, lastSlash);
+        const fileName = containerPath.slice(lastSlash + 1);
+
+        return this.getExecContainerCommandArgs({
+            container: options.container,
+            command: ['tar', '-cf', '-', '-C', directory, fileName],
+        });
+    }
+
+    // The streamed case (no inputFile) can't use `cp - CONTAINER:DIR` like WslcClient does --
+    // Apple's `cp` doesn't accept stdin `-` (see above) -- so it goes through `exec -i ... tar
+    // -xf -` to extract the incoming tar instead (confirmed working). When a host inputFile is
+    // given there's no stdin stream to smuggle through `exec`, and Apple's `cp <file>
+    // CONTAINER:DIR` already works normally, so that case falls back to the base's plain `cp`.
+    protected override getWriteFileCommandArgs(options: WriteFileCommandOptions): CommandLineArgs {
+        if (!options.inputFile) {
+            return this.getExecContainerCommandArgs({
+                container: options.container,
+                interactive: true,
+                command: ['tar', '-xf', '-', '-C', options.path],
+            });
+        }
+
+        return composeArgs(
+            withArg('cp'),
+            withArg(options.inputFile),
+            withContainerPathArg(options),
+        )();
     }
 
     //#endregion

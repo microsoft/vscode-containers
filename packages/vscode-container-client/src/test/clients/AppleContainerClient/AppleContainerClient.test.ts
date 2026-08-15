@@ -827,4 +827,32 @@ describe('(unit) AppleContainerClient', () => {
             expect(items[0].ipam).to.deep.equal({ driver: 'default', config: [{ subnet: '192.168.64.0/24', gateway: '192.168.64.1' }] });
         });
     });
+
+    describe('#readFile()', () => {
+        it('Tars the file via `exec` (container cp has no stdout streaming)', async () => {
+            const response = await client.readFile({ container: 'abc', path: '/tmp/sub/file.txt' });
+            const args = asStrings(response.args);
+            expect(args).to.deep.equal(['exec', 'abc', 'tar', '-cf', '-', '-C', '/tmp/sub', 'file.txt']);
+        });
+
+        it('Handles a root-level file path', async () => {
+            const response = await client.readFile({ container: 'abc', path: '/file.txt' });
+            const args = asStrings(response.args);
+            expect(args).to.deep.equal(['exec', 'abc', 'tar', '-cf', '-', '-C', '/', 'file.txt']);
+        });
+    });
+
+    describe('#writeFile()', () => {
+        it('Extracts a stdin tar via `exec -i tar -xf -` (container cp has no stdin streaming)', async () => {
+            const response = await client.writeFile({ container: 'abc', path: '/tmp/dest' });
+            const args = asStrings(response.args);
+            expect(args).to.deep.equal(['exec', '--interactive', 'abc', 'tar', '-xf', '-', '-C', '/tmp/dest']);
+        });
+
+        it('Falls back to plain `cp` when a host input file is given', async () => {
+            const response = await client.writeFile({ container: 'abc', path: '/tmp/dest', inputFile: '/local/file.tar' });
+            const args = asStrings(response.args);
+            expect(args).to.deep.equal(['cp', '/local/file.tar', 'abc:/tmp/dest']);
+        });
+    });
 });
