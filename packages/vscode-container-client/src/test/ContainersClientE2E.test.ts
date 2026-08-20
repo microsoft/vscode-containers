@@ -634,6 +634,30 @@ describe('(integration) ContainersClientE2E', function () {
             expect(startedContainer.state.toLowerCase()).to.equal('running');
         });
 
+        it('UnpauseContainersCommand', async function () {
+            if (clientTypeToTest === 'wslc') {
+                this.skip(); // wslc has no `pause` or `unpause` subcommands
+            }
+
+            await defaultRunner.getCommandRunner()({
+                command: client.commandName,
+                args: ['container', 'pause', testContainerId],
+            });
+
+            const pausedContainer = (await validateContainerExists(client, defaultRunner, { containerId: testContainerId }))!;
+            expect(pausedContainer.state.toLowerCase()).to.equal('paused');
+
+            const unpausedContainers = await defaultRunner.getCommandRunner()(
+                client.unpauseContainers({ container: [testContainerId] })
+            );
+
+            expect(unpausedContainers).to.be.an('array');
+            expect(unpausedContainers).to.include(testContainerId);
+
+            const runningContainer = (await validateContainerExists(client, defaultRunner, { containerId: testContainerId }))!;
+            expect(runningContainer.state.toLowerCase()).to.equal('running');
+        });
+
         it('RestartContainersCommand', async function () {
             if (clientTypeToTest === 'wslc') {
                 this.skip(); // wslc has no `restart` subcommand

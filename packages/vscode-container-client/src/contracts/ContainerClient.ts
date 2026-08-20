@@ -906,6 +906,23 @@ type StartContainersCommand = {
     startContainers(options: StartContainersCommandOptions): Promise<PromiseCommandResponse<Array<string>>>;
 };
 
+// Unpause Containers Command Types
+
+export type UnpauseContainersCommandOptions = CommonCommandOptions & {
+    /**
+     * Containers to unpause
+     */
+    container: Array<string>;
+};
+
+type UnpauseContainersCommand = {
+    /**
+     * Generate a CommandResponse for unpausing container(s).
+     * @param options Command options
+     */
+    unpauseContainers(options: UnpauseContainersCommandOptions): Promise<PromiseCommandResponse<Array<string>>>;
+};
+
 // Restart Containers Command Types
 
 export type RestartContainersCommandOptions = CommonCommandOptions & {
@@ -1883,6 +1900,7 @@ export interface IContainersClient extends
     ExecContainerCommand,
     ListContainersCommand,
     StartContainersCommand,
+    UnpauseContainersCommand,
     RestartContainersCommand,
     StopContainersCommand,
     RemoveContainersCommand,

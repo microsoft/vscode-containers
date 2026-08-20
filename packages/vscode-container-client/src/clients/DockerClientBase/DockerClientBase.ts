@@ -80,6 +80,7 @@ import type {
     StatPathItem,
     StopContainersCommandOptions,
     TagImageCommandOptions,
+    UnpauseContainersCommandOptions,
     UseContextCommandOptions,
     VersionCommandOptions,
     VersionItem,
@@ -857,6 +858,32 @@ export abstract class DockerClientBase extends ConfigurableClient implements ICo
         return this.makeCommandResponse(
             this.getStartContainersCommandArgs(options),
             (output, strict) => this.parseStartContainersCommandOutput(options, output, strict),
+        );
+    }
+
+    //#endregion
+
+    //#region UnpauseContainers Command
+
+    protected getUnpauseContainersCommandArgs(options: UnpauseContainersCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withArg('container', 'unpause'),
+            withArg(...toArray(options.container)),
+        )();
+    }
+
+    protected parseUnpauseContainersCommandOutput(
+        options: UnpauseContainersCommandOptions,
+        output: string,
+        strict: boolean,
+    ): Promise<Array<string>> {
+        return Promise.resolve(asIds(output));
+    }
+
+    unpauseContainers(options: UnpauseContainersCommandOptions): Promise<PromiseCommandResponse<Array<string>>> {
+        return this.makeCommandResponse(
+            this.getUnpauseContainersCommandArgs(options),
+            (output, strict) => this.parseUnpauseContainersCommandOutput(options, output, strict),
         );
     }
 
