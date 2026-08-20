@@ -206,6 +206,7 @@
     "vscode-containers.config.docker.languageserver.formatter.ignoreMultilineInstructions": "Controls whether the Dockerfile formatter should ignore instructions that span multiple lines when formatting",
     "vscode-containers.config.containers.composeBuild": "Set to true to include --build option when compose command is invoked",
     "vscode-containers.config.containers.composeDetached": "Set to true to include --d (detached) option when compose command is invoked",
+    "vscode-containers.config.containers.closeComposeTaskTerminal": "Automatically close the terminal after a Compose command run by Container Tools completes.",
     "vscode-containers.config.containers.showRemoteWorkspaceWarning": "Set to true to prompt to switch from \"UI\" extension mode to \"Workspace\" extension mode if an operation is not supported in UI mode.",
     "vscode-containers.config.containers.scaffolding.templatePath": "The path to use for scaffolding templates.",
     "vscode-containers.config.containers.containerCommand": "Command to use for container actions (e.g. `docker` command). If the executable path contains whitespace, it needs to be quoted appropriately. If unset, the extension will attempt to auto-detect the command to use.",
