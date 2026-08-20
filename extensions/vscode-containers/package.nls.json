@@ -248,6 +248,7 @@
     "vscode-containers.commands.containers.select": "Select container",
     "vscode-containers.commands.containers.start": "Start",
     "vscode-containers.commands.containers.stop": "Stop",
+    "vscode-containers.commands.containers.unpause": "Unpause",
     "vscode-containers.commands.containers.stats": "Stats",
     "vscode-containers.commands.containers.viewLogs": "View Logs",
     "vscode-containers.commands.containers.composeGroup.logs": "Compose Logs",

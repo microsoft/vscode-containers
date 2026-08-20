@@ -403,7 +403,12 @@
                 },
                 {
                     "command": "vscode-containers.containers.start",
-                    "when": "view == vscode-containers.views.containers && viewItem =~ /^(created|dead|exited|paused|terminated)Container$/i",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /^(created|dead|exited|terminated)Container$/i",
+                    "group": "containers_2_active@5"
+                },
+                {
+                    "command": "vscode-containers.containers.unpause",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /^pausedContainer$/i",
                     "group": "containers_2_active@5"
                 },
                 {
@@ -2741,6 +2746,11 @@
             {
                 "command": "vscode-containers.containers.stop",
                 "title": "%vscode-containers.commands.containers.stop%",
+                "category": "%vscode-containers.commands.category.containers%"
+            },
+            {
+                "command": "vscode-containers.containers.unpause",
+                "title": "%vscode-containers.commands.containers.unpause%",
                 "category": "%vscode-containers.commands.category.containers%"
             },
             {
