@@ -47,6 +47,7 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
     const configOptions: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(configPrefix);
     const build: boolean = configOptions.get('composeBuild', true);
     const detached: boolean = configOptions.get('composeDetached', true);
+    const closeTaskTerminal: boolean = configOptions.get('closeComposeTaskTerminal', false);
 
     for (const command of commands) {
         if (selectedItems.length === 0) {
@@ -77,6 +78,7 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
             const taskCRF = new TaskCommandRunnerFactory({
                 taskName: client.displayName,
                 workspaceFolder: folder,
+                close: closeTaskTerminal,
             });
 
             await taskCRF.getCommandRunner()(terminalCommand);
