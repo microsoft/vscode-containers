@@ -218,6 +218,7 @@
     "vscode-containers.config.containers.containerClient.nerdctl": "Nerdctl",
     "vscode-containers.config.containers.containerClient.finch": "Finch",
     "vscode-containers.config.containers.containerClient.wslc": "WSLC (Windows only, preview)",
+    "vscode-containers.config.containers.containerClient.applecontainer": "Container (macOS only, preview)",
     "vscode-containers.config.containers.orchestratorClient": "Which container orchestrator client to use. If not specified, Docker Compose will be used. Changing requires a restart to take effect.",
     "vscode-containers.config.containers.orchestratorClient.default": "Default",
     "vscode-containers.config.containers.orchestratorClient.dockerCompose": "Docker Compose",

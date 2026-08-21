@@ -2595,7 +2595,8 @@
                         "com.microsoft.visualstudio.containers.podman",
                         "com.microsoft.visualstudio.containers.nerdctl",
                         "com.microsoft.visualstudio.containers.finch",
-                        "com.microsoft.visualstudio.containers.wslc"
+                        "com.microsoft.visualstudio.containers.wslc",
+                        "com.microsoft.visualstudio.containers.applecontainer"
                     ],
                     "enumItemLabels": [
                         "%vscode-containers.config.containers.containerClient.default%",
@@ -2603,7 +2604,8 @@
                         "%vscode-containers.config.containers.containerClient.podman%",
                         "%vscode-containers.config.containers.containerClient.nerdctl%",
                         "%vscode-containers.config.containers.containerClient.finch%",
-                        "%vscode-containers.config.containers.containerClient.wslc%"
+                        "%vscode-containers.config.containers.containerClient.wslc%",
+                        "%vscode-containers.config.containers.containerClient.applecontainer%"
                     ]
                 },
                 "containers.orchestratorClient": {
