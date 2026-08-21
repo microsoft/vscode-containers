@@ -26,7 +26,7 @@
     },
     "scripts": {
         "build": "",
-        "package": "pnpx @vscode/vsce@latest package --no-dependencies --baseImagesUrl https://github.com/microsoft/vscode-containers/raw/HEAD/extensions/vscode-docker",
+        "package": "pnpx @vscode/vsce@latest package --no-dependencies --baseImagesUrl https://github.com/microsoft/vscode-containers/raw/HEAD/extensions/vscode-docker/",
         "lint": "",
         "test": "",
         "clean": "node ../../scripts/clean.mjs"
