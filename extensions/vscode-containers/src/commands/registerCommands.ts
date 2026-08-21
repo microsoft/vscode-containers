@@ -27,6 +27,7 @@ import { selectContainer } from "./containers/selectContainer";
 import { startContainer } from "./containers/startContainer";
 import { stats } from "./containers/stats";
 import { stopContainer } from "./containers/stopContainer";
+import { unpauseContainer } from "./containers/unpauseContainer";
 import { viewContainerLogs } from "./containers/viewContainerLogs";
 import { configureDockerContextsExplorer, dockerContextsHelp } from "./context/DockerContextsViewCommands";
 import { inspectDockerContext } from "./context/inspectDockerContext";
@@ -141,6 +142,7 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.containers.select', selectContainer);
     registerCommand('vscode-containers.containers.start', startContainer);
     registerCommand('vscode-containers.containers.stop', stopContainer);
+    registerCommand('vscode-containers.containers.unpause', unpauseContainer);
     registerWorkspaceCommand('vscode-containers.containers.stats', stats);
     registerWorkspaceCommand('vscode-containers.containers.viewLogs', viewContainerLogs);
     registerWorkspaceCommand('vscode-containers.containers.composeGroup.logs', composeGroupLogs);

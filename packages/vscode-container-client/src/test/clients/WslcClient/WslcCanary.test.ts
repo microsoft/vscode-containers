@@ -63,6 +63,7 @@ describe('(integration) WslcCanary', function () {
             { description: '`events`', args: 'events --help', unrecognizedToken: 'events', workaround: 'WslcClient.getEventStream rejects with CommandNotSupportedError' },
             { description: '`info`', args: 'info --help', unrecognizedToken: 'info', workaround: 'WslcClient.getInfoCommandArgs/parseInfoCommandOutput synthesize a linux InfoItem' },
             { description: '`container restart`', args: 'container restart --help', unrecognizedToken: 'restart', workaround: 'WslcClient.restartContainers rejects with CommandNotSupportedError' },
+            { description: '`container unpause`', args: 'container unpause --help', unrecognizedToken: 'unpause', workaround: 'WslcClient.unpauseContainers rejects with CommandNotSupportedError' },
         ];
 
         cases.forEach(({ description, args, unrecognizedToken, workaround }) => {

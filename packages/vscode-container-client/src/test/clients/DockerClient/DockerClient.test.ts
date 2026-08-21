@@ -17,6 +17,21 @@ import type { BuildImageCommandOptions, RunContainerCommandOptions } from '../..
 describe('(unit) DockerClient', () => {
     const client = new DockerClient();
 
+    describe('#unpauseContainers()', () => {
+        it('generates the command and parses unpaused container IDs', async () => {
+            const commandResult = await client.unpauseContainers({ container: ['abc', 'def'] });
+
+            expect(commandResult).to.have.a.property('command', 'docker');
+            expect(commandResult.args).to.deep.equal([
+                escaped('container'),
+                escaped('unpause'),
+                escaped('abc'),
+                escaped('def'),
+            ]);
+            expect(await commandResult.parse('abc\ndef\n', true)).to.deep.equal(['abc', 'def']);
+        });
+    });
+
     describe('#listImagesAsync()', () => {
         it('parses date formats', async () => {
             const commandResult = await client.listImages({});

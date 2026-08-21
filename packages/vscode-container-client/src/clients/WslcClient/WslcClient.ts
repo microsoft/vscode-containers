@@ -46,6 +46,7 @@ import type {
     RemoveNetworksCommandOptions,
     RestartContainersCommandOptions,
     RunContainerCommandOptions,
+    UnpauseContainersCommandOptions,
     VersionCommandOptions,
     VersionItem,
     WriteFileCommandOptions,
@@ -364,6 +365,12 @@ export class WslcClient extends DockerClientBase {
     // a command line that wslc would reject.
     public override restartContainers(options: RestartContainersCommandOptions): Promise<PromiseCommandResponse<Array<string>>> {
         return Promise.reject(new CommandNotSupportedError('wslc does not support the restart command.'));
+    }
+
+    // wslc has no `unpause` subcommand. Reject rather than silently inheriting
+    // a command line that wslc would reject.
+    public override unpauseContainers(options: UnpauseContainersCommandOptions): Promise<PromiseCommandResponse<Array<string>>> {
+        return Promise.reject(new CommandNotSupportedError('wslc does not support the unpause command.'));
     }
 
     protected override getInspectContainersCommandArgs(options: InspectContainersCommandOptions): CommandLineArgs {
