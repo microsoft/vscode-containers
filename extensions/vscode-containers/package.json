@@ -3400,7 +3400,7 @@
         "build": "pnpm run --parallel \"/^build:(esbuild|check)$/\"",
         "build:esbuild": "node esbuild.mjs",
         "build:check": "tsc --noEmit",
-        "package": "pnpx @vscode/vsce@latest package --no-dependencies --baseImagesUrl https://github.com/microsoft/vscode-containers/raw/HEAD/extensions/vscode-containers/",
+        "package": "pnpx @vscode/vsce@latest package --no-dependencies --baseImagesUrl https://github.com/microsoft/vscode-containers/raw/HEAD/extensions/vscode-containers",
         "test": "vscode-test",
         "clean": "node ../../scripts/clean.mjs"
     },
