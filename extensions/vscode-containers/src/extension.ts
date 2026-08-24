@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { TelemetryEvent } from '@microsoft/compose-language-service/client';
-import { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } from '@microsoft/compose-language-service/vscode';
 import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -310,6 +309,7 @@ function activateComposeLanguageClient(ctx: vscode.ExtensionContext): void {
         }
 
         const { LanguageClient, TransportKind } = await getLanguageClient();
+        const { AlternateYamlLanguageServiceClientFeature, DocumentSettingsClientFeature } = await import('@microsoft/compose-language-service/vscode');
 
         const serverModule = ctx.asAbsolutePath(
             path.join(
