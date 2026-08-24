@@ -154,7 +154,6 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
             withComposeArg(this.composeV2),
             withCommonOrchestratorArgs(options),
             withArg('pull'),
-            withArg(...(options.services ?? [])),
         )();
     }
 

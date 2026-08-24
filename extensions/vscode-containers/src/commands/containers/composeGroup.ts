@@ -8,6 +8,7 @@ import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCom
 import * as path from 'path';
 import { l10n, Uri, workspace } from 'vscode';
 import { ext } from '../../extensionVariables';
+import { createComposePullCommand } from '../../runtimes/OrchestratorRuntimeManager';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
@@ -46,7 +47,7 @@ export async function composeGroupDown(context: IActionContext, node: ContainerG
 }
 
 export async function composeGroupPull(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.pull(options), node);
+    return composeGroup(context, createComposePullCommand, node);
 }
 
 type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit<TOptions, keyof CommonOrchestratorCommandOptions>;

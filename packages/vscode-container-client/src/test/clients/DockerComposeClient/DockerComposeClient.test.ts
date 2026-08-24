@@ -43,17 +43,12 @@ describe('(unit) DockerComposeClient', () => {
     });
 
     it('Should produce the expected compose pull command', async () => {
-        const commandResponse = await client.pull({
-            ...commonOptions,
-            services: ['api', 'database'],
-        });
+        const commandResponse = await client.pull(commonOptions);
 
         expect(new NoShell(false).quote(commandResponse.args)).to.deep.equal([
             '--file',
             'docker-compose.yml',
             'pull',
-            'api',
-            'database',
         ]);
     });
 });

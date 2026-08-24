@@ -8,6 +8,7 @@ import { VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../../constants';
 import { ext } from '../../extensionVariables';
+import { createComposePullCommand } from '../../runtimes/OrchestratorRuntimeManager';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { Item, createFileItem, quickPickDockerComposeFileItem } from '../../utils/quickPickFile';
 import { quickPickWorkspaceFolder } from '../../utils/quickPickWorkspaceFolder';
@@ -57,7 +58,7 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'pull
         for (const item of selectedItems) {
             const client = await ext.orchestratorManager.getClient();
             let terminalCommand = command === 'pull'
-                ? await client.pull({ files: item?.relativeFilePath ? [item.relativeFilePath] : undefined })
+                ? await createComposePullCommand(client, { files: item?.relativeFilePath ? [item.relativeFilePath] : undefined })
                 : await selectComposeCommand(
                     context,
                     folder,
