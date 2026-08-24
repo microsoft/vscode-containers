@@ -80,6 +80,10 @@
                     "when": "config.containers.containers.groupBy == 'Compose Project Name'"
                 },
                 {
+                    "command": "vscode-containers.containers.composeGroup.pull",
+                    "when": "config.containers.containers.groupBy == 'Compose Project Name'"
+                },
+                {
                     "command": "vscode-containers.containers.composeGroup.start",
                     "when": "config.containers.containers.groupBy == 'Compose Project Name'"
                 },
@@ -97,6 +101,10 @@
                 },
                 {
                     "command": "vscode-containers.compose.down",
+                    "when": "isWorkspaceTrusted"
+                },
+                {
+                    "command": "vscode-containers.compose.pull",
                     "when": "isWorkspaceTrusted"
                 },
                 {
@@ -177,6 +185,11 @@
                 },
                 {
                     "when": "isWorkspaceTrusted && editorLangId == dockercompose",
+                    "command": "vscode-containers.compose.pull",
+                    "group": "containers"
+                },
+                {
+                    "when": "isWorkspaceTrusted && editorLangId == dockercompose",
                     "command": "vscode-containers.compose.restart",
                     "group": "containers"
                 },
@@ -210,6 +223,11 @@
                 {
                     "when": "isWorkspaceTrusted && resourceLangId == dockercompose",
                     "command": "vscode-containers.compose.down",
+                    "group": "containers"
+                },
+                {
+                    "when": "isWorkspaceTrusted && resourceLangId == dockercompose",
+                    "command": "vscode-containers.compose.pull",
                     "group": "containers"
                 },
                 {
@@ -442,14 +460,19 @@
                     "group": "composeGroup_1_general@1"
                 },
                 {
-                    "command": "vscode-containers.containers.composeGroup.start",
+                    "command": "vscode-containers.containers.composeGroup.pull",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
                     "group": "composeGroup_1_general@2"
                 },
                 {
-                    "command": "vscode-containers.containers.composeGroup.stop",
+                    "command": "vscode-containers.containers.composeGroup.start",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
                     "group": "composeGroup_1_general@3"
+                },
+                {
+                    "command": "vscode-containers.containers.composeGroup.stop",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /composeGroup$/i",
+                    "group": "composeGroup_1_general@4"
                 },
                 {
                     "command": "vscode-containers.containers.composeGroup.restart",
@@ -2634,6 +2657,11 @@
                 "category": "%vscode-containers.commands.category.containersGeneric%"
             },
             {
+                "command": "vscode-containers.compose.pull",
+                "title": "%vscode-containers.commands.compose.pull%",
+                "category": "%vscode-containers.commands.category.containersGeneric%"
+            },
+            {
                 "command": "vscode-containers.compose.restart",
                 "title": "%vscode-containers.commands.compose.restart%",
                 "category": "%vscode-containers.commands.category.containersGeneric%"
@@ -2756,6 +2784,11 @@
             {
                 "command": "vscode-containers.containers.composeGroup.logs",
                 "title": "%vscode-containers.commands.containers.composeGroup.logs%",
+                "category": "%vscode-containers.commands.category.containers%"
+            },
+            {
+                "command": "vscode-containers.containers.composeGroup.pull",
+                "title": "%vscode-containers.commands.containers.composeGroup.pull%",
                 "category": "%vscode-containers.commands.category.containers%"
             },
             {

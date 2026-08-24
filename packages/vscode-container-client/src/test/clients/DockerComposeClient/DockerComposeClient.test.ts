@@ -41,4 +41,19 @@ describe('(unit) DockerComposeClient', () => {
         expect(noShellQuotedWindows).to.deep.equal(['--file', '"docker-compose.yml"', 'up', '--detach', '--build', '--timeout 10 --wait']);
         expect(noShellQuotedLinux).to.deep.equal(['--file', 'docker-compose.yml', 'up', '--detach', '--build', '--timeout 10 --wait']);
     });
+
+    it('Should produce the expected compose pull command', async () => {
+        const commandResponse = await client.pull({
+            ...commonOptions,
+            services: ['api', 'database'],
+        });
+
+        expect(new NoShell(false).quote(commandResponse.args)).to.deep.equal([
+            '--file',
+            'docker-compose.yml',
+            'pull',
+            'api',
+            'database',
+        ]);
+    });
 });

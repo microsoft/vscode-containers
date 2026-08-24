@@ -22,6 +22,7 @@ import type {
     DownCommandOptions,
     IContainerOrchestratorClient,
     LogsCommandOptions,
+    PullCommandOptions,
     RestartCommandOptions,
     StartCommandOptions,
     StopCommandOptions,
@@ -145,6 +146,28 @@ export abstract class DockerComposeClientBase extends ConfigurableClient impleme
     }
 
     //#endregion Down command
+
+    //#region Pull command
+
+    protected getPullCommandArgs(options: PullCommandOptions): CommandLineArgs {
+        return composeArgs(
+            withComposeArg(this.composeV2),
+            withCommonOrchestratorArgs(options),
+            withArg('pull'),
+            withArg(...(options.services ?? [])),
+        )();
+    }
+
+    /**
+     * Generates the necessary information for pulling service images with Docker Compose
+     * @param options Standard orchestrator pull command options
+     * @returns A CommandResponse indicating how to run a Docker Compose pull command
+     */
+    public pull(options: PullCommandOptions): Promise<VoidCommandResponse> {
+        return this.makeVoidCommandResponse(this.getPullCommandArgs(options));
+    }
+
+    //#endregion Pull command
 
     //#region Start command
 

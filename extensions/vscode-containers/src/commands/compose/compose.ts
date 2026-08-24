@@ -14,7 +14,7 @@ import { quickPickWorkspaceFolder } from '../../utils/quickPickWorkspaceFolder';
 import { selectComposeCommand } from '../selectCommandTemplate';
 import { getComposeProfileList, getComposeProfilesOrServices, getComposeServiceList, getDefaultCommandComposeProfilesOrServices } from './getComposeSubsetList';
 
-async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSubset' | 'downSubset')[], message: string, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
+async function compose(context: IActionContext, commands: ('up' | 'down' | 'pull' | 'upSubset' | 'downSubset')[], message: string, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
     if (!vscode.workspace.isTrusted) {
         throw new UserCancelledError('enforceTrust');
     }
@@ -55,14 +55,17 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
         }
 
         for (const item of selectedItems) {
-            let terminalCommand = await selectComposeCommand(
-                context,
-                folder,
-                command,
-                item?.relativeFilePath,
-                detached,
-                build
-            );
+            const client = await ext.orchestratorManager.getClient();
+            let terminalCommand = command === 'pull'
+                ? await client.pull({ files: item?.relativeFilePath ? [item.relativeFilePath] : undefined })
+                : await selectComposeCommand(
+                    context,
+                    folder,
+                    command,
+                    item?.relativeFilePath,
+                    detached,
+                    build
+                );
 
             if (!terminalCommand.args?.length) {
                 // Add the service list if needed
@@ -73,7 +76,6 @@ async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSu
                 terminalCommand = await addDefaultCommandServicesOrProfilesIfNeeded(context, folder, terminalCommand, preselectedServices, preselectedProfiles);
             }
 
-            const client = await ext.orchestratorManager.getClient();
             const taskCRF = new TaskCommandRunnerFactory({
                 taskName: client.displayName,
                 workspaceFolder: folder,
@@ -96,6 +98,10 @@ export async function composeUpSubset(context: IActionContext, dockerComposeFile
 
 export async function composeDown(context: IActionContext, dockerComposeFileUri?: vscode.Uri, selectedComposeFileUris?: vscode.Uri[]): Promise<void> {
     return await compose(context, ['down'], vscode.l10n.t('Choose compose file to take down'), dockerComposeFileUri, selectedComposeFileUris);
+}
+
+export async function composePull(context: IActionContext, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[]): Promise<void> {
+    return await compose(context, ['pull'], vscode.l10n.t('Choose compose file whose images to pull'), dockerComposeFileUri, selectedComposeFileUris);
 }
 
 export async function composeDownSubset(context: IActionContext, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {

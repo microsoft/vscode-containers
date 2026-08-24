@@ -45,6 +45,10 @@ export async function composeGroupDown(context: IActionContext, node: ContainerG
     return composeGroup(context, (client, options) => client.down(options), node);
 }
 
+export async function composeGroupPull(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
+    return composeGroup(context, (client, options) => client.pull(options), node);
+}
+
 type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit<TOptions, keyof CommonOrchestratorCommandOptions>;
 
 async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
