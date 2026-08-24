@@ -417,6 +417,11 @@
                     "group": "containers_2_active@5"
                 },
                 {
+                    "command": "vscode-containers.containers.pause",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /^runningContainer$/i",
+                    "group": "containers_2_active@5"
+                },
+                {
                     "command": "vscode-containers.containers.downloadFile",
                     "when": "view == vscode-containers.views.containers && viewItem == containerFile",
                     "group": "files_1@2"
@@ -2736,6 +2741,11 @@
             {
                 "command": "vscode-containers.containers.group.remove",
                 "title": "%vscode-containers.commands.containers.group.remove%",
+                "category": "%vscode-containers.commands.category.containers%"
+            },
+            {
+                "command": "vscode-containers.containers.pause",
+                "title": "%vscode-containers.commands.containers.pause%",
                 "category": "%vscode-containers.commands.category.containers%"
             },
             {

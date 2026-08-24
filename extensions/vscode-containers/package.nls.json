@@ -241,6 +241,7 @@
     "vscode-containers.commands.containers.downloadFile": "Download...",
     "vscode-containers.commands.containers.inspect": "Inspect",
     "vscode-containers.commands.containers.openFile": "Open",
+    "vscode-containers.commands.containers.pause": "Pause",
     "vscode-containers.commands.containers.prune": "Prune...",
     "vscode-containers.commands.containers.refresh": "Refresh",
     "vscode-containers.commands.containers.remove": "Remove...",

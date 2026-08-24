@@ -19,6 +19,7 @@ import { configureContainersExplorer } from "./containers/configureContainersExp
 import { downloadContainerFile } from "./containers/files/downloadContainerFile";
 import { openContainerFile } from "./containers/files/openContainerFile";
 import { inspectContainer } from "./containers/inspectContainer";
+import { pauseContainer } from "./containers/pauseContainer";
 import { pruneContainers } from "./containers/pruneContainers";
 import { removeContainer } from "./containers/removeContainer";
 import { removeContainerGroup } from "./containers/removeContainerGroup";
@@ -136,6 +137,7 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.containers.filter', filterContainersTree);
     registerCommand('vscode-containers.containers.clearFilter', clearContainersFilter);
     registerCommand('vscode-containers.containers.openFile', openContainerFile);
+    registerCommand('vscode-containers.containers.pause', pauseContainer);
     registerCommand('vscode-containers.containers.prune', pruneContainers);
     registerCommand('vscode-containers.containers.remove', removeContainer);
     registerCommand('vscode-containers.containers.group.remove', removeContainerGroup);
