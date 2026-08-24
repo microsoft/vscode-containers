@@ -11,11 +11,13 @@ suite('(unit) TaskCommandRunnerFactory', () => {
     async function executeTask(options: { close?: boolean; focus?: boolean }): Promise<vscode.TaskPresentationOptions> {
         const taskName = `TaskCommandRunnerFactory test ${Date.now()} ${Math.random()}`;
         let presentationOptions: vscode.TaskPresentationOptions | undefined;
+        let taskExecution: vscode.TaskExecution | undefined;
 
         const taskStarted = new Promise<void>(resolve => {
             const disposable = vscode.tasks.onDidStartTask(event => {
                 if (event.execution.task.name === taskName) {
                     presentationOptions = event.execution.task.presentationOptions;
+                    taskExecution = event.execution;
                     disposable.dispose();
                     resolve();
                 }
@@ -23,11 +25,15 @@ suite('(unit) TaskCommandRunnerFactory', () => {
         });
 
         const commandResponse = process.platform === 'win32' ?
-            { command: process.env.ComSpec ?? 'cmd.exe', args: ['/d', '/c', 'exit', '0'] } :
-            { command: '/bin/sh', args: ['-c', 'exit 0'] };
+            { command: process.env.ComSpec ?? 'cmd.exe', args: ['/d', '/c', 'ping', '-n', '30', '127.0.0.1'] } :
+            { command: '/bin/sh', args: ['-c', 'sleep 30'] };
 
-        const runner = new TaskCommandRunnerFactory({ taskName, ...options }).getCommandRunner();
-        await Promise.all([runner(commandResponse), taskStarted]);
+        const runner = new TaskCommandRunnerFactory({ taskName, alwaysRunNew: true, ...options }).getCommandRunner();
+        const runnerPromise = runner(commandResponse);
+        await taskStarted;
+        await new Promise(resolve => setTimeout(resolve, 100));
+        taskExecution?.terminate();
+        await runnerPromise;
 
         expect(presentationOptions).not.to.be.undefined;
         return presentationOptions;
