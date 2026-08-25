@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandNotSupportedError, DockerComposeClient, IContainerOrchestratorClient, PullCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { DockerComposeClient, IContainerOrchestratorClient } from '@microsoft/vscode-container-client';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
 import { RuntimeManager } from './RuntimeManager';
@@ -46,12 +46,4 @@ interface ComposeV2ableOrchestratorClient extends IContainerOrchestratorClient {
 
 export function isComposeV2ableOrchestratorClient(maybeClient: IContainerOrchestratorClient): maybeClient is ComposeV2ableOrchestratorClient {
     return 'composeV2' in maybeClient && typeof (maybeClient as ComposeV2ableOrchestratorClient).composeV2 === 'boolean';
-}
-
-export function createComposePullCommand(client: IContainerOrchestratorClient, options: PullCommandOptions): Promise<VoidCommandResponse> {
-    if (!client.pull) {
-        throw new CommandNotSupportedError(vscode.l10n.t('Compose Pull is not supported by the selected container runtime.'));
-    }
-
-    return client.pull(options);
 }

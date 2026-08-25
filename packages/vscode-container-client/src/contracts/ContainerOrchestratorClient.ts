@@ -147,7 +147,7 @@ type PullCommand = {
      * Generate a {@link VoidCommandResponse} for pulling service images with a container orchestrator
      * @param options Command options
      */
-    pull?(options: PullCommandOptions): Promise<VoidCommandResponse>;
+    pull(options: PullCommandOptions): Promise<VoidCommandResponse>;
 };
 
 // Start command types
