@@ -3,9 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { XMLParser } from 'fast-xml-parser';
 import * as fse from 'fs-extra';
-import * as gradleParser from 'gradle-to-js/lib/parser';
 import { GatherInformationStep } from '../GatherInformationStep';
 import { JavaScaffoldingWizardContext } from './JavaScaffoldingWizardContext';
 
@@ -33,6 +31,7 @@ export class JavaGatherInformationStep extends GatherInformationStep<JavaScaffol
             if (/pom.xml$/i.test(wizardContext.artifact)) {
                 // If it's a POM file, parse as XML
                 this.javaProjectType = 'pom';
+                const { XMLParser } = await import('fast-xml-parser');
                 const parser = new XMLParser({ trimValues: true, transformTagName: (tagName) => tagName.toLowerCase() });
                 const pomObject = parser.parse(contents) as PomContents;
 
@@ -44,6 +43,7 @@ export class JavaGatherInformationStep extends GatherInformationStep<JavaScaffol
             } else {
                 // Otherwise it's a gradle file, parse with that
                 this.javaProjectType = 'gradle';
+                const gradleParser = await import('gradle-to-js/lib/parser');
                 const gradleObject = <GradleContents>await gradleParser.parseText(contents);
 
                 wizardContext.version = gradleObject?.jar?.version || gradleObject?.version || '0.0.1';
