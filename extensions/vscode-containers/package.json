@@ -30,6 +30,7 @@
     },
     "homepage": "https://github.com/microsoft/vscode-containers/blob/main/extensions/vscode-containers/README.md",
     "activationEvents": [
+        "onCommand:vscode-containers.compose.pull",
         "onTaskType:docker-build",
         "onTaskType:docker-run",
         "onTaskType:docker-compose",
@@ -211,6 +212,11 @@
                     "when": "isWorkspaceTrusted && resourceLangId == dockercompose",
                     "command": "vscode-containers.compose.down",
                     "group": "containers"
+                },
+                {
+                    "command": "vscode-containers.compose.pull",
+                    "when": "isWorkspaceTrusted && resourceLangId == dockercompose",
+                    "group": "composeGroup_1_general@1_5"
                 },
                 {
                     "when": "isWorkspaceTrusted && resourceLangId == dockercompose",
@@ -2624,6 +2630,34 @@
                         "%vscode-containers.config.containers.orchestratorClient.nerdctlCompose%",
                         "%vscode-containers.config.containers.orchestratorClient.finchCompose%"
                     ]
+                },
+                "containers.commands.composePull": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "template": {
+                                "type": "string",
+                                "description": "%vscode-containers.config.template.composePull.template%"
+                            },
+                            "label": {
+                                "type": "string",
+                                "description": "%vscode-containers.config.template.composePull.label%"
+                            },
+                            "match": {
+                                "type": "string",
+                                "description": "%vscode-containers.config.template.composePull.match%"
+                            }
+                        }
+                    },
+                    "default": [
+                        {
+                            "template": "${composeCommand} ${configurationFile} pull",
+                            "label": "Pull images for compose project"
+                        }
+                    ],
+                    "description": "%vscode-containers.config.template.composePull.description%",
+                    "scope": "machine-overridable"
                 }
             }
         },
@@ -2632,6 +2666,11 @@
                 "command": "vscode-containers.compose.down",
                 "title": "%vscode-containers.commands.compose.down%",
                 "category": "%vscode-containers.commands.category.containersGeneric%"
+            },
+            {
+                "command": "vscode-containers.compose.pull",
+                "title": "%vscode-containers.commands.composePull%",
+                "category": "%vscode-containers.commands.category.docker%"
             },
             {
                 "command": "vscode-containers.compose.restart",
