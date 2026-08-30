@@ -2555,6 +2555,14 @@
                     "default": true,
                     "description": "%vscode-containers.config.containers.composeDetached%"
                 },
+                "containers.closeComposeTaskTerminal": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "%vscode-containers.config.containers.closeComposeTaskTerminal%",
+                    "tags": [
+                        "advanced"
+                    ]
+                },
                 "containers.showRemoteWorkspaceWarning": {
                     "type": "boolean",
                     "default": true,

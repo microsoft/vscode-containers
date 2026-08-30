@@ -58,12 +58,10 @@ async function executeAsTask(options: TaskCommandRunnerOptions, command: string,
         task.definition.idRandomizer = Math.random();
     }
 
-    if (options.focus || options.close) {
-        task.presentationOptions = {
-            ...(options.focus ? { focus: true } : {}),
-            ...(options.close ? { close: true } : {}),
-        };
-    }
+    task.presentationOptions = {
+        focus: options.focus,
+        close: options.close,
+    };
 
     const taskExecution = await vscode.tasks.executeTask(task);
 

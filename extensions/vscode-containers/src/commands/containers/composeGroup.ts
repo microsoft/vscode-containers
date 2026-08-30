@@ -7,6 +7,7 @@ import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as path from 'path';
 import { l10n, Uri, workspace } from 'vscode';
+import { configPrefix } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
@@ -30,19 +31,19 @@ export async function composeGroupLogs(context: IActionContext, node: ContainerG
     }, node, { follow: true, tail: 1000 });
 }
 export async function composeGroupStart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.start(options), node, undefined, { close: true });
+    return composeGroup(context, (client, options) => client.start(options), node);
 }
 
 export async function composeGroupStop(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.stop(options), node, undefined, { close: true });
+    return composeGroup(context, (client, options) => client.stop(options), node);
 }
 
 export async function composeGroupRestart(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.restart(options), node, undefined, { close: true });
+    return composeGroup(context, (client, options) => client.restart(options), node);
 }
 
 export async function composeGroupDown(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup(context, (client, options) => client.down(options), node, undefined, { close: true });
+    return composeGroup(context, (client, options) => client.down(options), node);
 }
 
 type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit<TOptions, keyof CommonOrchestratorCommandOptions>;
@@ -51,8 +52,7 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     context: IActionContext,
     composeCommandCallback: (client: IContainerOrchestratorClient, options: TOptions) => Promise<VoidCommandResponse>,
     node: ContainerGroupTreeItem,
-    additionalOptions?: AdditionalOptions<TOptions>,
-    taskOptions?: { close?: boolean }
+    additionalOptions?: AdditionalOptions<TOptions>
 ): Promise<void> {
     if (!node) {
         await ext.containersTree.refresh(context);
@@ -85,7 +85,7 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     const taskCRF = new TaskCommandRunnerFactory({
         taskName: client.displayName,
         cwd: workingDirectory,
-        close: taskOptions?.close,
+        close: workspace.getConfiguration(configPrefix).get<boolean>('closeComposeTaskTerminal', false),
     });
 
     await taskCRF.getCommandRunner()(composeCommandCallback(client, options));
