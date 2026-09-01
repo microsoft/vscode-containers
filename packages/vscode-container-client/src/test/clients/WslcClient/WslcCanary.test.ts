@@ -88,6 +88,12 @@ describe('(integration) WslcCanary', function () {
         });
     });
 
+    it('`wslc build` still lacks --rm', async function () {
+        const { stdout } = await runWslc('build --help');
+        expect(stdout).to.not.contain('--rm',
+            'wslc build now supports --rm; emit it in the default build command.');
+    });
+
     // List verbs that lack `--filter`. WslcClient filters these client-side (matchesLabelFilters)
     // because the CLI can't; when a `--filter` flag appears, push the filtering server-side instead.
     describe('list `--filter` support', function () {
