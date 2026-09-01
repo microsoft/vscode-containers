@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem, IAzureQuickPickOptions, UserCancelledError } from '@microsoft/vscode-azext-utils';
-import { PortBinding, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { PortBinding, VoidCommandResponse, WslcClient } from '@microsoft/vscode-container-client';
 import { quoted } from '@microsoft/vscode-processutils';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -32,12 +32,18 @@ export interface CommandTemplate {
 }
 
 export async function selectBuildCommand(context: IActionContext, folder: vscode.WorkspaceFolder, dockerfile: string, buildContext: string): Promise<VoidCommandResponse> {
+    const client = await ext.runtimeManager.getClient();
     return await selectCommandTemplate(
         context,
         'build',
         [folder.name, dockerfile],
         folder,
-        { 'dockerfile': dockerfile, 'context': buildContext, 'containerCommand': await ext.runtimeManager.getCommand() }
+        {
+            'dockerfile': dockerfile,
+            'context': buildContext,
+            'containerCommand': client.commandName,
+            'rm': client.id === WslcClient.ClientId ? '' : '--rm',
+        }
     );
 }
 
