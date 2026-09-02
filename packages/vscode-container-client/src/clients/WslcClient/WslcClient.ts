@@ -55,7 +55,7 @@ import { CommandNotSupportedError } from '../../utils/CommandNotSupportedError';
 import { DockerClientBase } from '../DockerClientBase/DockerClientBase';
 import { filterByLabelsAndDriver } from '../DockerClientBase/filterByLabelsAndDriver';
 import { parsePruneLikeOutput } from '../DockerClientBase/parsePruneLikeOutput';
-import { normalizeInspectNetworkRecord, normalizeInspectNetworkRecordAsListItem, SharedInspectNetworkRecordSchema } from '../DockerClientBase/SharedInspectNetworkRecord';
+import { normalizeInspectNetworkRecord, SharedInspectNetworkRecordSchema } from '../DockerClientBase/SharedInspectNetworkRecord';
 import { normalizeListImageRecord } from '../DockerClientBase/SharedListImageRecord';
 import { withContainerPathArg } from '../DockerClientBase/withContainerPathArg';
 import { withDockerBuildArg } from '../DockerClientBase/withDockerBuildArg';
@@ -63,15 +63,23 @@ import { withDockerEnvArg } from '../DockerClientBase/withDockerEnvArg';
 import { withDockerBooleanFilterArg, withDockerFilterArg } from '../DockerClientBase/withDockerFilterArg';
 import { withDockerLabelFilterArgs } from '../DockerClientBase/withDockerLabelFilterArgs';
 import { withDockerLabelsArg } from '../DockerClientBase/withDockerLabelsArg';
+import { withDockerNoTruncArg } from '../DockerClientBase/withDockerNoTruncArg';
 import { withDockerPortsArg } from '../DockerClientBase/withDockerPortsArg';
 import { normalizeWslcListContainerRecord, WslcListContainerRecordSchema } from './WslcListContainerRecord';
 import { WslcListImageRecordSchema } from './WslcListImageRecord';
+import { WslcListNetworkRecordSchema } from './WslcListNetworkRecord';
 
 /**
- * wslc reports pruned resources as `Deleted: <name>` lines, unlike the Docker CLI
- * which prints bare names (volumes) or a `Deleted Networks:` header (networks).
+ * wslc 2.9.7 and earlier report pruned volumes/networks as `Deleted: <name>` lines, unlike the
+ * Docker CLI which prints bare names under a `Deleted Volumes:` / `Deleted Networks:` header.
+ * wslc 2.9.8+ switched to Docker's header-plus-bare-name form, so the `Deleted: ` prefix is
+ * optional here and both generations are parsed by the same regex.
+ *
+ * The name is matched as a run of non-whitespace, non-colon characters (which every legal volume
+ * and network name is) so that neither the `Deleted <resource>:` header nor the trailing
+ * `Total reclaimed space: <size>` line is mistaken for a pruned resource.
  */
-const WslcPruneDeletedRegex = /^Deleted:\s+(.+?)\s*$/igm;
+const WslcPruneDeletedRegex = /^(?:Deleted:\s+)?([^\s:]+)\s*$/gm;
 
 /**
  * {@link WslcClient} implements {@link IContainersClient} for the Windows Subsystem for Linux
@@ -88,6 +96,18 @@ const WslcPruneDeletedRegex = /^Deleted:\s+(.+?)\s*$/igm;
  * - There are no `info`, `events`, or `context` subcommands.
  * - File reads use `container exec tar` (wslc can't stream `cp` to stdout) and writes use
  *   `container cp` (there is no top-level `cp`). Reads require `tar` in the container image.
+ *
+ * wslc's `--format json` output has changed shape twice, so the parsers below accept every
+ * generation the extension may encounter (verified against the wslc sources for each tag):
+ * - **2.9.5** switched all list verbs from one pretty-printed JSON array to newline-delimited
+ *   compact objects. The records themselves were unchanged, and `parseInspectJson` accepts either
+ *   framing, so this alone needs no special handling.
+ * - **2.9.8** replaced the service's native `images` and `network list` records with Docker's
+ *   all-string ones, moved `volume`/`network prune` to Docker's header-plus-bare-name form, and
+ *   added `Scope` to volume `inspect`.
+ * - **2.9.9** did the same for `volume list`.
+ *
+ * `list` (containers) has kept its native record throughout.
  */
 export class WslcClient extends DockerClientBase {
     /**
@@ -102,12 +122,13 @@ export class WslcClient extends DockerClientBase {
     protected readonly defaultFormatForJson: string = 'json';
 
     /**
-     * wslc omits `Scope` from volume `inspect` output; its volumes are always local.
+     * wslc omits `Scope` from volume `inspect` output on 2.9.7 and earlier; its volumes are
+     * always local.
      */
     protected override readonly inspectVolumeOptions = { defaultScope: 'local' };
 
     /**
-     * wslc reports pruned volumes as `Deleted: <name>` rather than a bare name.
+     * wslc 2.9.7 and earlier report pruned volumes as `Deleted: <name>` rather than a bare name.
      */
     protected override readonly pruneVolumeResourceRegex = WslcPruneDeletedRegex;
 
@@ -203,12 +224,15 @@ export class WslcClient extends DockerClientBase {
 
     protected override getListImagesCommandArgs(options: ListImagesCommandOptions): CommandLineArgs {
         // wslc `images` has no `--all` flag, but it does support --filter (dangling / reference /
-        // label, same syntax as Docker) and only `json` as a format value.
+        // label, same syntax as Docker) and only `json` as a format value. `--no-trunc` keeps the
+        // full `sha256:`-prefixed image id in the JSON output on wslc 2.9.8+, which truncates it
+        // to 12 characters by default; older wslc accepts the flag and always emits the full id.
         return composeArgs(
             withArg('images'),
             withDockerBooleanFilterArg('dangling', options.dangling),
             withDockerFilterArg(options.references?.map((reference) => `reference=${reference}`)),
             withDockerLabelFilterArgs(options.labels),
+            withDockerNoTruncArg,
             withNamedArg('--format', this.defaultFormatForJson),
         )();
     }
@@ -218,8 +242,9 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<ListImagesItem>> {
-        // wslc emits a JSON array (or a bare object for a single result), so the
-        // inspect-style parser is used here rather than the base's per-line parser.
+        // wslc emits newline-delimited objects (2.9.5+) or a pretty-printed JSON array / bare
+        // object (2.9.4 and earlier), so the inspect-style parser is used here rather than the
+        // base's per-line parser.
         return this.parseInspectJson(output, strict, (item) =>
             normalizeListImageRecord(WslcListImageRecordSchema.parse(item)));
     }
@@ -289,8 +314,9 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<ListContainersItem>> {
-        // wslc emits a JSON array (or a bare object for a single result), so the
-        // inspect-style parser is used here rather than the base's per-line parser.
+        // wslc emits newline-delimited objects (2.9.5+) or a pretty-printed JSON array / bare
+        // object (2.9.4 and earlier), so the inspect-style parser is used here rather than the
+        // base's per-line parser.
         return this.parseInspectJson(output, strict, (item) =>
             normalizeWslcListContainerRecord(WslcListContainerRecordSchema.parse(item)));
     }
@@ -375,8 +401,9 @@ export class WslcClient extends DockerClientBase {
     //#region Volume Commands
 
     protected override getListVolumesCommandArgs(options: ListVolumesCommandOptions): CommandLineArgs {
-        // wslc `volume list` has no `--filter` flag, so `labels`/`driver` filters can't be pushed to
-        // the CLI; they are applied client-side in parseListVolumesCommandOutput instead.
+        // wslc `volume list` gained a `--filter` flag in 2.9.8, but older wslc rejects unknown
+        // arguments outright, so `labels`/`driver` filters are still applied client-side in
+        // parseListVolumesCommandOutput rather than pushed to the CLI.
         return composeArgs(
             withArg('volume', 'list'),
             withNamedArg('--format', this.defaultFormatForJson),
@@ -405,8 +432,9 @@ export class WslcClient extends DockerClientBase {
 
     // wslc `volume prune` accepts `--all` / `--filter` but not `--force`. The contract
     // exposes no options today, so emit the bare verb. Deleted names are reported as
-    // `Deleted: <name>` lines (not the Docker bare-name format), which the base parser
-    // handles via the `pruneVolumeResourceRegex` override above.
+    // `Deleted: <name>` lines on wslc 2.9.7 and earlier and in Docker's header-plus-bare-name
+    // form on 2.9.8+; the base parser handles both via the `pruneVolumeResourceRegex` override
+    // above.
     protected override getPruneVolumesCommandArgs(options: PruneVolumesCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('volume', 'prune'),
@@ -429,8 +457,9 @@ export class WslcClient extends DockerClientBase {
     }
 
     protected override getListNetworksCommandArgs(options: ListNetworksCommandOptions): CommandLineArgs {
-        // wslc `network list` has no `--filter` flag, so `labels`/`driver` filters can't be pushed to
-        // the CLI; they are applied client-side in parseListNetworksCommandOutput instead.
+        // wslc `network list` gained a `--filter` flag in 2.9.8, but older wslc rejects unknown
+        // arguments outright, so `labels`/`driver` filters are still applied client-side in
+        // parseListNetworksCommandOutput rather than pushed to the CLI.
         return composeArgs(
             withArg('network', 'list'),
             withNamedArg('--format', this.defaultFormatForJson),
@@ -442,10 +471,10 @@ export class WslcClient extends DockerClientBase {
         output: string,
         strict: boolean,
     ): Promise<Array<ListNetworkItem>> {
-        // wslc `network list` emits the inspect-style object shape, so it shares the
-        // inspect schema rather than the Docker `network ls` one.
+        // wslc `network list` emits Docker's flat `network ls` shape (2.9.8+) or the inspect-style
+        // object shape (2.9.7 and earlier); `WslcListNetworkRecordSchema` accepts both.
         return this.parseInspectJson(output, strict, (item) =>
-            normalizeInspectNetworkRecordAsListItem(SharedInspectNetworkRecordSchema.parse(item)))
+            WslcListNetworkRecordSchema.parse(item))
             // wslc can't filter server-side, so honor labels/driver here.
             .then((items) => filterByLabelsAndDriver(items, options));
     }
@@ -474,7 +503,7 @@ export class WslcClient extends DockerClientBase {
 
     // wslc `network prune` accepts `--filter` but not `--force`. The contract exposes no
     // options today, so emit the bare verb. Deleted names are reported as `Deleted: <name>`
-    // lines (not the Docker "Deleted Networks:" header format).
+    // lines on wslc 2.9.7 and earlier and in Docker's "Deleted Networks:" header form on 2.9.8+.
     protected override getPruneNetworksCommandArgs(options: PruneNetworksCommandOptions): CommandLineArgs {
         return composeArgs(
             withArg('network', 'prune'),

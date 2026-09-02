@@ -165,13 +165,29 @@ describe('(unit) WslcClient', () => {
             expect(items).to.have.lengthOf(1);
             expect(items[0]).to.include({ id: 'good' });
         });
+
+        // wslc 2.9.5 switched all list verbs from one pretty-printed array to one compact object
+        // per line. The container record itself is unchanged, and is still native in 2.9.9.
+        it('Parses the newline-delimited output of wslc 2.9.5+', async () => {
+            const response = await client.listContainers({ all: true });
+            const items = await response.parse(
+                [
+                    JSON.stringify({ Id: 'abc123', Name: 'cool_yonath', Image: 'alpine:latest', State: 2, CreatedAt: 1700000000, Ports: [] }),
+                    JSON.stringify({ Id: 'def456', Name: 'silly_einstein', Image: 'busybox:1.36', State: 3, CreatedAt: 1700000100, Ports: [] }),
+                ].join('\n') + '\n',
+                true,
+            );
+            expect(items).to.have.lengthOf(2);
+            expect(items[0]).to.include({ id: 'abc123', name: 'cool_yonath', state: 'running' });
+            expect(items[1]).to.include({ id: 'def456', name: 'silly_einstein', state: 'exited' });
+        });
     });
 
     describe('#listImages()', () => {
-        it('Produces `images --format json` args', async () => {
+        it('Produces `images --no-trunc --format json` args', async () => {
             const response = await client.listImages({});
             const args = asStrings(response.args);
-            expect(args).to.deep.equal(['images', '--format', 'json']);
+            expect(args).to.deep.equal(['images', '--no-trunc', '--format', 'json']);
         });
 
         it('Emits --filter args for dangling / reference / label', async () => {
@@ -218,6 +234,102 @@ describe('(unit) WslcClient', () => {
             expect(items[0]).to.have.property('id', 'sha256:aaaa');
             expect(items[0]).to.have.property('createdAt');
             expect(items[0].createdAt.getDay()).to.not.be.NaN;
+        });
+
+        // wslc 2.9.5 through 2.9.7 pair the *new* newline-delimited framing with the *old* native
+        // record, so neither the framing nor the record shape alone identifies a generation.
+        it('Parses the newline-delimited native record of wslc 2.9.5-2.9.7', async () => {
+            const response = await client.listImages({});
+            const items = await response.parse(
+                [
+                    JSON.stringify({ Id: 'sha256:aaaa', Repository: 'alpine', Tag: 'latest', Created: 1700000000, Size: 7000000 }),
+                    JSON.stringify({ Id: 'sha256:bbbb', Repository: 'busybox', Tag: '1.36', Created: 1700000100, Size: 1200000 }),
+                ].join('\n') + '\n',
+                true,
+            );
+            expect(items).to.have.lengthOf(2);
+            expect(items[0]).to.have.property('id', 'sha256:aaaa');
+            expect(items[0].image.originalName).to.equal('alpine:latest');
+            expect(items[0].createdAt.toISOString()).to.equal('2023-11-14T22:13:20.000Z');
+            expect(items[0].size).to.equal(7000000);
+            expect(items[1]).to.have.property('id', 'sha256:bbbb');
+        });
+
+        // wslc 2.9.8 replaced the native record (`Id`, epoch `Created`, byte-count `Size`) with
+        // Docker's all-string `image ls --format json` record, emitted one object per line.
+        it('Parses the newline-delimited Docker-shaped output of wslc 2.9.8+', async () => {
+            const response = await client.listImages({});
+            const items = await response.parse(
+                [
+                    JSON.stringify({
+                        Containers: '0',
+                        CreatedAt: '2026-06-15 20:01:29 -0400 EDT',
+                        CreatedSince: '2 months ago',
+                        Digest: '<none>',
+                        ID: 'sha256:aaaa',
+                        Repository: 'alpine',
+                        SharedSize: 'N/A',
+                        Size: '8.42MB',
+                        Tag: 'latest',
+                        UniqueSize: 'N/A',
+                    }),
+                    JSON.stringify({
+                        Containers: 'N/A',
+                        CreatedAt: '2023-11-14 22:15:00 +0000 UTC',
+                        CreatedSince: '2 years ago',
+                        Digest: '<none>',
+                        ID: 'sha256:bbbb',
+                        Repository: 'busybox',
+                        SharedSize: 'N/A',
+                        Size: '1.2MB',
+                        Tag: '1.36',
+                        UniqueSize: 'N/A',
+                    }),
+                ].join('\n') + '\n',
+                true,
+            );
+            expect(items).to.have.lengthOf(2);
+            expect(items[0]).to.have.property('id', 'sha256:aaaa');
+            expect(items[0].image.originalName).to.equal('alpine:latest');
+            // `-0400 EDT` is a real wslc-emitted offset; the trailing zone abbreviation must not break parsing
+            expect(items[0].createdAt.toISOString()).to.equal('2026-06-16T00:01:29.000Z');
+            expect(items[0].size).to.be.a('number');
+            expect(items[1]).to.have.property('id', 'sha256:bbbb');
+            expect(items[1].image.originalName).to.equal('busybox:1.36');
+        });
+
+        // Docker-shaped output uses `<none>` sentinels rather than omitting the keys; an image with
+        // no repository/tag must stay unnamed rather than becoming `<none>:<none>`.
+        it('Treats `<none>` repository/tag as an unnamed image', async () => {
+            const response = await client.listImages({});
+            const items = await response.parse(
+                JSON.stringify({
+                    CreatedAt: '2023-11-14 22:13:20 +0000 UTC',
+                    ID: 'sha256:cccc',
+                    Repository: '<none>',
+                    Size: 'N/A',
+                    Tag: '<none>',
+                }),
+                true,
+            );
+            expect(items).to.have.lengthOf(1);
+            expect(items[0]).to.have.property('id', 'sha256:cccc');
+            expect(items[0].image.originalName).to.be.undefined;
+            // `Size: "N/A"` carries no information, so no size is fabricated
+            expect(items[0].size).to.be.undefined;
+        });
+
+        it('Skips a record that matches neither wslc image shape in non-strict mode', async () => {
+            const response = await client.listImages({});
+            const items = await response.parse(
+                [
+                    JSON.stringify({ ID: 'sha256:aaaa', Repository: 'alpine', Tag: 'latest', CreatedAt: '2023-11-14 22:13:20 +0000 UTC', Size: '7MB' }),
+                    JSON.stringify({ Repository: 'no-id-at-all' }),
+                ].join('\n'),
+                false,
+            );
+            expect(items).to.have.lengthOf(1);
+            expect(items[0]).to.have.property('id', 'sha256:aaaa');
         });
     });
 
@@ -444,6 +556,59 @@ describe('(unit) WslcClient', () => {
             expect(items).to.have.lengthOf(1);
             expect(items[0]).to.include({ name: 'bridge', driver: 'bridge' });
         });
+
+        // wslc 2.9.8 replaced the inspect-style record with Docker's flat, all-string
+        // `network ls --format json` record, emitted one object per line.
+        it('Parses the newline-delimited Docker-shaped output of wslc 2.9.8+', async () => {
+            const response = await client.listNetworks({});
+            const items = await response.parse(
+                [
+                    JSON.stringify({
+                        CreatedAt: '2026-09-01 17:44:01.0498728 +0000 UTC',
+                        Driver: 'bridge',
+                        ID: 'a327ab35b8c3',
+                        IPv4: 'true',
+                        IPv6: 'false',
+                        Internal: 'false',
+                        Labels: 'foo=bar,baz=qux',
+                        Name: 'bug602net',
+                        Scope: 'local',
+                    }),
+                    JSON.stringify({
+                        CreatedAt: '',
+                        Driver: 'host',
+                        ID: 'b427ab35b8c3',
+                        IPv4: 'true',
+                        IPv6: 'false',
+                        Internal: 'false',
+                        Labels: '',
+                        Name: 'host',
+                        Scope: 'local',
+                    }),
+                ].join('\n') + '\n',
+                true,
+            );
+            expect(items).to.have.lengthOf(2);
+            expect(items[0]).to.include({ id: 'a327ab35b8c3', name: 'bug602net', driver: 'bridge', scope: 'local', ipv6: false, internal: false });
+            expect(items[0].labels).to.deep.equal({ foo: 'bar', baz: 'qux' });
+            // wslc emits sub-second precision here, which must not defeat date parsing
+            expect(items[0].createdAt?.toISOString()).to.equal('2026-09-01T17:44:01.000Z');
+            expect(items[1]).to.include({ id: 'b427ab35b8c3', name: 'host', driver: 'host' });
+            expect(items[1].createdAt).to.be.undefined;
+        });
+
+        it('Filters the Docker-shaped output of wslc 2.9.8+ by label client-side', async () => {
+            const response = await client.listNetworks({ labels: { keep: 'yes' } });
+            const items = await response.parse(
+                [
+                    JSON.stringify({ ID: 'aaaa', Name: 'match', Driver: 'bridge', Labels: 'keep=yes' }),
+                    JSON.stringify({ ID: 'bbbb', Name: 'wrong-value', Driver: 'bridge', Labels: 'keep=no' }),
+                    JSON.stringify({ ID: 'cccc', Name: 'missing-label', Driver: 'bridge', Labels: '' }),
+                ].join('\n'),
+                true,
+            );
+            expect(items.map(i => i.name)).to.deep.equal(['match']);
+        });
     });
 
     describe('#removeNetworks()', () => {
@@ -507,7 +672,7 @@ describe('(unit) WslcClient', () => {
             expect(asStrings(response.args)).to.deep.equal(['volume', 'list', '--format', 'json']);
         });
 
-        it('Does not emit filter args (wslc has no --filter flag)', async () => {
+        it('Does not emit filter args (filtering stays client-side for wslc back-compat)', async () => {
             const response = await client.listVolumes({ driver: 'local', labels: { foo: 'bar' } });
             expect(asStrings(response.args)).to.deep.equal(['volume', 'list', '--format', 'json']);
         });
@@ -532,6 +697,47 @@ describe('(unit) WslcClient', () => {
             const items = await response.parse(payload, true);
             expect(items.map(i => i.name)).to.deep.equal(['a']);
         });
+
+        // wslc 2.9.9 replaced the native record with Docker's all-string `volume ls --format json`
+        // record (using `N/A` placeholders), emitted one object per line.
+        it('Parses the newline-delimited Docker-shaped output of wslc 2.9.9+', async () => {
+            const response = await client.listVolumes({});
+            const items = await response.parse(
+                [
+                    JSON.stringify({
+                        Availability: 'N/A',
+                        Driver: 'local',
+                        Group: 'N/A',
+                        Labels: 'keep=yes',
+                        Links: 'N/A',
+                        Mountpoint: '/var/lib/containers/volumes/bug602vol/_data',
+                        Name: 'bug602vol',
+                        Scope: 'local',
+                        Size: 'N/A',
+                        Status: 'N/A',
+                    }),
+                    JSON.stringify({
+                        Availability: 'N/A',
+                        Driver: 'local',
+                        Group: 'N/A',
+                        Labels: '',
+                        Links: 'N/A',
+                        Mountpoint: '/var/lib/containers/volumes/other/_data',
+                        Name: 'other',
+                        Scope: 'local',
+                        Size: 'N/A',
+                        Status: 'N/A',
+                    }),
+                ].join('\n') + '\n',
+                true,
+            );
+            expect(items).to.have.lengthOf(2);
+            expect(items[0]).to.include({ name: 'bug602vol', driver: 'local', scope: 'local', mountpoint: '/var/lib/containers/volumes/bug602vol/_data' });
+            expect(items[0].labels).to.deep.equal({ keep: 'yes' });
+            // `Size: "N/A"` carries no information, so no size is fabricated
+            expect(items[0].size).to.be.undefined;
+            expect(items[1]).to.include({ name: 'other' });
+        });
     });
 
     describe('#pruneVolumes()', () => {
@@ -545,6 +751,20 @@ describe('(unit) WslcClient', () => {
             const result = await response.parse('Deleted: vol-a\nDeleted: vol-b\n\nTotal reclaimed space: 0 B', true);
             expect(result.volumesDeleted).to.deep.equal(['vol-a', 'vol-b']);
         });
+
+        // wslc 2.9.8+ prints Docker's `Deleted Volumes:` header followed by bare names. The
+        // trailing `Total reclaimed space:` line must not be mistaken for a pruned volume.
+        it('Parses the `Deleted Volumes:` header output of wslc 2.9.8+', async () => {
+            const response = await client.pruneVolumes({});
+            const result = await response.parse('Deleted Volumes:\nvol-a\nvol-b\n\nTotal reclaimed space: 0B\n', true);
+            expect(result.volumesDeleted).to.deep.equal(['vol-a', 'vol-b']);
+        });
+
+        it('Reports nothing deleted when wslc 2.9.8+ prunes no volumes', async () => {
+            const response = await client.pruneVolumes({});
+            const result = await response.parse('Total reclaimed space: 0B\n', true);
+            expect(result.volumesDeleted).to.be.empty;
+        });
     });
 
     describe('#pruneNetworks()', () => {
@@ -556,6 +776,13 @@ describe('(unit) WslcClient', () => {
         it('Parses `Deleted: <name>` output', async () => {
             const response = await client.pruneNetworks({});
             const result = await response.parse('Deleted: net-a\nDeleted: net-b', true);
+            expect(result.networksDeleted).to.deep.equal(['net-a', 'net-b']);
+        });
+
+        // wslc 2.9.8+ prints Docker's `Deleted Networks:` header followed by bare names.
+        it('Parses the `Deleted Networks:` header output of wslc 2.9.8+', async () => {
+            const response = await client.pruneNetworks({});
+            const result = await response.parse('Deleted Networks:\nnet-a\nnet-b\n', true);
             expect(result.networksDeleted).to.deep.equal(['net-a', 'net-b']);
         });
     });
