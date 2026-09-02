@@ -43,9 +43,12 @@ const WslcCurrentListImageRecordSchema = z.pipe(
 );
 
 /**
- * The `wslc images --format json` shape emitted by wslc 2.9.4 and earlier: the service's native
+ * The `wslc images --format json` shape emitted by wslc 2.9.7 and earlier: the service's native
  * record, with `Id` rather than `ID`, a byte-count `Size`, and `Created` as a Unix epoch in
  * seconds rather than a `CreatedAt` date string.
+ *
+ * 2.9.5 switched the surrounding output from a pretty-printed array to newline-delimited objects,
+ * but left this record shape untouched, so it covers every wslc release up to 2.9.7.
  */
 const WslcLegacyListImageRecordSchema = z.pipe(
     z.object({

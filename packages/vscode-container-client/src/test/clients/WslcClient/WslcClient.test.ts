@@ -166,8 +166,9 @@ describe('(unit) WslcClient', () => {
             expect(items[0]).to.include({ id: 'good' });
         });
 
-        // wslc 2.9.8+ prints one compact object per line instead of a single pretty-printed array.
-        it('Parses the newline-delimited output of wslc 2.9.8+', async () => {
+        // wslc 2.9.5 switched all list verbs from one pretty-printed array to one compact object
+        // per line. The container record itself is unchanged, and is still native in 2.9.9.
+        it('Parses the newline-delimited output of wslc 2.9.5+', async () => {
             const response = await client.listContainers({ all: true });
             const items = await response.parse(
                 [
@@ -233,6 +234,25 @@ describe('(unit) WslcClient', () => {
             expect(items[0]).to.have.property('id', 'sha256:aaaa');
             expect(items[0]).to.have.property('createdAt');
             expect(items[0].createdAt.getDay()).to.not.be.NaN;
+        });
+
+        // wslc 2.9.5 through 2.9.7 pair the *new* newline-delimited framing with the *old* native
+        // record, so neither the framing nor the record shape alone identifies a generation.
+        it('Parses the newline-delimited native record of wslc 2.9.5-2.9.7', async () => {
+            const response = await client.listImages({});
+            const items = await response.parse(
+                [
+                    JSON.stringify({ Id: 'sha256:aaaa', Repository: 'alpine', Tag: 'latest', Created: 1700000000, Size: 7000000 }),
+                    JSON.stringify({ Id: 'sha256:bbbb', Repository: 'busybox', Tag: '1.36', Created: 1700000100, Size: 1200000 }),
+                ].join('\n') + '\n',
+                true,
+            );
+            expect(items).to.have.lengthOf(2);
+            expect(items[0]).to.have.property('id', 'sha256:aaaa');
+            expect(items[0].image.originalName).to.equal('alpine:latest');
+            expect(items[0].createdAt.toISOString()).to.equal('2023-11-14T22:13:20.000Z');
+            expect(items[0].size).to.equal(7000000);
+            expect(items[1]).to.have.property('id', 'sha256:bbbb');
         });
 
         // wslc 2.9.8 replaced the native record (`Id`, epoch `Created`, byte-count `Size`) with

@@ -14,7 +14,7 @@ import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
  * nerdctl may omit them. The size and creation date are normalized by the shared
  * field transforms.
  *
- * `wslc images` reports the same fields, but wslc 2.9.4 and earlier use different key names
+ * `wslc images` reports the same fields, but wslc 2.9.7 and earlier use different key names
  * (`Id`, `Created` as a Unix epoch); `WslcListImageRecordSchema` maps both wslc generations onto
  * this shape.
  *

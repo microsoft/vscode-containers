@@ -23,7 +23,7 @@ const WslcCurrentListNetworkRecordSchema = z.pipe(
 );
 
 /**
- * The `wslc network list --format json` shape emitted by wslc 2.9.4 and earlier: the same
+ * The `wslc network list --format json` shape emitted by wslc 2.9.7 and earlier: the same
  * inspect-style object shape as `wslc inspect --type network` (`Id`, real booleans, record
  * `Labels`, epoch-seconds `Created`).
  */

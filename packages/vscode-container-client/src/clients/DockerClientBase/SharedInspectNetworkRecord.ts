@@ -13,7 +13,7 @@ import { dateStringOrEpochSchema } from '../../contracts/ZodTransforms';
  * wslc may omit most of them, so they are modeled as optional and backfilled by
  * the normalizer.
  *
- * `wslc network list` emits this same inspect-style shape on wslc 2.9.4 and earlier rather than
+ * `wslc network list` emits this same inspect-style shape on wslc 2.9.7 and earlier rather than
  * Docker's flat `network ls` shape, so `WslcListNetworkRecordSchema` falls back to this schema
  * (via {@link normalizeInspectNetworkRecordAsListItem}) when the record is not the flat
  * `SharedListNetworkRecordSchema` shape that wslc 2.9.8+ emits.
