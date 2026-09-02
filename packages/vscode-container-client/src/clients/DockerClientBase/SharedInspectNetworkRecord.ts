@@ -13,10 +13,10 @@ import { dateStringOrEpochSchema } from '../../contracts/ZodTransforms';
  * wslc may omit most of them, so they are modeled as optional and backfilled by
  * the normalizer.
  *
- * `wslc network list` emits this same inspect-style shape rather than Docker's
- * flat `network ls` shape, so it shares this schema (via
- * {@link normalizeInspectNetworkRecordAsListItem}) instead of
- * `SharedListNetworkRecordSchema`.
+ * `wslc network list` emits this same inspect-style shape on wslc 2.9.4 and earlier rather than
+ * Docker's flat `network ls` shape, so `WslcListNetworkRecordSchema` falls back to this schema
+ * (via {@link normalizeInspectNetworkRecordAsListItem}) when the record is not the flat
+ * `SharedListNetworkRecordSchema` shape that wslc 2.9.8+ emits.
  *
  * Podman's `network inspect` uses a drastically different, lower-cased shape
  * (`name`/`id`/`created`/`ipv6_enabled`, no IPAM/scope/attachable/ingress) and
