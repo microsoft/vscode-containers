@@ -88,9 +88,20 @@ describe('(integration) WslcCanary', function () {
         });
     });
 
-    // NOTE: there is deliberately no canary for `--filter` on `network list` / `volume list`.
-    // wslc 2.9.8+ added it, but {@link WslcClient} still filters those lists client-side
-    // (matchesLabelFilters) so that the extension keeps working against wslc 2.9.3/2.9.4, which
-    // reject the unknown argument outright. Server-side filtering can only be adopted once the
-    // client gains version detection, so a canary here would be permanently red.
+    // List verbs that lack `--filter`. WslcClient filters these client-side (matchesLabelFilters)
+    // because the CLI can't; when a `--filter` flag appears, push the filtering server-side instead.
+    describe('list `--filter` support', function () {
+        const listVerbs: Array<{ label: string; args: string }> = [
+            { label: 'network list', args: 'network list --help' },
+            { label: 'volume list', args: 'volume list --help' },
+        ];
+
+        listVerbs.forEach(({ label, args }) => {
+            it(`\`wslc ${label}\` still lacks --filter`, async function () {
+                const { stdout } = await runWslc(args);
+                expect(stdout).to.not.contain('--filter',
+                    `wslc ${label} now supports --filter; push filtering server-side in WslcClient instead of matchesLabelFilters.`);
+            });
+        });
+    });
 });
