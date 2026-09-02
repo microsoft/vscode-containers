@@ -1669,7 +1669,7 @@
                             "type": "string"
                         }
                     ],
-                    "default": "${containerCommand} build --pull --rm -f \"${dockerfile}\" -t ${tag} \"${context}\"",
+                    "default": "${containerCommand} build --pull ${rm} -f \"${dockerfile}\" -t ${tag} \"${context}\"",
                     "description": "%vscode-containers.config.template.build.description%",
                     "tags": [
                         "advanced"
