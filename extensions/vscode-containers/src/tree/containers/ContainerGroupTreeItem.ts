@@ -74,7 +74,7 @@ export class ContainerGroupTreeItem extends LocalGroupTreeItemBase<DockerContain
             this._profileChildren = undefined;
         }
 
-        if (this.parent.groupBySetting !== 'Compose Project Name' || this.group === NonComposeGroupName) {
+        if (this.parent.groupBySetting !== 'Compose Project Name' || this.group === NonComposeGroupName || !this.isComposeProjectGroup()) {
             return super.loadMoreChildrenImpl(clearCache);
         }
 
