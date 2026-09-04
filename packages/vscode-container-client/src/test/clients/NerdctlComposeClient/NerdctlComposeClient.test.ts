@@ -51,4 +51,11 @@ describe('(unit) NerdctlComposeClient', () => {
         expect(args).to.deep.equal(['compose', '--file', 'docker-compose.yml', 'down', '--volumes']);
         expect(args).to.not.include('--timeout');
     });
+
+    it('Should pull all service images with the V2 compose syntax', async () => {
+        const response = await client.pull(commonOptions);
+        const args = new NoShell(false).quote(response.args);
+
+        expect(args).to.deep.equal(['compose', '--file', 'docker-compose.yml', 'pull']);
+    });
 });
