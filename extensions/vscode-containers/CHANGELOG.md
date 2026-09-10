@@ -1,6 +1,6 @@
 ## 2.5.1 - 14 September 2026
 ### Added
-* Added a new "Open in Integrated Browser" context menu item to containers. This is similar to the existing "Open in Browser" command, but uses VS Code's integrated browser window. With permission, agents can also interact with the integrated browser window. [#600](https://github.com/microsoft/vscode-containers/issues/600)
+* Added a new "Open in Integrated Browser" context menu item to running containers. This is similar to the existing "Open in Browser" command (now called "Open in External Browser"), but uses VS Code's integrated browser window. With permission, agents can also interact with the integrated browser window. [#600](https://github.com/microsoft/vscode-containers/issues/600)
 
 ### Fixed
 * Fixed several issues with the new WSL container runtime. [#601](https://github.com/microsoft/vscode-containers/issues/601), [#602](https://github.com/microsoft/vscode-containers/issues/602)
