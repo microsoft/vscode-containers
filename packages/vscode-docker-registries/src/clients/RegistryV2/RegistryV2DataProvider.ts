@@ -114,7 +114,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
             return authenticationProvider.getLoginInformation();
         }
 
-        throw new Error(vscode.l10n.t('Authentication provider {0} does not support getting login information.', authenticationProvider));
+        throw new Error(vscode.l10n.t('Authentication provider {0} does not support getting login information.', authenticationProvider.constructor.name));
     }
 
     public async deleteTag(item: CommonTag): Promise<void> {

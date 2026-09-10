@@ -70,7 +70,15 @@ function dedupeBrowsablePorts(browsablePorts: BrowsablePort[]): BrowsablePort[] 
     return results;
 }
 
-export async function browseContainer(context: IActionContext, node?: ContainerTreeItem): Promise<void> {
+export async function browseContainerExternal(context: IActionContext, node?: ContainerTreeItem): Promise<void> {
+    await browseContainer(context, 'external', node);
+}
+
+export async function browseContainerIntegrated(context: IActionContext, node?: ContainerTreeItem): Promise<void> {
+    await browseContainer(context, 'integrated', node);
+}
+
+async function browseContainer(context: IActionContext, browser: 'external' | 'integrated', node?: ContainerTreeItem): Promise<void> {
     const telemetryProperties = <BrowseTelemetryProperties>context.telemetry.properties;
 
     if (!node) {
@@ -132,5 +140,11 @@ export async function browseContainer(context: IActionContext, node?: ContainerT
     const host = isIPv6(selectedPort.host) ? `[${selectedPort.host}]` : selectedPort.host; // IPv6 addresses need to be wrapped in square brackets
     const url = `${protocol}://${host}:${selectedPort.hostPort}`;
 
-    void vscode.env.openExternal(vscode.Uri.parse(url));
+    const uri = vscode.Uri.parse(url);
+    if (browser === 'integrated') {
+        const resolvedUri = await vscode.env.asExternalUri(uri);
+        await vscode.commands.executeCommand('workbench.action.browser.open', resolvedUri.toString(true));
+    } else {
+        await vscode.env.openExternal(uri);
+    }
 }

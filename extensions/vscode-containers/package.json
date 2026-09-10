@@ -402,6 +402,11 @@
                     "group": "containers_1_general@4"
                 },
                 {
+                    "command": "vscode-containers.containers.browseIntegrated",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /runningContainer$/i",
+                    "group": "containers_1_general@4.5"
+                },
+                {
                     "command": "vscode-containers.containers.start",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /^(created|dead|exited|paused|terminated)Container$/i",
                     "group": "containers_2_active@5"
@@ -2679,6 +2684,11 @@
                 "category": "%vscode-containers.commands.category.containers%"
             },
             {
+                "command": "vscode-containers.containers.browseIntegrated",
+                "title": "%vscode-containers.commands.containers.browseIntegrated%",
+                "category": "%vscode-containers.commands.category.containers%"
+            },
+            {
                 "command": "vscode-containers.containers.configureExplorer",
                 "title": "%vscode-containers.commands.containers.configureExplorer%",
                 "category": "%vscode-containers.commands.category.containers%",
@@ -3369,7 +3379,7 @@
         ]
     },
     "engines": {
-        "vscode": "^1.105.0"
+        "vscode": "^1.109.0"
     },
     "capabilities": {
         "virtualWorkspaces": false,
