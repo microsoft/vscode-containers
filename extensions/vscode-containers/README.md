@@ -43,7 +43,7 @@ The Container Tools extension contributes a Container Explorer view to VS Code. 
 
 The right-click menu provides access to commonly used commands for each type of asset.
 
-For running containers, choose **Open in External Browser** to open a published port in your external browser, or **Open in Integrated Browser** to open it in a VS Code desktop browser tab. Both actions are also available in the Command Palette and use the same container and port selection.
+For running containers, choose **Open in Integrated Browser** to open a published port in a VS Code desktop browser tab. GitHub Copilot's browser tools can interact with these tabs, unlike external browser windows. Alternatively, choose **Open in External Browser** to use your external browser. Both actions are also available in the Command Palette and use the same container and port selection.
 
 ![Container Explorer context menu](resources/readme/container-view-context-menu.gif)
 
