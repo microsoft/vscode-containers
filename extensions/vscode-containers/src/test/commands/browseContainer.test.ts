@@ -7,7 +7,7 @@ import { AzExtTreeDataProvider, AzExtTreeItem, createTestActionContext, TestActi
 import { PortBinding } from '@microsoft/vscode-container-client';
 import assert from 'assert';
 import * as vscode from 'vscode';
-import { browseContainer, browseContainerIntegrated } from '../../commands/containers/browseContainer';
+import { browseContainerExternal, browseContainerIntegrated } from '../../commands/containers/browseContainer';
 import { ext } from '../../extensionVariables';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
 
@@ -80,7 +80,7 @@ suite('(unit) browseContainer', () => {
     });
 
     for (const [destination, browse] of [
-        ['external', browseContainer],
+        ['external', browseContainerExternal],
         ['integrated', browseContainerIntegrated],
     ] as const) {
         suite(destination, () => {

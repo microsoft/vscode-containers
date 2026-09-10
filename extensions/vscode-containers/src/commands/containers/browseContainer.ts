@@ -70,15 +70,15 @@ function dedupeBrowsablePorts(browsablePorts: BrowsablePort[]): BrowsablePort[] 
     return results;
 }
 
-export async function browseContainer(context: IActionContext, node?: ContainerTreeItem): Promise<void> {
-    await browseContainerInBrowser(context, 'external', node);
+export async function browseContainerExternal(context: IActionContext, node?: ContainerTreeItem): Promise<void> {
+    await browseContainer(context, 'external', node);
 }
 
 export async function browseContainerIntegrated(context: IActionContext, node?: ContainerTreeItem): Promise<void> {
-    await browseContainerInBrowser(context, 'integrated', node);
+    await browseContainer(context, 'integrated', node);
 }
 
-async function browseContainerInBrowser(context: IActionContext, browser: 'external' | 'integrated', node?: ContainerTreeItem): Promise<void> {
+async function browseContainer(context: IActionContext, browser: 'external' | 'integrated', node?: ContainerTreeItem): Promise<void> {
     const telemetryProperties = <BrowseTelemetryProperties>context.telemetry.properties;
 
     if (!node) {

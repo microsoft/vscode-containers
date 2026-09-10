@@ -13,7 +13,7 @@ import { chooseContainerRuntime } from "./chooseContainerRuntime";
 import { composeDown, composeDownSubset, composeRestart, composeUp, composeUpSubset } from "./compose/compose";
 import { askCopilot } from "./containers/askCopilot";
 import { attachShellContainer } from "./containers/attachShellContainer";
-import { browseContainer, browseContainerIntegrated } from "./containers/browseContainer";
+import { browseContainerExternal, browseContainerIntegrated } from "./containers/browseContainer";
 import { composeGroupDown, composeGroupLogs, composeGroupRestart, composeGroupStart, composeGroupStop } from "./containers/composeGroup";
 import { configureContainersExplorer } from "./containers/configureContainersExplorer";
 import { downloadContainerFile } from "./containers/files/downloadContainerFile";
@@ -127,7 +127,7 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.pruneSystem', pruneSystem);
 
     registerWorkspaceCommand('vscode-containers.containers.attachShell', attachShellContainer);
-    registerCommand('vscode-containers.containers.browse', browseContainer);
+    registerCommand('vscode-containers.containers.browse', browseContainerExternal);
     registerCommand('vscode-containers.containers.browseIntegrated', browseContainerIntegrated);
     registerCommand('vscode-containers.containers.downloadFile', downloadContainerFile);
     registerCommand('vscode-containers.containers.inspect', inspectContainer);
