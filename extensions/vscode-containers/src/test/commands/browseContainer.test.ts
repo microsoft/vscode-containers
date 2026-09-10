@@ -6,6 +6,7 @@
 import { AzExtTreeDataProvider, AzExtTreeItem, createTestActionContext, TestActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { PortBinding } from '@microsoft/vscode-container-client';
 import assert from 'assert';
+import { mock, Mock } from 'node:test';
 import * as vscode from 'vscode';
 import { browseContainerExternal, browseContainerIntegrated } from '../../commands/containers/browseContainer';
 import { ext } from '../../extensionVariables';
@@ -31,48 +32,26 @@ function port(containerPort = 80, hostPort = 8080, hostIp = '0.0.0.0'): PortBind
 
 suite('(unit) browseContainer', () => {
     let context: TestActionContext;
-    let externalUrls: string[];
-    let resolvedUrls: string[];
-    let commandCalls: { command: string; args: unknown[] }[];
-    let warnings: string[];
-    let originalOpenExternal: typeof vscode.env.openExternal;
-    let originalAsExternalUri: typeof vscode.env.asExternalUri;
+    let openExternal: Mock<typeof vscode.env.openExternal>;
+    let asExternalUri: Mock<typeof vscode.env.asExternalUri>;
+    let executeCommand: Mock<typeof vscode.commands.executeCommand>;
+    let showWarningMessage: Mock<TestActionContext['ui']['showWarningMessage']>;
     let originalExecuteCommand: typeof vscode.commands.executeCommand;
     let originalContainersTree: typeof ext.containersTree;
 
     setup(async () => {
         context = await createTestActionContext();
-        externalUrls = [];
-        resolvedUrls = [];
-        commandCalls = [];
-        warnings = [];
-        originalOpenExternal = vscode.env.openExternal;
-        originalAsExternalUri = vscode.env.asExternalUri;
         originalExecuteCommand = vscode.commands.executeCommand;
         originalContainersTree = ext.containersTree;
 
-        vscode.env.openExternal = async uri => {
-            externalUrls.push(uri.toString());
-            return true;
-        };
-        vscode.env.asExternalUri = async uri => {
-            resolvedUrls.push(uri.toString());
-            return uri;
-        };
-        vscode.commands.executeCommand = async (command: string, ...args: unknown[]) => {
-            commandCalls.push({ command, args });
-            return undefined;
-        };
-        context.ui.showWarningMessage = async message => {
-            warnings.push(message);
-            return undefined;
-        };
+        openExternal = mock.method(vscode.env, 'openExternal', async () => true);
+        asExternalUri = mock.method(vscode.env, 'asExternalUri', async uri => uri);
+        executeCommand = mock.method(vscode.commands, 'executeCommand', async () => undefined);
+        showWarningMessage = mock.method(context.ui, 'showWarningMessage', async () => undefined);
     });
 
     teardown(() => {
-        vscode.env.openExternal = originalOpenExternal;
-        vscode.env.asExternalUri = originalAsExternalUri;
-        vscode.commands.executeCommand = originalExecuteCommand;
+        mock.reset();
         if (ext.containersTree !== originalContainersTree) {
             ext.containersTree.dispose();
         }
@@ -86,15 +65,18 @@ suite('(unit) browseContainer', () => {
         suite(destination, () => {
             function assertOpened(url: string): void {
                 const expectedUrl = vscode.Uri.parse(url).toString();
-                assert.deepStrictEqual(warnings, []);
+                assert.strictEqual(showWarningMessage.mock.callCount(), 0);
                 if (destination === 'external') {
-                    assert.deepStrictEqual(externalUrls, [expectedUrl]);
-                    assert.deepStrictEqual(resolvedUrls, []);
-                    assert.deepStrictEqual(commandCalls, []);
+                    assert.strictEqual(openExternal.mock.callCount(), 1);
+                    assert.strictEqual(openExternal.mock.calls[0].arguments[0].toString(), expectedUrl);
+                    assert.strictEqual(asExternalUri.mock.callCount(), 0);
+                    assert.strictEqual(executeCommand.mock.callCount(), 0);
                 } else {
-                    assert.deepStrictEqual(externalUrls, []);
-                    assert.deepStrictEqual(resolvedUrls, [expectedUrl]);
-                    assert.deepStrictEqual(commandCalls, [{ command: 'workbench.action.browser.open', args: [expectedUrl] }]);
+                    assert.strictEqual(openExternal.mock.callCount(), 0);
+                    assert.strictEqual(asExternalUri.mock.callCount(), 1);
+                    assert.strictEqual(asExternalUri.mock.calls[0].arguments[0].toString(), expectedUrl);
+                    assert.strictEqual(executeCommand.mock.callCount(), 1);
+                    assert.deepStrictEqual(executeCommand.mock.calls[0].arguments, ['workbench.action.browser.open', expectedUrl]);
                 }
             }
 
@@ -149,42 +131,43 @@ suite('(unit) browseContainer', () => {
             });
 
             test('does not open a browser when port selection is cancelled', async () => {
-                context.ui.showQuickPick = async () => { throw new UserCancelledError(); };
+                mock.method(context.ui, 'showQuickPick', async () => { throw new UserCancelledError(); });
                 await assert.rejects(browse(context, makeContainer([port(9000), port(9001)])), UserCancelledError);
-                assert.deepStrictEqual(externalUrls, []);
-                assert.deepStrictEqual(resolvedUrls, []);
-                assert.deepStrictEqual(commandCalls, []);
+                assert.strictEqual(openExternal.mock.callCount(), 0);
+                assert.strictEqual(asExternalUri.mock.callCount(), 0);
+                assert.strictEqual(executeCommand.mock.callCount(), 0);
             });
 
             test('warns without launching when there are no published ports', async () => {
                 await browse(context, makeContainer([{ containerPort: 80 }]));
-                assert.deepStrictEqual(warnings, [vscode.l10n.t('No valid ports are available.')]);
-                assert.deepStrictEqual(externalUrls, []);
-                assert.deepStrictEqual(resolvedUrls, []);
-                assert.deepStrictEqual(commandCalls, []);
+                assert.strictEqual(showWarningMessage.mock.callCount(), 1);
+                assert.deepStrictEqual(showWarningMessage.mock.calls[0].arguments, [vscode.l10n.t('No valid ports are available.')]);
+                assert.strictEqual(openExternal.mock.callCount(), 0);
+                assert.strictEqual(asExternalUri.mock.callCount(), 0);
+                assert.strictEqual(executeCommand.mock.callCount(), 0);
             });
 
             test('selects a running container when invoked without a node', async () => {
                 const node = makeContainer([port()]);
                 ext.containersTree = new AzExtTreeDataProvider(node, 'test');
-                let refreshed = false;
-                ext.containersTree.refresh = async () => { refreshed = true; };
-                ext.containersTree.showTreeItemPicker = async <T extends AzExtTreeItem>(expectedContextValue: string | RegExp) => {
-                    assert.ok(refreshed);
+                const refresh = mock.method(ext.containersTree, 'refresh', async () => undefined);
+                const showTreeItemPicker = mock.method(ext.containersTree, 'showTreeItemPicker', async <T extends AzExtTreeItem>(expectedContextValue: string | RegExp) => {
+                    assert.strictEqual(refresh.mock.callCount(), 1);
                     assert.strictEqual(expectedContextValue, ContainerTreeItem.runningContainerRegExp);
                     const pickedNode: AzExtTreeItem = node;
                     return pickedNode as T;
-                };
+                });
                 await browse(context);
+                assert.strictEqual(showTreeItemPicker.mock.callCount(), 1);
                 assertOpened('http://localhost:8080');
             });
 
             test('propagates browser launch errors', async () => {
                 const error = new Error('Browser launch failed');
                 if (destination === 'external') {
-                    vscode.env.openExternal = async () => { throw error; };
+                    openExternal.mock.mockImplementation(async () => { throw error; });
                 } else {
-                    vscode.commands.executeCommand = async () => { throw error; };
+                    executeCommand.mock.mockImplementation(async () => { throw error; });
                 }
                 await assert.rejects(browse(context, makeContainer([port()])), error);
             });
@@ -196,23 +179,25 @@ suite('(unit) browseContainer', () => {
     });
 
     test('passes the resolved remote URL to Integrated Browser', async () => {
-        vscode.env.asExternalUri = async uri => {
-            assert.strictEqual(uri.toString(), 'http://localhost:8080/');
+        asExternalUri.mock.mockImplementation(async () => {
             return vscode.Uri.parse('https://forwarded.example.test/service?port=8080');
-        };
+        });
         await browseContainerIntegrated(context, makeContainer([port()]));
-        assert.deepStrictEqual(commandCalls, [{
-            command: 'workbench.action.browser.open',
-            args: ['https://forwarded.example.test/service?port=8080'],
-        }]);
-        assert.deepStrictEqual(externalUrls, []);
+        assert.strictEqual(asExternalUri.mock.callCount(), 1);
+        assert.strictEqual(asExternalUri.mock.calls[0].arguments[0].toString(), 'http://localhost:8080/');
+        assert.strictEqual(executeCommand.mock.callCount(), 1);
+        assert.deepStrictEqual(executeCommand.mock.calls[0].arguments, [
+            'workbench.action.browser.open',
+            'https://forwarded.example.test/service?port=8080',
+        ]);
+        assert.strictEqual(openExternal.mock.callCount(), 0);
     });
 
     test('does not launch or fall back when URI resolution fails', async () => {
         const error = new Error('URI resolution failed');
-        vscode.env.asExternalUri = async () => { throw error; };
+        asExternalUri.mock.mockImplementation(async () => { throw error; });
         await assert.rejects(browseContainerIntegrated(context, makeContainer([port()])), error);
-        assert.deepStrictEqual(commandCalls, []);
-        assert.deepStrictEqual(externalUrls, []);
+        assert.strictEqual(executeCommand.mock.callCount(), 0);
+        assert.strictEqual(openExternal.mock.callCount(), 0);
     });
 });
