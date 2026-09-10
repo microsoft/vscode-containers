@@ -11,7 +11,7 @@ If you didn't install it directly, you probably got it as part of the [Docker Ex
 
 ## Installation
 
-Container Tools requires VS Code 1.109 or later.
+Container Tools requires VS Code 1.109 (January 2026) or later.
 
 [Install Docker](https://docs.docker.com/install/) on your machine and add it to the system path.
 
