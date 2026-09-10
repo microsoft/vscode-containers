@@ -14,7 +14,7 @@ import { quickPickWorkspaceFolder } from '../../utils/quickPickWorkspaceFolder';
 import { selectComposeCommand } from '../selectCommandTemplate';
 import { getComposeProfileList, getComposeProfilesOrServices, getComposeServiceList, getDefaultCommandComposeProfilesOrServices } from './getComposeSubsetList';
 
-async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSubset' | 'downSubset')[], message: string, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
+async function compose(context: IActionContext, commands: ('up' | 'down' | 'upSubset' | 'downSubset' | 'pull')[], message: string, dockerComposeFileUri?: vscode.Uri | string, selectedComposeFileUris?: vscode.Uri[], preselectedServices?: string[], preselectedProfiles?: string[]): Promise<void> {
     if (!vscode.workspace.isTrusted) {
         throw new UserCancelledError('enforceTrust');
     }
@@ -104,6 +104,10 @@ export async function composeDownSubset(context: IActionContext, dockerComposeFi
 
 export async function composeRestart(context: IActionContext, dockerComposeFileUri?: vscode.Uri, selectedComposeFileUris?: vscode.Uri[]): Promise<void> {
     return await compose(context, ['down', 'up'], vscode.l10n.t('Choose compose file to restart'), dockerComposeFileUri, selectedComposeFileUris);
+}
+
+export async function composePull(context: IActionContext, dockerComposeFileUri?: vscode.Uri, selectedComposeFileUris?: vscode.Uri[]): Promise<void> {
+    return await compose(context, ['pull'], vscode.l10n.t('Choose compose file to pull'), dockerComposeFileUri, selectedComposeFileUris);
 }
 
 const serviceListPlaceholder = /\${serviceList}/i;
