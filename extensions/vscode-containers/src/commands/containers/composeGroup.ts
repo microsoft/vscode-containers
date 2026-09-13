@@ -7,6 +7,7 @@ import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { CommonOrchestratorCommandOptions, IContainerOrchestratorClient, LogsCommandOptions, VoidCommandResponse } from '@microsoft/vscode-container-client';
 import * as path from 'path';
 import { l10n, Uri, workspace } from 'vscode';
+import { configPrefix } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
@@ -84,6 +85,7 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     const taskCRF = new TaskCommandRunnerFactory({
         taskName: client.displayName,
         cwd: workingDirectory,
+        close: workspace.getConfiguration(configPrefix).get<boolean>('closeComposeTaskTerminal', false),
     });
 
     await taskCRF.getCommandRunner()(composeCommandCallback(client, options));

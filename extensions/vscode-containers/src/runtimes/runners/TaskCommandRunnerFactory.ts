@@ -15,6 +15,7 @@ interface TaskCommandRunnerOptions {
     alwaysRunNew?: boolean;
     rejectOnError?: boolean;
     focus?: boolean;
+    close?: boolean;
     env?: never; // Environment is not needed and should not be used, because VSCode adds it already (due to using `ExtensionContext.environmentVariableCollection`)
 }
 
@@ -57,11 +58,10 @@ async function executeAsTask(options: TaskCommandRunnerOptions, command: string,
         task.definition.idRandomizer = Math.random();
     }
 
-    if (options.focus) {
-        task.presentationOptions = {
-            focus: true,
-        };
-    }
+    task.presentationOptions = {
+        focus: options.focus,
+        close: options.close,
+    };
 
     const taskExecution = await vscode.tasks.executeTask(task);
 
