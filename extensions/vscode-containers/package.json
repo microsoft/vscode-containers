@@ -1,6 +1,6 @@
 {
     "name": "vscode-containers",
-    "version": "2.5.1",
+    "version": "2.5.2-alpha",
     "publisher": "ms-azuretools",
     "displayName": "Container Tools",
     "description": "Makes it easy to create, manage, and debug containerized applications.",
