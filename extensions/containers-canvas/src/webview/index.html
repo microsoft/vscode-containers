@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <!-- Griffel (Fluent's style engine) injects <style> at runtime, hence style-src 'unsafe-inline'. -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'none'; connect-src 'self'; img-src 'self' data:; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:;"
+        />
+        <title>Containers</title>
+        <!-- esbuild emits main.css from the xterm stylesheet imported by the
+             terminal view. -->
+        <link rel="stylesheet" href="./main.css" />
+        <style>
+            html, body, #root { height: 100%; margin: 0; }
+
+            /* Without this the document defaults to Times New Roman at 16px.
+               FluentProvider only styles its own subtree, so anything outside it
+               -- and the initial paint before React mounts -- renders as a serif
+               flash that does not match the app. */
+            body {
+                font-family: var(--font-sans, -apple-system, "Segoe UI", sans-serif);
+                font-size: 14px;
+                line-height: 1.5;
+                color: var(--text-color-default, inherit);
+                background-color: var(--background-color-default, transparent);
+            }
+
+            /* Fluent clones the FluentProvider's className onto the portal mount
+               node it appends to <body> for tooltips and popovers. Any sizing or
+               background set via a class therefore paints a full-viewport panel
+               whenever one opens. Size the real provider with a selector the
+               portal cannot match, and make body-level providers transparent. */
+            #root > .fui-FluentProvider { height: 100%; }
+            body > .fui-FluentProvider { background-color: transparent; }
+
+            /* ----------------------------------------------------------------
+               Component-level matching.
+
+               A Fluent theme is a flat map of colour slots, and some slots do
+               double duty: `colorNeutralBackground1` is both the app surface
+               and a secondary button's fill. Fluent's own themes paint those
+               the same colour and rely on the border alone, but GitHub does
+               not -- the page is #0d1117 while a button is #212830 -- so a
+               correct theme mapping still leaves buttons looking flat.
+
+               Redefining the variable *on the button* fixes exactly that: the
+               custom property is inherited, so a button reads the control
+               colour while every other surface keeps the page colour. Primary
+               buttons read --colorBrandBackground* and are untouched.
+
+               Gated on data-canvas-host-tokens so these host-specific values
+               never apply in a plain browser, where the tokens do not exist.
+               ---------------------------------------------------------------- */
+            [data-canvas-host-tokens="1"] .fui-Button {
+                --colorNeutralBackground1: var(--background-color-control-rest);
+                --colorNeutralBackground1Hover: var(--background-color-control-hover);
+                --colorNeutralBackground1Pressed: var(--background-color-control-active);
+                /* GitHub's controls are medium, not semibold. Fluent uses
+                   semibold at default size and regular at small, which reads as
+                   two different button styles in one toolbar. */
+                --fontWeightRegular: var(--font-weight-medium, 500);
+                --fontWeightSemibold: var(--font-weight-medium, 500);
+            }
+
+            /* Headings use GitHub's display face (Mona Sans); body text stays
+               on the UI face. Fluent's type components read --fontFamilyBase. */
+            [data-canvas-host-tokens="1"] .fui-LargeTitle,
+            [data-canvas-host-tokens="1"] .fui-Title1,
+            [data-canvas-host-tokens="1"] .fui-Title2,
+            [data-canvas-host-tokens="1"] .fui-Title3,
+            [data-canvas-host-tokens="1"] .fui-Subtitle1,
+            [data-canvas-host-tokens="1"] .fui-Subtitle2 {
+                --fontFamilyBase: var(--font-sans-display);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="module" src="./main.js"></script>
+    </body>
+</html>

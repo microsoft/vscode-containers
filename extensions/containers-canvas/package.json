@@ -1,0 +1,44 @@
+{
+  "name": "containers-canvas",
+  "version": "1.0.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "description": "Copilot canvas for local Docker containers and images.",
+  "author": "Microsoft Corporation",
+  "publisher": "ms-azuretools",
+  "homepage": "https://github.com/microsoft/vscode-containers/blob/main/extensions/containers-canvas/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode-containers",
+    "directory": "extensions/containers-canvas"
+  },
+  "bugs": {
+    "url": "https://github.com/microsoft/vscode-containers/issues"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "package": "",
+    "lint": "",
+    "test": "node --test src/*.test.mjs scripts/*.test.mjs",
+    "clean": "node ../../scripts/clean.mjs"
+  },
+  "optionalDependencies": {
+    "@lydell/node-pty": "^1.2.0-beta.15"
+  },
+  "devDependencies": {
+    "@fluentui/react-components": "~9.74",
+    "@fluentui/react-icons": "~2.0",
+    "@microsoft/vscode-ext-webview": "^0.10.1",
+    "@trpc/client": "^11.18.0",
+    "@trpc/server": "^11.18.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "esbuild": "^0.28.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "~5.9.3",
+    "ws": "^8.21.3",
+    "zod": "^3.25.76"
+  }
+}

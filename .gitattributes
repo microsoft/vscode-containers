@@ -4,3 +4,16 @@ packages/compose-language-service/bin/docker-compose-langserver text eol=lf
 
 # Mark some files as generated to prevent them from showing in the repo's language stats
 NOTICE.html linguist-vendored=true
+
+# containers-canvas commits its build output, because Copilot plugins are
+# installed straight from a git ref with no build step. esbuild writes LF, so
+# the bundle must not be line-ending converted: with autocrlf on, a checkout
+# would rewrite it as CRLF and the next rebuild would report the whole bundle
+# as modified. Marking it generated also keeps it out of language stats and
+# collapses it in diffs.
+extensions/containers-canvas/dist/** -text linguist-generated=true
+
+# Its NOTICE is generated too, and embeds third-party licence text verbatim --
+# including whatever line endings those files use. Normalising it would both
+# alter quoted licence text and make every rebuild look like a change.
+extensions/containers-canvas/NOTICE.html -text linguist-generated=true
