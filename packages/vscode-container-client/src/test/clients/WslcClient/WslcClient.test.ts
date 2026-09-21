@@ -183,7 +183,6 @@ describe('(unit) WslcClient', () => {
             expect(items[1]).to.include({ id: 'def456', name: 'silly_einstein', state: 'exited' });
         });
 
-        // Synthetic values preserve the reported WSLC record shapes without retaining user data.
         const currentSamples = [
             {
                 name: 'nginx and hello-world',
