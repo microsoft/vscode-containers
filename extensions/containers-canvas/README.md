@@ -27,6 +27,23 @@ Images can also be pulled and tagged from the panel.
 
 Copilot can drive all of it, and everything it runs is visible in the panel.
 
+### How Copilot decides to open it
+
+The plugin ships a skill (`skills/containers-canvas/SKILL.md`) that routes
+container questions to this panel. Without it the canvas only opens when the
+agent happens to choose it from the canvas description; with it, asking "why did
+`web` stop?" reliably lands on that container's logs rather than producing pasted
+`docker logs` output.
+
+The skill also carries the deep-link mapping — which `view` answers which kind of
+question — and what to do if the canvas fails to register. Its YAML frontmatter
+description is what the agent matches against, so edit it with care: it states
+what the panel is *for* and, just as importantly, what it is not for.
+
+One gotcha if you edit it: the description must stay quoted. An unquoted `: `
+anywhere in it is parsed as a YAML mapping and the skill silently fails to load.
+`copilot skill list` reports the parse error.
+
 ### Staying current
 
 The panel tracks the daemon rather than a snapshot, so changes made anywhere —

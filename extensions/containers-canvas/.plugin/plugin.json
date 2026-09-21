@@ -16,5 +16,8 @@
     "canvas",
     "logs",
     "devops"
+  ],
+  "skills": [
+    "./skills/containers-canvas/"
   ]
 }
