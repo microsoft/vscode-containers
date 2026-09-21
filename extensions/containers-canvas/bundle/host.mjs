@@ -18832,8 +18832,8 @@ function createExecSessions({ runtimeBin }) {
 
 // server.mjs
 var HERE = path3.dirname(fileURLToPath(import.meta.url));
-var EXTENSION_ROOT = path3.basename(HERE) === "dist" ? path3.dirname(HERE) : HERE;
-var WEBVIEW_DIR = path3.join(EXTENSION_ROOT, "dist", "webview");
+var EXTENSION_ROOT = path3.basename(HERE) === "bundle" ? path3.dirname(HERE) : HERE;
+var WEBVIEW_DIR = path3.join(EXTENSION_ROOT, "bundle", "webview");
 var MIME = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",

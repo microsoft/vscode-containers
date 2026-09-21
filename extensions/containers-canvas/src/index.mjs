@@ -5,7 +5,7 @@
 // The single bundled entry point for the extension host.
 //
 // Everything the extension needs at runtime is reachable from here, so the
-// shipped package is `extension.mjs` plus one `dist/host.mjs` and the webview
+// shipped package is `extension.mjs` plus one `bundle/host.mjs` and the webview
 // assets -- no node_modules required.
 //
 // One entry rather than two matters for correctness, not just tidiness: the

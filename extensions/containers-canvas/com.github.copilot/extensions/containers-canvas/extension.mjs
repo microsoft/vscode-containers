@@ -13,7 +13,7 @@
 // code drift, and the stale one is invisible for exactly as long as the built
 // bundle looks current.
 //
-// Everything the real entry point loads -- `./dist/host.mjs`, `./server.mjs` --
+// Everything the real entry point loads -- `./bundle/host.mjs`, `./server.mjs` --
 // resolves relative to itself, so it behaves identically whether it was reached
 // through here or directly.
 import "../../../extension.mjs";

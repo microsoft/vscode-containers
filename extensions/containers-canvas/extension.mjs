@@ -15,7 +15,7 @@
 import { joinSession, createCanvas, CanvasError } from "@github/copilot-sdk/extension";
 
 
-import { startCanvasServer, describeAgentActions, buildCanvasActions } from "./dist/host.mjs";
+import { startCanvasServer, describeAgentActions, buildCanvasActions } from "./bundle/host.mjs";
 
 /** instanceId -> live loopback server for that panel. */
 const instances = new Map();

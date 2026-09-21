@@ -25,10 +25,10 @@ import { findTarget, followLogs, followStats, detectRuntime } from "./src/runtim
 import { createExecSessions } from "./execSessions.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-// When bundled into dist/host.mjs, HERE is the dist directory itself rather
-// than the extension root, so joining "dist/webview" would double the segment.
-const EXTENSION_ROOT = path.basename(HERE) === "dist" ? path.dirname(HERE) : HERE;
-const WEBVIEW_DIR = path.join(EXTENSION_ROOT, "dist", "webview");
+// When bundled into bundle/host.mjs, HERE is the bundle directory itself rather
+// than the extension root, so joining "bundle/webview" would double the segment.
+const EXTENSION_ROOT = path.basename(HERE) === "bundle" ? path.dirname(HERE) : HERE;
+const WEBVIEW_DIR = path.join(EXTENSION_ROOT, "bundle", "webview");
 
 const MIME = {
     ".html": "text/html; charset=utf-8",
@@ -362,7 +362,7 @@ export async function startCanvasServer({ instanceId, sendToChat, log, workingDi
 
         const relative = route === "/" ? "index.html" : route.replace(/^\/+/, "");
         const file = path.join(WEBVIEW_DIR, relative);
-        // Containment check: the served path must stay inside dist/webview.
+        // Containment check: the served path must stay inside bundle/webview.
         if (file !== WEBVIEW_DIR && !file.startsWith(WEBVIEW_DIR + path.sep)) {
             res.writeHead(403).end("no");
             return;

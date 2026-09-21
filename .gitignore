@@ -34,7 +34,7 @@ esbuild.meta.json
 # containers-canvas ships as a Copilot plugin rather than a .vsix. Plugins are
 # installed straight from a git ref with no build step, so its bundle has to be
 # committed -- unlike every other workspace here, where dist/ is transient.
-!extensions/containers-canvas/dist/
+!extensions/containers-canvas/bundle/
 
 # Same reason for its NOTICE. Every other package gets the root notice copied in
 # by postinstall, which never runs for a plugin installed from a git ref. This

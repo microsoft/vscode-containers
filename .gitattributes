@@ -11,7 +11,7 @@ NOTICE.html linguist-vendored=true
 # would rewrite it as CRLF and the next rebuild would report the whole bundle
 # as modified. Marking it generated also keeps it out of language stats and
 # collapses it in diffs.
-extensions/containers-canvas/dist/** -text linguist-generated=true
+extensions/containers-canvas/bundle/** -text linguist-generated=true
 
 # Its NOTICE is generated too, and embeds third-party licence text verbatim --
 # including whatever line endings those files use. Normalising it would both

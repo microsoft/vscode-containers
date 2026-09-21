@@ -2,11 +2,16 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-// Bundles both halves into `dist/`, so the extension runs with no
+// Bundles both halves into `bundle/`, so the extension runs with no
 // `node_modules` present (which also makes it gist-shareable).
 //
-//   dist/host.mjs        - Node/ESM: attachTrpc + the app router + the stub panel
-//   dist/webview/main.js - browser/ESM: React + Fluent + the postMessage shim
+//   bundle/host.mjs        - Node/ESM: attachTrpc + the app router + the stub panel
+//   bundle/webview/main.js - browser/ESM: React + Fluent + the postMessage shim
+//
+// Not `dist/`: the extension packaging flow treats a directory called `dist` as
+// regenerable build output and drops it, which for this package means dropping
+// the only thing that runs. Verified by sharing a probe extension -- `bundle/`
+// and `assets/nested/` both survived, `dist/` did not.
 
 import { build } from "esbuild";
 import { copyFile, mkdir } from "node:fs/promises";
@@ -16,7 +21,7 @@ import { fileURLToPath } from "node:url";
 import { generateNotice } from "./scripts/generateNotice.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const outWebview = join(here, "dist", "webview");
+const outWebview = join(here, "bundle", "webview");
 
 await mkdir(outWebview, { recursive: true });
 
@@ -26,10 +31,10 @@ await mkdir(outWebview, { recursive: true });
 //
 // The runtime adapter stays external so both canvases keep sharing one copy. The
 // specifier is preserved verbatim in the output, which works because `src/` and
-// `dist/` sit at the same depth -- `../../` reaches the extensions folder from
+// `bundle/` sit at the same depth -- `../../` reaches the extensions folder from
 // either.
 
-// `dist/` is committed and installs without a build step, so the shipped bundles
+// `bundle/` is committed and installs without a build step, so the shipped bundles
 // are what users actually receive. They carry the notice rather than relying on
 // the sources, and point at NOTICE.html because bundling pulls in third-party
 // code (React, Fluent UI, xterm) alongside ours.
@@ -47,7 +52,7 @@ let webviewMeta;
 
 await build({
     entryPoints: [join(here, "src", "index.mjs")],
-    outfile: join(here, "dist", "host.mjs"),
+    outfile: join(here, "bundle", "host.mjs"),
     bundle: true,
     platform: "node",
     format: "esm",

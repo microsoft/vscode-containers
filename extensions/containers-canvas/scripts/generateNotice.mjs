@@ -7,7 +7,7 @@
 // The repository's root NOTICE.html is produced by release tooling and covers the
 // VS Code extension's dependencies. This package bundles a different set -- React,
 // Fluent UI, xterm, tRPC, ws, zod and their transitive dependencies are compiled
-// into `dist/`, and `dist/` is committed and installed straight from a git ref.
+// into `bundle/`, which is committed and installed straight from a git ref.
 // Shipping those bytes without attribution is a licensing problem, so the notice
 // is generated here, from evidence, at build time.
 //
