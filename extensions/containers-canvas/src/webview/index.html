@@ -10,7 +10,10 @@
         />
         <title>Containers</title>
         <!-- esbuild emits main.css from the xterm stylesheet imported by the
-             terminal view. -->
+             terminal view. The terminal is code-split, so esbuild also emits a
+             duplicate stylesheet beside its chunk -- but nothing loads that,
+             and dynamic import of a JS chunk does not pull in a sibling CSS
+             file. Loading it eagerly here is what keeps the terminal styled. -->
         <link rel="stylesheet" href="./main.css" />
         <style>
             html, body, #root { height: 100%; margin: 0; }

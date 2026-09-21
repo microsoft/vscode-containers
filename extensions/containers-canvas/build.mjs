@@ -14,8 +14,8 @@
 // and `assets/nested/` both survived, `dist/` did not.
 
 import { build } from "esbuild";
-import { copyFile, mkdir } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { copyFile, mkdir, readdir, stat } from "node:fs/promises";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { generateNotice } from "./scripts/generateNotice.mjs";
@@ -82,6 +82,9 @@ await build({
     minify: true,
     sourcemap: false,
     metafile: true,
+    splitting: true,
+    // Code splitting needs shared chunks to have stable, collision-free names.
+    chunkNames: "chunks/[name]-[hash]",
     banner: { js: legalBanner },
     define: { "process.env.NODE_ENV": '"production"' },
     loader: { ".ttf": "file" },
@@ -89,6 +92,49 @@ await build({
 }).then((result) => webviewMeta = result.metafile);
 
 await copyFile(join(here, "src", "webview", "index.html"), join(outWebview, "index.html"));
+
+/*
+ * Fail the build if any shipped file would be rejected at install time.
+ *
+ * The extension installer refuses files over 1 MB. That was found the hard way:
+ * a 1.35 MB webview bundle installed cleanly and then failed to load, because
+ * the oversized file was dropped rather than reported. A size ceiling is easy
+ * to drift back over -- one more dependency in the shared chunk would do it --
+ * and the failure mode is silent and remote, so it is checked here instead.
+ */
+const INSTALL_FILE_LIMIT_BYTES = 1_000_000;
+
+async function* walk(dir) {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) yield* walk(full);
+        else yield full;
+    }
+}
+
+const oversized = [];
+let largest = { path: "", size: 0 };
+for await (const file of walk(join(here, "bundle"))) {
+    const { size } = await stat(file);
+    if (size > largest.size) largest = { path: file, size };
+    if (size > INSTALL_FILE_LIMIT_BYTES) oversized.push({ file, size });
+}
+
+if (oversized.length > 0) {
+    const list = oversized
+        .map(({ file, size }) => `  ${(size / 1_000_000).toFixed(2)} MB  ${relative(here, file)}`)
+        .join("\n");
+    throw new Error(
+        `${oversized.length} file(s) exceed the ${INSTALL_FILE_LIMIT_BYTES.toLocaleString()} byte install limit:\n${list}\n` +
+        "These would be dropped during install and the extension would fail to load at runtime.\n" +
+        "Split the offending entry point (see the lazy views in src/webview/main.jsx).",
+    );
+}
+
+console.error(
+    `[build] largest shipped file: ${(largest.size / 1_000_000).toFixed(2)} MB ` +
+    `(${relative(here, largest.path)}), limit ${(INSTALL_FILE_LIMIT_BYTES / 1_000_000).toFixed(2)} MB`,
+);
 
 // The notice is derived from the metafiles above rather than maintained by hand,
 // so it cannot drift from what was actually bundled. Adding a dependency updates

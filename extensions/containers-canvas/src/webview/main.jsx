@@ -9,7 +9,7 @@
 // sortable columns, roving-tabindex keyboard navigation, selection and ARIA
 // wiring that the other canvas had to be taught by hand.
 
-import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { StrictMode, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { connectTrpc } from "@microsoft/vscode-ext-webview/webview";
 import {
@@ -74,15 +74,33 @@ import {
 
 import { useCanvasTheme } from "./theme.js";
 import { createCanvasVsCodeApi } from "./canvasVsCodeApi.js";
-import { RunImageDialog } from "./RunImageDialog.jsx";
-import { LogView } from "./LogView.jsx";
-import { StatsView } from "./StatsView.jsx";
-import { FilesView } from "./FilesView.jsx";
-import { TerminalView } from "./TerminalView.jsx";
-import { CodeView } from "./CodeView.jsx";
-import { LayersView } from "./LayersView.jsx";
-import { DockerfileView } from "./DockerfileView.jsx";
-import { ExecView } from "./ExecView.jsx";
+
+/*
+ * Sub-views load on demand rather than up front.
+ *
+ * Two reasons, and the second is the binding one. The panel opens on the list,
+ * so none of these are needed to paint it -- the terminal in particular drags
+ * in xterm, which is 337 KB and the single largest thing in the build.
+ *
+ * More importantly, the extension installer rejects any file over 1 MB, and a
+ * single bundle came to 1.35 MB: it installed and then failed to load. Chunking
+ * keeps every emitted file comfortably under that ceiling. If a view is ever
+ * folded back into the main entry point, check `pnpm build` output sizes before
+ * assuming it still installs.
+ *
+ * `lazy` wants a default export and these are all named, hence the unwrapping.
+ */
+const lazyView = (load, name) => lazy(() => load().then((module) => ({ default: module[name] })));
+
+const RunImageDialog = lazyView(() => import("./RunImageDialog.jsx"), "RunImageDialog");
+const LogView = lazyView(() => import("./LogView.jsx"), "LogView");
+const StatsView = lazyView(() => import("./StatsView.jsx"), "StatsView");
+const FilesView = lazyView(() => import("./FilesView.jsx"), "FilesView");
+const TerminalView = lazyView(() => import("./TerminalView.jsx"), "TerminalView");
+const CodeView = lazyView(() => import("./CodeView.jsx"), "CodeView");
+const LayersView = lazyView(() => import("./LayersView.jsx"), "LayersView");
+const DockerfileView = lazyView(() => import("./DockerfileView.jsx"), "DockerfileView");
+const ExecView = lazyView(() => import("./ExecView.jsx"), "ExecView");
 
 const useStyles = makeStyles({
     shell: { height: "100%", display: "flex", flexDirection: "column", backgroundColor: tokens.colorNeutralBackground1 },
@@ -201,6 +219,20 @@ function opIcon(op) {
  * toggle keeps the same slot: the button under the cursor after pausing is
  * the one that undoes it, rather than Stop sliding into that position.
  */
+/**
+ * Placeholder shown while a sub-view's chunk is fetched.
+ *
+ * Deliberately quiet: the chunks are local and small, so on any normal machine
+ * this is a single frame. A prominent spinner would flash more than it informs.
+ */
+function ViewLoading() {
+    return (
+        <div style={{ padding: "24px", display: "flex", justifyContent: "center" }}>
+            <Spinner size="tiny" label="Loading…" />
+        </div>
+    );
+}
+
 function opsFor(item) {
     if (item.kind !== "container") return [];
     if (item.state === "paused") return ["stop", "restart", "unpause"];
@@ -980,6 +1012,10 @@ function App() {
                     </MessageBar>
                 ) : null}
 
+                {/* One boundary for the whole chain: every branch except the
+                    list is a lazily-loaded chunk, and they are mutually
+                    exclusive, so a single fallback covers all of them. */}
+                <Suspense fallback={<ViewLoading />}>
                 {logsFor ? (
                     <LogView
                         // Remount per container: follow-on-open is decided from
@@ -1099,6 +1135,7 @@ function App() {
                         )}
                     </>
                 )}
+                </Suspense>
                 </div>
             </div>
 
@@ -1221,17 +1258,25 @@ function App() {
                     </Menu>
                 );
             })() : null}
-            <RunImageDialog
-                open={Boolean(runTarget)}
-                image={runTarget}
-                client={client}
-                onOpenChange={(open) => { if (!open) setRunTarget(null); }}
-                onRan={(res) => {
-                    say("success", res.containerId ? `Started container ${res.containerId}.` : "Container started.");
-                    refresh();
-                    setTab("containers");
-                }}
-            />
+            {/* Mounted only while a target is set. It was previously always
+                mounted with `open={false}`, which for a lazily-loaded component
+                would mean fetching its chunk during first paint and giving up
+                the split entirely. */}
+            {runTarget ? (
+                <Suspense fallback={null}>
+                    <RunImageDialog
+                        open
+                        image={runTarget}
+                        client={client}
+                        onOpenChange={(open) => { if (!open) setRunTarget(null); }}
+                        onRan={(res) => {
+                            say("success", res.containerId ? `Started container ${res.containerId}.` : "Container started.");
+                            refresh();
+                            setTab("containers");
+                        }}
+                    />
+                </Suspense>
+            ) : null}
         </FluentProvider>
     );
 }

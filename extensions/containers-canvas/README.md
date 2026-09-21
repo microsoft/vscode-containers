@@ -134,7 +134,14 @@ pnpm --filter containers-canvas build     # produces bundle/
 pnpm --filter containers-canvas test      # pure unit tests, no daemon required
 ```
 
-`bundle/` is committed so the package installs without a build step. It is not called `dist/` because the extension packaging flow drops a directory by that name as regenerable build output. Rebuild it
+`bundle/` is committed so the package installs without a build step. It is not called `dist/` because the extension packaging flow drops a directory by that name as regenerable build output.
+
+The webview is code-split rather than emitted as one file. That is not a
+performance choice: the extension installer rejects any file larger than 1 MB,
+and a single bundle came to 1.35 MB — it installed and then failed to load. The
+views load on demand, which keeps every emitted file well under the ceiling
+(largest is ~600 KB) and keeps xterm out of first paint. **Check `pnpm build`
+output sizes before folding a view back into the main entry point.** Rebuild it
 after changing anything under `src/`, `server.mjs` or `execSessions.mjs`.
 
 Dependency versions are pinned here rather than taken from the workspace
