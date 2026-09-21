@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { type CommandLineArgs, NoShell } from '@microsoft/vscode-processutils';
+import { rejects } from 'assert';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
@@ -167,7 +168,7 @@ describe('(unit) WslcClient', () => {
         });
 
         // wslc 2.9.5 switched all list verbs from one pretty-printed array to one compact object
-        // per line. The container record itself is unchanged, and is still native in 2.9.9.
+        // per line. Earlier JSONL output still uses the native container record.
         it('Parses the newline-delimited output of wslc 2.9.5+', async () => {
             const response = await client.listContainers({ all: true });
             const items = await response.parse(
@@ -180,6 +181,147 @@ describe('(unit) WslcClient', () => {
             expect(items).to.have.lengthOf(2);
             expect(items[0]).to.include({ id: 'abc123', name: 'cool_yonath', state: 'running' });
             expect(items[1]).to.include({ id: 'def456', name: 'silly_einstein', state: 'exited' });
+        });
+
+        // Synthetic values preserve the reported WSLC record shapes without retaining user data.
+        const currentSamples = [
+            {
+                name: 'nginx and hello-world',
+                output: String.raw`{"Command":"\"/docker-entrypoint.\u2026\"","CreatedAt":"2024-06-01 12:00:00 -0400 EDT","HealthStatus":"","ID":"111111111111","Image":"nginx","Labels":"com.microsoft.wsl.container.metadata={\"V1\":{\"Flags\":8,\"InitProcessFlags\":0,\"Ports\":[{\"BindingAddress\":\"127.0.0.1\",\"ContainerPort\":80,\"Family\":2,\"HostPort\":0,\"Protocol\":6,\"VmPort\":20000},{\"BindingAddress\":\"::1\",\"ContainerPort\":80,\"Family\":23,\"HostPort\":0,\"Protocol\":6,\"VmPort\":20001}],\"Volumes\":[]}},maintainer=Example Maintainers <maintainer@example.com>","LocalVolumes":"0","Mounts":"","Names":"example-web","Networks":"bridge","Platform":{"architecture":"amd64","os":"linux"},"Ports":"127.0.0.1:18080->80/tcp, [::1]:18081->80/tcp","RunningFor":"2 minutes ago","Size":"0B","State":"running","Status":"Up 1 minute"}
+{"Command":"\"/hello\"","CreatedAt":"2024-06-01 11:00:00 -0400 EDT","HealthStatus":"","ID":"222222222222","Image":"hello-world","Labels":"com.microsoft.wsl.container.metadata={\"V1\":{\"Flags\":0,\"InitProcessFlags\":0,\"Ports\":[],\"Volumes\":[]}}","LocalVolumes":"0","Mounts":"","Names":"example-hello","Networks":"bridge","Platform":{"architecture":"amd64","os":"linux"},"Ports":"","RunningFor":"2 minutes ago","Size":"0B","State":"exited","Status":"Exited (0) 1 minute ago"}`,
+                expected: [
+                    {
+                        id: '111111111111',
+                        name: 'example-web',
+                        image: 'nginx',
+                        createdAt: '2024-06-01T16:00:00.000Z',
+                        state: 'running',
+                        status: 'Up 1 minute',
+                        networks: ['bridge'],
+                        ports: [
+                            { hostIp: '127.0.0.1', hostPort: 18080, containerPort: 80, protocol: 'tcp' },
+                            { hostIp: '::1', hostPort: 18081, containerPort: 80, protocol: 'tcp' },
+                        ],
+                        labels: {
+                            'com.microsoft.wsl.container.metadata': '{"V1":{"Flags":8,"InitProcessFlags":0,"Ports":[{"BindingAddress":"127.0.0.1","ContainerPort":80,"Family":2,"HostPort":0,"Protocol":6,"VmPort":20000},{"BindingAddress":"::1","ContainerPort":80,"Family":23,"HostPort":0,"Protocol":6,"VmPort":20001}],"Volumes":[]}}',
+                            maintainer: 'Example Maintainers <maintainer@example.com>',
+                        },
+                    },
+                    {
+                        id: '222222222222',
+                        name: 'example-hello',
+                        image: 'hello-world',
+                        createdAt: '2024-06-01T15:00:00.000Z',
+                        state: 'exited',
+                        status: 'Exited (0) 1 minute ago',
+                        networks: ['bridge'],
+                        ports: [],
+                        labels: {
+                            'com.microsoft.wsl.container.metadata': '{"V1":{"Flags":0,"InitProcessFlags":0,"Ports":[],"Volumes":[]}}',
+                        },
+                    },
+                ],
+            },
+            {
+                name: 'NATS',
+                output: String.raw`{"Command":"\"/nats-server --conf\u2026\"","CreatedAt":"2024-06-01 12:00:00 +0100 BST","HealthStatus":"","ID":"333333333333","Image":"nats","Labels":"com.microsoft.wsl.container.metadata={\"V1\":{\"Flags\":0,\"InitProcessFlags\":0,\"Ports\":[{\"BindingAddress\":\"127.0.0.1\",\"ContainerPort\":4222,\"Family\":2,\"HostPort\":4222,\"Protocol\":6,\"VmPort\":20000}],\"Volumes\":[]}}","LocalVolumes":"0","Mounts":"","Names":"example-server","Networks":"bridge","Platform":{"architecture":"amd64","os":"linux"},"Ports":"127.0.0.1:4222->4222/tcp","RunningFor":"2 minutes ago","Size":"0B","State":"running","Status":"Up 1 minute"}
+{"Command":"\"dotnet Example.Publ\u2026\"","CreatedAt":"2024-06-01 11:00:00 +0100 BST","HealthStatus":"","ID":"444444444444","Image":"example-publisher:latest","Labels":"com.microsoft.wsl.container.metadata={\"V1\":{\"Flags\":0,\"InitProcessFlags\":0,\"Ports\":[],\"Volumes\":[]}}","LocalVolumes":"0","Mounts":"","Names":"example-publisher","Networks":"example-network","Platform":{"architecture":"amd64","os":"linux"},"Ports":"","RunningFor":"2 minutes ago","Size":"0B","State":"exited","Status":"Exited (0) 1 minute ago"}
+{"Command":"\"dotnet Example.Subs\u2026\"","CreatedAt":"2024-06-01 11:00:00 +0100 BST","HealthStatus":"","ID":"555555555555","Image":"example-subscriber:latest","Labels":"com.microsoft.wsl.container.metadata={\"V1\":{\"Flags\":0,\"InitProcessFlags\":0,\"Ports\":[],\"Volumes\":[]}}","LocalVolumes":"0","Mounts":"","Names":"example-subscriber-1","Networks":"example-network","Platform":{"architecture":"amd64","os":"linux"},"Ports":"","RunningFor":"2 minutes ago","Size":"0B","State":"exited","Status":"Exited (0) 1 minute ago"}`,
+                expected: [
+                    {
+                        id: '333333333333',
+                        name: 'example-server',
+                        image: 'nats',
+                        createdAt: '2024-06-01T11:00:00.000Z',
+                        state: 'running',
+                        status: 'Up 1 minute',
+                        networks: ['bridge'],
+                        ports: [{ hostIp: '127.0.0.1', hostPort: 4222, containerPort: 4222, protocol: 'tcp' }],
+                        labels: {
+                            'com.microsoft.wsl.container.metadata': '{"V1":{"Flags":0,"InitProcessFlags":0,"Ports":[{"BindingAddress":"127.0.0.1","ContainerPort":4222,"Family":2,"HostPort":4222,"Protocol":6,"VmPort":20000}],"Volumes":[]}}',
+                        },
+                    },
+                    {
+                        id: '444444444444',
+                        name: 'example-publisher',
+                        image: 'example-publisher:latest',
+                        createdAt: '2024-06-01T10:00:00.000Z',
+                        state: 'exited',
+                        status: 'Exited (0) 1 minute ago',
+                        networks: ['example-network'],
+                        ports: [],
+                        labels: {
+                            'com.microsoft.wsl.container.metadata': '{"V1":{"Flags":0,"InitProcessFlags":0,"Ports":[],"Volumes":[]}}',
+                        },
+                    },
+                    {
+                        id: '555555555555',
+                        name: 'example-subscriber-1',
+                        image: 'example-subscriber:latest',
+                        createdAt: '2024-06-01T10:00:00.000Z',
+                        state: 'exited',
+                        status: 'Exited (0) 1 minute ago',
+                        networks: ['example-network'],
+                        ports: [],
+                        labels: {
+                            'com.microsoft.wsl.container.metadata': '{"V1":{"Flags":0,"InitProcessFlags":0,"Ports":[],"Volumes":[]}}',
+                        },
+                    },
+                ],
+            },
+        ];
+
+        for (const sample of currentSamples) {
+            for (const strict of [true, false]) {
+                for (const framing of ['JSONL', 'array']) {
+                    it(`Parses the WSLC 2.9.12.0 ${sample.name} output (${framing}, strict=${strict})`, async () => {
+                        const response = await client.listContainers({ all: true });
+                        const lines = sample.output.split(/\r?\n/);
+                        const output = framing === 'array' ? `[${lines.join(',')}]` : lines.join('\r\n') + '\r\n';
+                        const items = await response.parse(output, strict);
+
+                        expect(items).to.have.lengthOf(sample.expected.length);
+                        for (const [index, expected] of sample.expected.entries()) {
+                            const { image, createdAt, ...properties } = expected;
+                            expect(items[index]).to.deep.include(properties);
+                            expect(items[index].image.originalName).to.equal(image);
+                            expect(items[index].createdAt.toISOString()).to.equal(createdAt);
+                        }
+                    });
+                }
+            }
+        }
+
+        it('Rejects malformed records in strict mode and skips only those records in non-strict mode', async () => {
+            const response = await client.listContainers({ all: true });
+            for (const invalid of [
+                { Names: 'missing-id' },
+                { ID: 'bad-state', Names: 'bad-state', State: 2 },
+                { Id: 'bad-legacy', Name: 'bad-legacy', CreatedAt: 'not-an-epoch' },
+            ]) {
+                const output = `${currentSamples[0].output}\n${JSON.stringify(invalid)}`;
+                await rejects(async () => response.parse(output, true));
+                const items = await response.parse(output, false);
+                expect(items.map(item => item.id)).to.deep.equal(['111111111111', '222222222222']);
+            }
+        });
+
+        it('Honors strict mode when parsing Docker-style ports', async () => {
+            const response = await client.listContainers({ all: true });
+            const output = JSON.stringify({
+                ID: 'bad-port',
+                Names: 'bad-port',
+                Image: 'nginx',
+                CreatedAt: '2024-06-01 12:00:00 -0400 EDT',
+                Ports: 'not-a-port, 127.0.0.1:8080->80/tcp',
+            });
+
+            await rejects(async () => response.parse(output, true), /Invalid container JSON/);
+            const items = await response.parse(output, false);
+            expect(items).to.have.lengthOf(1);
+            expect(items[0].ports).to.deep.equal([
+                { hostIp: '127.0.0.1', hostPort: 8080, containerPort: 80, protocol: 'tcp' },
+            ]);
         });
     });
 
