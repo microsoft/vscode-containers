@@ -12,7 +12,7 @@ export function registerRuntimeTelemetryHandler(ctx: vscode.ExtensionContext): v
     ctx.subscriptions.push(registerTelemetryHandler(context => {
         const config = vscode.workspace.getConfiguration(configPrefix);
 
-        context.telemetry.properties.containerClient = getContainerClientTelemetryName(config.get<string>('containerClient', ''));
-        context.telemetry.properties.orchestratorClient = getOrchestratorClientTelemetryName(config.get<string>('orchestratorClient', ''));
+        context.telemetry.properties.containerClient = new vscode.TelemetryTrustedValue(getContainerClientTelemetryName(config.get<string>('containerClient', '')));
+        context.telemetry.properties.orchestratorClient = new vscode.TelemetryTrustedValue(getOrchestratorClientTelemetryName(config.get<string>('orchestratorClient', '')));
     }));
 }
