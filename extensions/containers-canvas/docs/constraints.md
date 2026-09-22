@@ -148,3 +148,34 @@ verified.
 
 If you write a comment claiming the code does something protective, check that
 it does.
+
+## Release gates that are not enforced here
+
+Two things cannot be checked by this package's build and must be done by a
+person before it is published.
+
+### The third-party notice has not been through the release pipeline
+
+`NOTICE.html` is generated from the build's esbuild metafiles and covers the 57
+packages that contribute bytes to `bundle/`. That is accurate for what ships and
+it is regenerated on every build, but it is **not** the same artefact the
+repository produces for a release: the root `NOTICE.html` is written by tooling
+outside this repository, as part of a release commit ("Update version, changelog,
+notices for 2.5.2"). Nothing in the repository can run it.
+
+Before publishing, this package's notice needs to go through that pipeline, or
+be accepted as an alternative by whoever owns the release. Building successfully
+is not that acceptance.
+
+### One licence is supplied by override
+
+`@fluentui/react-icons` declares MIT and publishes no licence file, so
+`scripts/generateNotice.mjs` supplies the text from `LICENCE_OVERRIDES`. That
+text was fetched from the package's own repository and compared, not inferred.
+
+It is worth knowing how the first version of that entry was wrong: it used the
+licence `@fluentui/react-components` ships, on the reasonable-sounding assumption
+that a sibling package from the same publisher carries the same terms. It does
+not — that licence adds a clause about fonts and icon assets which upstream does
+not have. The entry looked right, cited a real source, and was wrong. Any future
+override deserves the same suspicion.

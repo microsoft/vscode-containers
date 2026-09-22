@@ -45,32 +45,42 @@ const NOT_SHIPPED = new Set(["esbuild", "@github/copilot-sdk", "@lydell/node-pty
  * identifier at build time. Nothing is added here to silence the build: a package
  * whose licence cannot be established should be dropped instead.
  *
- * Reviewed 2026-09-18.
+ * Reviewed 2026-09-22.
  */
 export const LICENCE_OVERRIDES = {
-    // Declares `"license": "MIT"` in its package.json and publishes only
-    // package.json and README.md -- no licence file. Published by Microsoft from
-    // microsoft/fluentui-system-icons. The text below is the one its sibling
-    // @fluentui/react-components ships for the same copyright holder, including
-    // the assets clause, which is the relevant one here because this package is
-    // icons. Verify against the upstream repository before shipping.
+    // Declares `"license": "MIT"` and publishes only package.json and README.md,
+    // with no licence file. Text below is the LICENSE from its own repository,
+    // microsoft/fluentui-system-icons, fetched and compared rather than inferred.
+    //
+    // An earlier revision used the text @fluentui/react-components ships, on the
+    // assumption that a sibling package from the same publisher would carry the
+    // same licence. It does not: that one adds a clause about fonts and icon
+    // assets which upstream does not have, and its wording differs. Substituting
+    // a neighbour's licence is exactly the kind of plausible-looking error a
+    // notice file should not contain.
     "@fluentui/react-icons": {
-        source: "matches the LICENSE shipped by @fluentui/react-components (same publisher)",
-        text: `@fluentui/react-icons
+        source: "https://github.com/microsoft/fluentui-system-icons/blob/main/LICENSE",
+        text: `MIT License
 
-Copyright (c) Microsoft Corporation
+Copyright (c) 2020 Microsoft Corporation
 
-All rights reserved.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-MIT License
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the ""Software""), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Note: Usage of the fonts and icons referenced in Fluent UI React is subject to the terms listed at https://aka.ms/fluentui-assets-license`,
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`,
     },
 };
 
