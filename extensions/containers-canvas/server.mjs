@@ -158,6 +158,25 @@ export async function startCanvasServer({ sendToChat, log, workingDirectory }) {
         const url = new URL(req.url ?? "/", "http://127.0.0.1");
         const route = url.pathname;
 
+        /*
+         * Set on every response, including the error paths below.
+         *
+         * `nosniff` matters most for the routes that echo container output --
+         * logs and command results are attacker-influenced text, and without it
+         * a browser may content-sniff a response into something executable
+         * regardless of the Content-Type we sent.
+         *
+         * CORP is `same-origin`, the strictest value, and it is verified to
+         * still let the host render the panel: the iframe loads and holds its
+         * SSE stream with this set. Worth stating because it is not obvious --
+         * the panel is framed from a different origin, and under COEP a strict
+         * CORP can block a framed document. This host does not do that today.
+         * If a future one does, the symptom is a panel that never paints and
+         * never opens an SSE connection, and the fix is `cross-origin`.
+         */
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+
         if (fromForeignPage(req)) {
             res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
             res.end("This canvas only serves its own panel.");

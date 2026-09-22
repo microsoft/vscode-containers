@@ -18907,6 +18907,8 @@ async function startCanvasServer({ sendToChat, log, workingDirectory }) {
   async function handle(req, res) {
     const url2 = new URL(req.url ?? "/", "http://127.0.0.1");
     const route = url2.pathname;
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
     if (fromForeignPage(req)) {
       res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
       res.end("This canvas only serves its own panel.");
