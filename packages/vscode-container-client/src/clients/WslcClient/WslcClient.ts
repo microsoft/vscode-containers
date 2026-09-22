@@ -97,8 +97,8 @@ const WslcPruneDeletedRegex = /^(?:Deleted:\s+)?([^\s:]+)\s*$/gm;
  * - File reads use `container exec tar` (wslc can't stream `cp` to stdout) and writes use
  *   `container cp` (there is no top-level `cp`). Reads require `tar` in the container image.
  *
- * wslc's `--format json` output has changed shape twice, so the parsers below accept every
- * generation the extension may encounter (verified against the wslc sources for each tag):
+ * wslc's `--format json` output has changed over time, so the parsers below accept both
+ * native and Docker-style records:
  * - **2.9.5** switched all list verbs from one pretty-printed JSON array to newline-delimited
  *   compact objects. The records themselves were unchanged, and `parseInspectJson` accepts either
  *   framing, so this alone needs no special handling.
@@ -106,8 +106,8 @@ const WslcPruneDeletedRegex = /^(?:Deleted:\s+)?([^\s:]+)\s*$/gm;
  *   all-string ones, moved `volume`/`network prune` to Docker's header-plus-bare-name form, and
  *   added `Scope` to volume `inspect`.
  * - **2.9.9** did the same for `volume list`.
- *
- * `list` (containers) has kept its native record throughout.
+ * - **2.9.12.0** emits Docker-style records for `list` (containers), whereas older releases
+ *   used native records.
  */
 export class WslcClient extends DockerClientBase {
     /**
@@ -318,7 +318,7 @@ export class WslcClient extends DockerClientBase {
         // object (2.9.4 and earlier), so the inspect-style parser is used here rather than the
         // base's per-line parser.
         return this.parseInspectJson(output, strict, (item) =>
-            normalizeWslcListContainerRecord(WslcListContainerRecordSchema.parse(item)));
+            normalizeWslcListContainerRecord(WslcListContainerRecordSchema.parse(item), strict));
     }
 
     protected override getRemoveContainersCommandArgs(options: RemoveContainersCommandOptions): CommandLineArgs {
@@ -554,4 +554,3 @@ export class WslcClient extends DockerClientBase {
 
     //#endregion
 }
-
