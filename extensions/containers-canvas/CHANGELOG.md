@@ -5,7 +5,7 @@ All notable changes to this plugin are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] — 2026-09-15
+## [1.0.0] — 2026-09-22
 
 First release. Packaged as an Agent Plugins 1.0 plugin that ships a Copilot
 canvas extension under `com.github.copilot/extensions/`.
@@ -34,8 +34,17 @@ canvas extension under `com.github.copilot/extensions/`.
 - **Run image** — start a container from an image with validated ports,
   environment, labels, mounts, network, restart policy and resource limits.
 - **Pull and tag** images from the panel.
+- **Live daemon tracking** — the panel follows `docker events`, so changes made
+  anywhere (another terminal, an IDE, a compose run) appear without a refresh.
+  A 10-second poll compares containers only and acts as a safety net for what a
+  stream cannot report: a dropped connection, a daemon restart, a machine
+  resuming from sleep. An idle machine produces no work.
 - Agent actions for all of the above, so Copilot can drive the panel and the
   user sees everything it does.
+- A **router skill**, so container questions reliably open the panel rather than
+  producing pasted command output, and land on the view that answers them.
+- A **plugin catalog** (`.github/plugin/marketplace.json`) so the plugin
+  installs by name without the deprecated direct-install path.
 
 ### Security
 
@@ -44,11 +53,16 @@ canvas extension under `com.github.copilot/extensions/`.
   cross-origin request must be preflighted, and the terminal WebSocket is
   checked at the upgrade. Local processes are not authenticated: one that can
   reach the panel's port can generally reach the container runtime directly.
+- Every response carries `X-Content-Type-Options: nosniff` and
+  `Cross-Origin-Resource-Policy: same-origin`, including error responses.
+  `nosniff` matters most on the routes that echo container output.
 - `docker run` refuses to bind-mount drive roots, system directories or the
   runtime socket.
 - Running a command in a privileged container, or one mounting the runtime
   socket, requires an explicit acknowledgement, because such a container is
-  effectively the host.
+  effectively the host. Opening an interactive terminal in one is allowed — the
+  person chose that container — but the panel says plainly that the shell is not
+  isolated from the machine.
 - Bulk pruning is not exposed, to the agent or the panel.
 
 ### Known limitations
@@ -59,5 +73,6 @@ canvas extension under `com.github.copilot/extensions/`.
 - Only tested on Windows.
 - Compose containers managed by Docker Desktop report empty labels, so an
   explanation handed to Copilot can say `Labels: {}`.
-- Files copied out of a container accumulate in `.copilot-containers/` in the
-  session working directory and are not cleaned up automatically.
+- Changes made outside the panel appear within a few seconds rather than
+  instantly, and a change the event stream misses entirely waits for the next
+  10-second poll.
