@@ -71,12 +71,49 @@ opening a folder does not make the panel reload itself.
 
 ## Install
 
+Three routes, all currently supported. Nothing here replaces anything — pick
+whichever fits.
+
+**From this repository's catalog** (preferred; the only one that is not
+deprecated):
+
 ```
-copilot plugins install containers@awesome-copilot
+copilot plugin marketplace add microsoft/vscode-containers
+copilot plugin install containers@vscode-containers
 ```
 
-Then start a new Copilot session — plugin-provided extensions are discovered at
-session start, not by reloading extensions.
+`marketplace add` reads the catalog from the repository's default branch, so
+this works once the plugin has landed on `main`. Before then, point it at a
+local clone instead — a local path is read from the working tree, so it follows
+whatever branch you have checked out:
+
+```
+copilot plugin marketplace add <path to your clone>
+copilot plugin marketplace update vscode-containers   # after switching branches
+```
+
+A local-path install loads the plugin live from the clone rather than copying
+it, so edits take effect on the next session.
+
+**Directly from a folder or URL**, which still works but prints a deprecation
+warning — the CLI intends to support only `plugin@marketplace` in future:
+
+```
+copilot plugin install <path to a copy of extensions/containers-canvas>
+```
+
+Copy the folder out of the git working tree first. Installing from a path
+inside a checkout fails with `Access is denied (os error 5)`.
+
+**From the public catalog** — not yet available. Listing in `awesome-copilot`
+requires the plugin to be on `main` and tagged:
+
+```
+copilot plugin install containers@awesome-copilot
+```
+
+Whichever route you use, start a new Copilot session afterwards — plugin
+extensions are discovered at session start, not by reloading extensions.
 
 ### Optional: the interactive terminal
 

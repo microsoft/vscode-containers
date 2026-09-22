@@ -1,0 +1,33 @@
+{
+  "name": "vscode-containers",
+  "metadata": {
+    "description": "Copilot plugins published from the Container Tools repository.",
+    "version": "0.1.0"
+  },
+  "owner": {
+    "name": "Microsoft",
+    "url": "https://github.com/microsoft/vscode-containers"
+  },
+  "plugins": [
+    {
+      "name": "containers",
+      "description": "Browse and operate local Docker containers and images in a rich Copilot canvas: sortable lists, live log streaming, CPU and memory charts, a filesystem browser, an image layer size breakdown, Dockerfile provenance, and an interactive terminal.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Microsoft",
+        "url": "https://github.com/microsoft"
+      },
+      "repository": "https://github.com/microsoft/vscode-containers",
+      "homepage": "https://github.com/microsoft/vscode-containers/blob/main/extensions/containers-canvas/README.md",
+      "license": "MIT",
+      "keywords": [
+        "docker",
+        "containers",
+        "canvas",
+        "logs",
+        "devops"
+      ],
+      "source": "./extensions/containers-canvas"
+    }
+  ]
+}
