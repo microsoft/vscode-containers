@@ -18651,7 +18651,7 @@ function createRpcBridge({ onState, sendToChat, workingDirectory } = {}) {
       return reconciling;
     }
     reconciling = (async () => {
-      let latest = state;
+      let latest;
       do {
         missedChange = false;
         const full = needsFullReload || !state;
@@ -18885,7 +18885,7 @@ function normalizeSample(raw) {
     pids: Number(raw.PIDs) || 0
   };
 }
-async function startCanvasServer({ instanceId, sendToChat, log, workingDirectory }) {
+async function startCanvasServer({ sendToChat, log, workingDirectory }) {
   const bridge = createRpcBridge({ sendToChat, workingDirectory });
   let pendingFocus = null;
   let selfOrigin = null;

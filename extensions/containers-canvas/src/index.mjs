@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // The single bundled entry point for the extension host.
 //
 // Everything the extension needs at runtime is reachable from here, so the

@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Extension: containers-canvas
 //
 // The same containers canvas, rendered with React + Fluent UI instead of hand
@@ -82,7 +83,6 @@ const canvas = createCanvas({
         let instance = instances.get(ctx.instanceId);
         if (!instance) {
             instance = await startCanvasServer({
-                instanceId: ctx.instanceId,
                 sendToChat,
                 log,
                 // Anchors files copied out of containers. `scope: "repo"` in the

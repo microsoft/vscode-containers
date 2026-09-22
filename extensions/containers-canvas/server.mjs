@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Per-instance loopback HTTP server for the Fluent containers canvas.
 //
 // The canvas has no `postMessage` channel to the extension host, so this server
@@ -89,7 +90,7 @@ function normalizeSample(raw) {
     };
 }
 
-export async function startCanvasServer({ instanceId, sendToChat, log, workingDirectory }) {
+export async function startCanvasServer({ sendToChat, log, workingDirectory }) {
     const bridge = createRpcBridge({ sendToChat, workingDirectory });
     // The most recent deep-link, replayed to each new stream. Reopening the
     // canvas with a different target overwrites it, so a reconnecting iframe

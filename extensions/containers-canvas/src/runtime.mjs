@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Container runtime adapter: detects docker or podman on PATH and exposes a
 // normalized view of containers and images.
 //
@@ -646,6 +647,7 @@ export async function followStats(id, { onSample, onEnd } = {}) {
         // `docker stats` redraws using ANSI cursor codes when attached to a
         // TTY; it should not here, but strip them so a stray escape can never
         // corrupt a JSON line.
+        // eslint-disable-next-line no-control-regex -- matching ANSI escapes requires the escape character itself
         carry += chunk.toString("utf8").replace(/\u001b\[[0-9;]*[A-Za-z]/g, "");
         let cut;
         while ((cut = carry.indexOf("\n")) !== -1) {

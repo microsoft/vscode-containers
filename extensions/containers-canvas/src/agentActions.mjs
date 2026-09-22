@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Agent actions, derived from the tRPC router.
 //
 // The panel and the agent should not be two implementations of the same API.

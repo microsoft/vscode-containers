@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Canvas theme -> Fluent theme.
 //
 // The Copilot canvas host publishes GitHub's design tokens as CSS variables on

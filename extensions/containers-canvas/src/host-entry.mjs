@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Host bundle entry point. Everything VS Code-shaped is contained here.
 
 import { attachTrpc } from "@microsoft/vscode-ext-webview/host";
@@ -87,7 +88,7 @@ export function createRpcBridge({ onState, sendToChat, workingDirectory } = {}) 
             return reconciling;
         }
         reconciling = (async () => {
-            let latest = state;
+            let latest;
             do {
                 missedChange = false;
                 const full = needsFullReload || !state;

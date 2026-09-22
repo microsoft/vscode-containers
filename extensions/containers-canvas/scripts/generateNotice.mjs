@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Generates this package's third-party NOTICE from what the build actually bundled.
 //
 // The repository's root NOTICE.html is produced by release tooling and covers the

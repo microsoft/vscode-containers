@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Tests for the code that stands between untrusted input and somewhere it
 // matters: text handed to the model, and the token that gates the panel's own
 // endpoints.

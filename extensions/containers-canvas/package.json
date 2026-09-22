@@ -19,7 +19,7 @@
   "scripts": {
     "build": "node build.mjs",
     "package": "node scripts/verifyBundle.mjs",
-    "lint": "",
+    "lint": "eslint --max-warnings 0",
     "test": "node --test src/*.test.mjs scripts/*.test.mjs",
     "clean": "node ../../scripts/clean.mjs"
   },

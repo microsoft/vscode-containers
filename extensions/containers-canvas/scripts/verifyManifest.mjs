@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Checks that the package.json we ship is one a user can actually install from.
 //
 // This file has two audiences and they want different things. pnpm reads it as a

@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // Image layer explorer.
 //
 // "Why is this image 244 MB?" is a question `docker history` technically
@@ -28,7 +29,7 @@ import {
     shorthands,
     tokens,
 } from "@fluentui/react-components";
-import { ArrowLeftRegular, ArrowSortRegular, CopyRegular } from "@fluentui/react-icons";
+import { ArrowLeftRegular, CopyRegular } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
     head: { display: "flex", alignItems: "center", columnGap: "8px", ...shorthands.padding("12px", "0", "8px") },

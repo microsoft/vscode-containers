@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // The containers canvas, in React + Fluent.
 //
 // Same data and same loopback API as the hand-rolled canvas; the interest is in
@@ -9,7 +10,7 @@
 // sortable columns, roving-tabindex keyboard navigation, selection and ARIA
 // wiring that the other canvas had to be taught by hand.
 
-import { StrictMode, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { StrictMode, lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { connectTrpc } from "@microsoft/vscode-ext-webview/webview";
 import {
@@ -439,6 +440,18 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
                         onClick={() => onTerminal?.(item)}
                     >
                         terminal
+                    </Button>
+                ) : null}
+                {/* The Commands view was previously reachable only through an
+                    agent deep-link: `onExec` was passed in and never called, so
+                    a person had no way to open it. */}
+                {isContainer && item.state === "running" ? (
+                    <Button
+                        size="small"
+                        disabled={Boolean(busy)}
+                        onClick={() => onExec?.(item)}
+                    >
+                        commands
                     </Button>
                 ) : null}
                 <Button

@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // An interactive shell inside a container.
 //
 // xterm.js over a WebSocket to a real PTY, so this behaves like a terminal
