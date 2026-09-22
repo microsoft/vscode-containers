@@ -186,6 +186,12 @@ provenance has no Podman equivalent. Treat it as unverified.
 
 ## Development
 
+**Read [`docs/constraints.md`](docs/constraints.md) before changing the build,
+the packaging layout, the shipped `package.json`, or anything under `bundle/`.**
+It states the portability contract this package has to satisfy and records, with
+its incident and fixing commit, every rule that otherwise looks arbitrary. Most
+of them exist because something shipped broken once.
+
 ```
 cd extensions/containers-canvas
 pnpm install                              # from the repo root
