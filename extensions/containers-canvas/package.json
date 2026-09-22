@@ -18,7 +18,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "package": "",
+    "package": "node scripts/verifyBundle.mjs",
     "lint": "",
     "test": "node --test src/*.test.mjs scripts/*.test.mjs",
     "clean": "node ../../scripts/clean.mjs"

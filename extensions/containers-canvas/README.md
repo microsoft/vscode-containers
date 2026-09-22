@@ -195,6 +195,22 @@ pnpm --filter containers-canvas test      # pure unit tests, no daemon required
 
 `bundle/` is committed so the package installs without a build step. It is not called `dist/` because the extension packaging flow drops a directory by that name as regenerable build output.
 
+Because it is committed, it can go stale — and staleness is invisible. Edit a
+source file, forget to rebuild, and every gate stays green: the unit tests pass
+because they import `src/`, lint passes, and `git status` shows only the source
+as modified. Users installing from that commit run the previous bundle, and the
+repository describes behaviour the shipped code does not have.
+
+`scripts/verifyBundle.mjs` closes that. It runs as the `package` script, which
+the shared CI template runs directly after `build`, and fails if `bundle/` or
+`NOTICE.html` differ from the commit. It reports untracked generated files too,
+which is the more dangerous direction: a chunk that exists locally but was never
+committed is simply missing for everyone else. Outside a git checkout it skips
+rather than fails, since an installed plugin is not a repository.
+
+If it fails locally, you have generated output that is not committed yet —
+commit the rebuilt files.
+
 The webview is code-split rather than emitted as one file. That is not a
 performance choice: the extension installer rejects any file larger than 1 MB,
 and a single bundle came to 1.35 MB — it installed and then failed to load. The
