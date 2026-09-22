@@ -79,6 +79,9 @@ export function TerminalView({ item, onBack }) {
     const [status, setStatus] = useState("connecting");
     const [error, setError] = useState(null);
     const [shell, setShell] = useState(null);
+    // Reasons this container is not meaningfully isolated from the host, sent
+    // with the ready frame. Advisory: the session opens either way.
+    const [risks, setRisks] = useState([]);
 
     const connect = useCallback(() => {
         const term = termRef.current;
@@ -99,7 +102,7 @@ export function TerminalView({ item, onBack }) {
             let frame;
             try { frame = JSON.parse(event.data); } catch { return; }
             if (frame.type === "data") term.write(frame.data);
-            else if (frame.type === "ready") { setStatus("connected"); setShell(frame.shell); }
+            else if (frame.type === "ready") { setStatus("connected"); setShell(frame.shell); setRisks(frame.risks ?? []); }
             else if (frame.type === "error") { setError(frame.message); setStatus("closed"); }
             else if (frame.type === "exit") {
                 setStatus("closed");
@@ -188,6 +191,20 @@ export function TerminalView({ item, onBack }) {
             </div>
 
             {error ? <MessageBar intent="error"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
+
+            {/* Shown when the container is effectively the host. Not a
+                confirmation prompt: the user picked this container, and a
+                terminal in it is a legitimate thing to want. It exists so the
+                panel does not read as a sandbox when it is not one. */}
+            {risks.length > 0 ? (
+                <MessageBar intent="warning">
+                    <MessageBarBody>
+                        <strong>This shell is not isolated from your machine.</strong>{" "}
+                        {`${item.name} is effectively the host because ${risks.join(" and ")}. `}
+                        Commands here can affect the host directly, including files and other containers.
+                    </MessageBarBody>
+                </MessageBar>
+            ) : null}
 
             <div className={styles.surface}>
                 <div className={styles.term} ref={hostRef} />

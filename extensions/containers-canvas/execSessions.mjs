@@ -24,8 +24,19 @@
 //   A shell inside a container is only as isolated as the container. A
 //   privileged container, or one with the docker socket mounted, is equivalent
 //   to host access -- `buildx_buildkit_desktop-linux` on this machine runs
-//   privileged. That is a property of the container, not of this code, and the
-//   UI says so rather than implying a sandbox that does not exist.
+//   privileged. That is a property of the container, not of this code.
+//
+//   The session still opens: a person who chose that container and asked for a
+//   shell in it has a legitimate reason, and refusing would break real use.
+//   What the panel must not do is imply a sandbox that does not exist, so the
+//   server computes `containerHostEscapeRisks` for the target and sends them
+//   with the `ready` frame, and TerminalView renders them as a warning above
+//   the terminal.
+//
+//   This is deliberately weaker than `execCommand`, which refuses outright
+//   unless the caller sets `acknowledgeHostAccess`. That path is driven by the
+//   agent, which may not know what it is asking for; this one is driven by a
+//   person who already picked the container.
 
 /*
  * node-pty is loaded lazily and treated as optional.

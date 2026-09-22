@@ -14,7 +14,7 @@
 // and `assets/nested/` both survived, `dist/` did not.
 
 import { build } from "esbuild";
-import { copyFile, mkdir, readdir, readFile, stat } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, stat } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -28,6 +28,19 @@ const outWebview = join(here, "bundle", "webview");
 // users, so a specifier only pnpm understands is a shipped defect, not a local
 // inconvenience.
 verifyManifest(JSON.parse(await readFile(join(here, "package.json"), "utf8")));
+
+/*
+ * Start from an empty output directory.
+ *
+ * Chunk filenames carry a content hash, so editing a view emits a new file and
+ * leaves the previous one behind. Without this, `bundle/` accumulates orphaned
+ * chunks that nothing imports -- and because the bundle is committed, every one
+ * of them is shipped to users and stays in the repository forever. Noticed when
+ * a change to the terminal produced a second TerminalView chunk beside the
+ * 341 KB one it replaced.
+ */
+await rm(join(here, "bundle"), { recursive: true, force: true });
+await mkdir(outWebview, { recursive: true });
 
 await mkdir(outWebview, { recursive: true });
 

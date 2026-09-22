@@ -439,3 +439,17 @@ test("containerSignatureFrom does not confuse adjacent fields", () => {
     const b = [{ ID: "a", State: "running", Status: "Up\u0000x", Ports: "" }];
     assert.notEqual(__internals.containerSignatureFrom(a), __internals.containerSignatureFrom(b));
 });
+
+test("containerHostEscapeRisks reports nothing for an ordinary container", () => {
+    assert.deepEqual(__internals.hostEscapeRisks({ HostConfig: {} }), []);
+});
+
+test("hostEscapeRisks names every reason, so the warning can list them", () => {
+    // The terminal joins these with "and" into a sentence, so each has to read
+    // as a clause rather than a label.
+    const risks = __internals.hostEscapeRisks({
+        HostConfig: { Privileged: true, Binds: ["/var/run/docker.sock:/var/run/docker.sock"] },
+    });
+    assert.deepEqual(risks, ["it runs privileged", "it mounts the container runtime socket"]);
+    assert.match(`because ${risks.join(" and ")}`, /because it runs privileged and it mounts/);
+});

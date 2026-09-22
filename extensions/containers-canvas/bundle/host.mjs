@@ -17898,6 +17898,10 @@ function hostEscapeRisks(detail) {
   }
   return risks;
 }
+async function containerHostEscapeRisks(id) {
+  const detail = await inspect(id).catch(() => null);
+  return detail ? hostEscapeRisks(detail) : [];
+}
 async function execInContainer(id, argv, options = {}) {
   if (!id) throw new Error("A container id or name is required.");
   if (!Array.isArray(argv) || argv.length === 0) {
@@ -19192,7 +19196,12 @@ async function startCanvasServer({ instanceId, sendToChat, log, workingDirectory
         }
       });
       sessionId = started.id;
-      send({ type: "ready", shell: started.shell, container: target.name });
+      let risks = [];
+      try {
+        risks = await containerHostEscapeRisks(target.id);
+      } catch {
+      }
+      send({ type: "ready", shell: started.shell, container: target.name, risks });
     } catch (error40) {
       send({ type: "error", message: String(error40?.message ?? error40) });
       socket.close();

@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 
 import { createRpcBridge } from "./src/host-entry.mjs";
-import { findTarget, followLogs, followStats, detectRuntime } from "./src/runtime.mjs";
+import { findTarget, followLogs, followStats, detectRuntime, containerHostEscapeRisks } from "./src/runtime.mjs";
 import { createExecSessions } from "./execSessions.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -456,7 +456,24 @@ export async function startCanvasServer({ instanceId, sendToChat, log, workingDi
                 onExit: (code) => { send({ type: "exit", code }); socket.close(); },
             });
             sessionId = started.id;
-            send({ type: "ready", shell: started.shell, container: target.name });
+
+            /*
+             * Tell the panel what this shell actually reaches.
+             *
+             * `execCommand` refuses a privileged container outright unless the
+             * caller acknowledges it, because the agent may not know what it is
+             * asking for. A person who opened a terminal did choose this
+             * container, so refusing would be wrong -- but saying nothing is
+             * worse, because the panel otherwise looks like a sandbox. The
+             * risks are reported and the session proceeds.
+             */
+            let risks = [];
+            try {
+                risks = await containerHostEscapeRisks(target.id);
+            } catch {
+                // Never block a working shell on the advisory check.
+            }
+            send({ type: "ready", shell: started.shell, container: target.name, risks });
         } catch (error) {
             send({ type: "error", message: String(error?.message ?? error) });
             socket.close();

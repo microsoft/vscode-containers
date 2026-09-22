@@ -1327,6 +1327,19 @@ function hostEscapeRisks(detail) {
 }
 
 /**
+ * The same check by container id, for callers that have not already inspected.
+ *
+ * Used by the interactive terminal, which -- unlike `execInContainer` -- reports
+ * the risks rather than refusing, because a person who opened a shell chose the
+ * container deliberately. Returns an empty array when the container cannot be
+ * inspected, so an advisory check can never be what stops a shell from opening.
+ */
+export async function containerHostEscapeRisks(id) {
+    const detail = await inspect(id).catch(() => null);
+    return detail ? hostEscapeRisks(detail) : [];
+}
+
+/**
  * Run a command inside a running container and return its output.
  *
  * @param {string} id           container id or name
