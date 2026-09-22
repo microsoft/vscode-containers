@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { type CommandLineArgs, NoShell } from '@microsoft/vscode-processutils';
-import { rejects } from 'assert';
-import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import { before, describe, it } from 'mocha';
+import * as z from 'zod/mini';
 
 import { WslcClient } from '../../../clients/WslcClient/WslcClient';
 import { CommandNotSupportedError } from '../../../utils/CommandNotSupportedError';
@@ -31,6 +32,10 @@ async function expectRejection(promiseOrFn: Promise<unknown> | (() => Promise<un
 
 describe('(unit) WslcClient', () => {
     const client = new WslcClient();
+
+    before(() => {
+        use(chaiAsPromised);
+    });
 
     it('Has the expected ClientId and default command', () => {
         expect(WslcClient.ClientId).to.equal('com.microsoft.visualstudio.containers.wslc');
@@ -299,7 +304,8 @@ describe('(unit) WslcClient', () => {
                 { Id: 'bad-legacy', Name: 'bad-legacy', CreatedAt: 'not-an-epoch' },
             ]) {
                 const output = `${currentSamples[0].output}\n${JSON.stringify(invalid)}`;
-                await rejects(async () => response.parse(output, true));
+                await expect(Promise.resolve().then(() => response.parse(output, true)))
+                    .to.be.rejectedWith(z.core.$ZodError, /invalid_union/);
                 const items = await response.parse(output, false);
                 expect(items.map(item => item.id)).to.deep.equal(['111111111111', '222222222222']);
             }
@@ -315,7 +321,8 @@ describe('(unit) WslcClient', () => {
                 Ports: 'not-a-port, 127.0.0.1:8080->80/tcp',
             });
 
-            await rejects(async () => response.parse(output, true), /Invalid container JSON/);
+            await expect(Promise.resolve().then(() => response.parse(output, true)))
+                .to.be.rejectedWith(Error, /^Invalid container JSON$/);
             const items = await response.parse(output, false);
             expect(items).to.have.lengthOf(1);
             expect(items[0].ports).to.deep.equal([
