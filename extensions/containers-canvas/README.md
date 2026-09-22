@@ -123,8 +123,13 @@ needs a real PTY:
 
 ```
 cd <installed plugin>
-npm install @lydell/node-pty
+npm install --omit=dev @lydell/node-pty
 ```
+
+`--omit=dev` matters: this package.json is also the workspace build manifest, so
+a plain `npm install` pulls the 13 devDependencies esbuild needs and gets you
+104 packages instead of 2. Those are build-time only and nothing at runtime
+imports them.
 
 Note the path is the plugin root, not the `com.github.copilot/...` directory
 inside it: Node resolves `node_modules` upward from the file doing the import,
@@ -203,6 +208,20 @@ Dependency versions are pinned here rather than taken from the workspace
 users inside the plugin, and `catalog:` is a pnpm protocol that npm cannot
 parse — anyone running `npm install @lydell/node-pty` to enable the terminal
 would hit `EUNSUPPORTEDPROTOCOL`.
+
+That is not a rule anyone has to remember: `scripts/verifyManifest.mjs` runs
+first in the build and fails it if any dependency specifier uses a protocol npm
+cannot resolve. It checks `devDependencies` too, because npm parses every
+dependency field before deciding what to install — `--omit=dev` does *not* save
+a user from a `catalog:` entry it was never going to install.
+
+This one file serving both pnpm and users is the underlying awkwardness. A
+plugin installs from a git ref with no build step, so the source manifest is the
+shipped manifest and there is no artifact to strip dev fields from. The cost is
+the `--omit=dev` footnote above. The full fix is to separate the plugin root
+from the workspace package so the build can emit a minimal runtime manifest;
+that is a layout change, not a tweak, and it would mean re-verifying every
+install route.
 
 `typescript` is declared even though nothing here is TypeScript. `@trpc/server`
 has a required peer of `typescript >=5.7.2`, and without an explicit version

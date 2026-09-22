@@ -14,14 +14,20 @@
 // and `assets/nested/` both survived, `dist/` did not.
 
 import { build } from "esbuild";
-import { copyFile, mkdir, readdir, stat } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, stat } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { generateNotice } from "./scripts/generateNotice.mjs";
+import { verifyManifest } from "./scripts/verifyManifest.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const outWebview = join(here, "bundle", "webview");
+
+// Checked before anything is emitted: this manifest is installed verbatim by
+// users, so a specifier only pnpm understands is a shipped defect, not a local
+// inconvenience.
+verifyManifest(JSON.parse(await readFile(join(here, "package.json"), "utf8")));
 
 await mkdir(outWebview, { recursive: true });
 
