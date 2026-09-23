@@ -197,7 +197,20 @@ cd extensions/containers-canvas
 pnpm install                              # from the repo root
 pnpm --filter containers-canvas build     # produces bundle/
 pnpm --filter containers-canvas test      # pure unit tests, no daemon required
+pnpm --filter containers-canvas verify:panel   # drives the real panel in a browser
 ```
+
+`verify:panel` is the only check that sees the panel render. It starts the
+loopback server in-process, launches headless Edge, and drives the built UI
+against real containers it creates and removes itself — clicking pause and
+asserting the badge and buttons follow, opening a lazily-loaded view and
+asserting its chunk arrives, and checking that a privileged container warns the
+shell is not isolated. Each assertion corresponds to a bug that shipped past
+green unit tests.
+
+It needs Docker and Edge, and exits 0 with an explanation when either is
+missing, so it is safe to run anywhere. It adds no dependencies: the browser is
+driven over the DevTools protocol using the `ws` client the server already uses.
 
 `bundle/` is committed so the package installs without a build step. It is not called `dist/` because the extension packaging flow drops a directory by that name as regenerable build output.
 

@@ -21,7 +21,8 @@
     "package": "node scripts/verifyBundle.mjs",
     "lint": "eslint --max-warnings 0",
     "test": "node --test src/*.test.mjs scripts/*.test.mjs",
-    "clean": "node ../../scripts/clean.mjs"
+    "clean": "node ../../scripts/clean.mjs",
+    "verify:panel": "node scripts/verifyPanel.mjs"
   },
   "optionalDependencies": {
     "@lydell/node-pty": "^1.2.0-beta.15"
