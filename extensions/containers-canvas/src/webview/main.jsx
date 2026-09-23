@@ -19,6 +19,12 @@ import {
     Button,
     Body1,
     Caption1,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
     DataGrid,
     DataGridBody,
     DataGridCell,
@@ -238,18 +244,24 @@ function ViewLoading() {
 
 function opsFor(item) {
     if (item.kind !== "container") return [];
-    if (item.state === "paused") return ["stop", "restart", "unpause"];
-    if (item.state === "running") return ["stop", "restart", "pause"];
-    // `remove` is offered only once the container is stopped. Docker refuses to
-    // remove a running one without `-f`, so showing it alongside Stop would be
-    // the same guaranteed error the paused row above exists to avoid. Force
-    // removal stays an agent-only operation rather than a button that discards
-    // a running container in one click.
+    if (item.state === "paused") return ["stop", "restart", "unpause", "remove"];
+    if (item.state === "running") return ["stop", "restart", "pause", "remove"];
     return ["start", "remove"];
 }
 
-/** Verbs that destroy something and cannot be undone. */
-const DESTRUCTIVE_OPS = new Set(["remove", "forceRemove"]);
+/**
+ * Which removal a container needs in its current state.
+ *
+ * Docker refuses to remove a running or paused container without `-f`, so
+ * offering the plain verb there would be a guaranteed error. Rather than hide
+ * the button until the container is stopped, the confirmation says plainly that
+ * the container is running and will be killed first, and shows the exact
+ * command. Force is a consequence of what is being removed, not a separate
+ * thing to go looking for.
+ */
+function removeOpFor(item) {
+    return item.state === "running" || item.state === "paused" ? "forceRemove" : "remove";
+}
 
 function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTerminal, onLayers, onDockerfile, onExec }) {
     const styles = useStyles();
@@ -386,8 +398,8 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
                         size="small"
                         disabled={Boolean(busy)}
                         icon={opIcon(op)}
-                        onClick={() => (DESTRUCTIVE_OPS.has(op)
-                            ? setConfirming(op)
+                        onClick={() => (op === "remove"
+                            ? setConfirming(removeOpFor(item))
                             : run(op, () => client.containerOp.mutate({ op, id: item.id })))}
                     >
                         {op}
@@ -497,28 +509,53 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
 
             {/* Removing a container discards it and anything written inside it
                 that is not on a volume, and nothing in the panel can undo that.
-                The confirmation names the target, because the detail pane can be
-                opened from a list where the selected row is no longer in view. */}
-            {confirming ? (
-                <div className={styles.actions}>
-                    <Body1>
-                        Remove {item.name ?? item.shortId}? This cannot be undone.
-                    </Body1>                    <Button
-                        size="small"
-                        appearance="primary"
-                        icon={<DeleteRegular />}
-                        disabled={Boolean(busy)}
-                        onClick={() => {
-                            const op = confirming;
-                            setConfirming(null);
-                            run(op, () => client.containerOp.mutate({ op, id: item.id }));
-                        }}
-                    >
-                        Yes, remove
-                    </Button>
-                    <Button size="small" appearance="subtle" onClick={() => setConfirming(null)}>Cancel</Button>
-                </div>
-            ) : null}
+                A modal rather than the inline pattern tagging uses: tagging is
+                recoverable and this is not, so it is worth interrupting for, and
+                `alert` keeps a stray click outside from dismissing it.
+
+                The exact command is shown for the same reason RunImageDialog
+                shows its argv: `-f` on a running container kills it first, and
+                that belongs in front of the user before the click rather than
+                inferred from a verb. */}
+            <Dialog
+                open={Boolean(confirming)}
+                modalType="alert"
+                onOpenChange={(_, data) => { if (!data.open) setConfirming(null); }}
+            >
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>Remove {item.name ?? item.shortId}?</DialogTitle>
+                        <DialogContent>
+                            <Body1>
+                                {confirming === "forceRemove"
+                                    ? `This container is ${item.state}. It will be killed and removed.`
+                                    : "This container will be removed."}
+                                {" "}
+                                Anything written inside it that is not on a volume is lost, and
+                                this cannot be undone.
+                            </Body1>
+                            <pre className={styles.output}>
+                                {`docker rm ${confirming === "forceRemove" ? "-f " : ""}${item.name ?? item.shortId}`}
+                            </pre>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                appearance="primary"
+                                icon={<DeleteRegular />}
+                                disabled={Boolean(busy)}
+                                onClick={() => {
+                                    const op = confirming;
+                                    setConfirming(null);
+                                    run(op, () => client.containerOp.mutate({ op, id: item.id }));
+                                }}
+                            >
+                                Remove container
+                            </Button>
+                            <Button appearance="subtle" onClick={() => setConfirming(null)}>Cancel</Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
 
             {/* Tagging needs one more value than a button can carry, so the
                 input appears in place rather than in a dialog. */}

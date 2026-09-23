@@ -383,11 +383,12 @@ try {
 
     /* 7. Removing a container from the panel.
      *
-     * The backend accepted `remove` from the start and the skill told the agent
-     * it could ask for it, but no control offered it: a stopped container could
-     * only be started. The two assertions are the two halves of the gap — that
-     * the verb is offered at all, and that confirming it actually destroys the
-     * container rather than reporting success from a stale snapshot.
+     * The backend accepted `remove` and `forceRemove` from the start and the
+     * skill told the agent the panel's own controls ask before destroying
+     * anything, but no control offered either: a stopped container could only
+     * be started. Three assertions cover the gap — that the verb is offered,
+     * that confirming it destroys the container, and that a running container
+     * takes the same route rather than erroring on a missing `-f`.
      *
      * The confirmation button is deliberately labelled differently from the
      * verb that opens it. Two controls reading "remove" in one pane are
@@ -422,7 +423,7 @@ try {
         : false;
 
     let gone = false;
-    if (confirmShown && await click(page.evaluate, "yes, remove")) {
+    if (confirmShown && await click(page.evaluate, "remove container")) {
         for (let attempt = 0; attempt < 40; attempt += 1) {
             if (!await containerExists(REMOVABLE)) { gone = true; break; }
             await wait(500);
@@ -434,7 +435,42 @@ try {
         confirmShown ? "" : "the confirmation never appeared",
     );
 
-    /* 8. Nothing the panel asked for came back an error, and nothing threw.
+    /* 8. Force removal of a running container.
+     *
+     * `docker rm` without `-f` fails on a running container, so the panel picks
+     * `forceRemove` from the container's state. The check that matters is that
+     * the confirmation says so — the command shown must carry `-f`, or a person
+     * is agreeing to something milder than what runs.
+     */
+    let forced = false;
+    let saidForce = false;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+        if (await page.evaluate(selectRow(PLAIN))) break;
+        await click(page.evaluate, "back", 5_000);
+        await wait(800);
+    }
+    await wait(1000);
+    if (await click(page.evaluate, "remove")) {
+        saidForce = await until(
+            page.evaluate,
+            `/docker rm -f/.test(document.body.innerText) ? 1 : 0`,
+            "the forced-removal command in the confirmation",
+            10_000,
+        ).catch(() => false);
+        if (saidForce && await click(page.evaluate, "remove container")) {
+            for (let attempt = 0; attempt < 40; attempt += 1) {
+                if (!await containerExists(PLAIN)) { forced = true; break; }
+                await wait(500);
+            }
+        }
+    }
+    record(
+        "a running container is force-removed, and the confirmation says so",
+        Boolean(saidForce && forced),
+        saidForce ? "" : "the confirmation did not show `docker rm -f`",
+    );
+
+    /* 9. Nothing the panel asked for came back an error, and nothing threw.
      *
      * Cancelled requests are reported separately rather than failed on. A
      * browser aborts a request whose result is no longer wanted, which happens
