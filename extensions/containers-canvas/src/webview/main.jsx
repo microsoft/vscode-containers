@@ -52,6 +52,7 @@ import {
     ArrowDownloadRegular,
     TagRegular,
     BoxRegular,
+    DeleteRegular,
     LayerRegular,
     PlayRegular,
     PauseRegular,
@@ -203,6 +204,7 @@ const OP_ICONS = {
     stop: StopRegular,
     restart: ArrowSyncRegular,
     pause: PauseRegular,
+    remove: DeleteRegular,
 };
 
 function opIcon(op) {
@@ -238,8 +240,16 @@ function opsFor(item) {
     if (item.kind !== "container") return [];
     if (item.state === "paused") return ["stop", "restart", "unpause"];
     if (item.state === "running") return ["stop", "restart", "pause"];
-    return ["start"];
+    // `remove` is offered only once the container is stopped. Docker refuses to
+    // remove a running one without `-f`, so showing it alongside Stop would be
+    // the same guaranteed error the paused row above exists to avoid. Force
+    // removal stays an agent-only operation rather than a button that discards
+    // a running container in one click.
+    return ["start", "remove"];
 }
+
+/** Verbs that destroy something and cannot be undone. */
+const DESTRUCTIVE_OPS = new Set(["remove", "forceRemove"]);
 
 function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTerminal, onLayers, onDockerfile, onExec }) {
     const styles = useStyles();
@@ -253,6 +263,15 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
     // image action stays on the image.
     const [tagging, setTagging] = useState(false);
     const [newTag, setNewTag] = useState("");
+    // The destructive verb awaiting confirmation, or null. Inline for the same
+    // reason tagging is: the question stays next to the thing it is about.
+    const [confirming, setConfirming] = useState(null);
+
+    // `Detail` is not keyed by item, so selecting a different row reuses this
+    // component and its state. A confirmation left open would then point at the
+    // newly selected container -- one click from removing something the user
+    // never asked about.
+    useEffect(() => { setConfirming(null); }, [item.id]);
 
     const run = async (label, fn) => {
         setBusy(label);
@@ -367,7 +386,9 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
                         size="small"
                         disabled={Boolean(busy)}
                         icon={opIcon(op)}
-                        onClick={() => run(op, () => client.containerOp.mutate({ op, id: item.id }))}
+                        onClick={() => (DESTRUCTIVE_OPS.has(op)
+                            ? setConfirming(op)
+                            : run(op, () => client.containerOp.mutate({ op, id: item.id })))}
                     >
                         {op}
                     </Button>
@@ -473,6 +494,31 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
                 ) : null}
                 {busy ? <Spinner size="tiny" label={busy} /> : null}
             </div>
+
+            {/* Removing a container discards it and anything written inside it
+                that is not on a volume, and nothing in the panel can undo that.
+                The confirmation names the target, because the detail pane can be
+                opened from a list where the selected row is no longer in view. */}
+            {confirming ? (
+                <div className={styles.actions}>
+                    <Body1>
+                        Remove {item.name ?? item.shortId}? This cannot be undone.
+                    </Body1>                    <Button
+                        size="small"
+                        appearance="primary"
+                        icon={<DeleteRegular />}
+                        disabled={Boolean(busy)}
+                        onClick={() => {
+                            const op = confirming;
+                            setConfirming(null);
+                            run(op, () => client.containerOp.mutate({ op, id: item.id }));
+                        }}
+                    >
+                        Yes, remove
+                    </Button>
+                    <Button size="small" appearance="subtle" onClick={() => setConfirming(null)}>Cancel</Button>
+                </div>
+            ) : null}
 
             {/* Tagging needs one more value than a button can carry, so the
                 input appears in place rather than in a dialog. */}

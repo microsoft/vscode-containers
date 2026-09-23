@@ -43,6 +43,9 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PLAIN = "canvasverify-plain";
 const PRIVILEGED = "canvasverify-privileged";
+// Created stopped, and destroyed by the Remove button rather than by teardown:
+// the point of the check is that the panel can remove a container at all.
+const REMOVABLE = "canvasverify-removable";
 
 const results = [];
 function record(name, ok, detail) {
@@ -228,6 +231,10 @@ const KEEP_ALIVE = 'trap "exit 0" TERM; while :; do sleep 1; done';
 async function createFixtures() {
     await removeFixtures();
     await exec("docker", ["run", "-d", "--name", PLAIN, "alpine", "sh", "-c", KEEP_ALIVE]);
+    // `create` rather than `run`: `remove` is only offered once a container is
+    // stopped, and a created-but-never-started one is in that state without
+    // having to wait for it to stop.
+    await exec("docker", ["create", "--name", REMOVABLE, "alpine", "sh", "-c", KEEP_ALIVE]);
     let privileged = true;
     try {
         await exec("docker", ["run", "-d", "--name", PRIVILEGED, "--privileged", "alpine", "sh", "-c", KEEP_ALIVE]);
@@ -241,7 +248,13 @@ async function createFixtures() {
 }
 
 async function removeFixtures() {
-    await exec("docker", ["rm", "-f", PLAIN, PRIVILEGED]).catch(() => {});
+    await exec("docker", ["rm", "-f", PLAIN, PRIVILEGED, REMOVABLE]).catch(() => {});
+}
+
+/** Whether the daemon still knows about a container. */
+async function containerExists(name) {
+    const { stdout } = await exec("docker", ["ps", "-a", "--filter", `name=^${name}$`, "--format", "{{.Names}}"]);
+    return stdout.split("\n").map((line) => line.trim()).includes(name);
 }
 
 /* ------------------------------------------------------------------ *
@@ -368,7 +381,60 @@ try {
         record("a privileged container warns that its shell reaches the host", true, "skipped: daemon refused a privileged container");
     }
 
-    /* 7. Nothing the panel asked for came back an error, and nothing threw.
+    /* 7. Removing a container from the panel.
+     *
+     * The backend accepted `remove` from the start and the skill told the agent
+     * it could ask for it, but no control offered it: a stopped container could
+     * only be started. The two assertions are the two halves of the gap — that
+     * the verb is offered at all, and that confirming it actually destroys the
+     * container rather than reporting success from a stale snapshot.
+     *
+     * The confirmation button is deliberately labelled differently from the
+     * verb that opens it. Two controls reading "remove" in one pane are
+     * ambiguous to a person and indistinguishable to this harness.
+     */
+    // Check 6 leaves the terminal sub-view open, which is one level deeper than
+    // the detail pane the other checks return from. Rather than counting clicks
+    // — which silently breaks whenever a check above changes depth — go back
+    // until the row is reachable.
+    let atRemovable = false;
+    for (let attempt = 0; attempt < 4 && !atRemovable; attempt += 1) {
+        atRemovable = Boolean(await page.evaluate(selectRow(REMOVABLE)));
+        if (atRemovable) break;
+        await click(page.evaluate, "back", 5_000);
+        await wait(800);
+    }
+    if (!atRemovable) {
+        await until(page.evaluate, selectRow(REMOVABLE), "the removable container row");
+    }
+    await wait(1000);
+
+    const stopped = JSON.parse(await page.evaluate(DETAIL));
+    record(
+        "a stopped container offers remove",
+        stopped.verbs.includes("remove"),
+        `state=${stopped.state} verbs=${JSON.stringify(stopped.verbs)}`,
+    );
+
+    const askedToRemove = await click(page.evaluate, "remove");
+    const confirmShown = askedToRemove
+        ? await until(page.evaluate, bodyHas("cannot be undone"), "the remove confirmation", 10_000).catch(() => false)
+        : false;
+
+    let gone = false;
+    if (confirmShown && await click(page.evaluate, "yes, remove")) {
+        for (let attempt = 0; attempt < 40; attempt += 1) {
+            if (!await containerExists(REMOVABLE)) { gone = true; break; }
+            await wait(500);
+        }
+    }
+    record(
+        "confirming remove destroys the container",
+        Boolean(confirmShown && gone),
+        confirmShown ? "" : "the confirmation never appeared",
+    );
+
+    /* 8. Nothing the panel asked for came back an error, and nothing threw.
      *
      * Cancelled requests are reported separately rather than failed on. A
      * browser aborts a request whose result is no longer wanted, which happens

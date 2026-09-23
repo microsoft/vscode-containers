@@ -13,7 +13,10 @@ canvas extension under `com.github.copilot/extensions/`.
 ### Added
 
 - **Containers and images list** — sortable, filterable, with lifecycle
-  controls (start, stop, restart, kill, pause, unpause, remove).
+  controls (start, stop, restart, pause, unpause, and remove once a container
+  is stopped). Removal asks for confirmation first. `kill` and force-removal
+  are available to the agent through the canvas actions rather than as buttons,
+  so neither is one click away.
 - **Logs** — live `docker logs --follow` over a dedicated stream, with
   filtering, adjustable tail, bottom-pinning and a "jump to live" control.
 - **Stats** — CPU, memory and network sampled about once a second and drawn as
