@@ -179,6 +179,12 @@ socket, because that is effectively what it is.
 
 - Docker on `PATH`, with a reachable daemon
 - Copilot CLI 1.0.79 or later — plugins can ship canvas extensions from 1.0.79
+- The GitHub Copilot app, for the panel itself
+
+Canvases are a Copilot app feature. The plugin installs on every Copilot client,
+but only the app can show the panel. On a client without canvases — Copilot CLI,
+for example — the bundled skill still handles container questions and answers
+them with `docker` instead. That is expected, not a broken install.
 
 Podman is detected if Docker is absent, and the basics work, but it is not
 supported: several outputs are parsed differently by Podman and image

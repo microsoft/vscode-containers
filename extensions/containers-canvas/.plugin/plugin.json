@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "containers",
   "version": "1.0.0",
-  "description": "Browse and operate local Docker containers and images in a rich Copilot canvas: sortable lists, live log streaming, CPU and memory charts, a filesystem browser, an image layer size breakdown, Dockerfile provenance, and an interactive terminal.",
+  "description": "Browse and operate local Docker containers and images in a rich Copilot canvas: sortable lists, live log streaming, CPU and memory charts, a filesystem browser, an image layer size breakdown, Dockerfile provenance, and an interactive terminal. The panel is a GitHub Copilot app feature; on clients without canvases, such as Copilot CLI, the bundled skill answers the same questions with docker instead.",
   "author": {
     "name": "Microsoft",
     "url": "https://github.com/microsoft"

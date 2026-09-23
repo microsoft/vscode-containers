@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "containers",
-      "description": "Browse and operate local Docker containers and images in a rich Copilot canvas: sortable lists, live log streaming, CPU and memory charts, a filesystem browser, an image layer size breakdown, Dockerfile provenance, and an interactive terminal.",
+      "description": "Browse and operate local Docker containers and images in a rich Copilot canvas: sortable lists, live log streaming, CPU and memory charts, a filesystem browser, an image layer size breakdown, Dockerfile provenance, and an interactive terminal. The panel is a GitHub Copilot app feature; on clients without canvases, such as Copilot CLI, the bundled skill answers the same questions with docker instead.",
       "version": "1.0.0",
       "author": {
         "name": "Microsoft",
