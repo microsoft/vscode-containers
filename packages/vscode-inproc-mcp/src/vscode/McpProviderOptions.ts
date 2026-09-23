@@ -32,6 +32,11 @@ export interface McpProviderOptions {
     registerTools: (server: McpServer) => void | Promise<void>;
 
     /**
+     * Serve MCP over HTTP bound to localhost instead of a private named pipe or Unix socket
+     */
+    useTcpTransport?: boolean;
+
+    /**
      * Optional event that fires when the set of available MCP server definitions changes
      */
     onDidChange?: vscode.Event<void>;

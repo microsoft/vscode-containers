@@ -3,9 +3,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { ServerType } from '@hono/node-server';
 import type { DisposableLike } from '@microsoft/vscode-processutils';
 import * as crypto from 'crypto';
+import { once } from 'events';
 import * as fs from 'fs';
+import type { AddressInfo, ListenOptions } from 'net';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -18,20 +21,18 @@ type SessionTransport = {
     close: () => Promise<void>;
 };
 
-const transports: Record<string, SessionTransport> = {};
-
 /**
- * Starts a new MCP HTTP server instance on a random named pipe (Windows) or Unix socket (Unix).
+ * Starts a new MCP HTTP server instance on loopback TCP, a random named pipe (Windows), or a Unix socket (Unix).
  * @param mcpOptions Options for the MCP server
  * @returns An object containing the disposable to stop and clean up the server, the server URI, and headers
  * that should be attached to all requests
  */
 export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Promise<{ disposable: DisposableLike, serverUri: vscode.Uri, headers: Record<string, string> }> {
     let socketPath: string | undefined;
+    const transports: Record<string, SessionTransport> = {};
 
     try {
         const nonce = crypto.randomUUID();
-        socketPath = getRandomSocketPath();
 
         const [{ Hono }, { createAdaptorServer }] = await Promise.all([
             honoModuleLazy.value,
@@ -39,8 +40,16 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
         ]);
 
         const app = new Hono();
+        let allowedHost = 'localhost';
 
         app.use('/mcp', async (context, next) => {
+            if (mcpOptions.useTcpTransport) {
+                // Protect the server from browser requests and DNS rebinding
+                if (context.req.header('host') !== allowedHost || context.req.header('origin')) {
+                    return new Response('Forbidden', { status: 403 });
+                }
+            }
+
             if (context.req.header('authorization') !== `Nonce ${nonce}`) {
                 return new Response('Unauthorized', { status: 401 });
             }
@@ -48,15 +57,33 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             return await next();
         });
 
-        app.post('/mcp', async (context) => await handlePost(mcpOptions, context.req.raw));
-        app.get('/mcp', async (context) => await handleGetDelete(context.req.raw));
-        app.delete('/mcp', async (context) => await handleGetDelete(context.req.raw));
+        app.post('/mcp', async (context) => await handlePost(mcpOptions, transports, allowedHost, context.req.raw));
+        app.get('/mcp', async (context) => await handleGetDelete(transports, context.req.raw));
+        app.delete('/mcp', async (context) => await handleGetDelete(transports, context.req.raw));
 
         const httpServer = createAdaptorServer({
             fetch: app.fetch,
             overrideGlobalObjects: false,
         });
-        httpServer.listen(socketPath);
+
+        let serverUri: vscode.Uri;
+        if (mcpOptions.useTcpTransport) {
+            await listen(httpServer, { host: '127.0.0.1', port: 0 });
+            allowedHost = getLoopbackAuthority(httpServer.address());
+            serverUri = vscode.Uri.from({
+                scheme: 'http',
+                authority: allowedHost,
+                path: '/mcp',
+            });
+        } else {
+            socketPath = getRandomSocketPath();
+            await listen(httpServer, socketPath);
+            serverUri = vscode.Uri.from({
+                scheme: os.platform() === 'win32' ? 'pipe' : 'unix',
+                path: socketPath,
+                fragment: '/mcp',
+            });
+        }
 
         return {
             disposable: {
@@ -70,17 +97,16 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
                     // Close the Hono server
                     if (httpServer.listening) {
                         httpServer.close();
+                        if ('closeAllConnections' in httpServer) {
+                            httpServer.closeAllConnections();
+                        }
                     }
 
                     // Clean up the socket path
                     tryCleanupSocket(socketPath);
                 }
             },
-            serverUri: vscode.Uri.from({
-                scheme: os.platform() === 'win32' ? 'pipe' : 'unix',
-                path: socketPath,
-                fragment: '/mcp', // The Hono app is configured to serve MCP over the `/mcp` route, and VSCode wants that route in the URI fragment
-            }),
+            serverUri,
             headers: {
                 'Authorization': `Nonce ${nonce}`,
             },
@@ -91,7 +117,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
     }
 }
 
-async function handlePost(mcpOptions: McpProviderOptions, request: Request): Promise<Response> {
+async function handlePost(mcpOptions: McpProviderOptions, transports: Record<string, SessionTransport>, allowedHost: string, request: Request): Promise<Response> {
     const sessionId = getSessionId(request);
     const { isInitializeRequest, McpServer, WebStandardStreamableHTTPServerTransport } = await mcpServerModuleLazy.value;
 
@@ -123,7 +149,7 @@ async function handlePost(mcpOptions: McpProviderOptions, request: Request): Pro
                 delete transports[sessionId];
             },
             enableDnsRebindingProtection: true,
-            allowedHosts: ['localhost'],
+            allowedHosts: [allowedHost],
         });
 
         const server = new McpServer(
@@ -157,7 +183,7 @@ async function handlePost(mcpOptions: McpProviderOptions, request: Request): Pro
     return await transport.handleRequest(request, parsedBody === undefined ? undefined : { parsedBody });
 }
 
-async function handleGetDelete(request: Request): Promise<Response> {
+async function handleGetDelete(transports: Record<string, SessionTransport>, request: Request): Promise<Response> {
     const sessionId = getSessionId(request);
 
     if (!sessionId || !transports[sessionId]) {
@@ -166,6 +192,20 @@ async function handleGetDelete(request: Request): Promise<Response> {
 
     const transport = transports[sessionId];
     return await transport.handleRequest(request);
+}
+
+async function listen(httpServer: ServerType, options: ListenOptions | string): Promise<void> {
+    // Wait for binding because the actual port is unknown until this finishes
+    httpServer.listen(options);
+    await once(httpServer, 'listening');
+}
+
+function getLoopbackAuthority(address: string | AddressInfo | null): string {
+    if (!address || typeof address === 'string') {
+        throw new Error('The loopback HTTP server failed to expose a valid TCP address.');
+    }
+
+    return `127.0.0.1:${address.port}`;
 }
 
 function getRandomSocketPath(): string {
