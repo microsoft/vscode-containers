@@ -89,7 +89,61 @@ CI does not help on its own: it rebuilds into its own workspace and never
 compares the result with what was committed.
 
 *Enforced by `scripts/verifyBundle.mjs`, wired to the `package` script because
-the shared CI template runs it directly after `build`. Fixed in `01fe832b`.*
+the shared CI template runs it directly after `build`. Fixed in `01fe832b`, and
+changed from a byte comparison to an input digest — see below — once CI's
+platform turned out to make the bytes unequal.*
+
+### The bundle is not reproducible across platforms, and that is not a defect
+
+`verifyBundle.mjs` originally proved the committed bundle was current by
+rebuilding it and diffing the bytes. CI runs on `ubuntu-latest`; every committed
+byte was produced on Windows. A Linux build of identical source differs in **14
+of 18 files**, so that check would have failed on every pull request forever.
+
+The cause is not esbuild. pnpm's virtual store directory is named differently on
+Windows, which shortens it:
+
+```
+win    node_modules/.pnpm/@microsoft+vscode-ext-webvi_470e7b0bbbbe9c61ee15e7557c93cfbf/
+linux  node_modules/.pnpm/@microsoft+vscode-ext-webview@0.10.1_@trpc+client@11.18.0_...
+```
+
+esbuild writes those paths into the unminified host bundle as comments — the
+whole 1,560-byte difference in `host.mjs` — and folds them into the `[hash]` of
+every shared webview chunk. Two chunks with byte-identical contents were emitted
+as `chunk-BMJR3RQE.js` and `chunk-PMF66EPL.js`; every file importing them then
+differs too, which is the cascade that reaches 14 files.
+
+The output is nonetheless correct. The Linux-built bundle was served to the
+browser harness and passed 9/9, including the lazy-chunk check that would fail
+first if chunk names were inconsistent. `NOTICE.html` is byte-identical on both.
+
+Two fixes were tried and rejected before settling:
+
+- `minify` on the host build removes the path comments, but leaves the chunk
+  hashes, so the cascade survives.
+- `chunkNames: "chunks/[name]"` removes the hash, and esbuild then fails the
+  build: the three shared vendor chunks all want to be `chunk.js`.
+
+Making the bytes equal would mean pinning pnpm's store layout repository-wide,
+which is a large change to impose on every other package for this one's benefit.
+
+So the check now asks the question worth asking. `scripts/buildInputs.mjs`
+digests the files this package owns — `src/**`, `build.mjs`,
+`generateNotice.mjs`, `package.json` — and the build records it in
+`bundle/build-inputs.json`. Staleness is still caught; the platform no longer
+matters. Line endings are normalised first, or a CRLF checkout would reintroduce
+the same failure. The lockfile is deliberately excluded: including it would make
+any unrelated dependency bump anywhere in the repository demand a rebuild here
+before CI could pass.
+
+`NOTICE.html` keeps its byte comparison, because it is derived from package
+metadata rather than bundled code and was verified to be reproducible.
+
+*Verified by committing the Windows-built bundle into a Linux checkout,
+rebuilding there — chunk names changed, `CodeView-JVLDNWYI` to
+`CodeView-Y6NL3AVD` — and watching `verifyBundle.mjs` pass while `NOTICE.html`
+showed no drift.*
 
 ### The build must start from an empty `bundle/`
 

@@ -15,10 +15,11 @@
 // and `assets/nested/` both survived, `dist/` did not.
 
 import { build } from "esbuild";
-import { copyFile, mkdir, readdir, readFile, rm, stat } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { computeInputDigest, DIGEST_FILE } from "./scripts/buildInputs.mjs";
 import { generateNotice } from "./scripts/generateNotice.mjs";
 import { verifyManifest } from "./scripts/verifyManifest.mjs";
 
@@ -165,5 +166,16 @@ const attributed = await generateNotice({
     outFile: join(here, "NOTICE.html"),
 });
 console.error(`[build] NOTICE.html covers ${attributed.length} third-party packages`);
+
+// Record what this bundle was built from. `verifyBundle.mjs` recomputes the
+// digest to prove the committed output is current -- a check that has to be
+// platform-independent, because the bundle itself is not. See buildInputs.mjs.
+const { digest, fileCount } = await computeInputDigest(here);
+await writeFile(
+    join(here, DIGEST_FILE),
+    `${JSON.stringify({ digest, fileCount }, null, 2)}\n`,
+    "utf8",
+);
+console.error(`[build] input digest ${digest.slice(0, 12)} over ${fileCount} source files`);
 
 console.error("[build] done");
