@@ -128,6 +128,25 @@ the path is inside a git checkout. Copy the folder out first. A plain
 `npm install` in the plugin root also pulls the 13 build-time devDependencies —
 measured at 104 packages against 2 with `--omit=dev`.
 
+### A host without `open_canvas` is not a failure
+
+The skill's recovery steps originally treated every unavailable canvas as a
+broken install. On the CLI that produced a confident, wrong diagnosis: the agent
+answered the question correctly from `docker ps`, then told the user to *"see the
+containers-canvas plugin README for reinstall steps"* when the plugin was
+installed and healthy. The CLI simply has no canvases — `copilot skill list`
+shows this skill under **Plugin skills**, and asking the CLI for `open_canvas`
+returns `NO`.
+
+This matters because the registries that list plugins are not app-only. The
+Awesome Copilot README states its marketplace is *"already registered in the
+Copilot CLI/VS Code"*, so a share of installs will always land on hosts where
+canvases do not exist.
+
+*Fixed in `SKILL.md` by splitting "this host has no canvases" (expected, answer
+with `docker`, say nothing alarming) from "the canvas is registered but failed"
+(retry, then point at the README).*
+
 ## A note on claims in comments
 
 Two comments in this package asserted safeguards that did not exist:

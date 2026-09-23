@@ -67,9 +67,25 @@ Destructive actions — removing containers or images, pruning — are available
 you. Confirm with the user before running one; the panel's own controls ask first
 and yours should too.
 
-## If the canvas does not open
+## Hosts that have no canvases
 
-If `open_canvas` reports the canvas is not registered or unavailable:
+Canvases are a Copilot app feature. Other hosts install this plugin too — the
+CLI, for example — and expose no `open_canvas` tool at all. That is expected, and
+it is not a broken or partial install.
+
+If `open_canvas` is not one of the tools available to you, skip the
+troubleshooting below entirely. Do not suggest reinstalling, do not inspect the
+host's extension status, and do not call `extensions_reload`. Answer the question
+with `docker` instead, using the table above to choose the command: `logs` for
+what a container printed, `stats` for CPU and memory, `inspect` for ports,
+labels, mounts and env, `history` for image layers. Mention the panel only if the
+user asks where it is, and then say it is specific to the Copilot app rather than
+implying something is wrong.
+
+## If the canvas is registered but does not open
+
+This applies only when `open_canvas` exists and reports the canvas is not
+registered or unavailable:
 
 1. Check the host's extension status; the plugin declares the canvas provider, so
    do not bootstrap a second copy from a source folder.
