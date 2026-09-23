@@ -147,6 +147,37 @@ canvases do not exist.
 with `docker`, say nothing alarming) from "the canvas is registered but failed"
 (retry, then point at the README).*
 
+### The `$schema` decides the manifest rules, not the file's location
+
+`plugin.json` declares the Agent Plugins 1.0 `$schema`, so 1.0 rules apply:
+skills are discovered from `skills/` by convention, and component path fields
+like `skills` and `agents` are not manifest fields at all.
+
+The manifest used to sit at `.plugin/plugin.json` — a *legacy* location — while
+declaring the 1.0 schema, and carried a `"skills": ["./skills/containers-canvas/"]`
+field. The CLI is lenient about where it looks, so this loaded, and the field
+looked like it was doing the work. It was not.
+
+A probe settled it. An Agent Plugins 1.0 manifest at `.plugin/`, pointing
+`skills` at `./altskills/`:
+
+| Skill on disk at | Matches the manifest | Loaded |
+| --- | --- | --- |
+| `altskills/` | yes | no |
+| `skills/` | no | yes |
+
+The field is ignored; only the convention is read. Ours worked by coincidence,
+because it named the conventional directory anyway.
+
+Two reasons the location was worth fixing rather than leaving: the point of the
+portable format is that other agent clients can read the plugin, and a client
+implementing the spec looks for `plugin.json` at the root; and the leniency that
+made `.plugin/` work is not something to depend on.
+
+*Fixed by moving the manifest to the plugin root and deleting the dead `skills`
+field. Verified by installing a staged copy — `Installed 1 skill` — and by
+`verify:panel`, 9/9.*
+
 ## A note on claims in comments
 
 Two comments in this package asserted safeguards that did not exist:
