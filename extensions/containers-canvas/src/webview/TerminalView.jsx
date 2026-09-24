@@ -96,6 +96,15 @@ export function TerminalView({ item, onBack }) {
         const url = panelUrl("./exec", { id: item.id, cols: term.cols, rows: term.rows });
         url.protocol = url.protocol.replace("http", "ws");
 
+        // Close whatever is already there before replacing the ref. Reconnect
+        // can be pressed while the previous socket is still connecting, and
+        // overwriting the ref orphaned it: the server had already begun
+        // starting a PTY that nothing on this side could reach or shut down.
+        const previous = socketRef.current;
+        if (previous && previous.readyState <= WebSocket.OPEN) {
+            try { previous.close(); } catch { /* already gone */ }
+        }
+
         const socket = new WebSocket(url);
         socketRef.current = socket;
 

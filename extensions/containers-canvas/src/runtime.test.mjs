@@ -24,6 +24,7 @@ const {
     parseJsonLines,
     assertImageRef,
     assertSafeMount,
+    extractionBasename,
     hostEscapeRisks,
     parseInstruction,
     formatPorts,
@@ -241,6 +242,57 @@ test("assertSafeMount requires a path at all", () => {
     assert.throws(() => assertSafeMount(""), /needs a host path/);
 });
 
+test("assertSafeMount refuses a path that climbs into a blocked directory", () => {
+    // Every deny-list pattern anchors on the start of the path, so a mount that
+    // reaches a system directory by climbing named the same place while
+    // matching none of them.
+    for (const bad of [
+        "/tmp/../etc",
+        "/home/me/../../etc/shadow",
+        "C:\\Users\\me\\..\\..\\Windows",
+        "/var/lib/../run/docker.sock",
+    ]) {
+        assert.throws(() => assertSafeMount(bad), /contains a "\.\." segment/, bad);
+    }
+});
+
+test("assertSafeMount refuses a blocked path hidden behind doubled separators", () => {
+    // "//etc" and "/etc" are the same directory to Docker, but only the second
+    // matched a rule anchored on one leading separator.
+    for (const bad of ["//etc/passwd", "///usr//bin", "C:\\\\Windows\\system32"]) {
+        assert.throws(() => assertSafeMount(bad), /Refusing to bind-mount/, bad);
+    }
+});
+
+test("assertSafeMount still allows an ordinary UNC share", () => {
+    // The named-pipe rule depends on the leading double backslash, so
+    // collapsing separators must leave a UNC prefix alone.
+    assert.doesNotThrow(() => assertSafeMount("\\\\fileserver\\team\\project"));
+    assert.throws(() => assertSafeMount("\\\\.\\pipe\\docker_engine"), /Refusing to bind-mount/);
+});
+
+/* ---------------------------------------------------------------- *
+ * Extraction paths
+ * ---------------------------------------------------------------- */
+
+test("extractionBasename refuses a target that would escape its folder", () => {
+    // `path.basename("/..")` is "..", and joining that onto the container's
+    // folder resolves to the shared extraction directory -- which the caller
+    // then removes recursively when the copy turns out to be a directory.
+    for (const bad of ["/..", "/a/..", "..", "/../..", "."]) {
+        assert.throws(() => extractionBasename(bad), /does not name a file/, bad);
+    }
+});
+
+test("extractionBasename treats a backslash as part of the filename", () => {
+    // The target is a path inside a Linux container, where a backslash is an
+    // ordinary character. Letting Windows semantics split on it would both
+    // truncate the name and, once joined again, allow climbing.
+    assert.throws(() => extractionBasename("/tmp/a\\..\\..\\evil"), /does not name a file/);
+    assert.equal(extractionBasename("/var/log/app.log"), "app.log");
+    assert.equal(extractionBasename("/"), "file");
+});
+
 /* ---------------------------------------------------------------- *
  * Host-escape detection
  * ---------------------------------------------------------------- */
@@ -268,6 +320,20 @@ test("hostEscapeRisks flags a mounted runtime socket in either form", () => {
 test("hostEscapeRisks flags elevated capabilities", () => {
     const risks = hostEscapeRisks({ HostConfig: { CapAdd: ["SYS_ADMIN"] } });
     assert.ok(risks.some((r) => /elevated capabilities/.test(r)));
+});
+
+test("hostEscapeRisks flags CAP_ALL, however it is spelled", () => {
+    // `--cap-add ALL` includes SYS_ADMIN, so the broadest possible grant was
+    // the one a list of individual capability names missed.
+    for (const caps of [["ALL"], ["CAP_ALL"], ["cap_all"], ["NET_BIND_SERVICE", "ALL"]]) {
+        const risks = hostEscapeRisks({ HostConfig: { CapAdd: caps } });
+        assert.ok(risks.some((r) => /elevated capabilities/.test(r)), caps.join(","));
+    }
+    assert.equal(hostEscapeRisks({ HostConfig: { CapAdd: ["CAP_SYS_PTRACE"] } }).length, 1);
+});
+
+test("hostEscapeRisks leaves ordinary capabilities alone", () => {
+    assert.deepEqual(hostEscapeRisks({ HostConfig: { CapAdd: ["NET_BIND_SERVICE", "CHOWN"] } }), []);
 });
 
 test("hostEscapeRisks flags shared host namespaces", () => {

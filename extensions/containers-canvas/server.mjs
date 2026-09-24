@@ -467,6 +467,22 @@ export async function startCanvasServer({ sendToChat, log, workingDirectory }) {
         }
 
         let sessionId = null;
+        // Ownership is claimed before the await, not after. `execs.start` probes
+        // the container for a usable shell and then spawns a PTY, which takes
+        // long enough for a panel to navigate away mid-flight. With the handlers
+        // registered afterwards, that close fired while nothing was listening,
+        // and the PTY that arrived a moment later was never reachable or killed.
+        let socketClosed = false;
+        const done = () => {
+            socketClosed = true;
+            if (sessionId) {
+                execs.kill(sessionId);
+                sessionId = null;
+            }
+        };
+        socket.on("close", done);
+        socket.on("error", done);
+
         try {
             const started = await execs.start({
                 containerId: target.id,
@@ -476,6 +492,14 @@ export async function startCanvasServer({ sendToChat, log, workingDirectory }) {
                 onExit: (code) => { send({ type: "exit", code }); socket.close(); },
             });
             sessionId = started.id;
+
+            // The close may have already happened while the shell was starting,
+            // in which case `done` ran with no session to kill.
+            if (socketClosed) {
+                execs.kill(sessionId);
+                sessionId = null;
+                return;
+            }
 
             /*
              * Tell the panel what this shell actually reaches.
@@ -509,10 +533,6 @@ export async function startCanvasServer({ sendToChat, log, workingDirectory }) {
                 execs.resize(sessionId, frame.cols, frame.rows);
             }
         });
-
-        const done = () => { if (sessionId) execs.kill(sessionId); };
-        socket.on("close", done);
-        socket.on("error", done);
     });
 
     const port = server.address().port;

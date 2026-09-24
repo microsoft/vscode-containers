@@ -35,7 +35,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { computeInputDigest, DIGEST_FILE } from "./buildInputs.mjs";
+import { computeInputDigest, computeOutputInventory, DIGEST_FILE } from "./buildInputs.mjs";
 
 const exec = promisify(execFile);
 const here = dirname(fileURLToPath(import.meta.url));
@@ -56,7 +56,10 @@ const REBUILD_HINT =
  */
 async function driftIn(paths) {
     const { stdout } = await exec("git", ["status", "--porcelain", "--", ...paths], { cwd: packageRoot });
-    return stdout.split("\n").map((line) => line.trim()).filter(Boolean);
+    // Trailing whitespace only. The two leading characters are the index and
+    // worktree status columns, and trimming them away loses the difference
+    // between "staged for deletion" and "missing from disk".
+    return stdout.split("\n").filter((line) => line.trim().length > 0).map((line) => line.replace(/\s+$/, ""));
 }
 
 async function insideGitRepository() {
@@ -91,7 +94,47 @@ if (recorded.digest !== digest) {
     process.exit(1);
 }
 
-// 2. Is the notice current? Unlike the bundle, this one is reproducible.
+// 2. Is the bundle it describes still on disk, and unaltered?
+//
+// The digest above proves the bundle was built from this source. It says
+// nothing about whether the bundle still exists: deleting
+// `bundle/webview/main.js` left the digest untouched and this check green while
+// the installed plugin was broken.
+const recordedOutputs = Array.isArray(recorded.outputs) ? recorded.outputs : null;
+if (!recordedOutputs) {
+    console.error(
+        `\n[verify] ${DIGEST_FILE.split(/[\\/]/).join("/")} has no output inventory, so a missing or ` +
+        `hand-edited bundle file cannot be detected.\n\n${REBUILD_HINT}`,
+    );
+    process.exit(1);
+}
+
+const actualOutputs = await computeOutputInventory(packageRoot);
+const actualByPath = new Map(actualOutputs.map((entry) => [entry.path, entry.hash]));
+const missing = recordedOutputs.filter((entry) => !actualByPath.has(entry.path));
+const altered = recordedOutputs.filter((entry) => {
+    const hash = actualByPath.get(entry.path);
+    return hash !== undefined && hash !== entry.hash;
+});
+const unrecorded = actualOutputs.filter(
+    (entry) => !recordedOutputs.some((recordedEntry) => recordedEntry.path === entry.path),
+);
+
+if (missing.length > 0 || altered.length > 0 || unrecorded.length > 0) {
+    const describe = (label, entries) => (entries.length > 0
+        ? `\n  ${label}:\n${entries.map((entry) => `    ${entry.path}`).join("\n")}`
+        : "");
+    console.error(
+        "\n[verify] the committed bundle does not match what the build recorded:" +
+        describe("missing", missing) +
+        describe("changed since the build", altered) +
+        describe("present but not recorded", unrecorded) +
+        `\n\n${REBUILD_HINT}`,
+    );
+    process.exit(1);
+}
+
+// 3. Is the notice current, and is every generated file actually committed?
 if (await insideGitRepository()) {
     const drift = await driftIn(["NOTICE.html"]);
     if (drift.length > 0) {
@@ -101,10 +144,39 @@ if (await insideGitRepository()) {
         );
         process.exit(1);
     }
+
+    /*
+     * Only worktree deletions and untracked files are failures here.
+     *
+     * A *modified* bundle file is expected on a machine whose pnpm store paths
+     * differ from the one that committed it — see buildInputs.mjs — and failing
+     * on that is the trap this check was rewritten to avoid. A *staged*
+     * deletion is likewise fine: a rebuild renames content-hashed chunks, so
+     * removing the old name is what a correct commit looks like.
+     *
+     * The two that matter are a file git still tracks but that is no longer on
+     * disk, and a file on disk that was never committed. Either means someone
+     * installing from this commit gets a bundle with a hole in it, and neither
+     * depends on the platform.
+     */
+    const bundleDrift = await driftIn(["bundle"]);
+    const gone = bundleDrift.filter((entry) => entry[1] === "D");
+    const uncommitted = bundleDrift.filter((entry) => entry.startsWith("??"));
+    if (gone.length > 0 || uncommitted.length > 0) {
+        console.error(
+            "\n[verify] the committed bundle is incomplete:\n" +
+            [...gone, ...uncommitted].map((entry) => `  ${entry}`).join("\n") +
+            `\n\n${REBUILD_HINT}`,
+        );
+        process.exit(1);
+    }
 } else {
     // An installed plugin is not a git checkout. Verifying there is meaningless
     // rather than failing, so say why and carry on.
-    console.error("[verify] not a git checkout; skipping the NOTICE.html comparison");
+    console.error("[verify] not a git checkout; skipping the committed-file comparison");
 }
 
-console.error(`[verify] bundle matches source (digest ${digest.slice(0, 12)}, ${fileCount} files); NOTICE.html current`);
+console.error(
+    `[verify] bundle matches source (digest ${digest.slice(0, 12)}, ${fileCount} files), ` +
+    `${recordedOutputs.length} outputs present; NOTICE.html current`,
+);

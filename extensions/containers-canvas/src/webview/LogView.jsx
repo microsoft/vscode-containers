@@ -132,11 +132,28 @@ export function LogView({ item, client, onBack, onNotify }) {
         let carry = "";
         const source = new EventSource(panelHref("./logs", { id: item.id, tail }));
 
+        const append = (ready) => setText((previous) => {
+            const merged = previous ? `${previous}\n${ready}` : ready;
+            const lines = merged.split("\n");
+            return lines.length > MAX_LINES ? lines.slice(-MAX_LINES).join("\n") : merged;
+        });
+
+        /** Emit whatever is held back, for a last line that never got a newline. */
+        const flush = () => {
+            if (!carry) return;
+            const ready = carry;
+            carry = "";
+            append(ready);
+        };
+
         source.addEventListener("message", (event) => {
             let frame;
             try { frame = JSON.parse(event.data); } catch { return; }
             if (frame.type === "error") { setStreamError(frame.message); return; }
-            if (frame.type === "end") { setFollowing(false); return; }
+            // A container that exits without a trailing newline leaves its last
+            // line in `carry`. Stopping the stream without flushing dropped it,
+            // which is exactly the line someone following logs is waiting for.
+            if (frame.type === "end") { flush(); setFollowing(false); return; }
             if (frame.type !== "log") return;
 
             carry += frame.chunk;
@@ -144,16 +161,13 @@ export function LogView({ item, client, onBack, onNotify }) {
             if (cut === -1) return;
             const ready = carry.slice(0, cut);
             carry = carry.slice(cut + 1);
-            setText((previous) => {
-                const merged = previous ? `${previous}\n${ready}` : ready;
-                const lines = merged.split("\n");
-                return lines.length > MAX_LINES ? lines.slice(-MAX_LINES).join("\n") : merged;
-            });
+            append(ready);
         });
 
         source.addEventListener("error", () => {
             // EventSource retries on its own; a container that stops mid-follow
             // would otherwise reconnect forever against a dead stream.
+            flush();
             setStreamError("Log stream disconnected.");
             setFollowing(false);
         });

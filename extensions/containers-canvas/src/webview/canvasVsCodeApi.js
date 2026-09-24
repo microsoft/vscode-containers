@@ -81,11 +81,17 @@ export function createCanvasVsCodeApi(onState = () => {}, onControl = () => {}) 
 
     return {
         postMessage(message) {
+            // Fire and forget, but not unhandled. This shim exists to notice the
+            // loopback server going away, and that is precisely when the POST
+            // rejects — so without a catch the failure it is watching for
+            // surfaces as an unhandled rejection instead. The SSE stream's own
+            // error handling is what reports the disconnection; here the
+            // rejection only needs to be swallowed deliberately.
             void fetch(panelHref("./rpc"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(message),
-            });
+            }).catch(() => { /* reported through the connection state, not here */ });
         },
         dispose() {
             source.close();

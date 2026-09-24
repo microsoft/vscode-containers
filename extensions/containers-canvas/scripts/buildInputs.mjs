@@ -88,3 +88,37 @@ export async function computeInputDigest(packageRoot = join(here, "..")) {
     }
     return { digest: digest.digest("hex"), fileCount: entries.length };
 }
+
+/**
+ * Every file the build emitted, with its hash.
+ *
+ * The input digest alone says the bundle was built from this source; it says
+ * nothing about whether the bundle is still *there*. Deleting
+ * `bundle/webview/main.js` left the digest untouched and `package` green while
+ * the installed plugin was broken. Recording the outputs closes that: the check
+ * can then notice a file that has gone missing or been edited by hand.
+ *
+ * Hashed as bytes rather than normalised text, because these are build
+ * artifacts that no checkout should be rewriting.
+ */
+export async function computeOutputInventory(packageRoot = join(here, "..")) {
+    const files = [];
+    for await (const file of walk(join(packageRoot, "bundle"))) {
+        if (relative(packageRoot, file).split(/[\\/]/).join("/") === DIGEST_FILE_POSIX) continue;
+        files.push(file);
+    }
+
+    const entries = await Promise.all(files.map(async (file) => {
+        const bytes = await readFile(file);
+        return {
+            path: relative(packageRoot, file).split(/[\\/]/).join("/"),
+            hash: createHash("sha256").update(bytes).digest("hex"),
+        };
+    }));
+
+    entries.sort((a, b) => a.path.localeCompare(b.path, "en"));
+    return entries;
+}
+
+/** The digest file itself, which cannot describe its own contents. */
+const DIGEST_FILE_POSIX = "bundle/build-inputs.json";

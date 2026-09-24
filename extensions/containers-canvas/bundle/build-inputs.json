@@ -1,4 +1,74 @@
 {
-  "digest": "19bb8a799a1983869728a8691f91263f6fb88743c797661836a027d81b9e9ca5",
-  "fileCount": 27
+  "digest": "f7b0bb816a53f93f8350e2d1409382b2ca090b62ff37c4c80e87ef83ab8e6ee5",
+  "fileCount": 27,
+  "outputs": [
+    {
+      "path": "bundle/host.mjs",
+      "hash": "6024c6cbf0c8b48d80f034db0ac2bec281e1049de1482a09f5296c0d78c4abe9"
+    },
+    {
+      "path": "bundle/webview/chunks/chunk-AL7C57R3.js",
+      "hash": "46ed46224922791790e4c965571177a34d73a5391a2769696f40c1c911f7ebb2"
+    },
+    {
+      "path": "bundle/webview/chunks/chunk-FFZJE3TS.js",
+      "hash": "9343266e736f8d07bd09d7a7126bfbf04ee9630cf3c9ff0fdbd052657f8106b3"
+    },
+    {
+      "path": "bundle/webview/chunks/chunk-K5VEBUWY.js",
+      "hash": "1414b37b8afbe4fe78bba131ab769180936564c8386ad98d600d4c7d2a6e7418"
+    },
+    {
+      "path": "bundle/webview/chunks/CodeView-IIKDR6ZZ.js",
+      "hash": "17e723c9e9be4a0f75694f564057bc6a6f8b904ea1dcaa9b7d3d31f5ff240934"
+    },
+    {
+      "path": "bundle/webview/chunks/DockerfileView-LITWBEIN.js",
+      "hash": "dbc043870eb4431de7da3472c82e705d3c14288a56485ed5904c59f8e0d3ddeb"
+    },
+    {
+      "path": "bundle/webview/chunks/ExecView-2TYGRARA.js",
+      "hash": "3b21783d4f8dae9c8bd1da8620ff1832b0400a3c61721ffdd4f44c71f2470fe8"
+    },
+    {
+      "path": "bundle/webview/chunks/FilesView-CKNTUZTW.js",
+      "hash": "6f51976824d8189ede400073a7fca4dc7a19e16e087d4b2ca9aee2711d358cc1"
+    },
+    {
+      "path": "bundle/webview/chunks/LayersView-VHJ23RA6.js",
+      "hash": "12a65626fcf8607fb8963697c778c429d0eb8f88e2373645ed7d47ddb6f4df50"
+    },
+    {
+      "path": "bundle/webview/chunks/LogView-BTJUWASJ.js",
+      "hash": "5f42d23ede95cbe741cc01c9719227817f1f7d501663e4e5c29822a5987592ab"
+    },
+    {
+      "path": "bundle/webview/chunks/RunImageDialog-YRDQM3BE.js",
+      "hash": "37ef7bf384cf1f866c15b93f809cc82df01274203d7f4003c20dc6b10fcdafe4"
+    },
+    {
+      "path": "bundle/webview/chunks/StatsView-HWNCDEHJ.js",
+      "hash": "4647af8b53d4c4c4d090682fe3a2e74ca75576ec2ca2577eafcf1a9a35a5795e"
+    },
+    {
+      "path": "bundle/webview/chunks/TerminalView-MO2UQ5XN.css",
+      "hash": "9a94b33948fa65578113fcc20fa11350c9d0f62272490039c0595beee03730fe"
+    },
+    {
+      "path": "bundle/webview/chunks/TerminalView-XKT4EMUW.js",
+      "hash": "a8a23bfb2a4400a259b7184efb00fb22cc48e5163be376d7f6178d0d6ab7a845"
+    },
+    {
+      "path": "bundle/webview/index.html",
+      "hash": "93cdba755a818ef8077e54b3dc6b16ff6962a8de0fc5024104ef24c5ecf0f796"
+    },
+    {
+      "path": "bundle/webview/main.css",
+      "hash": "9a94b33948fa65578113fcc20fa11350c9d0f62272490039c0595beee03730fe"
+    },
+    {
+      "path": "bundle/webview/main.js",
+      "hash": "f5a1b0bc7f72271e495201c6c2c39c50729c54c8b74eda4643be5d2b3aa844c7"
+    }
+  ]
 }

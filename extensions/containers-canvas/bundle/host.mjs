@@ -17761,6 +17761,13 @@ async function probePort(host, port, { timeoutMs = 4e3 } = {}) {
   }
   return { reachable: false, url: `http://${target}/`, error: plain.error };
 }
+function extractionBasename(target) {
+  const base = path.posix.basename(String(target ?? "").trim()) || "file";
+  if (base === "." || base === ".." || /[\\/]/.test(base)) {
+    throw new Error(`"${target}" does not name a file that can be extracted.`);
+  }
+  return base;
+}
 async function tidyExtractionDir(destDir, { maxAgeMs = 24 * 60 * 60 * 1e3, keepRecent = 10 } = {}) {
   const repoExclude = path.join(path.dirname(destDir), ".git", "info", "exclude");
   try {
@@ -17807,12 +17814,16 @@ async function extractContainerFile(id, filePath, { destDir, maxBytes = 32 * 102
       resolvedFrom = target;
     }
   }
-  const base = path.basename(target) || "file";
+  const base = extractionBasename(target);
   const safeContainer = String(id).replace(/[^\w.-]/g, "_").slice(0, 40);
   const folder = path.join(destDir, safeContainer);
   await mkdir(folder, { recursive: true });
   await tidyExtractionDir(destDir);
   const hostPath = path.join(folder, base);
+  const inside = path.relative(folder, hostPath);
+  if (!inside || inside.startsWith("..") || path.isAbsolute(inside)) {
+    throw new Error(`Refusing to extract "${target}" outside its container folder.`);
+  }
   const result = await execRuntime(["cp", `${id}:${source}`, hostPath], { timeout: 12e4 });
   if (!result.ok) throw new Error(result.output);
   const info = await stat(hostPath);
@@ -17883,6 +17894,8 @@ async function imageHistory(ref) {
   };
 }
 var HOST_ESCAPE_BINDS = /docker[._-]?sock|docker_engine|^\\\\[.?]\\pipe|\/var\/run\/docker/i;
+var HOST_ESCAPE_CAPS = /* @__PURE__ */ new Set(["ALL", "SYS_ADMIN", "SYS_PTRACE", "SYS_MODULE"]);
+var normaliseCapability = (value) => String(value).trim().toUpperCase().replace(/^CAP_/, "");
 function hostEscapeRisks(detail) {
   const host = detail?.HostConfig ?? {};
   const risks = [];
@@ -17890,8 +17903,9 @@ function hostEscapeRisks(detail) {
   if ((host.Binds ?? []).some((b) => HOST_ESCAPE_BINDS.test(String(b)))) {
     risks.push("it mounts the container runtime socket");
   }
-  if ((host.CapAdd ?? []).some((c) => /SYS_ADMIN|SYS_PTRACE|SYS_MODULE/i.test(String(c)))) {
-    risks.push(`it has elevated capabilities (${(host.CapAdd ?? []).join(", ")})`);
+  const elevated = (host.CapAdd ?? []).filter((c) => HOST_ESCAPE_CAPS.has(normaliseCapability(c)));
+  if (elevated.length > 0) {
+    risks.push(`it has elevated capabilities (${elevated.join(", ")})`);
   }
   if (host.PidMode === "host" || host.NetworkMode === "host") {
     risks.push("it shares a host namespace");
@@ -18052,11 +18066,20 @@ var FORBIDDEN_MOUNTS = [
   /^\\\\[.?]\\pipe\\/i
   // Windows named pipes
 ];
+function collapseSeparators(value) {
+  const unc = /^\\\\/.test(value) ? "\\\\" : "";
+  return unc + value.slice(unc.length).replace(/[\\/]{2,}/g, (run) => run[0]);
+}
 function assertSafeMount(source) {
   const value = String(source).trim();
   if (!value) throw new Error("A volume mount needs a host path.");
+  if (value.split(/[\\/]+/).includes("..")) {
+    throw new Error(
+      `Refusing to bind-mount "${value}" because it contains a ".." segment. Name the directory you mean directly.`
+    );
+  }
   for (const pattern of FORBIDDEN_MOUNTS) {
-    if (pattern.test(value)) {
+    if (pattern.test(value) || pattern.test(collapseSeparators(value))) {
       throw new Error(
         `Refusing to bind-mount "${value}". System paths, drive roots and the container socket are blocked because mounting them hands the container control of the host. Mount a specific project folder instead.`
       );
@@ -18108,7 +18131,7 @@ async function runImage(spec = {}) {
   if (spec.user) args.push("-u", String(spec.user).trim());
   if (spec.entrypoint) args.push("--entrypoint", String(spec.entrypoint).trim());
   args.push("--label", `${CANVAS_LABEL}=containers`, "--label", `${CANVAS_LABEL}.created=${(/* @__PURE__ */ new Date()).toISOString()}`);
-  args.push(image);
+  args.push(assertImageRef(image));
   for (const part of spec.command ?? []) {
     if (typeof part !== "string") throw new Error("Every command argument must be a string.");
     args.push(part);
@@ -19186,6 +19209,16 @@ async function startCanvasServer({ sendToChat, log, workingDirectory }) {
       return;
     }
     let sessionId = null;
+    let socketClosed = false;
+    const done = () => {
+      socketClosed = true;
+      if (sessionId) {
+        execs.kill(sessionId);
+        sessionId = null;
+      }
+    };
+    socket.on("close", done);
+    socket.on("error", done);
     try {
       const started = await execs.start({
         containerId: target.id,
@@ -19198,6 +19231,11 @@ async function startCanvasServer({ sendToChat, log, workingDirectory }) {
         }
       });
       sessionId = started.id;
+      if (socketClosed) {
+        execs.kill(sessionId);
+        sessionId = null;
+        return;
+      }
       let risks = [];
       try {
         risks = await containerHostEscapeRisks(target.id);
@@ -19222,11 +19260,6 @@ async function startCanvasServer({ sendToChat, log, workingDirectory }) {
         execs.resize(sessionId, frame.cols, frame.rows);
       }
     });
-    const done = () => {
-      if (sessionId) execs.kill(sessionId);
-    };
-    socket.on("close", done);
-    socket.on("error", done);
   });
   const port = server.address().port;
   try {

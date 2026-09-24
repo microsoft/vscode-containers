@@ -1101,6 +1101,29 @@ export async function probePort(host, port, { timeoutMs = 4000 } = {}) {
  * panel is the wrong moment -- another panel may be looking at the same file,
  * and the user may still have it open in the editor.
  */
+/**
+ * The host filename to extract a container path to.
+ *
+ * `path.basename` alone is not enough. `path.basename("/..")` is `".."`, and
+ * `path.join(folder, "..")` is the folder's *parent* -- the shared extraction
+ * directory. A container path of `/..` therefore placed the extraction at that
+ * root, and the "this is a directory" cleanup that follows would then remove
+ * every container's extracted files with it.
+ *
+ * Splitting is done with POSIX rules because `target` is a path inside a Linux
+ * container, where a backslash is an ordinary filename character. On Windows
+ * `path.basename` would treat it as a separator and return a different, shorter
+ * name; `path.join` would then treat it as a separator again, so a name like
+ * `a\..\..\evil` would climb out. Rejecting separators outright closes that.
+ */
+function extractionBasename(target) {
+    const base = path.posix.basename(String(target ?? "").trim()) || "file";
+    if (base === "." || base === ".." || /[\\/]/.test(base)) {
+        throw new Error(`"${target}" does not name a file that can be extracted.`);
+    }
+    return base;
+}
+
 async function tidyExtractionDir(destDir, { maxAgeMs = 24 * 60 * 60 * 1000, keepRecent = 10 } = {}) {
     const repoExclude = path.join(path.dirname(destDir), ".git", "info", "exclude");
     try {
@@ -1179,12 +1202,19 @@ export async function extractContainerFile(id, filePath, { destDir, maxBytes = 3
         }
     }
 
-    const base = path.basename(target) || "file";
+    const base = extractionBasename(target);
     const safeContainer = String(id).replace(/[^\w.-]/g, "_").slice(0, 40);
     const folder = path.join(destDir, safeContainer);
     await mkdir(folder, { recursive: true });
     await tidyExtractionDir(destDir);
     const hostPath = path.join(folder, base);
+
+    // Belt and braces: `extractionBasename` already refuses anything that could
+    // climb, so a hostPath outside its folder means that guard has a hole.
+    const inside = path.relative(folder, hostPath);
+    if (!inside || inside.startsWith("..") || path.isAbsolute(inside)) {
+        throw new Error(`Refusing to extract "${target}" outside its container folder.`);
+    }
 
     const result = await execRuntime(["cp", `${id}:${source}`, hostPath], { timeout: 120_000 });
     if (!result.ok) throw new Error(result.output);
@@ -1311,6 +1341,18 @@ export async function imageHistory(ref) {
 
 const HOST_ESCAPE_BINDS = /docker[._-]?sock|docker_engine|^\\\\[.?]\\pipe|\/var\/run\/docker/i;
 
+/**
+ * Capabilities that make the container boundary meaningless.
+ *
+ * `ALL` is the one most worth naming: `--cap-add ALL` grants SYS_ADMIN along
+ * with everything else, so a check that only looked for individual capability
+ * names let the broadest possible grant through unremarked.
+ */
+const HOST_ESCAPE_CAPS = new Set(["ALL", "SYS_ADMIN", "SYS_PTRACE", "SYS_MODULE"]);
+
+/** Docker reports capabilities with or without the `CAP_` prefix, and in either case. */
+const normaliseCapability = (value) => String(value).trim().toUpperCase().replace(/^CAP_/, "");
+
 /** Reasons this container is not meaningfully isolated from the host. */
 function hostEscapeRisks(detail) {
     const host = detail?.HostConfig ?? {};
@@ -1319,8 +1361,9 @@ function hostEscapeRisks(detail) {
     if ((host.Binds ?? []).some((b) => HOST_ESCAPE_BINDS.test(String(b)))) {
         risks.push("it mounts the container runtime socket");
     }
-    if ((host.CapAdd ?? []).some((c) => /SYS_ADMIN|SYS_PTRACE|SYS_MODULE/i.test(String(c)))) {
-        risks.push(`it has elevated capabilities (${(host.CapAdd ?? []).join(", ")})`);
+    const elevated = (host.CapAdd ?? []).filter((c) => HOST_ESCAPE_CAPS.has(normaliseCapability(c)));
+    if (elevated.length > 0) {
+        risks.push(`it has elevated capabilities (${elevated.join(", ")})`);
     }
     if (host.PidMode === "host" || host.NetworkMode === "host") {
         risks.push("it shares a host namespace");
@@ -1564,11 +1607,37 @@ const FORBIDDEN_MOUNTS = [
     /^\\\\[.?]\\pipe\\/i, // Windows named pipes
 ];
 
+/**
+ * Collapse runs of separators, keeping a leading Windows UNC prefix intact.
+ *
+ * `//etc/passwd` and `/etc/passwd` name the same directory to Docker, but the
+ * deny-list patterns anchor on a single leading separator, so only the second
+ * matched. A UNC path genuinely starts with two, and one of the rules depends
+ * on that, so it is preserved.
+ */
+function collapseSeparators(value) {
+    const unc = /^\\\\/.test(value) ? "\\\\" : "";
+    return unc + value.slice(unc.length).replace(/[\\/]{2,}/g, (run) => run[0]);
+}
+
 function assertSafeMount(source) {
     const value = String(source).trim();
     if (!value) throw new Error("A volume mount needs a host path.");
+
+    // Refused before the deny-list rather than resolved against it. Every rule
+    // below anchors on the start of the path, so "/tmp/../etc" walked straight
+    // past the rule that "/etc" trips over while naming the same directory to
+    // Docker. Canonicalising would mean resolving a path for the daemon's
+    // platform rather than this process's, so the segment is simply refused --
+    // a bind mount has no need to climb.
+    if (value.split(/[\\/]+/).includes("..")) {
+        throw new Error(
+            `Refusing to bind-mount "${value}" because it contains a ".." segment. Name the directory you mean directly.`,
+        );
+    }
+
     for (const pattern of FORBIDDEN_MOUNTS) {
-        if (pattern.test(value)) {
+        if (pattern.test(value) || pattern.test(collapseSeparators(value))) {
             throw new Error(
                 `Refusing to bind-mount "${value}". System paths, drive roots and the container socket are blocked because mounting them hands the container control of the host. Mount a specific project folder instead.`,
             );
@@ -1653,7 +1722,13 @@ export async function runImage(spec = {}) {
     // Provenance stamp so canvas-created containers are always findable.
     args.push("--label", `${CANVAS_LABEL}=containers`, "--label", `${CANVAS_LABEL}.created=${new Date().toISOString()}`);
 
-    args.push(image);
+    // Validated here rather than trusted from the caller. `docker run` parses
+    // options until its first positional, so an image of "--privileged" is read
+    // as a flag and the first element of `command` becomes the image instead --
+    // which would hand back a privileged container while every mount, port and
+    // capability check above still passed. `assertImageRef` is the same guard
+    // `tag`, `pull` and `push` already use.
+    args.push(assertImageRef(image));
 
     for (const part of spec.command ?? []) {
         if (typeof part !== "string") throw new Error("Every command argument must be a string.");
@@ -1681,6 +1756,7 @@ export const __internals = {
     parseJsonLines,
     assertImageRef,
     assertSafeMount,
+    extractionBasename,
     hostEscapeRisks,
     parseInstruction,
     formatPorts,

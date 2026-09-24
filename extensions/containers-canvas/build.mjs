@@ -19,7 +19,7 @@ import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { computeInputDigest, DIGEST_FILE } from "./scripts/buildInputs.mjs";
+import { computeInputDigest, computeOutputInventory, DIGEST_FILE } from "./scripts/buildInputs.mjs";
 import { generateNotice } from "./scripts/generateNotice.mjs";
 import { verifyManifest } from "./scripts/verifyManifest.mjs";
 
@@ -171,11 +171,12 @@ console.error(`[build] NOTICE.html covers ${attributed.length} third-party packa
 // digest to prove the committed output is current -- a check that has to be
 // platform-independent, because the bundle itself is not. See buildInputs.mjs.
 const { digest, fileCount } = await computeInputDigest(here);
+const outputs = await computeOutputInventory(here);
 await writeFile(
     join(here, DIGEST_FILE),
-    `${JSON.stringify({ digest, fileCount }, null, 2)}\n`,
+    `${JSON.stringify({ digest, fileCount, outputs }, null, 2)}\n`,
     "utf8",
 );
-console.error(`[build] input digest ${digest.slice(0, 12)} over ${fileCount} source files`);
+console.error(`[build] input digest ${digest.slice(0, 12)} over ${fileCount} source files, ${outputs.length} outputs`);
 
 console.error("[build] done");
