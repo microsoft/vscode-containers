@@ -591,14 +591,6 @@ export async function diskUsage() {
     return result;
 }
 
-export async function containerStats(id) {
-    const argv = ["stats", "--no-stream", "--format", "{{json .}}"];
-    if (id) argv.push(id);
-    const result = await execRuntime(argv, { timeout: 30_000 });
-    if (!result.ok) throw new Error(result.output);
-    return parseJsonLines(result.output);
-}
-
 /* ------------------------------------------------------------------ *
  * Streaming logs
  * ------------------------------------------------------------------ */

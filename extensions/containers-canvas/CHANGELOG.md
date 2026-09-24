@@ -98,3 +98,9 @@ canvas extension under `com.github.copilot/extensions/`.
 - Changes made outside the panel appear within a few seconds rather than
   instantly, and a change the event stream misses entirely waits for the next
   10-second poll.
+- Every visible string is English. The repository's convention is
+  `vscode.l10n.t(...)`, which cannot be used here: a Copilot canvas runs outside
+  VS Code, and the build aliases the `vscode` specifier to a stub that throws.
+  Localizing the panel needs a webview-side catalogue and an extraction step,
+  and a decision about how those bundles reach a plugin that installs from a git
+  ref with no build step.
