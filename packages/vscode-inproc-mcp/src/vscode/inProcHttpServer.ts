@@ -3,12 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { ServerType } from '@hono/node-server';
 import type { DisposableLike } from '@microsoft/vscode-processutils';
 import * as crypto from 'crypto';
-import { once } from 'events';
 import * as fs from 'fs';
-import type { AddressInfo, ListenOptions } from 'net';
+import type { AddressInfo } from 'net';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -33,6 +31,9 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
 
     try {
         const nonce = crypto.randomUUID();
+        if (!mcpOptions.useTcpTransport) {
+            socketPath = getRandomSocketPath();
+        }
 
         const [{ Hono }, { createAdaptorServer }] = await Promise.all([
             honoModuleLazy.value,
@@ -44,7 +45,6 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
 
         app.use('/mcp', async (context, next) => {
             if (mcpOptions.useTcpTransport) {
-                // Protect the server from browser requests and DNS rebinding
                 if (context.req.header('host') !== allowedHost || context.req.header('origin')) {
                     return new Response('Forbidden', { status: 403 });
                 }
@@ -66,24 +66,24 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             overrideGlobalObjects: false,
         });
 
-        let serverUri: vscode.Uri;
         if (mcpOptions.useTcpTransport) {
             await listen(httpServer, { host: '127.0.0.1', port: 0 });
             allowedHost = getLoopbackAuthority(httpServer.address());
-            serverUri = vscode.Uri.from({
+        } else {
+            await listen(httpServer, socketPath);
+        }
+
+        const serverUri = mcpOptions.useTcpTransport ?
+            vscode.Uri.from({
                 scheme: 'http',
                 authority: allowedHost,
                 path: '/mcp',
-            });
-        } else {
-            socketPath = getRandomSocketPath();
-            await listen(httpServer, socketPath);
-            serverUri = vscode.Uri.from({
+            }) :
+            vscode.Uri.from({
                 scheme: os.platform() === 'win32' ? 'pipe' : 'unix',
                 path: socketPath,
                 fragment: '/mcp',
             });
-        }
 
         return {
             disposable: {
@@ -194,15 +194,27 @@ async function handleGetDelete(transports: Record<string, SessionTransport>, req
     return await transport.handleRequest(request);
 }
 
-async function listen(httpServer: ServerType, options: ListenOptions | string): Promise<void> {
-    // Wait for binding because the actual port is unknown until this finishes
-    httpServer.listen(options);
-    await once(httpServer, 'listening');
+function listen(
+    httpServer: { listen: (options: { host: string, port: number } | string, callback: () => void) => unknown; once: (event: 'error', listener: (err: Error) => void) => unknown; off: (event: 'error', listener: (err: Error) => void) => unknown },
+    options: { host: string, port: number } | string | undefined
+): Promise<void> {
+    if (!options) {
+        throw new Error('A socket path is required for the private socket transport.');
+    }
+
+    return new Promise((resolve, reject) => {
+        const onError = (err: Error): void => reject(err);
+        httpServer.once('error', onError);
+        httpServer.listen(options, () => {
+            httpServer.off('error', onError);
+            resolve();
+        });
+    });
 }
 
 function getLoopbackAuthority(address: string | AddressInfo | null): string {
     if (!address || typeof address === 'string') {
-        throw new Error('The loopback HTTP server failed to expose a valid TCP address.');
+        throw new Error('The loopback HTTP server did not expose a TCP address.');
     }
 
     return `127.0.0.1:${address.port}`;
