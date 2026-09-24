@@ -5,13 +5,25 @@
 
 // Extension: containers-canvas
 //
-// The same containers canvas, rendered with React + Fluent UI instead of hand
-// written DOM, so the two front ends can be compared against identical data.
+// The plugin's entry point. It declares the Containers canvas, registers the
+// agent actions that can drive it, and joins the Copilot session. A plugin's
+// extensions are discovered under `com.github.copilot/extensions/<id>/`, so the
+// file there re-imports this one rather than duplicating it.
 //
-// It reuses the sibling `containers` extension's runtime adapter and talks to
-// its own loopback REST + SSE API. Because the canvas already has a transport,
-// none of `@microsoft/vscode-ext-webview`, tRPC, or a `vscode` stub is needed --
-// only the Fluent component library itself.
+// Each open panel gets its own loopback server (`startCanvasServer`). The React
+// and Fluent UI that server hosts talks back to it with tRPC, carried over HTTP
+// POST and SSE instead of a VS Code webview channel, through the shim in
+// `src/webview/canvasVsCodeApi.js`.
+//
+// That transport is why `@microsoft/vscode-ext-webview` is a dependency:
+// `initWebviewTrpc`, `attachTrpc` and `connectTrpc` are all used, on both
+// halves. Its host barrel eagerly requires `vscode`, which does not exist
+// outside VS Code, and that is in turn why the build aliases the bare `vscode`
+// specifier to `src/vscode-stub.mjs`.
+//
+// The import below is `./bundle/host.mjs` -- the committed build output -- and
+// not `src/`, because a plugin is installed straight from a git ref with no
+// build step. The bundle is what actually runs.
 
 import { joinSession, createCanvas, CanvasError } from "@github/copilot-sdk/extension";
 
