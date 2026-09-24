@@ -71,6 +71,55 @@ async function insideGitRepository() {
     }
 }
 
+/** This package's path within the repository, as git reports it. */
+async function packagePrefix() {
+    const { stdout } = await exec("git", ["rev-parse", "--show-prefix"], { cwd: packageRoot });
+    return stdout.trim();
+}
+
+/**
+ * Files under `bundle/` in the commit, package-relative.
+ *
+ * Read from `HEAD` rather than from disk: what a local rebuild happens to have
+ * produced is not the question, and on a different platform it will not even
+ * have the same filenames.
+ *
+ * Run from the package directory, so both the pathspec and the reported paths
+ * are already package-relative. `git show` below is the opposite — its argument
+ * is resolved from the repository root — which is why only that one takes the
+ * prefix.
+ */
+async function committedBundleFiles() {
+    try {
+        const { stdout } = await exec(
+            "git",
+            ["ls-tree", "-r", "--name-only", "HEAD", "--", "bundle"],
+            { cwd: packageRoot, maxBuffer: 16 * 1024 * 1024 },
+        );
+        const files = stdout.split("\n").map((line) => line.trim()).filter(Boolean);
+        return files.length > 0 ? files : null;
+    } catch {
+        // No commits yet, or `bundle/` has never been committed.
+        return null;
+    }
+}
+
+/** The output inventory as committed, which may differ from the one on disk. */
+async function committedInventoryOutputs() {
+    try {
+        const prefix = await packagePrefix();
+        const { stdout } = await exec(
+            "git",
+            ["show", `HEAD:${prefix}${DIGEST_FILE.split(/[\\/]/).join("/")}`],
+            { cwd: packageRoot, maxBuffer: 16 * 1024 * 1024 },
+        );
+        const parsed = JSON.parse(stdout);
+        return Array.isArray(parsed.outputs) ? parsed.outputs : null;
+    } catch {
+        return null;
+    }
+}
+
 // 1. Is the committed bundle built from the source that is here now?
 let recorded;
 try {
@@ -146,29 +195,54 @@ if (await insideGitRepository()) {
     }
 
     /*
-     * Only worktree deletions and untracked files are failures here.
+     * Is the *committed* bundle internally complete?
      *
-     * A *modified* bundle file is expected on a machine whose pnpm store paths
-     * differ from the one that committed it — see buildInputs.mjs — and failing
-     * on that is the trap this check was rewritten to avoid. A *staged*
-     * deletion is likewise fine: a rebuild renames content-hashed chunks, so
-     * removing the old name is what a correct commit looks like.
+     * This deliberately does not look at the working tree. An earlier version
+     * did, failing on untracked and deleted files under `bundle/`, and it broke
+     * every CI run: the build there reproduces the bundle on Linux, where
+     * content-hashed chunk names differ from the ones committed from Windows,
+     * so the old names read as deleted and the new ones as untracked. That is
+     * the same platform difference the input digest exists to tolerate, so
+     * reintroducing it through git was a mistake.
      *
-     * The two that matter are a file git still tracks but that is no longer on
-     * disk, and a file on disk that was never committed. Either means someone
-     * installing from this commit gets a bundle with a hole in it, and neither
-     * depends on the platform.
+     * Asking the question of the commit alone answers it without involving
+     * whatever the local rebuild produced: every output the committed
+     * `build-inputs.json` names must be a file that is actually committed, and
+     * every committed bundle file must be one it names. That catches a chunk
+     * that was emitted but never added, or removed without the inventory being
+     * regenerated — on any platform.
      */
-    const bundleDrift = await driftIn(["bundle"]);
-    const gone = bundleDrift.filter((entry) => entry[1] === "D");
-    const uncommitted = bundleDrift.filter((entry) => entry.startsWith("??"));
-    if (gone.length > 0 || uncommitted.length > 0) {
-        console.error(
-            "\n[verify] the committed bundle is incomplete:\n" +
-            [...gone, ...uncommitted].map((entry) => `  ${entry}`).join("\n") +
-            `\n\n${REBUILD_HINT}`,
+    const committed = await committedBundleFiles();
+    if (committed === null) {
+        console.error("[verify] no commit to compare against yet; skipping the committed-bundle check");
+    } else {
+        const committedInventory = await committedInventoryOutputs();
+        const committedNames = new Set(committed);
+        const inventoryNames = new Set((committedInventory ?? []).map((entry) => entry.path));
+
+        const notCommitted = [...inventoryNames].filter((path) => !committedNames.has(path));
+        const notRecorded = [...committedNames].filter(
+            (path) => path !== DIGEST_FILE.split(/[\\/]/).join("/") && !inventoryNames.has(path),
         );
-        process.exit(1);
+
+        if (committedInventory === null) {
+            console.error(
+                `\n[verify] the committed ${DIGEST_FILE.split(/[\\/]/).join("/")} has no output inventory.\n\n${REBUILD_HINT}`,
+            );
+            process.exit(1);
+        }
+        if (notCommitted.length > 0 || notRecorded.length > 0) {
+            const describe = (label, entries) => (entries.length > 0
+                ? `\n  ${label}:\n${entries.map((path) => `    ${path}`).join("\n")}`
+                : "");
+            console.error(
+                "\n[verify] the committed bundle is not internally consistent:" +
+                describe("recorded by the build but never committed", notCommitted) +
+                describe("committed but not recorded by the build", notRecorded) +
+                `\n\n${REBUILD_HINT}`,
+            );
+            process.exit(1);
+        }
     }
 } else {
     // An installed plugin is not a git checkout. Verifying there is meaningless
