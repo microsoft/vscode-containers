@@ -132,7 +132,28 @@ try {
     process.exit(1);
 }
 
-const { digest, fileCount } = await computeInputDigest(packageRoot);
+const recordedInputs = Array.isArray(recorded.inputs) ? recorded.inputs : null;
+if (!recordedInputs) {
+    console.error(
+        `\n[verify] ${DIGEST_FILE.split(/[\\/]/).join("/")} has no input list, so the digest cannot be ` +
+        `recomputed.\n\n${REBUILD_HINT}`,
+    );
+    process.exit(1);
+}
+
+// Recomputed over exactly the files the build reported compiling, so a source
+// file that was added to the graph cannot quietly fall outside the check.
+let digest;
+let fileCount;
+try {
+    ({ digest, fileCount } = await computeInputDigest(packageRoot, recordedInputs));
+} catch (error) {
+    console.error(
+        `\n[verify] a file the build recorded as an input is missing: ${error?.path ?? error?.message ?? error}` +
+        `\n\n${REBUILD_HINT}`,
+    );
+    process.exit(1);
+}
 
 if (recorded.digest !== digest) {
     console.error(

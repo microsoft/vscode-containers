@@ -45,8 +45,18 @@ const here = dirname(fileURLToPath(import.meta.url));
 /** Where the digest is written, relative to the package root. */
 export const DIGEST_FILE = join("bundle", "build-inputs.json");
 
-/** Hand-written files outside `src/` that change what the build emits. */
-const EXTRA_INPUTS = ["build.mjs", join("scripts", "generateNotice.mjs"), "package.json"];
+/**
+ * Hand-written files that shape the output without being compiled into it.
+ *
+ * `index.html` is copied into `bundle/webview/` rather than bundled, so esbuild
+ * never reports it as an input even though editing it changes what ships.
+ */
+export const EXTRA_INPUTS = [
+    "build.mjs",
+    "scripts/generateNotice.mjs",
+    "package.json",
+    "src/webview/index.html",
+];
 
 async function* walk(dir) {
     for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -60,33 +70,50 @@ async function* walk(dir) {
 }
 
 /**
- * A digest of every source file the bundle is built from.
+ * A digest of the source files the bundle is built from.
+ *
+ * The file list is supplied rather than discovered. An earlier version walked
+ * `src/` and added a hand-written handful of extras, which quietly missed
+ * `server.mjs` and `execSessions.mjs` — both compiled into `bundle/host.mjs`,
+ * both outside `src/`. Editing either left the digest unchanged and a stale
+ * bundle looking current. The build now passes the set esbuild reports in its
+ * metafile, so the list cannot drift away from what is actually compiled.
  *
  * Paths are recorded with forward slashes and sorted, so the result does not
  * depend on the platform's separator or on directory read order.
  */
-export async function computeInputDigest(packageRoot = join(here, "..")) {
-    const files = [];
-    for await (const file of walk(join(packageRoot, "src"))) {
-        files.push(file);
-    }
-    for (const extra of EXTRA_INPUTS) {
-        files.push(join(packageRoot, extra));
-    }
+export async function computeInputDigest(packageRoot, files) {
+    const paths = [...new Set(files.map((file) => file.split(/[\\/]/).join("/")))]
+        .sort((a, b) => a.localeCompare(b, "en"));
 
-    const entries = await Promise.all(files.map(async (file) => {
-        const text = (await readFile(file, "utf8")).replace(/\r\n/g, "\n");
-        const path = relative(packageRoot, file).split(/[\\/]/).join("/");
+    const entries = await Promise.all(paths.map(async (path) => {
+        const text = (await readFile(join(packageRoot, path), "utf8")).replace(/\r\n/g, "\n");
         return { path, hash: createHash("sha256").update(text).digest("hex") };
     }));
-
-    entries.sort((a, b) => a.path.localeCompare(b.path, "en"));
 
     const digest = createHash("sha256");
     for (const entry of entries) {
         digest.update(`${entry.path}\n${entry.hash}\n`);
     }
-    return { digest: digest.digest("hex"), fileCount: entries.length };
+    return { digest: digest.digest("hex"), fileCount: entries.length, inputs: paths };
+}
+
+/**
+ * The files this package contributes to a build, from esbuild's metafile.
+ *
+ * Dependencies are excluded: they are pinned by the lockfile and described by
+ * `NOTICE.html`, and hashing several thousand files in `node_modules` to detect
+ * a change that `pnpm install` already gates would be slow for no gain.
+ */
+export function ownInputsFrom(metafiles) {
+    const paths = new Set();
+    for (const metafile of metafiles) {
+        for (const input of Object.keys(metafile?.inputs ?? {})) {
+            if (input.includes("node_modules") || input.startsWith("..")) continue;
+            paths.add(input.split(/[\\/]/).join("/"));
+        }
+    }
+    return [...paths];
 }
 
 /**

@@ -89,7 +89,10 @@ canvas extension under `com.github.copilot/extensions/`.
 - Podman is detected when Docker is absent and the basics work, but it is not
   supported: several command outputs are parsed differently, and image
   provenance has no Podman equivalent.
-- Only tested on Windows.
+- The panel itself is only exercised on Windows. The build and the unit tests
+  run on Linux in CI, but nothing there has a Docker daemon or a browser, so the
+  parts that talk to the runtime and the parts that render are verified on one
+  platform only. macOS is untested entirely.
 - Compose containers managed by Docker Desktop report empty labels, so an
   explanation handed to Copilot can say `Labels: {}`.
 - Changes made outside the panel appear within a few seconds rather than

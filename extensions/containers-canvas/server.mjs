@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// Per-instance loopback HTTP server for the Fluent containers canvas.
+// Per-instance loopback HTTP server for the Containers canvas.
 //
 // The canvas has no `postMessage` channel to the extension host, so this server
 // is the transport underneath one: POST /rpc carries inbound tRPC frames into
@@ -11,8 +11,10 @@
 // that line -- router, procedures, validation -- is the same code you would
 // write for a real VS Code webview.
 //
-// The runtime adapter is imported from the sibling `containers` extension
-// rather than copied, so the two canvases cannot drift apart.
+// Two streams sit outside tRPC deliberately. Logs and stats are high-volume and
+// long-lived, so they get their own SSE routes rather than being pushed through
+// the same frame channel as every other reply; the terminal needs bidirectional
+// bytes, so it gets a WebSocket.
 
 import { createServer } from "node:http";
 import { randomBytes, timingSafeEqual } from "node:crypto";
