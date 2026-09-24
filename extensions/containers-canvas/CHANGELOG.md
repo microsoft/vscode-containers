@@ -61,10 +61,25 @@ canvas extension under `com.github.copilot/extensions/`.
   `Cross-Origin-Resource-Policy: same-origin`, including error responses.
   `nosniff` matters most on the routes that echo container output.
 - `docker run` refuses to bind-mount drive roots, system directories or the
-  runtime socket.
+  runtime socket. Paths containing a `..` segment are refused outright rather
+  than resolved, and the deny-list is matched against a separator-collapsed
+  form, so `/tmp/../etc` and `//etc` cannot name a blocked directory past a rule
+  anchored on `/etc`.
+- The image passed to `docker run` is validated before it becomes an argument.
+  Docker parses options until its first positional, so an unvalidated image of
+  `--privileged` would have been read as a flag.
+- Removing a container or image through the agent surface requires
+  `acknowledgeDestructive`. It is not a boundary against a caller that means it
+  — it is the same standard the privileged-exec acknowledgement sets, so that a
+  mistyped or guessed `op` cannot destroy something while every other verb in
+  the same list is reversible. The panel supplies it only after its confirmation
+  dialog.
+- Files extracted from a container are written under a per-container folder, and
+  a target that would name its parent (`/..`) is refused rather than resolved.
 - Running a command in a privileged container, or one mounting the runtime
   socket, requires an explicit acknowledgement, because such a container is
-  effectively the host. Opening an interactive terminal in one is allowed — the
+  effectively the host. `--cap-add ALL` counts as privileged for this purpose.
+  Opening an interactive terminal in one is allowed — the
   person chose that container — but the panel says plainly that the shell is not
   isolated from the machine.
 - Bulk pruning is not exposed, to the agent or the panel.

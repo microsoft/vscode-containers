@@ -18340,16 +18340,25 @@ var AGENT_META = {
     agent: false
   }
 };
+var DESTRUCTIVE_OPS = /* @__PURE__ */ new Set(["remove", "forceRemove"]);
+function assertDestructiveAcknowledged(op, acknowledged, noun) {
+  if (!DESTRUCTIVE_OPS.has(op) || acknowledged) return;
+  throw new Error(
+    `Refusing to ${op === "forceRemove" ? "force-remove" : "remove"} this ${noun} without acknowledgement. Removal is irreversible and discards anything not on a volume. Confirm with the person you are working for, then repeat the call with acknowledgeDestructive set.`
+  );
+}
 function createAppRouter(cache, deps = {}) {
   return trpc.router({
     getState: trpc.publicProcedure.query(async () => cache.get() ?? await cache.refresh()),
     refresh: trpc.publicProcedure.input(external_exports.object({ force: external_exports.boolean().optional() }).optional()).mutation(async ({ input }) => cache.refresh({ force: input?.force ?? true })),
-    containerOp: trpc.publicProcedure.input(external_exports.object({ op: containerOps, id: targetId })).mutation(async ({ input }) => {
+    containerOp: trpc.publicProcedure.input(external_exports.object({ op: containerOps, id: targetId, acknowledgeDestructive: external_exports.boolean().optional() })).mutation(async ({ input }) => {
+      assertDestructiveAcknowledged(input.op, input.acknowledgeDestructive, "container");
       const result = await containerOp(input.op, input.id);
       await cache.refresh({ force: true });
       return result;
     }),
-    imageOp: trpc.publicProcedure.input(external_exports.object({ op: imageOps, id: targetId })).mutation(async ({ input }) => {
+    imageOp: trpc.publicProcedure.input(external_exports.object({ op: imageOps, id: targetId, acknowledgeDestructive: external_exports.boolean().optional() })).mutation(async ({ input }) => {
+      assertDestructiveAcknowledged(input.op, input.acknowledgeDestructive, "image");
       const result = await imageOp(input.op, input.id);
       await cache.refresh({ force: true });
       return result;

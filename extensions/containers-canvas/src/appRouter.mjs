@@ -343,12 +343,35 @@ export const AGENT_META = {
     },
 };
 
+const DESTRUCTIVE_OPS = new Set(["remove", "forceRemove"]);
+
+/**
+ * Refuse a destructive operation that nobody has explicitly asked for.
+ *
+ * This mirrors `acknowledgeHostAccess` on `execInContainer`, and carries the
+ * same honest limit: a caller that means it can set the flag, so this is not a
+ * boundary against a determined agent. What it does stop is the accidental
+ * case — a mistyped or hallucinated `op` quietly destroying a container while
+ * every other verb in the same enum is harmless and reversible. Removal is
+ * neither, so it is the one that has to be asked for by name.
+ *
+ * The panel supplies the flag only after its confirmation dialog; the skill
+ * tells the agent to confirm with the person first.
+ */
+function assertDestructiveAcknowledged(op, acknowledged, noun) {
+    if (!DESTRUCTIVE_OPS.has(op) || acknowledged) return;
+    throw new Error(
+        `Refusing to ${op === "forceRemove" ? "force-remove" : "remove"} this ${noun} without acknowledgement. ` +
+        "Removal is irreversible and discards anything not on a volume. Confirm with the person you are " +
+        "working for, then repeat the call with acknowledgeDestructive set.",
+    );
+}
+
 /**
  * @param cache a live view of the canvas state, so queries can answer from the
  *   last load rather than shelling out to the runtime on every keystroke.
  * @param deps host capabilities the router needs: `sendToChat`, `findTarget`.
- */
-export function createAppRouter(cache, deps = {}) {
+ */export function createAppRouter(cache, deps = {}) {
     return trpc.router({
         getState: trpc.publicProcedure.query(async () => cache.get() ?? (await cache.refresh())),
 
@@ -357,16 +380,18 @@ export function createAppRouter(cache, deps = {}) {
             .mutation(async ({ input }) => cache.refresh({ force: input?.force ?? true })),
 
         containerOp: trpc.publicProcedure
-            .input(z.object({ op: containerOps, id: targetId }))
+            .input(z.object({ op: containerOps, id: targetId, acknowledgeDestructive: z.boolean().optional() }))
             .mutation(async ({ input }) => {
+                assertDestructiveAcknowledged(input.op, input.acknowledgeDestructive, "container");
                 const result = await containerOp(input.op, input.id);
                 await cache.refresh({ force: true });
                 return result;
             }),
 
         imageOp: trpc.publicProcedure
-            .input(z.object({ op: imageOps, id: targetId }))
+            .input(z.object({ op: imageOps, id: targetId, acknowledgeDestructive: z.boolean().optional() }))
             .mutation(async ({ input }) => {
+                assertDestructiveAcknowledged(input.op, input.acknowledgeDestructive, "image");
                 const result = await imageOp(input.op, input.id);
                 await cache.refresh({ force: true });
                 return result;
@@ -649,4 +674,4 @@ export { loadState };
  * these decide how attacker-influenced text is presented to the model, which
  * makes them worth pinning down precisely.
  */
-export const __internals = { asField, asEvidence, clamp };
+export const __internals = { asField, asEvidence, clamp, assertDestructiveAcknowledged };

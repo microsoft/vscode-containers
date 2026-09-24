@@ -546,7 +546,14 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
                                 onClick={() => {
                                     const op = confirming;
                                     setConfirming(null);
-                                    run(op, () => client.containerOp.mutate({ op, id: item.id }));
+                                    // The dialog above is what this acknowledges: the
+                                    // router refuses a destructive op that nobody asked
+                                    // for by name.
+                                    run(op, () => client.containerOp.mutate({
+                                        op,
+                                        id: item.id,
+                                        acknowledgeDestructive: true,
+                                    }));
                                 }}
                             >
                                 Remove container

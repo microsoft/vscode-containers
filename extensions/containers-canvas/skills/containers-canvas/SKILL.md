@@ -64,8 +64,15 @@ rather than in the panel. Prefer them over shelling out to `docker`, because wha
 they run is recorded in the panel's command history where the user can see it.
 
 Destructive actions — removing containers or images, pruning — are available to
-you. Confirm with the user before running one; the panel's own controls ask first
-and yours should too.
+you. Confirm with the user before running one; the panel's own controls ask
+first and yours should too.
+
+`containerOp` and `imageOp` refuse `remove` and `forceRemove` unless you pass
+`acknowledgeDestructive: true`. That flag is not a substitute for asking: it
+exists so that a mistyped or guessed `op` cannot destroy a container while every
+other verb in the same list is reversible. Ask the user, get an answer, then
+repeat the call with the flag set. A running container is removed with `-f`,
+which kills it first — say so when you ask.
 
 ## Hosts that have no canvases
 

@@ -178,3 +178,46 @@ test("panelHref returns the same thing as a string", () => {
     const loc = { hash: "#t=s", search: "", href: "http://127.0.0.1:5000/" };
     assert.equal(panelHref("./events", {}, loc), panelUrl("./events", {}, loc).toString());
 });
+
+/* ---------------------------------------------------------------- *
+ * Destructive operations
+ * ---------------------------------------------------------------- */
+
+test("destructive ops are refused unless acknowledged", () => {
+    // Every other verb in the same enum is reversible, so a mistyped or guessed
+    // `op` should not be able to destroy a container on the way past.
+    for (const op of ["remove", "forceRemove"]) {
+        assert.throws(
+            () => prompt.assertDestructiveAcknowledged(op, undefined, "container"),
+            /without acknowledgement/,
+            op,
+        );
+        assert.throws(
+            () => prompt.assertDestructiveAcknowledged(op, false, "image"),
+            /without acknowledgement/,
+            op,
+        );
+    }
+});
+
+test("acknowledged destructive ops are allowed through", () => {
+    assert.doesNotThrow(() => prompt.assertDestructiveAcknowledged("remove", true, "container"));
+    assert.doesNotThrow(() => prompt.assertDestructiveAcknowledged("forceRemove", true, "image"));
+});
+
+test("reversible ops never need acknowledgement", () => {
+    for (const op of ["start", "stop", "restart", "kill", "pause", "unpause", "history"]) {
+        assert.doesNotThrow(() => prompt.assertDestructiveAcknowledged(op, undefined, "container"), op);
+    }
+});
+
+test("the refusal names the operation it refused", () => {
+    assert.throws(
+        () => prompt.assertDestructiveAcknowledged("forceRemove", false, "container"),
+        /force-remove this container/,
+    );
+    assert.throws(
+        () => prompt.assertDestructiveAcknowledged("remove", false, "image"),
+        /remove this image/,
+    );
+});
