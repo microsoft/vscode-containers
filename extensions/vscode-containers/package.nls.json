@@ -367,5 +367,10 @@
     "vscode-containers.walkthrough.containersStart.learn.title": "Learn More",
     "vscode-containers.walkthrough.containersStart.learn.description": "Great job! You've now completed Getting Started with Container Tools. But don't stop here! There are plenty of ways to become more proficient building containerized applications using the Container Tools extension.\n\nFor example, you can [debug a container](https://code.visualstudio.com/docs/containers/debug-common), or [run multiple containers](https://code.visualstudio.com/docs/containers/docker-compose) at once using Docker Compose.\n\nCheck out our [documentation](https://code.visualstudio.com/docs/containers/overview) to make the most of the Container Tools extension for VS Code!",
     "vscode-containers.copilot.containersConfigTool.displayName": "Get Container Tools Configuration",
-    "vscode-containers.copilot.containersConfigTool.userDescription": "Gets the configuration for the Container Tools extension."
+    "vscode-containers.copilot.containersConfigTool.userDescription": "Gets the configuration for the Container Tools extension.",
+    "vscode-containers.config.template.composePull.template": "The command template.",
+    "vscode-containers.config.template.composePull.label": "The label displayed to the user.",
+    "vscode-containers.config.template.composePull.match": "The regular expression for choosing the right template. Checked against compose YAML files, folder name, etc.",
+    "vscode-containers.config.template.composePull.description": "Command templates for compose pull commands.",
+    "vscode-containers.commands.composePull": "Compose Pull"
 }
