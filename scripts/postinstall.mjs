@@ -20,6 +20,11 @@ import * as fs from 'fs/promises';
 const copies = {
     './extensions/vscode-containers': ['./LICENSE.md', './NOTICE.html'],
     './extensions/vscode-docker': ['./LICENSE.md'],
+    // The canvas bundles a different dependency set from the extension -- React,
+    // Fluent UI, xterm and friends are compiled into its committed `bundle/` -- so
+    // the root NOTICE.html does not describe what it ships. It generates its own
+    // from the build's metafiles instead, and must not have it overwritten here.
+    './extensions/containers-canvas': ['./LICENSE.md'],
     './packages/vscode-processutils': ['./LICENSE.md'],
     './packages/vscode-container-client': ['./LICENSE.md'],
     './packages/vscode-docker-registries': ['./LICENSE.md'],
