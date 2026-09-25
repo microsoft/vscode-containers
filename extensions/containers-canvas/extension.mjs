@@ -28,7 +28,12 @@
 import { joinSession, createCanvas, CanvasError } from "@github/copilot-sdk/extension";
 
 
-import { startCanvasServer, describeAgentActions, buildCanvasActions } from "./bundle/host.mjs";
+import { startCanvasServer, describeAgentActions, buildCanvasActions, summariseState } from "./bundle/host.mjs";
+// Not imported through the bundle: this is entry-point logic, not panel logic,
+// and keeping it a plain sibling means it stays readable next to the canvas
+// declaration it serves. `src/` cannot hold it either -- this module joins the
+// Copilot session on import, so a test can only reach it from outside.
+import { openPanel } from "./openPanel.mjs";
 
 /** instanceId -> live loopback server for that panel. */
 const instances = new Map();
@@ -92,7 +97,8 @@ const canvas = createCanvas({
     },
 
     open: async (ctx) => {
-        let instance = instances.get(ctx.instanceId);
+        const existing = instances.get(ctx.instanceId);
+        let instance = existing;
         if (!instance) {
             instance = await startCanvasServer({
                 sendToChat,
@@ -105,57 +111,18 @@ const canvas = createCanvas({
             instances.set(ctx.instanceId, instance);
         }
 
-        let state = instance.getState();
-        // Same lesson as the other canvas: "unreachable" is the status most
-        // likely to be stale, because the usual reason to reopen is that the
-        // runtime was just started.
-        if (state?.runtime && !state.runtime.available) {
-            state = (await instance.refresh({ force: true })) ?? state;
+        try {
+            return await openPanel(ctx, instance, { CanvasError });
+        } catch (error) {
+            // `onClose` only runs for a canvas that opened, so a validation
+            // failure here would strand the loopback server this call just
+            // started. A panel that was already open is left alone.
+            if (!existing) {
+                instances.delete(ctx.instanceId);
+                await instance.close().catch(() => { });
+            }
+            throw error;
         }
-
-        // Resolve the target here rather than shipping the raw string to the
-        // iframe: the host owns the list, so a name that does not match should
-        // be an error the agent sees, not a panel that silently opens on
-        // nothing.
-        let focus = null;
-        if (ctx.input?.target) {
-            const target = instance.findTarget(ctx.input.target);
-            if (!target) {
-                throw new CanvasError(
-                    "canvas_target_not_found",
-                    `No container or image matches "${ctx.input.target}".`,
-                );
-            }
-            const requested = ctx.input.view ?? "details";
-            const containerOnly = { logs: "logs", stats: "resource usage", files: "a filesystem", terminal: "a shell", exec: "a command runner" };
-            if ((requested === "layers" || requested === "dockerfile") && target.kind !== "image") {
-                throw new CanvasError(
-                    "canvas_invalid_view",
-                    `"${ctx.input.target}" is a container; layers belong to images. Use its image reference instead.`,
-                );
-            }
-            if (containerOnly[requested] && target.kind !== "container") {
-                throw new CanvasError(
-                    "canvas_invalid_view",
-                    `"${ctx.input.target}" is an image; only containers have ${containerOnly[requested]}.`,
-                );
-            }
-            focus = { type: "focus", view: requested, target, tab: target.kind === "image" ? "images" : "containers" };
-        } else if (ctx.input?.view === "list" || ctx.input?.tab) {
-            focus = { type: "focus", view: "list", tab: ctx.input.tab };
-        }
-        if (focus) instance.broadcast(focus);
-
-        const running = (state?.containers ?? []).filter((c) => c.state === "running").length;
-        return {
-            title: focus?.target
-                ? `Containers · ${focus.target.name ?? focus.target.ref ?? focus.target.shortId}`
-                : "Containers",
-            url: instance.url,
-            status: state?.runtime
-                ? `${state.runtime.bin}${state.runtime.available ? ` · ${running} running` : " · unreachable"}`
-                : "no runtime detected",
-        };
     },
 
     onClose: async (ctx) => {
@@ -176,7 +143,10 @@ const canvas = createCanvas({
     actions: [
         {
             name: "list",
-            description: "Read the current containers and images from the local runtime.",
+            description:
+                "Read the current containers and images from the local runtime. " +
+                "If a list could not be read it comes back as {unavailable: true, reason}, with a null count " +
+                "and an `error` field -- report that failure rather than saying there is nothing there.",
             inputSchema: {
                 type: "object",
                 properties: {
@@ -188,14 +158,10 @@ const canvas = createCanvas({
             handler: async (ctx) => {
                 const instance = instanceFor(ctx.instanceId);
                 const state = instance.getState() ?? (await instance.refresh());
-                const limit = ctx.input?.limit ?? 50;
-                const kind = ctx.input?.kind ?? "all";
-                return {
-                    runtime: state.runtime ? { name: state.runtime.bin, version: state.runtime.version } : null,
-                    counts: { containers: state.containers.length, images: state.images.length },
-                    containers: kind === "images" ? undefined : state.containers.slice(0, limit),
-                    images: kind === "containers" ? undefined : state.images.slice(0, limit),
-                };
+                return summariseState(state, {
+                    kind: ctx.input?.kind ?? "all",
+                    limit: ctx.input?.limit ?? 50,
+                });
             },
         },
         ...buildCanvasActions({
@@ -205,6 +171,7 @@ const canvas = createCanvas({
         }),
     ],
 });
+
 
 session = await joinSession({ canvases: [canvas] });
 

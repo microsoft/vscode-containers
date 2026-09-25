@@ -589,7 +589,7 @@ function Detail({ item, onBack, onChanged, onRun, onLogs, onStats, onFiles, onTe
 
             {output ? (
                 outputIsJson
-                    ? <CodeView value={output} language="json" height="360px" />
+                    ? <CodeView value={output} language="json" height="360px" inspect />
                     : <div className={styles.output}>{output}</div>
             ) : null}
 

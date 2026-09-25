@@ -15,7 +15,7 @@
 // status, duration and full output, and the list is replayed to any panel that
 // connects later.
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
     Badge,
     Button,
@@ -63,24 +63,22 @@ const useStyles = makeStyles({
 /**
  * Split a typed command into argv.
  *
- * Quotes are honoured so `echo "a b"` is two arguments, but nothing else is:
- * there is no shell here, so `|`, `>` and `;` are ordinary characters. The
- * placeholder says so, because silently treating them as literals would
- * surprise anyone who types a pipe expecting it to work.
+ * Lives in `textParsing.mjs` so the test runner can import it; `node --test`
+ * cannot parse JSX. Re-exported here because this is where it is used from.
  */
-export function splitArgv(text) {
-    const out = [];
-    const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
-    let m;
-    while ((m = re.exec(String(text ?? "").trim()))) out.push(m[1] ?? m[2] ?? m[3]);
-    return out;
-}
+import { splitArgv } from "./textParsing.mjs";
+
+export { splitArgv };
 
 export function ExecHistory({ item, client, entries, onRan }) {
     const styles = useStyles();
     const [command, setCommand] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState(null);
+    // `busy` state does not update between two keypresses in the same tick, so
+    // the guard in `run` reads a ref. Enter used to bypass the disabled Run
+    // button entirely and launch duplicate execs.
+    const busyRef = useRef(false);
 
     // Only this container's history: the log is panel-wide, but a view titled
     // with one container must not show another's commands.
@@ -90,8 +88,10 @@ export function ExecHistory({ item, client, entries, onRan }) {
     );
 
     const run = useCallback(async () => {
+        if (busyRef.current) return;
         const argv = splitArgv(command);
         if (argv.length === 0) return;
+        busyRef.current = true;
         setBusy(true);
         setError(null);
         try {
@@ -101,6 +101,7 @@ export function ExecHistory({ item, client, entries, onRan }) {
         } catch (e) {
             setError(String(e?.message ?? e));
         } finally {
+            busyRef.current = false;
             setBusy(false);
         }
     }, [client, command, item.id, onRan]);
@@ -112,9 +113,9 @@ export function ExecHistory({ item, client, entries, onRan }) {
                     className={styles.grow}
                     value={command}
                     onChange={(_, d) => setCommand(d.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") run(); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !busy) run(); }}
                     placeholder={'top -b -n 1   (no shell: | > ; are literal)'}
-                    disabled={item.state !== "running"}
+                    disabled={busy || item.state !== "running"}
                 />
                 <Button
                     appearance="primary"

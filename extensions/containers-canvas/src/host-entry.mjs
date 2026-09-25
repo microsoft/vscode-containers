@@ -10,9 +10,10 @@ import { attachTrpc } from "@microsoft/vscode-ext-webview/host";
 import { createAppRouter, trpc, loadState, AGENT_META } from "./appRouter.mjs";
 import { createStubPanel } from "./stubPanel.mjs";
 import { describeProcedures, buildCanvasActions } from "./agentActions.mjs";
+import { summariseState } from "./listSummary.mjs";
 import { findTarget, followLogs, followStats, detectRuntime, watchChanges, loadContainers } from "./runtime.mjs";
 
-export { buildCanvasActions };
+export { buildCanvasActions, summariseState };
 
 /**
  * Describe the agent-visible procedures without starting a panel.

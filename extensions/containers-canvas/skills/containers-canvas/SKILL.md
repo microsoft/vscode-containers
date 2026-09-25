@@ -48,7 +48,10 @@ user navigate:
 Examples:
 
 - "why did web stop?" → `{ target: "web", view: "logs" }`
-- "what's eating my memory?" → `{ view: "stats" }`, or add `target` for one
+- "what's eating my memory?" → pick the container and pass it:
+  `{ target: "web", view: "stats" }`. `stats`, `logs`, `files`, `terminal` and
+  `exec` are all per-container, so they need a `target`; without one the panel
+  has nothing to chart. Use `{ view: "list" }` to survey everything first.
 - "why is my node image 1.2 GB?" → `{ target: "node:20", view: "layers" }`
 - "what's running?" → no input
 

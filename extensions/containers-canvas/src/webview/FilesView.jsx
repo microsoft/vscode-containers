@@ -19,7 +19,7 @@
 // by typing a path. That is worth surfacing rather than hiding, because those
 // are exactly the images where this is hardest to do any other way.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     Badge,
     Body1,
@@ -138,6 +138,12 @@ export function FilesView({ item, client, onBack, onNotify }) {
     const [reading, setReading] = useState(false);
     const [opening, setOpening] = useState(false);
 
+    // Rows stay clickable while a request is in flight, so two reads can overlap
+    // and the slower one can land last. Each request takes a token and drops its
+    // result, error and spinner update unless it is still the current one.
+    const listToken = useRef(0);
+    const readToken = useRef(0);
+
     /**
      * Hand the current file to the Copilot editor.
      *
@@ -164,33 +170,42 @@ export function FilesView({ item, client, onBack, onNotify }) {
     }, [client, file, item.id, onNotify]);
 
     const list = useCallback(async (next) => {
+        const token = ++listToken.current;
         setListing(true);
         setListError(null);
         try {
             const res = await client.listPath.query({ id: item.id, path: next });
+            if (token !== listToken.current) return;
             setEntries(res.entries);
             setDir(res.path);
             setPathInput(res.path);
         } catch (error) {
+            if (token !== listToken.current) return;
             setEntries(null);
             setListError(String(error?.message ?? error));
         } finally {
-            setListing(false);
+            // Only the newest request owns the spinner; an older one finishing
+            // must not clear it while the current read is still running.
+            if (token === listToken.current) setListing(false);
         }
     }, [client, item.id]);
 
     useEffect(() => { list("/"); }, [list]);
 
     const openFile = useCallback(async (filePath) => {
+        const token = ++readToken.current;
         setReading(true);
         setFileError(null);
         setFile(null);
         try {
-            setFile(await client.readFile.query({ id: item.id, path: filePath }));
+            const next = await client.readFile.query({ id: item.id, path: filePath });
+            if (token !== readToken.current) return;
+            setFile(next);
         } catch (error) {
+            if (token !== readToken.current) return;
             setFileError(String(error?.message ?? error));
         } finally {
-            setReading(false);
+            if (token === readToken.current) setReading(false);
         }
     }, [client, item.id]);
 

@@ -1,9 +1,10 @@
 {
-  "digest": "c06d69c9ed22d9ec611a8ba76ca62b5c0ba53f3999ec1f2bfa0bc90cda6b5def",
-  "fileCount": 27,
+  "digest": "41a34935235a55bd07f9de89d694c82436597379e350dad05cee148e33ff4eef",
+  "fileCount": 30,
   "inputs": [
     "build.mjs",
     "execSessions.mjs",
+    "openPanel.mjs",
     "package.json",
     "scripts/generateNotice.mjs",
     "server.mjs",
@@ -11,6 +12,7 @@
     "src/appRouter.mjs",
     "src/host-entry.mjs",
     "src/index.mjs",
+    "src/listSummary.mjs",
     "src/runtime.mjs",
     "src/stubPanel.mjs",
     "src/vscode-stub.mjs",
@@ -28,48 +30,53 @@
     "src/webview/index.html",
     "src/webview/main.jsx",
     "src/webview/panelUrl.js",
+    "src/webview/textParsing.mjs",
     "src/webview/theme.js"
   ],
   "outputs": [
     {
       "path": "bundle/host.mjs",
-      "hash": "08d612233bbfa28cb85b8d89266af6d5eaa643eb48b5de5e5a9c5e70860ddac4"
+      "hash": "95f6760d0c5b6a7a891bda0eba33e4dd1e7bc8c4dfd15cd3d047223264c80a34"
     },
     {
       "path": "bundle/webview/chunks/chunk-AL7C57R3.js",
       "hash": "46ed46224922791790e4c965571177a34d73a5391a2769696f40c1c911f7ebb2"
     },
     {
-      "path": "bundle/webview/chunks/chunk-FFZJE3TS.js",
-      "hash": "9343266e736f8d07bd09d7a7126bfbf04ee9630cf3c9ff0fdbd052657f8106b3"
-    },
-    {
       "path": "bundle/webview/chunks/chunk-K5VEBUWY.js",
       "hash": "1414b37b8afbe4fe78bba131ab769180936564c8386ad98d600d4c7d2a6e7418"
     },
     {
-      "path": "bundle/webview/chunks/CodeView-IIKDR6ZZ.js",
-      "hash": "17e723c9e9be4a0f75694f564057bc6a6f8b904ea1dcaa9b7d3d31f5ff240934"
+      "path": "bundle/webview/chunks/chunk-O6NFZK6B.js",
+      "hash": "e3b0a3ddff6608428add28c64072bf110e1b8aff17ece38508cd3618614ce1a6"
     },
     {
-      "path": "bundle/webview/chunks/DockerfileView-LITWBEIN.js",
-      "hash": "dbc043870eb4431de7da3472c82e705d3c14288a56485ed5904c59f8e0d3ddeb"
+      "path": "bundle/webview/chunks/chunk-RAEQKLW2.js",
+      "hash": "32315ecf9c006ddb56bd5bf8b9f826f1cf0e7d0a963a71284a2e7f0f77031d42"
     },
     {
-      "path": "bundle/webview/chunks/ExecView-2TYGRARA.js",
-      "hash": "3b21783d4f8dae9c8bd1da8620ff1832b0400a3c61721ffdd4f44c71f2470fe8"
+      "path": "bundle/webview/chunks/CodeView-E7EW3FYH.js",
+      "hash": "58f49a95bfe383b5d80c77506dfcea1f6992162f3fa60136a18e8dce0b593e39"
     },
     {
-      "path": "bundle/webview/chunks/FilesView-CKNTUZTW.js",
-      "hash": "6f51976824d8189ede400073a7fca4dc7a19e16e087d4b2ca9aee2711d358cc1"
+      "path": "bundle/webview/chunks/DockerfileView-ZOLQ7Y2T.js",
+      "hash": "07c68be64d1f59a80fd668971997b144764dd41ed04d90de1bb8d73f5fdc9390"
+    },
+    {
+      "path": "bundle/webview/chunks/ExecView-V4IB5LE6.js",
+      "hash": "4fd0a6b9df09a10842efc81199ffd663f13d39a3800da0899a1c55acff64338f"
+    },
+    {
+      "path": "bundle/webview/chunks/FilesView-YBMAQXTS.js",
+      "hash": "73aafe50740a3b557381e62011976a6bbc6e851258d8f681c86a85e822760c9c"
     },
     {
       "path": "bundle/webview/chunks/LayersView-VHJ23RA6.js",
       "hash": "12a65626fcf8607fb8963697c778c429d0eb8f88e2373645ed7d47ddb6f4df50"
     },
     {
-      "path": "bundle/webview/chunks/LogView-BTJUWASJ.js",
-      "hash": "5f42d23ede95cbe741cc01c9719227817f1f7d501663e4e5c29822a5987592ab"
+      "path": "bundle/webview/chunks/LogView-X5ZY6BSH.js",
+      "hash": "01dbf03145350a7463816e29510c2fa0100d9d6def5710227fc74d313ca13dfc"
     },
     {
       "path": "bundle/webview/chunks/RunImageDialog-YRDQM3BE.js",
@@ -80,12 +87,12 @@
       "hash": "4647af8b53d4c4c4d090682fe3a2e74ca75576ec2ca2577eafcf1a9a35a5795e"
     },
     {
-      "path": "bundle/webview/chunks/TerminalView-MO2UQ5XN.css",
-      "hash": "9a94b33948fa65578113fcc20fa11350c9d0f62272490039c0595beee03730fe"
+      "path": "bundle/webview/chunks/TerminalView-CJ5SUSNF.js",
+      "hash": "7318e7ab5e1855843637c0a46099c658baaa7937a5a7419177c8911b27044c07"
     },
     {
-      "path": "bundle/webview/chunks/TerminalView-XKT4EMUW.js",
-      "hash": "a8a23bfb2a4400a259b7184efb00fb22cc48e5163be376d7f6178d0d6ab7a845"
+      "path": "bundle/webview/chunks/TerminalView-MO2UQ5XN.css",
+      "hash": "9a94b33948fa65578113fcc20fa11350c9d0f62272490039c0595beee03730fe"
     },
     {
       "path": "bundle/webview/index.html",
@@ -97,7 +104,7 @@
     },
     {
       "path": "bundle/webview/main.js",
-      "hash": "e79db54fdfe00827d2dbeadcc73eb0b317e86d67d2e380afa9a1f0f8358d271b"
+      "hash": "318e9252e729854ffcafd2a2a16836c681fe3079e1869795bbb2b50879405dae"
     }
   ]
 }

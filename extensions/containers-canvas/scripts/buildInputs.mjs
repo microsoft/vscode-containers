@@ -56,6 +56,10 @@ export const EXTRA_INPUTS = [
     "scripts/generateNotice.mjs",
     "package.json",
     "src/webview/index.html",
+    // Imported by `extension.mjs`, which consumes the build output rather than
+    // being an entry point, so esbuild never sees it -- but it ships, and it
+    // decides what a canvas `open` call does.
+    "openPanel.mjs",
 ];
 
 async function* walk(dir) {

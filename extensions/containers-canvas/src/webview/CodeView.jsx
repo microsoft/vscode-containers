@@ -21,6 +21,8 @@ import { useEffect, useMemo, useState } from "react";
 import { makeStyles, shorthands, tokens, Button } from "@fluentui/react-components";
 import { ChevronRightRegular, ChevronDownRegular } from "@fluentui/react-icons";
 
+import { parseJsonRoot } from "./textParsing.mjs";
+
 const useStyles = makeStyles({
     host: {
         width: "100%",
@@ -196,24 +198,21 @@ function JsonNode({ name, value, depth, forceOpen }) {
  *
  * JSON renders as a collapsible tree, foldable at every depth; everything else
  * is line-numbered plain text. `language` decides whether to attempt a parse.
+ *
+ * `inspect` opts into unwrapping a single-element array, which is the shape
+ * `docker inspect` always returns. It is off by default because FilesView shows
+ * arbitrary user files through this same component, and there a one-element
+ * array is real content -- `[{"enabled":true}]` was being displayed as a bare
+ * object, silently misrepresenting the file.
  */
-export function CodeView({ value, language = "json", height = "420px" }) {
+export function CodeView({ value, language = "json", height = "420px", inspect = false }) {
     const styles = useStyles();
     const text = String(value ?? "");
 
-    const parsed = useMemo(() => {
-        if (language !== "json") return null;
-        const trimmed = text.trim();
-        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null;
-        try {
-            const v = JSON.parse(trimmed);
-            // `docker inspect` always returns an array; unwrap the single entry.
-            if (Array.isArray(v) && v.length === 1 && v[0] && typeof v[0] === "object") return v[0];
-            return v && typeof v === "object" ? v : null;
-        } catch {
-            return null;
-        }
-    }, [text, language]);
+    const parsed = useMemo(
+        () => parseJsonRoot(text, { language, inspect }),
+        [text, language, inspect],
+    );
 
     // Positive expands every node, negative collapses; the magnitude only has to
     // change for nodes to notice.
@@ -228,16 +227,26 @@ export function CodeView({ value, language = "json", height = "420px" }) {
     }
 
     const entries = Object.entries(parsed);
+    const isArrayRoot = Array.isArray(parsed);
     return (
         <div className={styles.host} style={{ height }}>
             <div className={styles.toolbar}>
                 <Button size="small" appearance="subtle" onClick={() => setForceOpen((n) => Math.abs(n) + 1)}>Expand all</Button>
                 <Button size="small" appearance="subtle" onClick={() => setForceOpen((n) => -(Math.abs(n) + 1))}>Collapse all</Button>
+                {/* Without this an array root was indistinguishable from an
+                    object root, because the tree shows only the keys. */}
+                <span className={styles.hint}>{summarize(parsed)}</span>
             </div>
             <div className={styles.tree}>
-                {entries.map(([name, v]) => (
-                    <JsonNode key={name} name={name} value={v} depth={0} forceOpen={forceOpen} />
-                ))}
+                {entries.length === 0
+                    // `[]` and `{}` previously rendered as an empty pane, which
+                    // reads as "failed to load" rather than "there is nothing".
+                    ? <div className={styles.row} style={{ paddingLeft: 20 }}>
+                        <span className={styles.hint}>{isArrayRoot ? "Empty array" : "Empty object"}</span>
+                    </div>
+                    : entries.map(([name, v]) => (
+                        <JsonNode key={name} name={isArrayRoot ? `[${name}]` : name} value={v} depth={0} forceOpen={forceOpen} />
+                    ))}
             </div>
         </div>
     );

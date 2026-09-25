@@ -59,28 +59,14 @@ const useStyles = makeStyles({
 });
 
 /**
- * A SLSA configSource uri is `<repo>#<commit>:<subdir>`. Split it so the commit
- * and path are readable instead of buried in one long string.
+ * A SLSA configSource uri is `<repo>#<commit>:<subdir>`, and a GitHub repo name
+ * can contain dots. Both live in `textParsing.mjs` so the test runner can
+ * import them; `node --test` cannot parse JSX.
  */
-function splitSourceUri(uri) {
-    const hash = String(uri ?? "").indexOf("#");
-    if (hash === -1) return { repo: uri, commit: null, subdir: null };
-    const repo = uri.slice(0, hash);
-    const rest = uri.slice(hash + 1);
-    const colon = rest.indexOf(":");
-    return colon === -1
-        ? { repo, commit: rest, subdir: null }
-        : { repo, commit: rest.slice(0, colon), subdir: rest.slice(colon + 1) };
-}
+import { splitSourceUri, githubRepo, browseUrl } from "./textParsing.mjs";
 
-/** A browsable URL for the recorded source, when the host is one we can link. */
-function browseUrl(uri, entryPoint) {
-    const { repo, commit, subdir } = splitSourceUri(uri);
-    const gh = /^https?:\/\/github\.com\/([^/]+\/[^/.]+)/.exec(String(repo ?? ""));
-    if (!gh || !commit) return null;
-    const path = [subdir, entryPoint].filter(Boolean).join("/");
-    return `https://github.com/${gh[1]}/blob/${commit}/${path || "Dockerfile"}`;
-}
+export { splitSourceUri, githubRepo, browseUrl };
+
 
 export function DockerfileView({ item, client, onBack, onNotify }) {
     const styles = useStyles();
@@ -115,7 +101,9 @@ export function DockerfileView({ item, client, onBack, onNotify }) {
 
     const source = data?.provenance?.source ?? null;
     const parts = source ? splitSourceUri(source.uri) : null;
-    const link = source ? browseUrl(source.uri, source.entryPoint) : null;
+    const link = source ? browseUrl(source.uri, source.entryPoint, source.revision) : null;
+    // Shown whether it came from the uri fragment or from a recorded revision.
+    const commit = source ? (parts.commit ?? source.revision ?? null) : null;
 
     return (
         <div>
@@ -142,10 +130,10 @@ export function DockerfileView({ item, client, onBack, onNotify }) {
                             <div className={styles.sourceCard}>
                                 <Caption1>Repository</Caption1>
                                 <Body1 className={styles.mono}>{parts.repo}</Body1>
-                                {parts.commit ? (
+                                {commit ? (
                                     <>
                                         <Caption1>Commit</Caption1>
-                                        <Body1 className={styles.mono}>{parts.commit}</Body1>
+                                        <Body1 className={styles.mono}>{commit}</Body1>
                                     </>
                                 ) : null}
                                 {source.platform ? (

@@ -99,17 +99,24 @@ export function LogView({ item, client, onBack, onNotify }) {
     const [asking, setAsking] = useState(false);
     const viewerRef = useRef(null);
     const atBottomRef = useRef(true);
+    // Invalidates one-shot reads. A pending `logs` query that resolves after
+    // Follow has started would otherwise replace live output with an older
+    // snapshot; the same applies when the container or tail selection changes.
+    const loadToken = useRef(0);
 
     const load = useCallback(async () => {
+        const token = ++loadToken.current;
         setBusy(true);
         setError(null);
         try {
             const res = await client.logs.query({ id: item.id, tail: Number(tail) });
+            if (token !== loadToken.current) return;
             setText(res.output ?? "");
         } catch (e) {
+            if (token !== loadToken.current) return;
             setError(String(e?.message ?? e));
         } finally {
-            setBusy(false);
+            if (token === loadToken.current) setBusy(false);
         }
     }, [client, item.id, tail]);
 
@@ -127,7 +134,13 @@ export function LogView({ item, client, onBack, onNotify }) {
      */
     useEffect(() => {
         if (!following) return undefined;
+        // Any one-shot read still in flight belongs to the pre-follow view.
+        loadToken.current += 1;
         setStreamError(null);
+        // A snapshot that failed leaves its message behind; without this the
+        // viewer keeps showing that error while logs stream successfully.
+        setError(null);
+        setBusy(false);
         setText("");
         let carry = "";
         const source = new EventSource(panelHref("./logs", { id: item.id, tail }));

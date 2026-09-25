@@ -108,7 +108,15 @@ export function TerminalView({ item, onBack }) {
         const socket = new WebSocket(url);
         socketRef.current = socket;
 
+        // Closing the previous socket does not silence it: a delayed close,
+        // error or exit from the connection this one replaced would still run
+        // and overwrite the new session's status -- hiding Disconnect while its
+        // PTY was still alive. Every callback checks it is still the current
+        // socket before touching state.
+        const current = () => socketRef.current === socket;
+
         socket.addEventListener("message", (event) => {
+            if (!current()) return;
             let frame;
             try { frame = JSON.parse(event.data); } catch { return; }
             if (frame.type === "data") term.write(frame.data);
@@ -119,8 +127,17 @@ export function TerminalView({ item, onBack }) {
                 term.write(`\r\n\u001b[90m[session ended${frame.code ? ` — exit ${frame.code}` : ""}]\u001b[0m\r\n`);
             }
         });
-        socket.addEventListener("close", () => setStatus((s) => (s === "connected" ? "closed" : s)));
-        socket.addEventListener("error", () => setError("Could not open a terminal session."));
+        socket.addEventListener("close", () => {
+            if (!current()) return;
+            // Not just from "connected": a handshake that never opened left the
+            // badge stuck on "connecting" forever.
+            setStatus("closed");
+        });
+        socket.addEventListener("error", () => {
+            if (!current()) return;
+            setError("Could not open a terminal session.");
+            setStatus("closed");
+        });
     }, [item.id]);
 
     // Mount xterm once. Recreating it on every reconnect would throw away

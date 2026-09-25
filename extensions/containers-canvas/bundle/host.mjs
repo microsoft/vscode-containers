@@ -17309,6 +17309,7 @@ async function loadStateUncached({ force = false } = {}) {
       containers: [],
       images: [],
       error: "No container runtime found. Install Docker or Podman and make sure it is on your PATH.",
+      listErrors: { containers: "no runtime", images: "no runtime" },
       loadedAt: (/* @__PURE__ */ new Date()).toISOString()
     };
   }
@@ -17319,6 +17320,7 @@ async function loadStateUncached({ force = false } = {}) {
       images: [],
       error: `${runtime.bin} is installed but not reachable.
 ${runtime.error ?? ""}`.trim(),
+      listErrors: { containers: "runtime unreachable", images: "runtime unreachable" },
       loadedAt: (/* @__PURE__ */ new Date()).toISOString()
     };
   }
@@ -17334,6 +17336,14 @@ ${runtime.error ?? ""}`.trim(),
     containers: ps.ok ? parseJsonLines(ps.stdout).map(normalizeContainer) : [],
     images: imgs.ok ? parseJsonLines(imgs.stdout).map(normalizeImage) : [],
     error: errors.length > 0 ? errors.join("\n") : null,
+    // Which list failed, structurally. `containers: []` is ambiguous on its
+    // own -- it means both "none exist" and "the read failed" -- and one
+    // list can fail while the other succeeds, so a caller that needs to tell
+    // those apart cannot do it from the joined `error` string.
+    listErrors: {
+      containers: ps.ok ? null : failureMessage(ps),
+      images: imgs.ok ? null : failureMessage(imgs)
+    },
     loadedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
 }
@@ -18802,39 +18812,60 @@ async function detectShell(runtimeBin, containerId) {
   }
   return null;
 }
-function createExecSessions({ runtimeBin }) {
+function createExecSessions({ runtimeBin, loadPtyModule = loadPty }) {
   const sessions = /* @__PURE__ */ new Map();
+  let starting = 0;
+  let disposed = false;
+  let nextId = 0;
+  const assertLive = () => {
+    if (disposed) throw new Error("The panel closed before the terminal finished starting.");
+  };
   return {
     /**
      * Start a shell. `onData` receives raw terminal output including ANSI
      * escapes -- xterm.js renders them, so nothing is stripped here.
      */
     async start({ containerId, shell, cols = 80, rows = 24, onData, onExit }) {
-      if (sessions.size >= MAX_SESSIONS) {
+      assertLive();
+      if (sessions.size + starting >= MAX_SESSIONS) {
         throw new Error(`Too many terminal sessions open (${MAX_SESSIONS}). Close one and try again.`);
       }
-      const chosen = shell ?? await detectShell(runtimeBin, containerId);
-      if (!chosen) {
-        throw new Error(
-          "This container has no shell. Distroless and chiseled images ship without one, so they cannot be exec'd into. Use the file browser to inspect it instead."
-        );
+      starting += 1;
+      try {
+        const chosen = shell ?? await detectShell(runtimeBin, containerId);
+        if (!chosen) {
+          throw new Error(
+            "This container has no shell. Distroless and chiseled images ship without one, so they cannot be exec'd into. Use the file browser to inspect it instead."
+          );
+        }
+        assertLive();
+        const { spawn: spawn2 } = await loadPtyModule();
+        assertLive();
+        const proc = spawn2(runtimeBin, ["exec", "-it", containerId, chosen], {
+          name: "xterm-256color",
+          cols,
+          rows,
+          windowsHide: true
+        });
+        if (disposed) {
+          try {
+            proc.kill();
+          } catch {
+          }
+          assertLive();
+        }
+        const id = `${containerId.slice(0, 12)}-${Date.now().toString(36)}-${(nextId += 1).toString(36)}`;
+        const session = { id, proc, containerId, shell: chosen };
+        sessions.set(id, session);
+        proc.onData((chunk) => onData?.(chunk));
+        proc.onExit(({ exitCode }) => {
+          sessions.delete(id);
+          onExit?.(exitCode);
+        });
+        return { id, shell: chosen };
+      } finally {
+        starting -= 1;
       }
-      const { spawn: spawn2 } = await loadPty();
-      const proc = spawn2(runtimeBin, ["exec", "-it", containerId, chosen], {
-        name: "xterm-256color",
-        cols,
-        rows,
-        windowsHide: true
-      });
-      const id = `${containerId.slice(0, 12)}-${Date.now().toString(36)}`;
-      const session = { id, proc, containerId, shell: chosen };
-      sessions.set(id, session);
-      proc.onData((chunk) => onData?.(chunk));
-      proc.onExit(({ exitCode }) => {
-        sessions.delete(id);
-        onExit?.(exitCode);
-      });
-      return { id, shell: chosen };
     },
     write(id, data) {
       sessions.get(id)?.proc.write(data);
@@ -18856,12 +18887,22 @@ function createExecSessions({ runtimeBin }) {
       } catch {
       }
     },
-    /** Every session dies with the panel. A stray shell is a leaked process. */
+    /**
+     * Every session dies with the panel. A stray shell is a leaked process.
+     *
+     * Also latches `disposed`, so a start still awaiting shell detection or
+     * the node-pty import refuses rather than spawning into a closed panel.
+     */
     disposeAll() {
+      disposed = true;
       for (const [id] of sessions) this.kill(id);
     },
     get size() {
       return sessions.size;
+    },
+    /** Sessions running plus starts in flight, which is what the cap counts. */
+    get reserved() {
+      return sessions.size + starting;
     }
   };
 }

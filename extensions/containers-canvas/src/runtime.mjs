@@ -374,6 +374,7 @@ async function loadStateUncached({ force = false } = {}) {
             containers: [],
             images: [],
             error: "No container runtime found. Install Docker or Podman and make sure it is on your PATH.",
+            listErrors: { containers: "no runtime", images: "no runtime" },
             loadedAt: new Date().toISOString(),
         };
     }
@@ -383,6 +384,7 @@ async function loadStateUncached({ force = false } = {}) {
             containers: [],
             images: [],
             error: `${runtime.bin} is installed but not reachable.\n${runtime.error ?? ""}`.trim(),
+            listErrors: { containers: "runtime unreachable", images: "runtime unreachable" },
             loadedAt: new Date().toISOString(),
         };
     }
@@ -401,6 +403,14 @@ async function loadStateUncached({ force = false } = {}) {
         containers: ps.ok ? parseJsonLines(ps.stdout).map(normalizeContainer) : [],
         images: imgs.ok ? parseJsonLines(imgs.stdout).map(normalizeImage) : [],
         error: errors.length > 0 ? errors.join("\n") : null,
+        // Which list failed, structurally. `containers: []` is ambiguous on its
+        // own -- it means both "none exist" and "the read failed" -- and one
+        // list can fail while the other succeeds, so a caller that needs to tell
+        // those apart cannot do it from the joined `error` string.
+        listErrors: {
+            containers: ps.ok ? null : failureMessage(ps),
+            images: imgs.ok ? null : failureMessage(imgs),
+        },
         loadedAt: new Date().toISOString(),
     };
 }

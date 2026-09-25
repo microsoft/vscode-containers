@@ -111,8 +111,29 @@ export async function detectShell(runtimeBin, containerId) {
     return null;
 }
 
-export function createExecSessions({ runtimeBin }) {
+/**
+ * @param runtimeBin      docker/podman binary.
+ * @param loadPtyModule   Seam for tests. Defaults to the real lazy loader; the
+ *                        guard tests substitute a fake so they can exercise the
+ *                        capacity and disposal races without spawning shells.
+ */
+export function createExecSessions({ runtimeBin, loadPtyModule = loadPty }) {
     const sessions = new Map();
+    // Starts that passed the capacity check but have not spawned yet. Shell
+    // detection and the node-pty import are both awaited before a session is
+    // recorded, so counting only `sessions` let concurrent sockets each see
+    // room and spawn, overshooting the cap.
+    let starting = 0;
+    // Set once the panel closes. A start already past the check would otherwise
+    // spawn a PTY after teardown, with nothing left to kill it.
+    let disposed = false;
+    // Disambiguates session ids; see the collision note where ids are minted.
+    let nextId = 0;
+
+    /** @throws if the panel closed while this start was awaiting something. */
+    const assertLive = () => {
+        if (disposed) throw new Error("The panel closed before the terminal finished starting.");
+    };
 
     return {
         /**
@@ -120,39 +141,62 @@ export function createExecSessions({ runtimeBin }) {
          * escapes -- xterm.js renders them, so nothing is stripped here.
          */
         async start({ containerId, shell, cols = 80, rows = 24, onData, onExit }) {
-            if (sessions.size >= MAX_SESSIONS) {
+            assertLive();
+            if (sessions.size + starting >= MAX_SESSIONS) {
                 throw new Error(`Too many terminal sessions open (${MAX_SESSIONS}). Close one and try again.`);
             }
-            const chosen = shell ?? (await detectShell(runtimeBin, containerId));
-            if (!chosen) {
-                throw new Error(
-                    "This container has no shell. Distroless and chiseled images ship without one, so they cannot be exec'd into. Use the file browser to inspect it instead.",
-                );
+
+            // Reserved before the first await, released in `finally`, so the
+            // capacity check above accounts for starts still in flight.
+            starting += 1;
+            try {
+                const chosen = shell ?? (await detectShell(runtimeBin, containerId));
+                if (!chosen) {
+                    throw new Error(
+                        "This container has no shell. Distroless and chiseled images ship without one, so they cannot be exec'd into. Use the file browser to inspect it instead.",
+                    );
+                }
+                assertLive();
+
+                // -i -t needs a real terminal on this side, which is why this uses
+                // node-pty rather than child_process: `docker exec -it` refuses a
+                // piped stdin with "the input device is not a TTY", and without a
+                // TTY there is no prompt, no echo and no line editing.
+                const { spawn } = await loadPtyModule();
+                assertLive();
+
+                const proc = spawn(runtimeBin, ["exec", "-it", containerId, chosen], {
+                    name: "xterm-256color",
+                    cols,
+                    rows,
+                    windowsHide: true,
+                });
+
+                // Disposal can land between the last check and here; the process
+                // exists by now, so it has to be killed rather than refused.
+                if (disposed) {
+                    try { proc.kill(); } catch { /* already gone */ }
+                    assertLive();
+                }
+
+                // Date.now() alone collides: two terminals opened on the same
+                // container inside one millisecond produced the same key, and
+                // the second `set` evicted the first from the map -- leaving a
+                // live PTY that nothing could kill. The counter makes it unique.
+                const id = `${containerId.slice(0, 12)}-${Date.now().toString(36)}-${(nextId += 1).toString(36)}`;
+                const session = { id, proc, containerId, shell: chosen };
+                sessions.set(id, session);
+
+                proc.onData((chunk) => onData?.(chunk));
+                proc.onExit(({ exitCode }) => {
+                    sessions.delete(id);
+                    onExit?.(exitCode);
+                });
+
+                return { id, shell: chosen };
+            } finally {
+                starting -= 1;
             }
-
-            // -i -t needs a real terminal on this side, which is why this uses
-            // node-pty rather than child_process: `docker exec -it` refuses a
-            // piped stdin with "the input device is not a TTY", and without a
-            // TTY there is no prompt, no echo and no line editing.
-            const { spawn } = await loadPty();
-            const proc = spawn(runtimeBin, ["exec", "-it", containerId, chosen], {
-                name: "xterm-256color",
-                cols,
-                rows,
-                windowsHide: true,
-            });
-
-            const id = `${containerId.slice(0, 12)}-${Date.now().toString(36)}`;
-            const session = { id, proc, containerId, shell: chosen };
-            sessions.set(id, session);
-
-            proc.onData((chunk) => onData?.(chunk));
-            proc.onExit(({ exitCode }) => {
-                sessions.delete(id);
-                onExit?.(exitCode);
-            });
-
-            return { id, shell: chosen };
         },
 
         write(id, data) {
@@ -176,13 +220,24 @@ export function createExecSessions({ runtimeBin }) {
             try { session.proc.kill(); } catch { /* already gone */ }
         },
 
-        /** Every session dies with the panel. A stray shell is a leaked process. */
+        /**
+         * Every session dies with the panel. A stray shell is a leaked process.
+         *
+         * Also latches `disposed`, so a start still awaiting shell detection or
+         * the node-pty import refuses rather than spawning into a closed panel.
+         */
         disposeAll() {
+            disposed = true;
             for (const [id] of sessions) this.kill(id);
         },
 
         get size() {
             return sessions.size;
+        },
+
+        /** Sessions running plus starts in flight, which is what the cap counts. */
+        get reserved() {
+            return sessions.size + starting;
         },
     };
 }
