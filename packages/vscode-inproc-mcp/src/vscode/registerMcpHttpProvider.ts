@@ -30,7 +30,7 @@ export function registerMcpHttpProvider(context: vscode.ExtensionContext, option
             async provideMcpServerDefinitions(token: vscode.CancellationToken): Promise<vscode.McpServerDefinition[]> {
                 if (options.useTcpTransport) {
                     // The Copilot harness consumes TCP definitions without calling resolveMcpServerDefinition,
-                    // so discovery must start and expose the real endpoint right
+                    // so discovery must start and expose the real endpoint right away.
                     const { serverUri, headers } = await getTcpServer();
                     return [
                         new vscode.McpHttpServerDefinition(
