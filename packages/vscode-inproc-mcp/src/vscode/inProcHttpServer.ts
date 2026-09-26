@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { ServerType } from '@hono/node-server';
 import type { DisposableLike } from '@microsoft/vscode-processutils';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import type { AddressInfo } from 'net';
+import type { AddressInfo, ListenOptions } from 'net';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -41,11 +42,21 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
         ]);
 
         const app = new Hono();
-        let allowedHost = 'localhost';
+        let allowedHost: string | undefined;
+
+        // Routes have to be registered before the server starts, so use this function to read this lazily after the OS assigns the TCP port.
+        function getAllowedHost(): string {
+            if (!allowedHost) {
+                throw new Error('The MCP HTTP server has not finished binding.');
+            }
+            return allowedHost;
+        };
 
         app.use('/mcp', async (context, next) => {
             if (mcpOptions.useTcpTransport) {
-                if (context.req.header('host') !== allowedHost || context.req.header('origin')) {
+                // Require the exact Host as an extra precaution to prevent DNS rebinding. This endpoint
+                // supports only non-browser MCP clients, so reject any request with an Origin.
+                if (context.req.header('host') !== getAllowedHost() || context.req.header('origin')) {
                     return new Response('Forbidden', { status: 403 });
                 }
             }
@@ -57,7 +68,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             return await next();
         });
 
-        app.post('/mcp', async (context) => await handlePost(mcpOptions, transports, allowedHost, context.req.raw));
+        app.post('/mcp', async (context) => await handlePost(mcpOptions, transports, getAllowedHost(), context.req.raw));
         app.get('/mcp', async (context) => await handleGetDelete(transports, context.req.raw));
         app.delete('/mcp', async (context) => await handleGetDelete(transports, context.req.raw));
 
@@ -71,12 +82,13 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             allowedHost = getLoopbackAuthority(httpServer.address());
         } else {
             await listen(httpServer, socketPath);
+            allowedHost = 'localhost';
         }
 
         const serverUri = mcpOptions.useTcpTransport ?
             vscode.Uri.from({
                 scheme: 'http',
-                authority: allowedHost,
+                authority: getAllowedHost(),
                 path: '/mcp',
             }) :
             vscode.Uri.from({
@@ -194,10 +206,12 @@ async function handleGetDelete(transports: Record<string, SessionTransport>, req
     return await transport.handleRequest(request);
 }
 
-function listen(
-    httpServer: { listen: (options: { host: string, port: number } | string, callback: () => void) => unknown; once: (event: 'error', listener: (err: Error) => void) => unknown; off: (event: 'error', listener: (err: Error) => void) => unknown },
-    options: { host: string, port: number } | string | undefined
-): Promise<void> {
+/**
+ * Starts the server and resolves after it has bound to its address.
+ * Use this instead of calling `httpServer.listen` directly when the OS assigns the TCP port,
+ * because `httpServer.listen` returns before that port is available.
+ */
+function listen(httpServer: ServerType, options: ListenOptions | string | undefined): Promise<void> {
     if (!options) {
         throw new Error('A socket path is required for the private socket transport.');
     }
@@ -216,7 +230,6 @@ function getLoopbackAuthority(address: string | AddressInfo | null): string {
     if (!address || typeof address === 'string') {
         throw new Error('The loopback HTTP server did not expose a TCP address.');
     }
-
     return `127.0.0.1:${address.port}`;
 }
 

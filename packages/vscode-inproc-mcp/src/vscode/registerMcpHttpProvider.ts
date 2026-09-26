@@ -13,29 +13,24 @@ import type { McpProviderOptions } from './McpProviderOptions';
  * @param options The options for the MCP provider
  */
 export function registerMcpHttpProvider(context: vscode.ExtensionContext, options: McpProviderOptions): void {
-    // The Copilot harness consumes TCP definitions without calling resolveMcpServerDefinition,
-    // so discovery must start and expose the real endpoint.
-    let tcpServerPromise: ReturnType<typeof startInProcHttpServer> | undefined;
+    let tcpServer: Awaited<ReturnType<typeof startInProcHttpServer>> | undefined;
 
-    function getTcpServer(): ReturnType<typeof startInProcHttpServer> {
-        tcpServerPromise ??= startInProcHttpServer(options).then(
-            server => {
-                context.subscriptions.push(server.disposable);
-                return server;
-            },
-            err => {
-                tcpServerPromise = undefined;
-                throw err;
-            }
-        );
+    async function getTcpServer(): Promise<ReturnType<typeof startInProcHttpServer>> {
+        if (tcpServer) {
+            return tcpServer;
+        }
 
-        return tcpServerPromise;
+        tcpServer = await startInProcHttpServer(options);
+        context.subscriptions.push(tcpServer.disposable);
+        return tcpServer;
     }
 
     context.subscriptions.push(
         vscode.lm.registerMcpServerDefinitionProvider(options.id, {
             async provideMcpServerDefinitions(token: vscode.CancellationToken): Promise<vscode.McpServerDefinition[]> {
                 if (options.useTcpTransport) {
+                    // The Copilot harness consumes TCP definitions without calling resolveMcpServerDefinition,
+                    // so discovery must start and expose the real endpoint right
                     const { serverUri, headers } = await getTcpServer();
                     return [
                         new vscode.McpHttpServerDefinition(
@@ -60,8 +55,11 @@ export function registerMcpHttpProvider(context: vscode.ExtensionContext, option
                 const { disposable, serverUri, headers } = options.useTcpTransport ?
                     await getTcpServer() :
                     await startInProcHttpServer(options);
+
                 if (!options.useTcpTransport) {
                     context.subscriptions.push(disposable);
+                } else {
+                    // Skip, the tcp server disposable has already been added
                 }
 
                 server.uri = serverUri;
