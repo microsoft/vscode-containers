@@ -32,9 +32,6 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
 
     try {
         const nonce = crypto.randomUUID();
-        if (!mcpOptions.useTcpTransport) {
-            socketPath = getRandomSocketPath();
-        }
 
         const [{ Hono }, { createAdaptorServer }] = await Promise.all([
             honoModuleLazy.value,
@@ -81,6 +78,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             await listen(httpServer, { host: '127.0.0.1', port: 0 });
             allowedHost = getLoopbackAuthority(httpServer.address());
         } else {
+            socketPath = getRandomSocketPath();
             await listen(httpServer, socketPath);
             allowedHost = 'localhost';
         }
@@ -208,11 +206,7 @@ async function handleGetDelete(transports: Record<string, SessionTransport>, req
  * Use this instead of calling `httpServer.listen` directly when the OS assigns the TCP port,
  * because `httpServer.listen` returns before that port is available.
  */
-function listen(httpServer: ServerType, options: ListenOptions | string | undefined): Promise<void> {
-    if (!options) {
-        throw new Error('A socket path is required for the private socket transport.');
-    }
-
+function listen(httpServer: ServerType, options: ListenOptions | string): Promise<void> {
     return new Promise((resolve, reject) => {
         const onError = (err: Error): void => reject(err);
         httpServer.once('error', onError);
