@@ -41,7 +41,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
         const app = new Hono();
         let allowedHost: string | undefined;
 
-        // Routes have to be registered before the server starts, so use this function to read this lazily after the OS has had a chance to assing any port.
+        // Routes have to be registered before the server starts, so use this function to read this lazily after the OS has had a chance to assign any port.
         function getAllowedHost(): string {
             if (!allowedHost) {
                 throw new Error('The MCP HTTP server has not finished binding.');
