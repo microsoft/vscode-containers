@@ -1,3 +1,7 @@
+## 2.5.2 - 22 September 2026
+### Fixed
+* Fixed an issue that broke the containers view when using WSLC. [#616](https://github.com/microsoft/vscode-containers/issues/616)
+
 ## 2.5.1 - 14 September 2026
 ### Added
 * Added a new "Open in Integrated Browser" context menu item to running containers. This is similar to the existing "Open in Browser" command (now called "Open in External Browser"), but uses VS Code's integrated browser window. With permission, agents can also interact with the integrated browser window. [#600](https://github.com/microsoft/vscode-containers/issues/600)
