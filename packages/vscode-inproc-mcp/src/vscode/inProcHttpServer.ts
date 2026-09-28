@@ -215,11 +215,7 @@ function listen(httpServer: ServerType, options: ListenOptions | string): Promis
         };
 
         httpServer.once('error', onError);
-        if (typeof options === 'string') {
-            httpServer.listen(options, onListening);
-        } else {
-            httpServer.listen(options, onListening);
-        }
+        httpServer.listen(options, onListening);
     });
 }
 
