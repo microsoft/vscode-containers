@@ -7,22 +7,26 @@ import * as vscode from 'vscode';
 import { startInProcHttpServer } from './inProcHttpServer';
 import type { McpProviderOptions } from './McpProviderOptions';
 
+type InProcHttpServer = Awaited<ReturnType<typeof startInProcHttpServer>>;
+
 /**
  * Registers an in-proc MCP HTTP server provider
  * @param context The extension context
  * @param options The options for the MCP provider
  */
 export function registerMcpHttpProvider(context: vscode.ExtensionContext, options: McpProviderOptions): void {
-    let tcpServer: Awaited<ReturnType<typeof startInProcHttpServer>> | undefined;
+    let tcpServerPromise: Promise<InProcHttpServer> | undefined;
 
-    async function getTcpServer(): Promise<ReturnType<typeof startInProcHttpServer>> {
-        if (tcpServer) {
+    function getTcpServer(): Promise<InProcHttpServer> {
+        tcpServerPromise ??= startInProcHttpServer(options).then((tcpServer) => {
+            context.subscriptions.push(tcpServer.disposable);
             return tcpServer;
-        }
+        }).catch((err: unknown) => {
+            tcpServerPromise = undefined;
+            throw err;
+        });
 
-        tcpServer = await startInProcHttpServer(options);
-        context.subscriptions.push(tcpServer.disposable);
-        return tcpServer;
+        return tcpServerPromise;
     }
 
     context.subscriptions.push(

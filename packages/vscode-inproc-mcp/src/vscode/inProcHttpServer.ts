@@ -209,11 +209,17 @@ async function handleGetDelete(transports: Record<string, SessionTransport>, req
 function listen(httpServer: ServerType, options: ListenOptions | string): Promise<void> {
     return new Promise((resolve, reject) => {
         const onError = (err: Error): void => reject(err);
-        httpServer.once('error', onError);
-        httpServer.listen(options, () => {
+        const onListening = (): void => {
             httpServer.off('error', onError);
             resolve();
-        });
+        };
+
+        httpServer.once('error', onError);
+        if (typeof options === 'string') {
+            httpServer.listen(options, onListening);
+        } else {
+            httpServer.listen(options, onListening);
+        }
     });
 }
 
