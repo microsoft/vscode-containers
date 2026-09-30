@@ -20,8 +20,23 @@ const netSdkImage = 'mcr.microsoft.com/dotnet/sdk';
 
 const cSharpConfigId = 'csharp';
 const cSharpPromptSetting = 'suppressBuildAssetsNotification';
-const NetCorePreviewVersion = 11;
 const NetCoreLtsc2025Version = 11;
+
+export function getNetCoreBaseImages(netCoreVersion: semver.SemVer, platform: string, netCorePlatformOS?: string): { runtimeBaseImage: string; sdkBaseImage: string } {
+    const runtimeImage = platform === '.NET: ASP.NET Core' ? aspNetBaseImage : consoleNetBaseImage;
+    let runtimeBaseImage = `${runtimeImage}:${netCoreVersion.major}.${netCoreVersion.minor}`;
+    let sdkBaseImage = `${netSdkImage}:${netCoreVersion.major}.${netCoreVersion.minor}`;
+
+    // append '-nanoserver-<ltsc-version>' for windows base images for .NET 8+'s new naming convention
+    // .NET 11+ requires ltsc2025; .NET 8-10 use ltsc2022
+    if (netCorePlatformOS === 'Windows') {
+        const ltscVersion = netCoreVersion.major >= NetCoreLtsc2025Version ? 'ltsc2025' : 'ltsc2022';
+        runtimeBaseImage = `${runtimeBaseImage}-nanoserver-${ltscVersion}`;
+        sdkBaseImage = `${sdkBaseImage}-nanoserver-${ltscVersion}`;
+    }
+
+    return { runtimeBaseImage, sdkBaseImage };
+}
 
 export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreScaffoldingWizardContext> {
     private targetFramework: string;
@@ -48,20 +63,9 @@ export class NetCoreGatherInformationStep extends GatherInformationStep<NetCoreS
 
             // semver.coerce tolerates version strings like "5.0" which is typically what is present in the .NET project file
             const netCoreVersion = semver.coerce(netCoreVersionString);
-            wizardContext.netCoreRuntimeBaseImage = wizardContext.platform === '.NET: ASP.NET Core' ? `${aspNetBaseImage}:${netCoreVersion.major}.${netCoreVersion.minor}` : `${consoleNetBaseImage}:${netCoreVersion.major}.${netCoreVersion.minor}`;
-            wizardContext.netCoreSdkBaseImage = `${netSdkImage}:${netCoreVersion.major}.${netCoreVersion.minor}`;
-
-            if (netCoreVersion.major >= NetCorePreviewVersion) {
-                wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-preview`;
-                wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-preview`;
-            }
-            // append '-nanoserver-<ltsc-version>' for windows base images for .NET 8+'s new naming convention
-            // .NET 11+ requires ltsc2025; .NET 8-10 use ltsc2022
-            if (wizardContext.netCorePlatformOS === 'Windows') {
-                const ltscVersion = netCoreVersion.major >= NetCoreLtsc2025Version ? 'ltsc2025' : 'ltsc2022';
-                wizardContext.netCoreRuntimeBaseImage = `${wizardContext.netCoreRuntimeBaseImage}-nanoserver-${ltscVersion}`;
-                wizardContext.netCoreSdkBaseImage = `${wizardContext.netCoreSdkBaseImage}-nanoserver-${ltscVersion}`;
-            }
+            const baseImages = getNetCoreBaseImages(netCoreVersion, wizardContext.platform, wizardContext.netCorePlatformOS);
+            wizardContext.netCoreRuntimeBaseImage = baseImages.runtimeBaseImage;
+            wizardContext.netCoreSdkBaseImage = baseImages.sdkBaseImage;
 
             // change default user to adapt to Debian 12
             if (netCoreVersion.major >= 8) {
