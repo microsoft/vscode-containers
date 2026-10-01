@@ -7,15 +7,43 @@ import * as vscode from 'vscode';
 import { startInProcHttpServer } from './inProcHttpServer';
 import type { McpProviderOptions } from './McpProviderOptions';
 
+type InProcHttpServer = Awaited<ReturnType<typeof startInProcHttpServer>>;
+
 /**
  * Registers an in-proc MCP HTTP server provider
  * @param context The extension context
  * @param options The options for the MCP provider
  */
 export function registerMcpHttpProvider(context: vscode.ExtensionContext, options: McpProviderOptions): void {
+    let serverPromise: Promise<InProcHttpServer> | undefined;
+
+    function startServer(): Promise<InProcHttpServer> {
+        serverPromise ??= startInProcHttpServer(options).then(server => {
+            context.subscriptions.push(server.disposable);
+            return server;
+        }).catch((err: unknown) => {
+            serverPromise = undefined;
+            throw err;
+        });
+
+        return serverPromise;
+    }
+
     context.subscriptions.push(
         vscode.lm.registerMcpServerDefinitionProvider(options.id, {
-            provideMcpServerDefinitions(token: vscode.CancellationToken): vscode.ProviderResult<vscode.McpServerDefinition[]> {
+            async provideMcpServerDefinitions(token: vscode.CancellationToken): Promise<vscode.McpServerDefinition[]> {
+                if (options.eagerlyStart) {
+                    const { serverUri, headers } = await startServer();
+                    return [
+                        new vscode.McpHttpServerDefinition(
+                            options.serverLabel,
+                            serverUri,
+                            headers,
+                            options.serverVersion
+                        ),
+                    ];
+                }
+
                 return [
                     new vscode.McpHttpServerDefinition(
                         options.serverLabel,
@@ -26,8 +54,7 @@ export function registerMcpHttpProvider(context: vscode.ExtensionContext, option
                 ];
             },
             async resolveMcpServerDefinition(server: vscode.McpHttpServerDefinition, token: vscode.CancellationToken): Promise<vscode.McpServerDefinition> {
-                const { disposable, serverUri, headers } = await startInProcHttpServer(options);
-                context.subscriptions.push(disposable);
+                const { serverUri, headers } = await startServer();
                 server.uri = serverUri;
                 server.headers = headers;
                 return server;
