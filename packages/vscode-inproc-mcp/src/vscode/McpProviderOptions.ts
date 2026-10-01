@@ -38,7 +38,7 @@ export interface McpProviderOptions {
     transport?: 'tcp' | 'ipc';
 
     /**
-     * Start the server and provide its url right away when VS Code calls `provideMcpServerDefinitions`.
+     * Start the server and provide its URI right away when VS Code calls `provideMcpServerDefinitions`.
      * @important Must set this value to true to properly register with VS Code's `Copilot` harness.
      */
     eagerStart?: boolean;
