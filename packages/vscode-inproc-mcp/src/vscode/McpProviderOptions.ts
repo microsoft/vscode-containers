@@ -41,7 +41,7 @@ export interface McpProviderOptions {
      * Start the server and provide its URI right away when VS Code calls `provideMcpServerDefinitions`.
      * @important Must set this value to true to properly register with VS Code's `Copilot` harness.
      */
-    eagerStart?: boolean;
+    eagerlyStart?: boolean;
 
     /**
      * Optional event that fires when the set of available MCP server definitions changes
