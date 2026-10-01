@@ -55,7 +55,6 @@ export function registerMcpHttpProvider(context: vscode.ExtensionContext, option
             },
             async resolveMcpServerDefinition(server: vscode.McpHttpServerDefinition, token: vscode.CancellationToken): Promise<vscode.McpServerDefinition> {
                 const { serverUri, headers } = await startServer();
-
                 server.uri = serverUri;
                 server.headers = headers;
                 return server;
