@@ -1,0 +1,7 @@
+/*!
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license information.
+ *
+ * This bundle includes third-party software. See NOTICE.html for attributions.
+ */
+function p(o,{language:e="json",inspect:r=!1}={}){if(e!=="json")return null;let n=String(o??"").trim();if(!n.startsWith("{")&&!n.startsWith("["))return null;try{let t=JSON.parse(n);return t===null||typeof t!="object"?null:r&&Array.isArray(t)&&t.length===1&&t[0]&&typeof t[0]=="object"?t[0]:t}catch{return null}}function a(o){let e=[],r="",n=!1,t=null;for(let i of String(o??"")){if(t){i===t?t=null:r+=i;continue}if(i==='"'||i==="'"){t=i,n=!0;continue}if(/\s/.test(i)){n&&(e.push(r),r="",n=!1);continue}r+=i,n=!0}return n&&e.push(r),e}function c(o){let e=String(o??"").indexOf("#");if(e===-1)return{repo:o,commit:null,subdir:null};let r=o.slice(0,e),n=o.slice(e+1),t=n.indexOf(":");return t===-1?{repo:r,commit:n,subdir:null}:{repo:r,commit:n.slice(0,t),subdir:n.slice(t+1)}}function f(o){let e=/^https?:\/\/github\.com\/([^/?#]+)\/([^/?#]+)/.exec(String(o??""));if(!e)return null;let r=e[2].replace(/\.git$/,"");return r?`${e[1]}/${r}`:null}function h(o,e,r=null){let{repo:n,commit:t,subdir:i}=c(o),l=f(n),s=t??r;if(!l||!s)return null;let u=[i,e].filter(Boolean).join("/");return`https://github.com/${l}/blob/${s}/${u||"Dockerfile"}`}export{p as a,a as b,c,f as d,h as e};

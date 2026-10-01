@@ -1,6 +1,7 @@
 packages:
   - extensions/vscode-containers
   - extensions/vscode-docker
+  - extensions/containers-canvas
   - packages/vscode-processutils
   - packages/vscode-container-client
   - packages/vscode-docker-registries
