@@ -15,27 +15,25 @@ type InProcHttpServer = Awaited<ReturnType<typeof startInProcHttpServer>>;
  * @param options The options for the MCP provider
  */
 export function registerMcpHttpProvider(context: vscode.ExtensionContext, options: McpProviderOptions): void {
-    let tcpServerPromise: Promise<InProcHttpServer> | undefined;
+    let serverPromise: Promise<InProcHttpServer> | undefined;
 
-    function getTcpServer(): Promise<InProcHttpServer> {
-        tcpServerPromise ??= startInProcHttpServer(options).then((tcpServer) => {
-            context.subscriptions.push(tcpServer.disposable);
-            return tcpServer;
+    function startServer(): Promise<InProcHttpServer> {
+        serverPromise ??= startInProcHttpServer(options).then(server => {
+            context.subscriptions.push(server.disposable);
+            return server;
         }).catch((err: unknown) => {
-            tcpServerPromise = undefined;
+            serverPromise = undefined;
             throw err;
         });
 
-        return tcpServerPromise;
+        return serverPromise;
     }
 
     context.subscriptions.push(
         vscode.lm.registerMcpServerDefinitionProvider(options.id, {
             async provideMcpServerDefinitions(token: vscode.CancellationToken): Promise<vscode.McpServerDefinition[]> {
-                if (options.useTcpTransport) {
-                    // The Copilot harness consumes TCP definitions without calling resolveMcpServerDefinition,
-                    // so discovery must start and expose the real endpoint right away.
-                    const { serverUri, headers } = await getTcpServer();
+                if (options.eagerStart) {
+                    const { serverUri, headers } = await startServer();
                     return [
                         new vscode.McpHttpServerDefinition(
                             options.serverLabel,
@@ -56,15 +54,7 @@ export function registerMcpHttpProvider(context: vscode.ExtensionContext, option
                 ];
             },
             async resolveMcpServerDefinition(server: vscode.McpHttpServerDefinition, token: vscode.CancellationToken): Promise<vscode.McpServerDefinition> {
-                const { disposable, serverUri, headers } = options.useTcpTransport ?
-                    await getTcpServer() :
-                    await startInProcHttpServer(options);
-
-                if (!options.useTcpTransport) {
-                    context.subscriptions.push(disposable);
-                } else {
-                    // Skip, the tcp server disposable has already been added
-                }
+                const { serverUri, headers } = await startServer();
 
                 server.uri = serverUri;
                 server.headers = headers;

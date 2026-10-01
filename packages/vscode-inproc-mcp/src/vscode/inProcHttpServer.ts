@@ -30,6 +30,8 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
     let socketPath: string | undefined;
     const transports: Record<string, SessionTransport> = {};
 
+    mcpOptions.transport ??= 'ipc';
+
     try {
         const nonce = crypto.randomUUID();
 
@@ -50,7 +52,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
         };
 
         app.use('/mcp', async (context, next) => {
-            if (mcpOptions.useTcpTransport) {
+            if (mcpOptions.transport === 'tcp') {
                 // Require the exact Host as an extra precaution to prevent DNS rebinding. This endpoint
                 // supports only non-browser MCP clients, so reject any request with an Origin.
                 if (context.req.header('host') !== getAllowedHost() || context.req.header('origin')) {
@@ -74,7 +76,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             overrideGlobalObjects: false,
         });
 
-        if (mcpOptions.useTcpTransport) {
+        if (mcpOptions.transport === 'tcp') {
             await listen(httpServer, { host: '127.0.0.1', port: 0 });
             allowedHost = getLoopbackAuthority(httpServer.address());
         } else {
@@ -83,7 +85,7 @@ export async function startInProcHttpServer(mcpOptions: McpProviderOptions): Pro
             allowedHost = 'localhost';
         }
 
-        const serverUri = mcpOptions.useTcpTransport ?
+        const serverUri = mcpOptions.transport === 'tcp' ?
             vscode.Uri.from({
                 scheme: 'http',
                 authority: getAllowedHost(),

@@ -32,9 +32,16 @@ export interface McpProviderOptions {
     registerTools: (server: McpServer) => void | Promise<void>;
 
     /**
-     * Serve MCP over HTTP bound to localhost instead of a private named pipe or Unix socket
+     * The transport type to use. Defaults to IPC over a private named pipe or Unix socket,
+     * while TCP serves HTTP bound to loopback.
      */
-    useTcpTransport?: boolean;
+    transport?: 'tcp' | 'ipc';
+
+    /**
+     * Start the server and provide its url right away when VS Code calls `provideMcpServerDefinitions`.
+     * @important Must set this value to true to properly register with VS Code's `Copilot` harness.
+     */
+    eagerStart?: boolean;
 
     /**
      * Optional event that fires when the set of available MCP server definitions changes
