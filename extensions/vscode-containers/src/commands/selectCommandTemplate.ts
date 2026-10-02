@@ -85,7 +85,7 @@ export async function selectLogsCommand(context: IActionContext, containerName: 
     );
 }
 
-export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder | vscode.Uri, configurationFile?: string, projectName?: string, envFile?: string): Promise<VoidCommandResponse> {
+export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder | vscode.Uri, configurationFile?: string, projectName?: string, envFile?: string, profileList?: string, serviceList?: string): Promise<VoidCommandResponse> {
     const orchestratorClient = await ext.orchestratorManager.getClient();
     let fullComposeCommand: string;
     if (isComposeV2ableOrchestratorClient(orchestratorClient) && orchestratorClient.composeV2) {
@@ -105,7 +105,9 @@ export async function selectComposeLogsCommand(context: IActionContext, folder: 
             'configurationFile': configurationFile || '',
             'projectName': projectName ? `-p "${projectName}"` : '',
             'environmentFile': envFile ? `--env-file "${envFile}"` : '',
-            'composeCommand': fullComposeCommand
+            'composeCommand': fullComposeCommand,
+            'profileList': profileList || '',
+            'serviceList': serviceList || ''
         }
     );
 }
