@@ -4,12 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { TelemetryEvent } from '@microsoft/compose-language-service/client';
-import { callWithTelemetryAndErrorHandling, createExperimentationService, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
+import { callWithTelemetryAndErrorHandling, IActionContext, registerErrorHandler, registerEvent, registerUIExtensionVariables, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
 import type { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelector, LanguageClient, LanguageClientOptions, Middleware, ServerOptions } from 'vscode-languageclient/node';
-import * as tas from 'vscode-tas-client';
 import { registerCommands } from './commands/registerCommands';
 import { configPrefix } from './constants';
 import { registerContainersLMTools } from './copilot/registerContainersLMTools';
@@ -68,17 +67,9 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
             }
         }
 
-        // All of these internally handle telemetry opt-in
         ext.activityMeasurementService = new ActivityMeasurementService(ctx.globalState);
-        ext.experimentationService = await createExperimentationService(
-            ctx,
-            process.env.VSCODE_DOCKER_TEAM === '1' ? tas.TargetPopulation.Team : undefined // If VSCODE_DOCKER_TEAM isn't set, let @microsoft/vscode-azext-utils decide target population
-        );
 
         logSystemInfo(ext.outputChannel);
-
-        // Disabled for now
-        // (new SurveyManager()).activate();
 
         // Remove the "Report Issue" button from all error messages in favor of the command
         registerErrorHandler(ctx => ctx.errorHandling.suppressReportIssue = true);
