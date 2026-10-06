@@ -7,14 +7,14 @@ settings:
 catalogs:
   default:
     '@microsoft/vscode-azext-utils':
-      specifier: ^4.1.0
-      version: 4.1.1
+      specifier: ^5.0.0
+      version: 5.0.0
     '@vscode/extension-telemetry':
       specifier: ^1.5.2
       version: 1.5.2
     '@vscode/test-cli':
-      specifier: ^0.0.12
-      version: 0.0.12
+      specifier: ^0.0.15
+      version: 0.0.15
     '@vscode/test-electron':
       specifier: ^3.0.0
       version: 3.1.0
@@ -40,16 +40,14 @@ catalogs:
 overrides:
   serialize-javascript: ^7.0.0
   diff: ^8.0.3
-  vscode-tas-client: 0.1.84
-  tas-client: 0.2.33
 
 importers:
 
   .:
     devDependencies:
       '@microsoft/vscode-azext-eng':
-        specifier: ^1.1.0-alpha.3
-        version: 1.1.0-alpha.3(@vscode/test-cli@0.0.12)(@vscode/test-electron@3.1.0)(esbuild-plugin-copy@2.1.1(esbuild@0.28.1))(esbuild@0.28.1)(tsx@4.23.1)
+        specifier: ^1.1.0-alpha.6
+        version: 1.1.0-alpha.6(@vscode/test-cli@0.0.15)(@vscode/test-electron@3.1.0)(esbuild-plugin-copy@2.1.1(esbuild@0.28.1))(esbuild@0.28.1)(tsx@4.23.1)
       '@types/node':
         specifier: 22.x
         version: 22.20.1
@@ -72,14 +70,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/compose-language-service
       '@microsoft/vscode-azext-azureauth':
-        specifier: ^6.0.0-alpha.8
-        version: 6.0.0-alpha.8
+        specifier: ^6.1.0-alpha.2
+        version: 6.1.0-alpha.2
       '@microsoft/vscode-azext-azureutils':
-        specifier: ^4.0.0
-        version: 4.3.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
+        specifier: ^5.0.0
+        version: 5.0.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
       '@microsoft/vscode-azext-utils':
         specifier: 'catalog:'
-        version: 4.1.1(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
+        version: 5.0.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
       '@microsoft/vscode-container-client':
         specifier: workspace:*
         version: link:../../packages/vscode-container-client
@@ -119,9 +117,6 @@ importers:
       vscode-languageclient:
         specifier: 'catalog:'
         version: 10.1.0
-      vscode-tas-client:
-        specifier: 0.1.84
-        version: 0.1.84
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -134,7 +129,7 @@ importers:
         version: 7.7.1
       '@vscode/test-cli':
         specifier: 'catalog:'
-        version: 0.0.12
+        version: 0.0.15
       '@vscode/test-electron':
         specifier: 'catalog:'
         version: 3.1.0
@@ -160,7 +155,7 @@ importers:
         version: 3.18.2
       vscode-languageserver-textdocument:
         specifier: ^1.0.12
-        version: 1.0.12
+        version: 1.0.13
       yaml:
         specifier: ^2.8.2
         version: 2.9.0
@@ -200,7 +195,7 @@ importers:
         version: 2.0.12(hono@4.13.7)
       '@microsoft/vscode-azext-utils':
         specifier: 'catalog:'
-        version: 4.1.1(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
+        version: 5.0.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
       '@microsoft/vscode-processutils':
         specifier: workspace:*
         version: link:../vscode-processutils
@@ -263,10 +258,6 @@ packages:
   '@azure/arm-resources-profile-2020-09-01-hybrid@2.1.0':
     resolution: {integrity: sha512-7sNMfaf8agfQmExgtlvXzTooxoXPl2wJelSB2hQCG2BPZ37Oi24kxeECia+lXiZKfXAkiPSHxgdgECGjDQaV+Q==}
     engines: {node: '>=14.0.0'}
-
-  '@azure/arm-resources-subscriptions@2.1.1':
-    resolution: {integrity: sha512-tC+lBxDE66773EfNEmP5F+/QoZS4DCqC9bEGbRoNKh1/XdQiVpghm+M77Y3YP5leFGefj7cILtYYs4V/9YrHNw==}
-    engines: {node: '>=20.0.0'}
 
   '@azure/arm-resources-subscriptions@3.0.0':
     resolution: {integrity: sha512-Uu3i3HZ3nv69tVeNaXTr7KZ2qtcrJQiLvhREnZ0p5xNrV8Pmtrnx1o8A+z2T+OVQZlnySU5nPT4O4gJIJbfA5A==}
@@ -634,29 +625,26 @@ packages:
   '@microsoft/dynamicproto-js@2.0.5':
     resolution: {integrity: sha512-V+Zr7PDKIEaItVwF/OyWQlKeugNRYg7KJJ+RhEIL2FMW6NlG8FN2l4XA9Z42hNtsjwJFlcUiF38pmM/AaXsF7g==}
 
-  '@microsoft/vscode-azext-azureauth@6.0.0-alpha.8':
-    resolution: {integrity: sha512-oOZpeTe4tOupKzQpeKxyHOSG10Bxsyp8YhCeyadQMsz1wICR/JZEdSMKPR0GnXpXYlYSsEDFbSzJWqZUZ/3+Yw==}
-    engines: {vscode: ^1.106.0}
-
   '@microsoft/vscode-azext-azureauth@6.1.0-alpha.2':
     resolution: {integrity: sha512-hiEpLpNe/TiV1Cvx5gcgTxybfI1sYIRjKJ361bZyDOz3CchLjbupKiEi1jqyonMq5MvWftVlENBnvk3vq8AT0w==}
     engines: {vscode: ^1.106.0}
 
-  '@microsoft/vscode-azext-azureutils@4.3.0':
-    resolution: {integrity: sha512-K7F8Chd9ebzwrVjCJz7wB9jPf48fRBAleeXk0FwB/TtdqFbDugQtt9aO4cmblviU0yAx9TjNj9mOyzCuIIGdjQ==}
+  '@microsoft/vscode-azext-azureutils@5.0.0':
+    resolution: {integrity: sha512-hG19YoRELezMyOPODntLoE0LCnvHC06iBt1Hp5GyqX2aVaTXDozZ3K+azohZ57joFXRCXIFKx+dWb0UjtP6A3Q==}
     engines: {vscode: ^1.105.0}
     peerDependencies:
       '@azure/ms-rest-azure-env': ^2.0.0
 
-  '@microsoft/vscode-azext-eng@1.1.0-alpha.3':
-    resolution: {integrity: sha512-ccLvKeIX1gINp0EXSX1LGHVCnbAVwvOsuobGdWmEU1qOpFOQhP+R/T49g5mraa9zKNlbUNy/JGzCUlm/RKQdug==}
+  '@microsoft/vscode-azext-eng@1.1.0-alpha.6':
+    resolution: {integrity: sha512-ptztNOETqwDrVZO8KmFqFLaNaRRoMKxWEhysur57cFduu/L1XVQ0zFoTxXnGRiLnS6MbXbzzrRbv1toaZUuYNQ==}
+    engines: {node: '>=22'}
     peerDependencies:
-      '@vscode/test-cli': ^0.0.12
-      '@vscode/test-electron': ^3.0.0
+      '@vscode/test-cli': ^0.0.15
+      '@vscode/test-electron': ^3.1.0
       '@vscode/vsce': ^3.9.2
       esbuild: ^0.28.1
       esbuild-plugin-copy: ^2.1.1
-      tsx: ^4.22.4
+      tsx: ^4.23.1
     peerDependenciesMeta:
       '@vscode/test-cli':
         optional: true
@@ -671,12 +659,12 @@ packages:
       tsx:
         optional: true
 
-  '@microsoft/vscode-azext-utils@4.1.1':
-    resolution: {integrity: sha512-pFvvzqJqAJrI5UTeJNijGrHWB738VTPck6Vsnb77L0agHMGKPqRy28Ela/6fGJRXBc7Yuv14gn39Sogn0qMvkQ==}
+  '@microsoft/vscode-azext-utils@5.0.0':
+    resolution: {integrity: sha512-A4H/8K2ItFErRV5/qs9OolyMyhNR8niArvwA8oCNpODWRt6vdmpLalzKPgp3Tn+FvgWOqBOCIFe0YbAW4jJoIg==}
     engines: {vscode: ^1.105.0}
     peerDependencies:
       '@azure/ms-rest-azure-env': ^2.0.0
-      '@github/copilot-sdk': 0.1.32
+      '@github/copilot-sdk': ^1.0.14
     peerDependenciesMeta:
       '@github/copilot-sdk':
         optional: true
@@ -687,8 +675,9 @@ packages:
     peerDependencies:
       '@azure/ms-rest-azure-env': ^2.0.0
 
-  '@microsoft/vscode-processutils@0.2.2':
-    resolution: {integrity: sha512-kvADRfnSAUcusBzBAn0eDsh880MjTw1tvYGUes6yxUBALkg7RiQPuy2p3gDR4+p+VZqb2T2youY4jgq3/6jnKw==}
+  '@microsoft/vscode-processutils@1.0.0':
+    resolution: {integrity: sha512-vAX1YRqQFb7PJgljQORY8gYJTDymVxh2hXnQaJYoVIb8uostOlin5Dpa9n9ZUkQbSw/K9FlxVR5GQtT3Uedzew==}
+    engines: {node: '>=22'}
 
   '@modelcontextprotocol/core@2.0.0-beta.4':
     resolution: {integrity: sha512-nsMXd4wQBKzmph6r+WOhum+mXjDYljTAqwY/XUg3hLtvNOQ8+JVqBSJOVCMJvx9lXhTpTOPrGZ3BuNiaNPjSvg==}
@@ -722,9 +711,6 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
-
-  '@selderee/plugin-htmlparser2@0.11.0':
-    resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
 
   '@tony.ganchev/eslint-plugin-header@3.4.4':
     resolution: {integrity: sha512-O3PDvjikVWECu078bLdRb2HwjVgR+wa7D0GX8gN1A8axlgEc7tordHOoEYcKRVxGcAw7bxXjwiKGXaY17qXD+Q==}
@@ -960,9 +946,9 @@ packages:
     resolution: {integrity: sha512-fO4huHz5apb5RtddC8DuUeSbBqYQw1EiBaOOGngq57nGbsDgcvm0jAibTY/kigJyjY0fQ4Vx7owQcCJRUrkT4g==}
     engines: {vscode: ^1.75.0}
 
-  '@vscode/test-cli@0.0.12':
-    resolution: {integrity: sha512-iYN0fDg29+a2Xelle/Y56Xvv7Nc8Thzq4VwpzAF/SIE6918rDicqfsQxV6w1ttr2+SOm+10laGuY9FG2ptEKsQ==}
-    engines: {node: '>=18'}
+  '@vscode/test-cli@0.0.15':
+    resolution: {integrity: sha512-nAxk2X79wuXS7aOhyFFhFcCqd7EBUoMesu7ZgsYE/4eFjyBMuyIweVE94BxdKH1RieN8eOz2SIrljrZt6Lk9fQ==}
+    engines: {node: '>=22'}
     hasBin: true
 
   '@vscode/test-electron@3.1.0':
@@ -1052,9 +1038,9 @@ packages:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
     engines: {node: '>=18'}
 
-  c8@10.1.3:
-    resolution: {integrity: sha512-LvcyrOAaOnrrlMpW22n690PUvxiq4Uf9WMhQwNJ9vgagkL/ph1+D4uvjvDA5XCbykrc0sx+ay6pVi9YZ1GnhyA==}
-    engines: {node: '>=18'}
+  c8@11.0.0:
+    resolution: {integrity: sha512-e/uRViGHSVIJv7zsaDKM7VRn2390TgHXqUSvYwPHBQaU6L7E9L0n9JbdkwdYPvshDT0KymBmmlwSpms3yBaMNg==}
+    engines: {node: 20 || >=22}
     hasBin: true
     peerDependencies:
       monocart-coverage-reports: ^2
@@ -1095,6 +1081,10 @@ packages:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
 
+  chokidar@5.0.0:
+    resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
+    engines: {node: '>= 20.19.0'}
+
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
@@ -1110,6 +1100,10 @@ packages:
   cliui@8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
+
+  cliui@9.0.1:
+    resolution: {integrity: sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==}
+    engines: {node: '>=20'}
 
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -1147,10 +1141,6 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  deepmerge@4.3.1:
-    resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
-    engines: {node: '>=0.10.0'}
-
   default-browser-id@5.0.1:
     resolution: {integrity: sha512-x1VCxdX4t+8wVfd1so/9w+vQ4vx7lKd2Qp5tDRutErwmR85OgmfX7RlLRMWafRMY7hbEiXIbudNrjOAPa/hL8Q==}
     engines: {node: '>=18'}
@@ -1185,19 +1175,6 @@ packages:
     resolution: {integrity: sha512-BslaqRR6PzCnhu+toDbkVAjq0B0CEgrCltk+enJ/xwCmvAHB1QqpO9QhXVIzMg/iSuD4tzS0Ex9n4Ik5ffI7pA==}
     hasBin: true
 
-  dom-serializer@2.0.0:
-    resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
-
-  domelementtype@2.3.0:
-    resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
-
-  domhandler@5.0.3:
-    resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
-    engines: {node: '>= 4'}
-
-  domutils@3.2.2:
-    resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
-
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
@@ -1216,10 +1193,6 @@ packages:
   enhanced-resolve@5.25.1:
     resolution: {integrity: sha512-nGXts5znJzmWPu+mIE9izCOzdg63oJca2mDzGWWTth7sr4aCToKcoyFVBQwN75Ij5Pf6p510EwkTqViTRzDV+w==}
     engines: {node: '>=10.13.0'}
-
-  entities@4.5.0:
-    resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
-    engines: {node: '>=0.12'}
 
   esbuild-plugin-copy@2.1.1:
     resolution: {integrity: sha512-Bk66jpevTcV8KMFzZI1P7MZKZ+uDcrZm2G2egZ2jNIvVnivDpodZI+/KnpL3Jnap0PBdIHU7HwFGB8r+vV5CVw==}
@@ -1378,6 +1351,10 @@ packages:
     deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
+  glob@13.0.6:
+    resolution: {integrity: sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==}
+    engines: {node: 18 || 20 || >=22}
+
   globby@11.1.0:
     resolution: {integrity: sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g==}
     engines: {node: '>=10'}
@@ -1408,13 +1385,6 @@ packages:
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
-
-  html-to-text@9.0.5:
-    resolution: {integrity: sha512-qY60FjREgVZL03vJU6IfMV4GDjGBIoOyvuFdpBDIX9yTlDw0TjxVBQp+P8NvpdIXNJvfWBTNul7fsAQJq2FNpg==}
-    engines: {node: '>=14'}
-
-  htmlparser2@8.0.2:
-    resolution: {integrity: sha512-GYdjWKDkbRLkZ5geuHs5NY1puJ+PXwP7+fHPRz06Eirsb9ugf6d8kkXav6ADhcODhFFPMIXyxkxSuMf3D6NCFA==}
 
   http-proxy-agent@7.0.2:
     resolution: {integrity: sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==}
@@ -1560,9 +1530,6 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  leac@0.6.0:
-    resolution: {integrity: sha512-y+SqErxb8h7nE/fiEX07jsbuhrpO9lL8eca7/Y1nuWV2moNlXhyd59iDGcRf6moVyDMbmTNzL40SUyrFU/yDpg==}
-
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
@@ -1608,6 +1575,10 @@ packages:
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
+
+  lru-cache@11.5.3:
+    resolution: {integrity: sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==}
+    engines: {node: 20 || >=22}
 
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
@@ -1692,9 +1663,6 @@ packages:
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
 
-  parseley@0.12.1:
-    resolution: {integrity: sha512-e6qHKe3a9HWr0oMRVDTRhKce+bRO8VGQR3NyVwcjwrbhMmFCX9KszEV35+rn4AdilFAq9VPxP/Fe1wC9Qjd2lw==}
-
   path-exists@4.0.0:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
     engines: {node: '>=8'}
@@ -1711,12 +1679,13 @@ packages:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
 
+  path-scurry@2.0.2:
+    resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
+    engines: {node: 18 || 20 || >=22}
+
   path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
-
-  peberminta@0.9.0:
-    resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -1754,6 +1723,10 @@ packages:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
 
+  readdirp@5.1.1:
+    resolution: {integrity: sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA==}
+    engines: {node: '>= 20.19.0'}
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -1778,9 +1751,6 @@ packages:
 
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
-
-  selderee@0.11.0:
-    resolution: {integrity: sha512-5TF+l7p4+OsnP8BCCvSyZiSPc4x4//p5uPwK8TCnVPJYRmU2aYKMpOXvw8zM5a5JvuuCGN1jmsMwuU2W02ukfA==}
 
   semver@7.8.5:
     resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
@@ -1830,6 +1800,10 @@ packages:
     resolution: {integrity: sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==}
     engines: {node: '>=18'}
 
+  string-width@8.3.0:
+    resolution: {integrity: sha512-ZbmZM0JCihQN91dWnxoipT2KOEyHqEyfRXUyjuRhW8b/xnqPDoq4gWEVApTVa9db2wN8mmoikgFBbjh71+cGeQ==}
+    engines: {node: '>=20'}
+
   string_decoder@1.1.1:
     resolution: {integrity: sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==}
 
@@ -1868,12 +1842,9 @@ packages:
     resolution: {integrity: sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA==}
     engines: {node: '>=18'}
 
-  tas-client@0.2.33:
-    resolution: {integrity: sha512-V+uqV66BOQnWxvI6HjDnE4VkInmYZUQ4dgB7gzaDyFyFSK1i1nF/j7DpS9UbQAgV9NaF1XpcyuavnM1qOeiEIg==}
-
-  test-exclude@7.0.2:
-    resolution: {integrity: sha512-u9E6A+ZDYdp7a4WnarkXPZOx8Ilz46+kby6p1yZ8zsGTz9gYa6FIS7lj2oezzNKmtdyyJNNmmXDppga5GB7kSw==}
-    engines: {node: '>=18'}
+  test-exclude@8.0.0:
+    resolution: {integrity: sha512-ZOffsNrXYggvU1mDGHk54I96r26P8SyMjO5slMKSc7+IWmtB/MQKnEC2fP51imB3/pT6YK5cT5E8f+Dd9KdyOQ==}
+    engines: {node: 20 || >=22}
 
   tinyglobby@0.2.17:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
@@ -1966,9 +1937,6 @@ packages:
   vscode-languageserver-protocol@3.18.2:
     resolution: {integrity: sha512-XRyDbT0Pp3sSNti3JmxVEUMySWCSi1hhM+/KUlCy1hV1zmrqpM1OwO12EAki8blhmLuIMpaJrYbo0OzGVfK2Qg==}
 
-  vscode-languageserver-textdocument@1.0.12:
-    resolution: {integrity: sha512-cxWNPesCnQCcMPeenjKKsOCKQZ/L6Tv19DTRIGuLWe32lyzWhihGVJ/rcckZXJxfdKCFvRLS3fpBIsV/ZGX4zA==}
-
   vscode-languageserver-textdocument@1.0.13:
     resolution: {integrity: sha512-nx0ZHwMGIsVkzFG3/VLeJYBLTaFBRuNdGDvevvjuoayU5EOS2fEYazOhtCM3PI9ClMMg5igc0uwXtAq4tJj+Dw==}
 
@@ -1991,10 +1959,6 @@ packages:
   vscode-languageserver@8.0.2:
     resolution: {integrity: sha512-bpEt2ggPxKzsAOZlXmCJ50bV7VrxwCS5BI4+egUmure/oI/t4OlFzi/YNtVvY24A2UDOZAgwFGgnZPwqSJubkA==}
     hasBin: true
-
-  vscode-tas-client@0.1.84:
-    resolution: {integrity: sha512-rUTrUopV+70hvx1hW5ebdw1nd6djxubkLvVxjGdyD/r5v/wcVF41LIfiAtbm5qLZDtQdsMH1IaCuDoluoIa88w==}
-    engines: {vscode: ^1.85.0}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -2024,6 +1988,10 @@ packages:
     resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==}
     engines: {node: '>=12'}
 
+  wrap-ansi@9.0.2:
+    resolution: {integrity: sha512-42AtmgqjV+X1VpdOfyTGOYRi0/zsoLqtXQckTmqTeybT+BDIbM/Guxo7x3pE2vtpr1ok6xRqM9OpBe+Jyoqyww==}
+    engines: {node: '>=18'}
+
   wsl-utils@0.1.0:
     resolution: {integrity: sha512-h3Fbisa2nKGPxCpm89Hk33lBLsnaGBvctQopaBSOW/uIs6FTe1ATyAnKFJrzVs9vpGdsTe73WF3V4lIsk4Gacw==}
     engines: {node: '>=18'}
@@ -2049,6 +2017,10 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
+  yargs-parser@22.0.0:
+    resolution: {integrity: sha512-rwu/ClNdSMpkSrUb+d6BRsSkLUq1fmfsY6TOpYzTwvwkg1/NRG85KBy3kq++A8LKQwX6lsu+aWad+2khvuXrqw==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
+
   yargs-unparser@2.0.0:
     resolution: {integrity: sha512-7pRTIA9Qc1caZ0bZ6RYRGbHJthJWuakf+WmHK0rVeLkNrrGhfoabBNdue6kdINI6r4if7ocq9aD/n7xwKOdzOA==}
     engines: {node: '>=10'}
@@ -2056,6 +2028,10 @@ packages:
   yargs@17.7.3:
     resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==}
     engines: {node: '>=12'}
+
+  yargs@18.2.0:
+    resolution: {integrity: sha512-9OpKOLeaoNFecEp7P6iYbzze/5CqWoH7N3SMs/6y1XF4nMvFMspEGZzJ6uFi9MmQwXhyzqYoSEKO3tvA3Z/o2w==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
@@ -2133,16 +2109,6 @@ snapshots:
       '@azure/core-auth': 1.11.0
       '@azure/core-client': 1.11.0
       '@azure/core-lro': 2.7.2
-      '@azure/core-paging': 1.7.0
-      '@azure/core-rest-pipeline': 1.25.0
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - supports-color
-
-  '@azure/arm-resources-subscriptions@2.1.1':
-    dependencies:
-      '@azure/core-auth': 1.11.0
-      '@azure/core-client': 1.11.0
       '@azure/core-paging': 1.7.0
       '@azure/core-rest-pipeline': 1.25.0
       tslib: 2.8.1
@@ -2555,15 +2521,6 @@ snapshots:
     dependencies:
       '@nevware21/ts-utils': 0.16.0
 
-  '@microsoft/vscode-azext-azureauth@6.0.0-alpha.8':
-    dependencies:
-      '@azure/arm-resources-subscriptions': 2.1.1
-      '@azure/core-rest-pipeline': 1.25.0
-      '@azure/identity': 4.13.1
-      '@azure/ms-rest-azure-env': 2.0.0
-    transitivePeerDependencies:
-      - supports-color
-
   '@microsoft/vscode-azext-azureauth@6.1.0-alpha.2':
     dependencies:
       '@azure/arm-resources-subscriptions': 3.0.0
@@ -2574,7 +2531,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@microsoft/vscode-azext-azureutils@4.3.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)':
+  '@microsoft/vscode-azext-azureutils@5.0.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)':
     dependencies:
       '@azure/arm-authorization': 9.0.0
       '@azure/arm-authorization-profile-2020-09-01-hybrid': 2.1.0
@@ -2589,7 +2546,7 @@ snapshots:
       '@azure/logger': 1.4.0
       '@azure/ms-rest-azure-env': 2.0.0
       '@microsoft/vscode-azext-azureauth': 6.1.0-alpha.2
-      '@microsoft/vscode-azext-utils': 4.1.1(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
+      '@microsoft/vscode-azext-utils': 5.0.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)
       '@microsoft/vscode-azureresources-api': 3.1.1(@azure/ms-rest-azure-env@2.0.0)
       semver: 7.8.5
     transitivePeerDependencies:
@@ -2597,7 +2554,7 @@ snapshots:
       - supports-color
       - tslib
 
-  '@microsoft/vscode-azext-eng@1.1.0-alpha.3(@vscode/test-cli@0.0.12)(@vscode/test-electron@3.1.0)(esbuild-plugin-copy@2.1.1(esbuild@0.28.1))(esbuild@0.28.1)(tsx@4.23.1)':
+  '@microsoft/vscode-azext-eng@1.1.0-alpha.6(@vscode/test-cli@0.0.15)(@vscode/test-electron@3.1.0)(esbuild-plugin-copy@2.1.1(esbuild@0.28.1))(esbuild@0.28.1)(tsx@4.23.1)':
     dependencies:
       '@eslint/js': 10.0.1(eslint@10.8.0)
       '@tony.ganchev/eslint-plugin-header': 3.4.4(eslint@10.8.0)
@@ -2611,7 +2568,7 @@ snapshots:
       typescript: 5.9.3
       typescript-eslint: 8.65.0(eslint@10.8.0)(typescript@5.9.3)
     optionalDependencies:
-      '@vscode/test-cli': 0.0.12
+      '@vscode/test-cli': 0.0.15
       '@vscode/test-electron': 3.1.0
       esbuild: 0.28.1
       esbuild-plugin-copy: 2.1.1(esbuild@0.28.1)
@@ -2620,16 +2577,14 @@ snapshots:
       - jiti
       - supports-color
 
-  '@microsoft/vscode-azext-utils@4.1.1(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)':
+  '@microsoft/vscode-azext-utils@5.0.0(@azure/ms-rest-azure-env@2.0.0)(tslib@2.8.1)':
     dependencies:
       '@azure/ms-rest-azure-env': 2.0.0
       '@microsoft/vscode-azureresources-api': 3.1.1(@azure/ms-rest-azure-env@2.0.0)
-      '@microsoft/vscode-processutils': 0.2.2
+      '@microsoft/vscode-processutils': 1.0.0
       '@vscode/extension-telemetry': 1.5.2(tslib@2.8.1)
       dayjs: 1.11.21
-      html-to-text: 9.0.5
       semver: 7.8.5
-      vscode-tas-client: 0.1.84
     transitivePeerDependencies:
       - tslib
 
@@ -2637,7 +2592,7 @@ snapshots:
     dependencies:
       '@azure/ms-rest-azure-env': 2.0.0
 
-  '@microsoft/vscode-processutils@0.2.2':
+  '@microsoft/vscode-processutils@1.0.0':
     dependencies:
       tree-kill: 1.2.2
       which: 5.0.0
@@ -2673,11 +2628,6 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
-
-  '@selderee/plugin-htmlparser2@0.11.0':
-    dependencies:
-      domhandler: 5.0.3
-      selderee: 0.11.0
 
   '@tony.ganchev/eslint-plugin-header@3.4.4(eslint@10.8.0)':
     dependencies:
@@ -2892,17 +2842,17 @@ snapshots:
     transitivePeerDependencies:
       - tslib
 
-  '@vscode/test-cli@0.0.12':
+  '@vscode/test-cli@0.0.15':
     dependencies:
       '@types/mocha': 10.0.10
-      c8: 10.1.3
-      chokidar: 3.6.0
+      c8: 11.0.0
+      chokidar: 5.0.0
       enhanced-resolve: 5.25.1
-      glob: 10.5.0
-      minimatch: 9.0.9
+      glob: 13.0.6
+      minimatch: 10.2.6
       mocha: 11.8.0
       supports-color: 10.2.2
-      yargs: 17.7.3
+      yargs: 18.2.0
     transitivePeerDependencies:
       - monocart-coverage-reports
 
@@ -2980,7 +2930,7 @@ snapshots:
     dependencies:
       run-applescript: 7.1.0
 
-  c8@10.1.3:
+  c8@11.0.0:
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@istanbuljs/schema': 0.1.6
@@ -2989,7 +2939,7 @@ snapshots:
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
       istanbul-reports: 3.2.0
-      test-exclude: 7.0.2
+      test-exclude: 8.0.0
       v8-to-istanbul: 9.3.0
       yargs: 17.7.3
       yargs-parser: 21.1.1
@@ -3028,6 +2978,10 @@ snapshots:
     dependencies:
       readdirp: 4.1.2
 
+  chokidar@5.0.0:
+    dependencies:
+      readdirp: 5.1.1
+
   chownr@3.0.0: {}
 
   cli-cursor@5.0.0:
@@ -3041,6 +2995,12 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
+
+  cliui@9.0.1:
+    dependencies:
+      string-width: 7.2.0
+      strip-ansi: 7.2.0
+      wrap-ansi: 9.0.2
 
   color-convert@2.0.1:
     dependencies:
@@ -3070,8 +3030,6 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  deepmerge@4.3.1: {}
-
   default-browser-id@5.0.1: {}
 
   default-browser@5.5.0:
@@ -3089,7 +3047,7 @@ snapshots:
 
   dockerfile-ast@0.7.1:
     dependencies:
-      vscode-languageserver-textdocument: 1.0.12
+      vscode-languageserver-textdocument: 1.0.13
       vscode-languageserver-types: 3.18.0
 
   dockerfile-language-server-nodejs@0.15.0:
@@ -3097,7 +3055,7 @@ snapshots:
       dockerfile-language-service: 0.16.1
       dockerfile-utils: 0.16.3
       vscode-languageserver: 8.0.2
-      vscode-languageserver-textdocument: 1.0.12
+      vscode-languageserver-textdocument: 1.0.13
 
   dockerfile-language-service@0.16.1:
     dependencies:
@@ -3109,26 +3067,8 @@ snapshots:
   dockerfile-utils@0.16.3:
     dependencies:
       dockerfile-ast: 0.7.1
-      vscode-languageserver-textdocument: 1.0.12
+      vscode-languageserver-textdocument: 1.0.13
       vscode-languageserver-types: 3.18.0
-
-  dom-serializer@2.0.0:
-    dependencies:
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
-      entities: 4.5.0
-
-  domelementtype@2.3.0: {}
-
-  domhandler@5.0.3:
-    dependencies:
-      domelementtype: 2.3.0
-
-  domutils@3.2.2:
-    dependencies:
-      dom-serializer: 2.0.0
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
 
   eastasianwidth@0.2.0: {}
 
@@ -3146,8 +3086,6 @@ snapshots:
     dependencies:
       graceful-fs: 4.2.11
       tapable: 2.3.3
-
-  entities@4.5.0: {}
 
   esbuild-plugin-copy@2.1.1(esbuild@0.28.1):
     dependencies:
@@ -3355,6 +3293,12 @@ snapshots:
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
 
+  glob@13.0.6:
+    dependencies:
+      minimatch: 10.2.6
+      minipass: 7.1.3
+      path-scurry: 2.0.2
+
   globby@11.1.0:
     dependencies:
       array-union: 2.1.0
@@ -3386,21 +3330,6 @@ snapshots:
   hono@4.13.7: {}
 
   html-escaper@2.0.2: {}
-
-  html-to-text@9.0.5:
-    dependencies:
-      '@selderee/plugin-htmlparser2': 0.11.0
-      deepmerge: 4.3.1
-      dom-serializer: 2.0.0
-      htmlparser2: 8.0.2
-      selderee: 0.11.0
-
-  htmlparser2@8.0.2:
-    dependencies:
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
-      domutils: 3.2.2
-      entities: 4.5.0
 
   http-proxy-agent@7.0.2:
     dependencies:
@@ -3540,8 +3469,6 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  leac@0.6.0: {}
-
   levn@0.4.1:
     dependencies:
       prelude-ls: 1.2.1
@@ -3582,6 +3509,8 @@ snapshots:
       is-unicode-supported: 1.3.0
 
   lru-cache@10.4.3: {}
+
+  lru-cache@11.5.3: {}
 
   make-dir@4.0.0:
     dependencies:
@@ -3688,11 +3617,6 @@ snapshots:
 
   pako@1.0.11: {}
 
-  parseley@0.12.1:
-    dependencies:
-      leac: 0.6.0
-      peberminta: 0.9.0
-
   path-exists@4.0.0: {}
 
   path-expression-matcher@1.6.2: {}
@@ -3704,9 +3628,12 @@ snapshots:
       lru-cache: 10.4.3
       minipass: 7.1.3
 
-  path-type@4.0.0: {}
+  path-scurry@2.0.2:
+    dependencies:
+      lru-cache: 11.5.3
+      minipass: 7.1.3
 
-  peberminta@0.9.0: {}
+  path-type@4.0.0: {}
 
   picocolors@1.1.1: {}
 
@@ -3738,6 +3665,8 @@ snapshots:
 
   readdirp@4.1.2: {}
 
+  readdirp@5.1.1: {}
+
   require-directory@2.1.1: {}
 
   restore-cursor@5.1.0:
@@ -3756,10 +3685,6 @@ snapshots:
   safe-buffer@5.1.2: {}
 
   safe-buffer@5.2.1: {}
-
-  selderee@0.11.0:
-    dependencies:
-      parseley: 0.12.1
 
   semver@7.8.5: {}
 
@@ -3796,6 +3721,11 @@ snapshots:
   string-width@7.2.0:
     dependencies:
       emoji-regex: 10.6.0
+      get-east-asian-width: 1.7.0
+      strip-ansi: 7.2.0
+
+  string-width@8.3.0:
+    dependencies:
       get-east-asian-width: 1.7.0
       strip-ansi: 7.2.0
 
@@ -3837,12 +3767,10 @@ snapshots:
       minizlib: 3.1.0
       yallist: 5.0.0
 
-  tas-client@0.2.33: {}
-
-  test-exclude@7.0.2:
+  test-exclude@8.0.0:
     dependencies:
       '@istanbuljs/schema': 0.1.6
-      glob: 10.5.0
+      glob: 13.0.6
       minimatch: 10.2.6
 
   tinyglobby@0.2.17:
@@ -3950,8 +3878,6 @@ snapshots:
       vscode-jsonrpc: 9.0.1
       vscode-languageserver-types: 3.18.0
 
-  vscode-languageserver-textdocument@1.0.12: {}
-
   vscode-languageserver-textdocument@1.0.13: {}
 
   vscode-languageserver-textdocument@1.0.8: {}
@@ -3969,10 +3895,6 @@ snapshots:
   vscode-languageserver@8.0.2:
     dependencies:
       vscode-languageserver-protocol: 3.17.2
-
-  vscode-tas-client@0.1.84:
-    dependencies:
-      tas-client: 0.2.33
 
   which@2.0.2:
     dependencies:
@@ -4000,6 +3922,12 @@ snapshots:
       string-width: 5.1.2
       strip-ansi: 7.2.0
 
+  wrap-ansi@9.0.2:
+    dependencies:
+      ansi-styles: 6.2.3
+      string-width: 7.2.0
+      strip-ansi: 7.2.0
+
   wsl-utils@0.1.0:
     dependencies:
       is-wsl: 3.1.1
@@ -4013,6 +3941,8 @@ snapshots:
   yaml@2.9.0: {}
 
   yargs-parser@21.1.1: {}
+
+  yargs-parser@22.0.0: {}
 
   yargs-unparser@2.0.0:
     dependencies:
@@ -4030,6 +3960,15 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  yargs@18.2.0:
+    dependencies:
+      cliui: 9.0.1
+      escalade: 3.2.0
+      get-caller-file: 2.0.5
+      string-width: 8.3.0
+      y18n: 5.0.8
+      yargs-parser: 22.0.0
 
   yocto-queue@0.1.0: {}
 

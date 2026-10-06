@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AzExtTreeDataProvider, AzExtTreeItem, IExperimentationServiceAdapter } from '@microsoft/vscode-azext-utils';
+import { AzExtTreeDataProvider, AzExtTreeItem } from '@microsoft/vscode-azext-utils';
 import { DockerHubRegistryDataProvider, GenericRegistryV2DataProvider, GitHubRegistryDataProvider } from '@microsoft/vscode-docker-registries';
 import { ExtensionContext, StatusBarItem, TreeView } from 'vscode';
 import { ContainerRuntimeManager } from './runtimes/ContainerRuntimeManager';
@@ -27,7 +27,6 @@ export namespace ext {
     export let context: ExtensionContext;
     export let outputChannel: AzExtLogOutputChannelWrapper;
 
-    export let experimentationService: IExperimentationServiceAdapter;
     export let activityMeasurementService: IActivityMeasurementService;
 
     export let treeInitError: unknown;
