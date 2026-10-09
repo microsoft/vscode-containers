@@ -8,6 +8,7 @@ import { l10n, ThemeColor, ThemeIcon, workspace } from "vscode";
 import { configPrefix } from "../../constants";
 import { commonProperties, CommonProperty, getCommonPropertyValue } from "../settings/CommonProperties";
 import { ITreePropertyInfo } from "../settings/ITreeSettingInfo";
+import { ComposeProjectNameLabel } from "../../utils/composeLabels";
 
 export type ContainerProperty = Exclude<CommonProperty, 'Size'> | 'Image' | 'Compose Project Name' | 'ContainerId' | 'ContainerName' | 'Networks' | 'Ports' | 'State' | 'Status' | 'Label';
 
@@ -78,7 +79,7 @@ export const NonComposeGroupName = l10n.t('Individual Containers');
 export const NonLabelGroupName = l10n.t('Others');
 
 // The label Docker Compose adds to containers it creates, containing the compose project name
-export const composeProjectLabel = 'com.docker.compose.project';
+export const composeProjectLabel = ComposeProjectNameLabel;
 
 // The label Docker Swarm adds to containers it creates as part of a stack, containing the stack namespace (name)
 export const swarmStackNamespaceLabel = 'com.docker.stack.namespace';
