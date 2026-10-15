@@ -8,8 +8,10 @@ packages:
   - packages/compose-language-service
 
 minimumReleaseAge: 10080 # One week in minutes
-# Remove after 2026-10-13, when these releases satisfy the one-week policy.
 minimumReleaseAgeExclude:
+  # Remove after 2026-10-22, when eng satisfies the one-week policy.
+  - "@microsoft/vscode-azext-eng"
+  # Remove after 2026-10-13, when these releases satisfy the one-week policy.
   - "@microsoft/vscode-azext-azureutils"
   - "@microsoft/vscode-azext-utils"
 
