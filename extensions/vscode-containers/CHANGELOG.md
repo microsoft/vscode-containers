@@ -1,3 +1,8 @@
+## 2.5.3 - 19 October 2026
+### Fixed
+* The .NET Preview version has been moved to 12. This means .NET 11 projects will scaffold Dockerfiles without `-preview` in the image name. [#624](https://github.com/microsoft/vscode-containers/issues/624)
+* Downloaded container files were being truncated. [#631](https://github.com/microsoft/vscode-containers/issues/631)
+
 ## 2.5.2 - 22 September 2026
 ### Fixed
 * Fixed an issue that broke the containers view when using WSLC. [#616](https://github.com/microsoft/vscode-containers/issues/616)
