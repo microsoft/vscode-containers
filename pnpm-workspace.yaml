@@ -11,9 +11,6 @@ minimumReleaseAge: 10080 # One week in minutes
 minimumReleaseAgeExclude:
   # Remove after 2026-10-22, when eng satisfies the one-week policy.
   - "@microsoft/vscode-azext-eng"
-  # Remove after 2026-10-13, when these releases satisfy the one-week policy.
-  - "@microsoft/vscode-azext-azureutils"
-  - "@microsoft/vscode-azext-utils"
 
 allowBuilds:
   esbuild: true
