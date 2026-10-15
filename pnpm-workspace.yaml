@@ -8,10 +8,9 @@ packages:
   - packages/compose-language-service
 
 minimumReleaseAge: 10080 # One week in minutes
-# Remove after 2026-10-13, when these releases satisfy the one-week policy.
 minimumReleaseAgeExclude:
-  - "@microsoft/vscode-azext-azureutils"
-  - "@microsoft/vscode-azext-utils"
+  # Remove after 2026-10-22, when eng satisfies the one-week policy.
+  - "@microsoft/vscode-azext-eng"
 
 allowBuilds:
   esbuild: true
@@ -23,11 +22,9 @@ overrides:
   diff: ^8.0.3
 publicHoistPattern:
   # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
-  # NOTE: `typescript` is deliberately NOT hoisted here. The build compiler is TypeScript 7 (installed
-  # under the `@typescript/native` alias in package.json), which has no compiler API; hoisting a
-  # `typescript` package would let typescript-eslint resolve its peer to the API-less TS 7 and break
-  # linting. Once TS 7.1 ships its API and typescript-eslint adopts it, `typescript` can be declared/
-  # hoisted normally again.
+  # Use eng's native compiler alias for builds; its separate TypeScript 6 dependency supplies
+  # the compiler API used by typescript-eslint.
+  - "@typescript/native"
   - "*eslint*"
   - "mocha"
   - "@types/mocha"
