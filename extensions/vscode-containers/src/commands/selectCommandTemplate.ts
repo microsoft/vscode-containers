@@ -110,7 +110,7 @@ export async function selectComposeLogsCommand(context: IActionContext, folder: 
     );
 }
 
-export async function selectComposeCommand(context: IActionContext, folder: vscode.WorkspaceFolder, composeCommand: 'up' | 'down' | 'upSubset' | 'downSubset' | 'pull', configurationFile?: string, detached?: boolean, build?: boolean): Promise<VoidCommandResponse> {
+export async function selectComposeCommand(context: IActionContext, folder: vscode.WorkspaceFolder | vscode.Uri, composeCommand: 'up' | 'down' | 'upSubset' | 'downSubset' | 'pull', configurationFile?: string, detached?: boolean, build?: boolean): Promise<VoidCommandResponse> {
     let template: TemplateCommand;
 
     switch (composeCommand) {
@@ -143,12 +143,15 @@ export async function selectComposeCommand(context: IActionContext, folder: vsco
         fullComposeCommand = orchestratorClient.commandName;
     }
 
+    const folderName = folder instanceof vscode.Uri ? path.basename(folder.fsPath) : folder.name;
+    const formattedConfigFile = !configurationFile ? '' : configurationFile.startsWith('-f ') ? configurationFile : `-f "${configurationFile}"`;
+
     return await selectCommandTemplate(
         context,
         template,
-        [folder.name, configurationFile],
+        [folderName, configurationFile],
         folder,
-        { 'configurationFile': configurationFile ? `-f "${configurationFile}"` : '', 'detached': detached ? '-d' : '', 'build': build ? '--build' : '', 'composeCommand': fullComposeCommand }
+        { 'configurationFile': formattedConfigFile, 'detached': detached ? '-d' : '', 'build': build ? '--build' : '', 'composeCommand': fullComposeCommand }
     );
 }
 

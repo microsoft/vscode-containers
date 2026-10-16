@@ -168,6 +168,10 @@
     "vscode-containers.config.template.composeDown.label": "The label displayed to the user.",
     "vscode-containers.config.template.composeDown.match": "The regular expression for choosing the right template. Checked against compose YAML files, folder name, etc.",
     "vscode-containers.config.template.composeDown.description": "Command templates for compose down commands.",
+    "vscode-containers.config.template.composePull.template": "The command template.",
+    "vscode-containers.config.template.composePull.label": "The label displayed to the user.",
+    "vscode-containers.config.template.composePull.match": "The regular expression for choosing the right template. Checked against compose YAML files, folder name, etc.",
+    "vscode-containers.config.template.composePull.description": "Command templates for compose pull commands.",
     "vscode-containers.config.containers.containers.groupBy": "The property to use to group containers in Containers view: ContainerId, ContainerName, CreatedTime, FullTag, ImageId, Networks, Ports, Registry, RegistryAndPath, Repository, RepositoryName, RepositoryNameShort, RepositoryNameAndTag, State, Status, Tag, or None",
     "vscode-containers.config.containers.containers.groupByLabel": "The items will be grouped by the value of this container label (e.g. `com.microsoft.created-by`)",
     "vscode-containers.config.containers.containers.description": "Any secondary properties to display for a container (an array). Possible elements include: ContainerId, ContainerName, CreatedTime, FullTag, ImageId, Networks, Ports, Registry, RegistryAndPath, Repository, RepositoryName, RepositoryNameShort, RepositoryNameAndTag, State, Status, and Tag",
@@ -230,6 +234,7 @@
     "vscode-containers.commands.compose.up": "Compose Up",
     "vscode-containers.commands.compose.up.subset": "Compose Up - Select Services",
     "vscode-containers.commands.compose.down.subset": "Compose Down - Select Services",
+    "vscode-containers.commands.compose.pull": "Compose Pull",
     "vscode-containers.commands.configure": "Add Docker Files to Workspace...",
     "vscode-containers.commands.configureCompose": "Add Compose Files to Workspace...",
     "vscode-containers.commands.containers.attachShell": "Attach Shell",
@@ -256,6 +261,7 @@
     "vscode-containers.commands.containers.composeGroup.stop": "Compose Stop",
     "vscode-containers.commands.containers.composeGroup.restart": "Compose Restart",
     "vscode-containers.commands.containers.composeGroup.down": "Compose Down",
+    "vscode-containers.commands.containers.composeGroup.pull": "Compose Pull",
     "vscode-containers.commands.debugging.initializeForDebugging": "Initialize for container debugging",
     "vscode-containers.commands.help": "Container Help",
     "vscode-containers.commands.help.reportIssue": "Report Issue",
@@ -367,10 +373,5 @@
     "vscode-containers.walkthrough.containersStart.learn.title": "Learn More",
     "vscode-containers.walkthrough.containersStart.learn.description": "Great job! You've now completed Getting Started with Container Tools. But don't stop here! There are plenty of ways to become more proficient building containerized applications using the Container Tools extension.\n\nFor example, you can [debug a container](https://code.visualstudio.com/docs/containers/debug-common), or [run multiple containers](https://code.visualstudio.com/docs/containers/docker-compose) at once using Docker Compose.\n\nCheck out our [documentation](https://code.visualstudio.com/docs/containers/overview) to make the most of the Container Tools extension for VS Code!",
     "vscode-containers.copilot.containersConfigTool.displayName": "Get Container Tools Configuration",
-    "vscode-containers.copilot.containersConfigTool.userDescription": "Gets the configuration for the Container Tools extension.",
-    "vscode-containers.config.template.composePull.template": "The command template.",
-    "vscode-containers.config.template.composePull.label": "The label displayed to the user.",
-    "vscode-containers.config.template.composePull.match": "The regular expression for choosing the right template. Checked against compose YAML files, folder name, etc.",
-    "vscode-containers.config.template.composePull.description": "Command templates for compose pull commands.",
-    "vscode-containers.commands.composePull": "Compose Pull"
+    "vscode-containers.copilot.containersConfigTool.userDescription": "Gets the configuration for the Container Tools extension."
 }
