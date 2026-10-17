@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DockerClient, DockerComposeClient, FinchClient, FinchComposeClient, IContainerOrchestratorClient, IContainersClient, NerdctlClient, NerdctlComposeClient, PodmanClient, PodmanComposeClient, WslcClient } from '@microsoft/vscode-container-client';
-import { isWindows } from '../utils/osUtils';
+import { AppleContainerClient, DockerClient, DockerComposeClient, FinchClient, FinchComposeClient, IContainerOrchestratorClient, IContainersClient, NerdctlClient, NerdctlComposeClient, PodmanClient, PodmanComposeClient, WslcClient } from '@microsoft/vscode-container-client';
+import { isArm64, isMac, isWindows } from '../utils/osUtils';
 
 /**
  * A client class that can be instantiated with no arguments and exposes its well-known id as a
@@ -43,6 +43,8 @@ export const officialRuntimeRegistrations: readonly OfficialRuntimeRegistration[
     { containerClient: FinchClient, orchestratorClient: FinchComposeClient },
     // The WSL Container CLI is Windows-only and has no compose counterpart.
     { containerClient: WslcClient, isSupported: isWindows },
+    // The Apple container CLI is Apple Silicon Mac only and has no compose counterpart.
+    { containerClient: AppleContainerClient, isSupported: () => isMac() && isArm64() },
 ];
 
 /**
