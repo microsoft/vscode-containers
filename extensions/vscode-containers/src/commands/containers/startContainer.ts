@@ -13,7 +13,7 @@ export async function startContainer(context: IActionContext, node?: ContainerTr
     nodes = await multiSelectNodes(
         { ...context, noItemFoundErrorMessage: vscode.l10n.t('No containers are available to start') },
         ext.containersTree,
-        /^(created|dead|exited|paused|terminated)Container$/i,
+        /^(created|dead|exited|terminated)Container$/i,
         node,
         nodes
     );
