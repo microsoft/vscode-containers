@@ -3424,7 +3424,6 @@
         "@vscode/test-cli": "catalog:",
         "@vscode/test-electron": "catalog:",
         "esbuild": "catalog:",
-        "esbuild-plugin-copy": "catalog:",
         "tsx": "catalog:"
     },
     "dependencies": {
