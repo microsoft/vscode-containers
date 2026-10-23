@@ -9,6 +9,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import * as stream from 'stream';
+import { AppleContainerClient } from '../clients/AppleContainerClient/AppleContainerClient';
 import { DockerClient } from '../clients/DockerClient/DockerClient';
 import { FinchClient } from '../clients/FinchClient/FinchClient';
 import { NerdctlClient } from '../clients/NerdctlClient/NerdctlClient';
@@ -41,9 +42,9 @@ const runInWsl: boolean = (process.env.RUN_IN_WSL === '1' || process.env.RUN_IN_
  */
 export const KeepAliveEntrypoint = 'tail';
 export const KeepAliveCommand = ['-f', '/dev/null'];
-// wslc does not support the `--expose` flag on `run`, but it does support
-// network create/list/inspect/remove/prune.
-const supportsExposeFlag = clientTypeToTest !== 'wslc';
+// wslc and the Apple `container` CLI don't support the `--expose` flag on `run`, but both
+// support network create/list/inspect/remove/prune.
+const supportsExposeFlag = clientTypeToTest !== 'wslc' && clientTypeToTest !== 'applecontainer';
 
 describe('(integration) ContainersClientE2E', function () {
 
@@ -66,6 +67,8 @@ describe('(integration) ContainersClientE2E', function () {
             client = new NerdctlClient('nerdctl', 'Nerdctl', 'Runs container commands using the nerdctl CLI');
         } else if (clientTypeToTest === 'wslc') {
             client = new WslcClient();
+        } else if (clientTypeToTest === 'applecontainer') {
+            client = new AppleContainerClient();
         } else {
             throw new Error('Invalid clientTypeToTest');
         }
@@ -300,9 +303,13 @@ describe('(integration) ContainersClientE2E', function () {
                 })
             );
 
-            // Prune the image
+            // Prune the image. The Apple `container` CLI always auto-assigns a real tag to a
+            // build even without --tag (a random UUID, confirmed via `--help`'s "-t, --tag"
+            // default), so the image above is never "dangling" the way Docker's untagged builds
+            // are -- only `--all` actually removes it (confirmed: a bare `image prune` reclaims
+            // nothing here since nothing on this runtime is ever tagless).
             const pruneResult = await defaultRunner.getCommandRunner()(
-                client.pruneImages({})
+                client.pruneImages({ all: clientTypeToTest === 'applecontainer' })
             );
 
             expect(pruneResult).to.be.ok;
@@ -323,7 +330,10 @@ describe('(integration) ContainersClientE2E', function () {
     describe('Containers', function () {
         const imageToTest = 'alpine:latest';
         const testContainerName = 'test-container-e2e';
-        const testContainerNetworkName = 'test-networkForContainer-e2e';
+        // Lowercase-only: the Apple `container` CLI rejects mixed-case network names outright
+        // (confirmed: `container network create testNetworkCamel` errors with "invalid network
+        // name"), unlike volume/container names, which accept any case on every runtime tested.
+        const testContainerNetworkName = 'test-network-for-container-e2e';
         const testContainerVolumeName = 'test-volumeForContainer-e2e';
         let testContainerBindMountSource: string;
         let testContainerId: string;
@@ -334,6 +344,15 @@ describe('(integration) ContainersClientE2E', function () {
         let dockerPortRange: number[] = [];
 
         before('Containers', async function () {
+            if (clientTypeToTest === 'applecontainer') {
+                // The Apple `container` CLI fetches a per-machine kernel + init VM image the
+                // first time anything is actually run (not on pull/build), which can take well
+                // over the suite's default 10s timeout on a cold cache (confirmed: ~20s on a
+                // clean fetch, ~1s once cached). This is the first `runContainer` call in the
+                // suite, so it's the one most likely to eat that one-time cost.
+                this.timeout(60000);
+            }
+
             testContainerBindMountSource = import.meta.dirname;
 
             // If running in WSL, convert the bind mount source path to WSL format
@@ -407,9 +426,11 @@ describe('(integration) ContainersClientE2E', function () {
                             { hostPort: 8080, containerPort: 80 },
                             ...dockerPortRange.map(port => ({ hostPort: port, containerPort: port })),
                         ] : [{ hostPort: 8080, containerPort: 80 }],
-                    // wslc has no --expose flag; rootless nerdctl cannot auto-allocate host ports
+                    // wslc/applecontainer have no --expose flag; rootless nerdctl cannot auto-allocate host ports
                     exposePorts: (clientTypeToTest === 'nerdctl' || !supportsExposeFlag) ? undefined : [3000],
-                    publishAllPorts: clientTypeToTest === 'nerdctl' ? undefined : true, // Rootless nerdctl cannot auto-allocate host ports
+                    // Rootless nerdctl cannot auto-allocate host ports; the Apple `container` CLI has no
+                    // `--publish-all`/`-P` equivalent at all (confirmed via `container run --help`).
+                    publishAllPorts: (clientTypeToTest === 'nerdctl' || clientTypeToTest === 'applecontainer') ? undefined : true,
                 })
             ))!;
         });
@@ -635,8 +656,8 @@ describe('(integration) ContainersClientE2E', function () {
         });
 
         it('RestartContainersCommand', async function () {
-            if (clientTypeToTest === 'wslc') {
-                this.skip(); // wslc has no `restart` subcommand
+            if (clientTypeToTest === 'wslc' || clientTypeToTest === 'applecontainer') {
+                this.skip(); // wslc/applecontainer have no `restart` subcommand
             }
 
             // Restart the container
@@ -661,8 +682,14 @@ describe('(integration) ContainersClientE2E', function () {
             expect(command.command).to.be.a('string');
             expect(command.args).to.be.an('array');
 
-            // We expect `container stats --all`
-            expect(getBashCommandLine(command)).to.equal(`${client.commandName} container stats --all`);
+            if (clientTypeToTest === 'applecontainer') {
+                // The Apple `container` CLI has `stats` as a bare top-level verb with no `--all`
+                // flag at all (confirmed via --help; it shows all running containers by default).
+                expect(getBashCommandLine(command)).to.equal(`${client.commandName} stats`);
+            } else {
+                // We expect `container stats --all`
+                expect(getBashCommandLine(command)).to.equal(`${client.commandName} container stats --all`);
+            }
         });
 
         it('RemoveContainersCommand', async function () {
@@ -942,8 +969,8 @@ describe('(integration) ContainersClientE2E', function () {
         let container: string | undefined;
 
         before('Events', async function () {
-            if (clientTypeToTest === 'wslc') {
-                this.skip(); // wslc has no `events` subcommand
+            if (clientTypeToTest === 'wslc' || clientTypeToTest === 'applecontainer') {
+                this.skip(); // wslc/applecontainer have no `events` subcommand
             }
 
             // For Docker/Podman: Create a container so that the event stream has something to report
