@@ -150,6 +150,7 @@ async function exportCertificateAndSetPassword(projectFile: string, certificateE
         withNamedArg('-ep', certificateExportPath, { shouldQuote: true }),
         withNamedArg('-p', password, { shouldQuote: true }),
     )();
+    await fse.ensureDir(path.dirname(certificateExportPath));
     await execAsync('dotnet', exportArgs);
 
     // Set the password to dotnet user-secrets
