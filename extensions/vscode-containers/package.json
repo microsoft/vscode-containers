@@ -1,6 +1,6 @@
 {
     "name": "vscode-containers",
-    "version": "2.5.0",
+    "version": "2.5.4-alpha",
     "publisher": "ms-azuretools",
     "displayName": "Container Tools",
     "description": "Makes it easy to create, manage, and debug containerized applications.",
@@ -400,6 +400,11 @@
                     "command": "vscode-containers.containers.browse",
                     "when": "view == vscode-containers.views.containers && viewItem =~ /runningContainer$/i",
                     "group": "containers_1_general@4"
+                },
+                {
+                    "command": "vscode-containers.containers.browseIntegrated",
+                    "when": "view == vscode-containers.views.containers && viewItem =~ /runningContainer$/i",
+                    "group": "containers_1_general@4.5"
                 },
                 {
                     "command": "vscode-containers.containers.start",
@@ -1669,7 +1674,7 @@
                             "type": "string"
                         }
                     ],
-                    "default": "${containerCommand} build --pull --rm -f \"${dockerfile}\" -t ${tag} \"${context}\"",
+                    "default": "${containerCommand} build --pull ${rm} -f \"${dockerfile}\" -t ${tag} \"${context}\"",
                     "description": "%vscode-containers.config.template.build.description%",
                     "tags": [
                         "advanced"
@@ -2681,6 +2686,11 @@
                 "category": "%vscode-containers.commands.category.containers%"
             },
             {
+                "command": "vscode-containers.containers.browseIntegrated",
+                "title": "%vscode-containers.commands.containers.browseIntegrated%",
+                "category": "%vscode-containers.commands.category.containers%"
+            },
+            {
                 "command": "vscode-containers.containers.configureExplorer",
                 "title": "%vscode-containers.commands.containers.configureExplorer%",
                 "category": "%vscode-containers.commands.category.containers%",
@@ -3371,7 +3381,7 @@
         ]
     },
     "engines": {
-        "vscode": "^1.105.0"
+        "vscode": "^1.109.0"
     },
     "capabilities": {
         "virtualWorkspaces": false,
@@ -3402,7 +3412,7 @@
         "build": "pnpm run --parallel \"/^build:(esbuild|check)$/\"",
         "build:esbuild": "node esbuild.mjs",
         "build:check": "tsc --noEmit",
-        "package": "pnpx @vscode/vsce@latest package --no-dependencies",
+        "package": "pnpx @vscode/vsce@latest package --no-dependencies --baseImagesUrl https://github.com/microsoft/vscode-containers/raw/HEAD/extensions/vscode-containers",
         "test": "vscode-test",
         "clean": "node ../../scripts/clean.mjs"
     },
@@ -3416,15 +3426,14 @@
         "@vscode/test-cli": "catalog:",
         "@vscode/test-electron": "catalog:",
         "esbuild": "catalog:",
-        "esbuild-plugin-copy": "catalog:",
         "tsx": "catalog:"
     },
     "dependencies": {
         "@azure/arm-containerregistry": "^10.1.0",
         "@azure/storage-blob": "^12.14.0",
         "@microsoft/compose-language-service": "workspace:*",
-        "@microsoft/vscode-azext-azureauth": "^6.0.0-alpha.8",
-        "@microsoft/vscode-azext-azureutils": "^4.0.0",
+        "@microsoft/vscode-azext-azureauth": "^6.1.0-alpha.2",
+        "@microsoft/vscode-azext-azureutils": "^5.0.0",
         "@microsoft/vscode-azext-utils": "catalog:",
         "@microsoft/vscode-container-client": "workspace:*",
         "@microsoft/vscode-docker-registries": "workspace:*",
@@ -3435,11 +3444,10 @@
         "fast-xml-parser": "^5.10.1",
         "fs-extra": "^11.1.1",
         "gradle-to-js": "^2.0.1",
-        "handlebars": "^4.7.9",
+        "handlebars": "^4.7.10",
         "semver": "^7.5.2",
         "tar": "^7.5.21",
         "vscode-languageclient": "catalog:",
-        "vscode-tas-client": "^0.1.75",
         "zod": "catalog:"
     }
 }

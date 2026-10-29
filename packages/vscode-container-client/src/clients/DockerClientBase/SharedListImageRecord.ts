@@ -14,8 +14,9 @@ import { parseDockerLikeImageName } from '../../utils/parseDockerLikeImageName';
  * nerdctl may omit them. The size and creation date are normalized by the shared
  * field transforms.
  *
- * `wslc images` uses different key names (`Id`, `Created` as a Unix epoch) and
- * maps onto this shape via `WslcListImageRecordSchema`.
+ * `wslc images` reports the same fields, but wslc 2.9.7 and earlier use different key names
+ * (`Id`, `Created` as a Unix epoch); `WslcListImageRecordSchema` maps both wslc generations onto
+ * this shape.
  *
  * Podman's `image ls` output is object-shaped (`Names` array, numeric `Created`)
  * and keeps its own record module rather than sharing this schema.

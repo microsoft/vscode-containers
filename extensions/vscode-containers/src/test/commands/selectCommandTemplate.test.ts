@@ -4,12 +4,36 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
+import { WslcClient } from '@microsoft/vscode-container-client';
 import assert from 'assert';
-import { CommandTemplate, selectCommandTemplate } from '../../commands/selectCommandTemplate';
+import * as vscode from 'vscode';
+import { CommandTemplate, selectBuildCommand, selectCommandTemplate } from '../../commands/selectCommandTemplate';
+import { ext } from '../../extensionVariables';
 
 const DefaultPickIndex = 0;
 
 suite("(unit) selectCommandTemplate", () => {
+    test("WSLC default build command omits --rm", async () => {
+        const originalManager = ext.runtimeManager;
+        ext.runtimeManager = {
+            getClient: async () => ({ commandName: 'wslc', id: WslcClient.ClientId }),
+        } as unknown as typeof ext.runtimeManager;
+
+        try {
+            const context = {
+                telemetry: { properties: {}, measurements: {}, },
+                errorHandling: { issueProperties: {}, },
+            } as IActionContext;
+            const folder = { name: 'test', uri: vscode.Uri.file('/test') } as vscode.WorkspaceFolder;
+            const result = await selectBuildCommand(context, folder, 'Dockerfile', '.');
+
+            assert.equal(result.command, 'wslc');
+            assert.ok(!result.args.includes('--rm'));
+        } finally {
+            ext.runtimeManager = originalManager;
+        }
+    });
+
     test("One constrained from settings (match)", async () => {
         const result = await runWithCommandSetting(
             [

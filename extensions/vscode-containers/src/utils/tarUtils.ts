@@ -4,27 +4,48 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as stream from 'stream';
+import { finished, pipeline } from 'stream/promises';
+import type { ReadEntry } from 'tar';
+import * as vscode from 'vscode';
 import { getTar } from './lazyPackages';
 
 /**
- * Write tarball data containing a single file to this stream, and
- * it will unpack it.
+ * Unpack the first file in a tar stream without writing to disk.
+ * Waits for both archive consumption and the destination to finish.
+ * @param source The archive stream to unpack
  * @param destination The destination stream to unpack to
- * @returns A stream to write tarball data into
+ * @returns A promise that resolves after extraction completes
  */
-export async function tarUnpackStream(destination: NodeJS.WritableStream): Promise<NodeJS.WritableStream> {
+export async function tarUnpackStream(source: stream.Readable, destination: stream.Writable): Promise<void> {
     const tar = await getTar();
 
-    let entryCounter = 0;
-    return new tar.Unpack({
-        filter: () => {
-            return entryCounter < 1;
-        },
+    let fileEntry: ReadEntry | undefined;
+    const parser = new tar.Parser({
+        strict: true,
+        filter: () => !fileEntry,
         onReadEntry: (entry) => {
-            entryCounter++;
+            fileEntry = entry;
             entry.pipe(destination);
         }
     });
+
+    const destinationDone = finished(destination, { cleanup: true });
+    const sourceDone = pipeline(source, parser).then(() => {
+        if (!fileEntry) {
+            throw new Error(vscode.l10n.t('The container file archive contains no file.'));
+        }
+    });
+    try {
+        await Promise.all([sourceDone, destinationDone]);
+    } catch (error) {
+        const failure = error instanceof Error ? error : new Error(String(error));
+        fileEntry?.unpipe(destination);
+        fileEntry?.destroy();
+        destination.destroy(failure);
+        parser.abort(failure);
+        await Promise.allSettled([sourceDone, destinationDone]);
+        throw error;
+    }
 }
 
 /**

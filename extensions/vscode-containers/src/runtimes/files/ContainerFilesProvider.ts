@@ -7,6 +7,8 @@ import { callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils
 import { CommandNotSupportedError, ListFilesItem } from '@microsoft/vscode-container-client';
 import { AccumulatorStream, DisposableLike } from '@microsoft/vscode-processutils';
 import * as path from 'path';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
 import * as vscode from 'vscode';
 import { ext } from '../../extensionVariables';
 import { getDockerOSType } from '../../utils/osUtils';
@@ -69,7 +71,6 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
         const containerOS = dockerUri.options?.containerOS || await getDockerOSType();
 
         const accumulator = new AccumulatorStream();
-        const targetStream = containerOS === 'windows' ? accumulator : await tarUnpackStream(accumulator);
 
         const generator = ext.streamWithDefaults(
             client => client.readFile({
@@ -79,13 +80,12 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
             }),
         );
 
-        for await (const chunk of generator) {
-            targetStream.write(chunk);
-        }
-
-        accumulator.end();
-
-        return await accumulator.getBytes();
+        const source = Readable.from(generator);
+        const [, bytes] = await Promise.all([
+            containerOS === 'windows' ? pipeline(source, accumulator) : tarUnpackStream(source, accumulator),
+            accumulator.getBytes(),
+        ]);
+        return bytes;
     }
 
     public writeFile(uri: vscode.Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean; }): Promise<void> {

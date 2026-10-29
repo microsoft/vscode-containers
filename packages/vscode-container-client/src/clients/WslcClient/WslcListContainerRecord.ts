@@ -7,6 +7,7 @@ import * as z from 'zod/mini';
 import type { ListContainersItem, PortBinding } from '../../contracts/ContainerClient';
 import { imageNameSchema, unixEpochSecondsSchema } from '../../contracts/ZodTransforms';
 import { normalizeIpAddress } from '../DockerClientBase/normalizeIpAddress';
+import { normalizeListContainerRecord, SharedListContainerRecordSchema } from '../DockerClientBase/SharedListContainerRecord';
 
 const WslcListContainerPortBindingSchema = z.object({
     // wslc emits the host bind address as `BindingAddress` and the protocol as an
@@ -18,13 +19,10 @@ const WslcListContainerPortBindingSchema = z.object({
 });
 
 /**
- * `wslc list --format json` emits an object-shaped record (structured `Ports`
- * array, numeric `State`, epoch `CreatedAt`, `Networks`/`Labels` collections)
- * rather than the flat, comma-delimited strings that Docker's `container ls`
- * produces, so it keeps its own record module instead of sharing
- * `SharedListContainerRecordSchema`.
+ * Older `wslc list --format json` output uses native records with structured
+ * `Ports`, numeric `State`, epoch `CreatedAt`, and `Networks`/`Labels` collections.
  */
-export const WslcListContainerRecordSchema = z.object({
+const WslcLegacyListContainerRecordSchema = z.object({
     Id: z.string(),
     Name: z.optional(z.string()),
     // Raw image reference parsed into an ImageNameInfo by the shared transform
@@ -38,6 +36,17 @@ export const WslcListContainerRecordSchema = z.object({
     Labels: z.nullish(z.record(z.string(), z.string())),
     Networks: z.nullish(z.array(z.string())),
 });
+
+type WslcLegacyListContainerRecord = z.infer<typeof WslcLegacyListContainerRecordSchema>;
+
+/**
+ * WSLC 2.9.12.0 emits Docker-style records. Accept both shapes independently
+ * of the surrounding array or JSONL framing to support older WSLC releases.
+ */
+export const WslcListContainerRecordSchema = z.union([
+    SharedListContainerRecordSchema,
+    WslcLegacyListContainerRecordSchema,
+]);
 
 export type WslcListContainerRecord = z.infer<typeof WslcListContainerRecordSchema>;
 
@@ -80,7 +89,7 @@ function mapWslcProtocol(protocol: number | undefined): PortBinding['protocol'] 
     }
 }
 
-function normalizePorts(rawPorts: WslcListContainerRecord['Ports']): PortBinding[] {
+function normalizePorts(rawPorts: WslcLegacyListContainerRecord['Ports']): PortBinding[] {
     return (rawPorts ?? []).flatMap((port) => {
         // wslc can emit a binding without a ContainerPort; skip it rather than
         // fabricating containerPort: 0, since containerPort is required by the contract.
@@ -104,10 +113,13 @@ function normalizePorts(rawPorts: WslcListContainerRecord['Ports']): PortBinding
 
 /**
  * Normalize a parsed {@link WslcListContainerRecord} to the common
- * {@link ListContainersItem}. The image name and creation date are already
- * normalized by the schema transforms.
+ * {@link ListContainersItem}, reusing Docker normalization for current records.
  */
-export function normalizeWslcListContainerRecord(container: WslcListContainerRecord): ListContainersItem {
+export function normalizeWslcListContainerRecord(container: WslcListContainerRecord, strict: boolean): ListContainersItem {
+    if ('ID' in container) {
+        return normalizeListContainerRecord(container, strict);
+    }
+
     return {
         id: container.Id,
         name: container.Name ?? '',
@@ -117,7 +129,7 @@ export function normalizeWslcListContainerRecord(container: WslcListContainerRec
         ports: normalizePorts(container.Ports),
         networks: container.Networks ?? [],
         state: mapWslcContainerState(container.State),
-        // wslc `list` has no human-readable status string
+        // Native records have no human-readable status string.
         status: undefined,
     };
 }

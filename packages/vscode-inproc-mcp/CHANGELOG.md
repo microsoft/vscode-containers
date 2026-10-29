@@ -1,3 +1,7 @@
+## 1.1.0 - 1 October 2026
+### Added
+* Adds TCP loopback support along with two new starting options: `transport` and `eagerlyStart`. [#622](https://github.com/microsoft/vscode-containers/pull/622)
+
 ## 1.0.0 - 28 July 2026
 ### Changed
 * The repository has been relocated to [microsoft/vscode-containers](https://github.com/microsoft/vscode-containers). The bump to 1.0.0 does not reflect any breaking API changes.

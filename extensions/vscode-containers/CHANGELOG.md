@@ -1,3 +1,19 @@
+## 2.5.3 - 19 October 2026
+### Fixed
+* The .NET Preview version has been moved to 12. This means .NET 11 projects will scaffold Dockerfiles without `-preview` in the image name. [#624](https://github.com/microsoft/vscode-containers/issues/624)
+* Downloaded container files were being truncated. [#631](https://github.com/microsoft/vscode-containers/issues/631)
+
+## 2.5.2 - 22 September 2026
+### Fixed
+* Fixed an issue that broke the containers view when using WSLC. [#616](https://github.com/microsoft/vscode-containers/issues/616)
+
+## 2.5.1 - 14 September 2026
+### Added
+* Added a new "Open in Integrated Browser" context menu item to running containers. This is similar to the existing "Open in Browser" command (now called "Open in External Browser"), but uses VS Code's integrated browser window. With permission, agents can also interact with the integrated browser window. [#600](https://github.com/microsoft/vscode-containers/issues/600)
+
+### Fixed
+* Fixed several issues with the new WSL container runtime. [#601](https://github.com/microsoft/vscode-containers/issues/601), [#602](https://github.com/microsoft/vscode-containers/issues/602)
+
 ## 2.5.0 - 24 August 2026
 ### Added
 * Support for additional container runtimes: [`nerdctl`](https://github.com/containerd/nerdctl)/[`finch`](https://runfinch.com/) and the new [WSL native container runtime](https://aka.ms/wslc). [#119](https://github.com/microsoft/vscode-containers/issues/119), [#501](https://github.com/microsoft/vscode-containers/issues/501)
