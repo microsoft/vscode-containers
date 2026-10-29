@@ -82,7 +82,7 @@ import { withDockerPortsArg } from '../DockerClientBase/withDockerPortsArg';
 import { AppleContainerInspectContainerRecordSchema, normalizeAppleContainerInspectContainerRecord } from './AppleContainerInspectContainerRecord';
 import { AppleContainerInspectImageRecordSchema, normalizeAppleContainerInspectImageRecord } from './AppleContainerInspectImageRecord';
 import { AppleContainerListContainerRecordSchema, normalizeAppleContainerListContainerRecord, type AppleContainerListContainerRecord } from './AppleContainerListContainerRecord';
-import { AppleContainerListImageRecordSchema, normalizeAppleContainerListImageRecord } from './AppleContainerListImageRecord';
+import { AppleContainerListImageRecordSchema, getAppleContainerListImageRecordLabels, normalizeAppleContainerListImageRecord } from './AppleContainerListImageRecord';
 import { AppleContainerListNetworkRecordSchema, normalizeAppleContainerListNetworkRecord, normalizeAppleContainerInspectNetworkRecord } from './AppleContainerListNetworkRecord';
 import { AppleContainerListVolumeRecordSchema, normalizeAppleContainerListVolumeRecord, normalizeAppleContainerInspectVolumeRecord } from './AppleContainerListVolumeRecord';
 
@@ -109,6 +109,21 @@ const AppleContainerPruneResourceRegex = /^([\w.-]+)$/gm;
 // no `sha256:` prefix) -- confirmed against real output, distinct from Docker's `deleted:
 // sha256:<digest>`.
 const AppleContainerPruneDeletedImageRegex = /^deleted\s+(\S+)$/img;
+
+// `image list` always reports fully-qualified names (`docker.io/library/alpine:3.22`), while
+// callers typically filter with the short form (`alpine:3.22`). Expand the implicit Docker Hub
+// registry and `library/` namespace so both spellings compare equal; tags and digests are kept.
+function canonicalizeImageReference(reference: string): string {
+    const firstSlash = reference.indexOf('/');
+    const firstSegment = firstSlash === -1 ? undefined : reference.slice(0, firstSlash);
+    const hasRegistry = firstSegment !== undefined && (firstSegment === 'localhost' || firstSegment.includes('.') || firstSegment.includes(':'));
+
+    if (hasRegistry) {
+        return reference;
+    }
+
+    return `docker.io/${firstSlash === -1 ? 'library/' : ''}${reference}`;
+}
 
 /**
  * {@link AppleContainerClient} implements {@link IContainersClient} for Apple's `container`
@@ -286,24 +301,38 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         output: string,
         strict: boolean,
     ): Promise<Array<ListImagesItem>> {
-        return this.parseInspectJson(output, strict, (item) =>
-            normalizeAppleContainerListImageRecord(AppleContainerListImageRecordSchema.parse(item)))
-            .then((items) => items.filter((item) => this.matchesListImagesOptions(item, options)));
+        return this.parseInspectJson(output, strict, (item) => {
+            const record = AppleContainerListImageRecordSchema.parse(item);
+            return { item: normalizeAppleContainerListImageRecord(record), labels: getAppleContainerListImageRecordLabels(record) };
+        }).then((entries) => entries
+            .filter(({ item, labels }) => this.matchesListImagesOptions(item, labels, options))
+            .map(({ item }) => item));
     }
 
-    // `dangling` and `labels` have no equivalent in the captured `image list` output (no
-    // dangling concept, no per-image label surfaced at the top level) and are left
-    // unfiltered -- a known limitation, not a silent bug, since nothing in the schema claims
-    // to support them.
-    private matchesListImagesOptions(item: ListImagesItem, options: ListImagesCommandOptions): boolean {
+    // `dangling` has no equivalent in the captured `image list` output (no dangling concept)
+    // and is left unfiltered. Labels live in `variants[].config.config.Labels`, not at the top
+    // level, so they're extracted from the raw record before it's normalized.
+    private matchesListImagesOptions(item: ListImagesItem, labels: Record<string, string>, options: ListImagesCommandOptions): boolean {
         if (options.references && options.references.length > 0) {
             const name = item.image.originalName;
-            if (!name || !options.references.some((reference) => name === reference || name.startsWith(`${reference}:`) || name.startsWith(`${reference}@`))) {
+            if (!name) {
+                return false;
+            }
+
+            const canonicalName = canonicalizeImageReference(name);
+            const matches = options.references.some((reference) => {
+                const canonicalReference = canonicalizeImageReference(reference);
+                return canonicalName === canonicalReference
+                    || canonicalName.startsWith(`${canonicalReference}:`)
+                    || canonicalName.startsWith(`${canonicalReference}@`);
+            });
+
+            if (!matches) {
                 return false;
             }
         }
 
-        return true;
+        return matchesLabelFilters(labels, options.labels);
     }
 
     // No --format flag exists for `image inspect` (confirmed: errors with "Unknown option
@@ -606,10 +635,14 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
         )();
     }
 
-    // No --filter flag exists for `volume list` (confirmed via --help); `dangling` has no
-    // equivalent in the captured output (no container-attachment info is present) and is left
-    // unfiltered, while `driver`/`labels` are applied client-side.
+    // No --filter flag exists for `volume list` (confirmed via --help); `driver`/`labels` are
+    // applied client-side. `dangling` can't be: the output has no container-attachment info, so
+    // it's rejected rather than returning volumes that are actually in use.
     protected override getListVolumesCommandArgs(options: ListVolumesCommandOptions): CommandLineArgs {
+        if (options.dangling !== undefined) {
+            throw new CommandNotSupportedError('container volume list does not support filtering by dangling.');
+        }
+
         return composeArgs(
             withArg('volume', 'list'),
             withNamedArg('--format', this.defaultFormatForJson),
@@ -766,7 +799,7 @@ export class AppleContainerClient extends DockerClientBase implements IContainer
 
         return this.getExecContainerCommandArgs({
             container: options.container,
-            command: ['tar', '-cf', '-', '-C', directory, fileName],
+            command: ['tar', '-cf', '-', '-C', directory, '--', fileName],
         });
     }
 

@@ -330,6 +330,33 @@ describe('(unit) AppleContainerClient', () => {
             const items = await response.parse(JSON.stringify([alpineImageListRecord]), true);
             expect(items).to.have.lengthOf(0);
         });
+
+        it('Matches short references against the fully-qualified name', async () => {
+            for (const reference of ['alpine', 'alpine:latest', 'library/alpine:latest']) {
+                const response = await client.listImages({ references: [reference] });
+                const items = await response.parse(JSON.stringify([alpineImageListRecord]), true);
+                expect(items, reference).to.have.lengthOf(1);
+            }
+        });
+
+        it('Keeps explicit tag constraints when matching short references', async () => {
+            const response = await client.listImages({ references: ['alpine:3.22'] });
+            const items = await response.parse(JSON.stringify([alpineImageListRecord]), true);
+            expect(items).to.have.lengthOf(0);
+        });
+
+        it('Filters by variant config labels client-side', async () => {
+            const labeled = {
+                ...alpineImageListRecord,
+                variants: [{ platform: { architecture: 'arm64' }, size: 1, config: { config: { Labels: { 'review.project': 'one' } } } }],
+            };
+
+            const matching = await (await client.listImages({ labels: { 'review.project': 'one' } })).parse(JSON.stringify([labeled]), true);
+            expect(matching).to.have.lengthOf(1);
+
+            const nonMatching = await (await client.listImages({ labels: { 'review.project': 'two' } })).parse(JSON.stringify([labeled]), true);
+            expect(nonMatching).to.have.lengthOf(0);
+        });
     });
 
     describe('#inspectImages()', () => {
@@ -731,6 +758,10 @@ describe('(unit) AppleContainerClient', () => {
             expect(items[0]).to.include({ name: 'poc-vol', driver: 'local', scope: 'local', size: 549755813888 });
         });
 
+        it('Throws when filtering by dangling (no attachment info in the output)', async () => {
+            await expectRejection(() => client.listVolumes({ dangling: true }));
+        });
+
         it('Filters by driver client-side', async () => {
             const response = await client.listVolumes({ driver: 'nfs' });
             const items = await response.parse(JSON.stringify([alpineVolumeListRecord]), true);
@@ -832,13 +863,13 @@ describe('(unit) AppleContainerClient', () => {
         it('Tars the file via `exec` (container cp has no stdout streaming)', async () => {
             const response = await client.readFile({ container: 'abc', path: '/tmp/sub/file.txt' });
             const args = asStrings(response.args);
-            expect(args).to.deep.equal(['exec', 'abc', 'tar', '-cf', '-', '-C', '/tmp/sub', 'file.txt']);
+            expect(args).to.deep.equal(['exec', 'abc', 'tar', '-cf', '-', '-C', '/tmp/sub', '--', 'file.txt']);
         });
 
         it('Handles a root-level file path', async () => {
             const response = await client.readFile({ container: 'abc', path: '/file.txt' });
             const args = asStrings(response.args);
-            expect(args).to.deep.equal(['exec', 'abc', 'tar', '-cf', '-', '-C', '/', 'file.txt']);
+            expect(args).to.deep.equal(['exec', 'abc', 'tar', '-cf', '-', '-C', '/', '--', 'file.txt']);
         });
     });
 

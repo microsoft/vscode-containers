@@ -13,6 +13,11 @@ const AppleContainerImageVariantSchema = z.object({
     platform: z.optional(z.object({
         architecture: z.optional(z.string()),
     })),
+    config: z.optional(z.object({
+        config: z.optional(z.object({
+            Labels: z.optional(z.record(z.string(), z.string())),
+        })),
+    })),
 });
 
 /**
@@ -66,4 +71,13 @@ export function normalizeAppleContainerListImageRecord(image: AppleContainerList
         // summing to 0 bytes is a legitimate size, not an "unknown" sentinel.
         size: realVariants.length > 0 ? realVariants.reduce((total, variant) => total + (variant.size ?? 0), 0) : undefined,
     };
+}
+
+/**
+ * Labels of a list record's first real platform variant, used only for client-side label
+ * filtering (`ListImagesItem` carries no labels).
+ */
+export function getAppleContainerListImageRecordLabels(image: AppleContainerListImageRecord): Record<string, string> {
+    const variant = (image.variants ?? []).find((v) => v.platform?.architecture !== 'unknown');
+    return variant?.config?.config?.Labels ?? {};
 }
