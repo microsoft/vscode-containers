@@ -11,7 +11,7 @@ import { ext } from '../../extensionVariables';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
 import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTreeItem';
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
-import { selectComposeLogsCommand } from '../selectCommandTemplate';
+import { selectComposeLogsCommand, selectComposeCommand } from '../selectCommandTemplate';
 
 export async function composeGroupLogs(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
     return composeGroup<LogsCommandOptions>(context, async (client, options) => {
@@ -43,6 +43,21 @@ export async function composeGroupRestart(context: IActionContext, node: Contain
 
 export async function composeGroupDown(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
     return composeGroup(context, (client, options) => client.down(options), node);
+}
+
+export async function composeGroupPull(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
+    return composeGroup(context, async (_client, options) => {
+        const labels = await getComposeGroupLabels(node);
+        const workingDirectory = labels && getComposeWorkingDirectory(labels);
+
+        if (!workingDirectory) {
+            context.errorHandling.suppressReportIssue = true;
+            throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
+        }
+
+        const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? Uri.file(workingDirectory);
+        return selectComposeCommand(context, folder, 'pull', options.files?.map(f => `-f "${f}"`).join(' '));
+    }, node);
 }
 
 type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit<TOptions, keyof CommonOrchestratorCommandOptions>;
