@@ -14,6 +14,7 @@ import { ToolTipParentTreeItem } from '../ToolTipTreeItem';
 import { resolveTooltipMarkdown } from '../resolveTooltipMarkdown';
 import { getContainerStateIcon } from "./ContainerProperties";
 import { DockerContainerInfo } from './ContainersTreeItem';
+import { ComposeProfileGroupTreeItem } from './ComposeProfileGroupTreeItem';
 import { FilesTreeItem } from "./files/FilesTreeItem";
 
 /**
@@ -68,7 +69,18 @@ export class ContainerTreeItem extends ToolTipParentTreeItem implements MultiSel
     }
 
     public get description(): string | undefined {
-        return ext.containersRoot.getTreeItemDescription(this._item);
+        let desc = ext.containersRoot.getTreeItemDescription(this._item);
+        if (this.composeProfiles.length > 1) {
+            desc = desc ? vscode.l10n.t('{0} (Shared)', desc) : vscode.l10n.t('(Shared)');
+        }
+        return desc;
+    }
+
+    private get composeProfiles(): string[] {
+        if (this.parent instanceof ComposeProfileGroupTreeItem) {
+            return this.parent.getProfilesForContainer(this);
+        }
+        return [];
     }
 
     public get contextValue(): string {
@@ -156,6 +168,7 @@ export class ContainerTreeItem extends ToolTipParentTreeItem implements MultiSel
         const handlebarsContext = {
             ...containerInspection,
             normalizedName: this.containerName,
+            composeProfiles: this.composeProfiles,
         };
         return resolveTooltipMarkdown(containerTooltipTemplate, handlebarsContext);
     }
@@ -209,5 +222,14 @@ _None_
 {{/each}}
 {{else}}
 _None_
+{{/if}}
+
+{{#if (nonEmptyArr composeProfiles)}}
+---
+
+#### Profiles
+{{#each composeProfiles}}
+  - {{ this }}
+{{/each}}
 {{/if}}
 `;
