@@ -18,7 +18,7 @@ allowBuilds:
 
 overrides:
   # Force a non-vulnerable version of these dependencies
-  serialize-javascript: ^7.0.0
+  serialize-javascript: ^7.1.4
   diff: ^8.0.3
 publicHoistPattern:
   # All of these are hoisted so they can be used by all packages without explicitly declaring them in each package.json
