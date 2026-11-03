@@ -197,7 +197,7 @@ export class UnifiedRegistryTreeDataProvider implements vscode.TreeDataProvider<
         if (imageBaseName) {
             if (imageBaseName === 'docker.io') {
                 registryRoots = registryRoots.filter(r => (r.wrappedItem as CommonRegistryRoot).label === ext.dockerHubRegistryDataProvider.label);
-            } else if (imageBaseName.endsWith('azurecr.io')) {
+            } else if (imageBaseName.endsWith('.azurecr.io')) {
                 registryRoots = registryRoots.filter(r => (r.wrappedItem as CommonRegistryRoot).label === ext.azureRegistryDataProvider.label);
                 findAzureRegistryOnly = true;
             } else if (imageBaseName === 'ghcr.io') {
