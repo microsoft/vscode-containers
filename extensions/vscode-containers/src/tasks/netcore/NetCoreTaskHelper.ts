@@ -199,8 +199,8 @@ export class NetCoreTaskHelper implements TaskHelper {
 
     private async inferUserSecrets(helperOptions: NetCoreTaskOptions): Promise<boolean> {
         const contents = await fse.readFile(helperOptions.appProject);
-        // Remove comments so we don't match a commented tag
-        const noComments = contents.toString().replace(/<!--.*?-->/gs, "");
+        // Keep a separator so removing comments cannot join fragments into new tokens.
+        const noComments = contents.toString().replace(/<!--.*?-->/gs, " ");
         return UserSecretsRegex.test(noComments);
     }
 
