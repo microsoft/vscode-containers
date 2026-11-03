@@ -1670,11 +1670,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.8.6:
-    resolution: {integrity: sha512-9lpSSU4Mly3mrtruwLs1eLK6+gzbzqeBFwRNjIjE+9LuDpWdYctrQlQ3ej1Ilgi7gknpsTRnPoLP8DpCHqHIJw==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   serialize-javascript@7.1.4:
     resolution: {integrity: sha512-FqlEuoTq/zRmA4Lg6aOqyH3lCHbUtCB0bmHCeFniX2GBdDqMJM3FwdvEhlE5Pim1dlt2FfBdVPmUNNiGhhKqpw==}
     engines: {node: '>=20.0.0'}
@@ -2778,7 +2773,7 @@ snapshots:
       https-proxy-agent: 7.0.6
       jszip: 3.10.2
       ora: 8.2.0
-      semver: 7.8.6
+      semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
 
@@ -3367,7 +3362,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.8.6
+      semver: 7.8.5
 
   mimic-function@5.0.1: {}
 
@@ -3519,8 +3514,6 @@ snapshots:
   safe-buffer@5.2.1: {}
 
   semver@7.8.5: {}
-
-  semver@7.8.6: {}
 
   serialize-javascript@7.1.4: {}
 
