@@ -2,7 +2,7 @@ scripts:
   - name: Run
     command: >-
       pnpm --filter vscode-containers run build:esbuild &&
-      code --new-window --extensionDevelopmentPath="$PWD\extensions\vscode-containers"
+      code --new-window --extensionDevelopmentPath="$PWD/extensions/vscode-containers"
       --disable-extension ms-azuretools.vscode-containers
 
 auto_open_in_browser: false
