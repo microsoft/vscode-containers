@@ -13,16 +13,8 @@ import { ContainerGroupTreeItem } from '../../tree/containers/ContainerGroupTree
 import { ContainerTreeItem } from '../../tree/containers/ContainerTreeItem';
 import { selectComposeLogsCommand } from '../selectCommandTemplate';
 
-export async function composeGroupLogs(context: IActionContext, node: ContainerGroupTreeItem): Promise<void> {
-    return composeGroup<LogsCommandOptions>(context, async (client, options) => {
-        const labels = await getComposeGroupLabels(node);
-        const workingDirectory = labels && getComposeWorkingDirectory(labels);
-
-        if (!workingDirectory) {
-            context.errorHandling.suppressReportIssue = true;
-            throw new Error(l10n.t('Unable to determine compose project info for container group \'{0}\'.', node.label));
-        }
-
+export async function composeGroupLogs(context: IActionContext, node?: ContainerGroupTreeItem): Promise<void> {
+    return composeGroup<LogsCommandOptions>(context, async (client, options, workingDirectory) => {
         const folder = workspace.getWorkspaceFolder(Uri.file(workingDirectory)) ?? Uri.file(workingDirectory);
 
         const composeFilesString = options.files?.map(file => `-f "${file}"`).join(' ');
@@ -49,7 +41,7 @@ type AdditionalOptions<TOptions extends CommonOrchestratorCommandOptions> = Omit
 
 async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
     context: IActionContext,
-    composeCommandCallback: (client: IContainerOrchestratorClient, options: TOptions) => Promise<VoidCommandResponse>,
+    composeCommandCallback: (client: IContainerOrchestratorClient, options: TOptions, workingDirectory: string) => Promise<VoidCommandResponse>,
     node: ContainerGroupTreeItem,
     additionalOptions?: AdditionalOptions<TOptions>
 ): Promise<void> {
@@ -86,7 +78,7 @@ async function composeGroup<TOptions extends CommonOrchestratorCommandOptions>(
         cwd: workingDirectory,
     });
 
-    await taskCRF.getCommandRunner()(composeCommandCallback(client, options));
+    await taskCRF.getCommandRunner()(composeCommandCallback(client, options, workingDirectory));
 }
 
 /**
