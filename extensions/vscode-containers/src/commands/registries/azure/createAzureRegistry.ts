@@ -54,7 +54,7 @@ export async function createAzureRegistry(context: IActionContext, node?: Unifie
     const newRegistryName: string = nonNullProp(wizardContext, 'newRegistryName');
     await wizard.execute();
 
-    void window.showInformationMessage(`Successfully created registry "${newRegistryName}".`);
+    void window.showInformationMessage(l10n.t('Successfully created registry "{0}".', newRegistryName));
     void ext.registriesTree.refresh();
 
     return newRegistryName;

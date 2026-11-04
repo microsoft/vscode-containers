@@ -681,7 +681,7 @@
         "debuggers": [
             {
                 "type": "docker",
-                "label": "Containers: Debug in Container",
+                "label": "%vscode-containers.debug.label%",
                 "languages": [
                     "csharp",
                     "razor",
@@ -940,8 +940,8 @@
                 },
                 "configurationSnippets": [
                     {
-                        "label": "Containers: Attach to Node",
-                        "description": "Containers: Attach to Node",
+                        "label": "%vscode-containers.debug.configurationSnippets.node.label%",
+                        "description": "%vscode-containers.debug.configurationSnippets.node.description%",
                         "body": {
                             "type": "node",
                             "request": "attach",
@@ -950,8 +950,8 @@
                         }
                     },
                     {
-                        "label": "Containers: .NET Attach (Preview)",
-                        "description": "Containers: Attach to a .NET process in a container",
+                        "label": "%vscode-containers.debug.configurationSnippets.netCore.label%",
+                        "description": "%vscode-containers.debug.configurationSnippets.netCore.description%",
                         "body": {
                             "name": "Containers .NET Attach (Preview)",
                             "type": "docker",
