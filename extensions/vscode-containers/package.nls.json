@@ -1,4 +1,9 @@
 {
+    "vscode-containers.debug.label": "Containers: Debug in Container",
+    "vscode-containers.debug.configurationSnippets.node.label": "Containers: Attach to Node",
+    "vscode-containers.debug.configurationSnippets.node.description": "Containers: Attach to Node",
+    "vscode-containers.debug.configurationSnippets.netCore.label": "Containers: .NET Attach (Preview)",
+    "vscode-containers.debug.configurationSnippets.netCore.description": "Containers: Attach to a .NET process in a container",
     "vscode-containers.debug.containerName": "Name of the container used for debugging.",
     "vscode-containers.debug.dockerServerReadyAction.description": "Options for launching a browser to the container. Similar to serverReadyAction, but replaces container ports with host ports.",
     "vscode-containers.debug.dockerServerReadyAction.action": "The action to take when the pattern is found.",

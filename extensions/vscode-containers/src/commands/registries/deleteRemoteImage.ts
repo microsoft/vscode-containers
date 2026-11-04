@@ -38,7 +38,7 @@ export async function deleteRemoteImage(context: IActionContext, node?: UnifiedR
             if (errorType === '405' || errorType === 'unsupported') {
                 // Don't wait
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                context.ui.showWarningMessage('Deleting remote images is not supported on this registry. It may need to be enabled.', { learnMoreLink: 'https://aka.ms/AA7jsql' });
+                context.ui.showWarningMessage(l10n.t('Deleting remote images is not supported on this registry. It may need to be enabled.'), { learnMoreLink: 'https://aka.ms/AA7jsql' });
                 throw new UserCancelledError();
             } else {
                 throw error;
