@@ -30,6 +30,7 @@ To improve a translation, edit the values in its two files. To add a language, c
 Run `pnpm --filter vscode-containers run lint:l10n -- --verbose` to see what is still untranslated or stale. It also fails when a translation would break the UI, which you can't always see in the text:
 
 - the `{0}`, `{1}`, ... placeholders must be the same as in the English (they can be reordered, and used fewer times when the English repeats one);
+- VS Code variables such as `${workspaceFolder}` or `${command:pickProcess}` must be kept exactly, including the `$`, because users copy them into their `launch.json`;
 - `` `code` ``, URLs, `[text](command:...)` link targets and `$(icon)` names must be kept exactly;
 - line breaks, and the spaces at the start or end of a string, must be kept.
 

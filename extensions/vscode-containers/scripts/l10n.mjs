@@ -137,11 +137,14 @@ function getMessage(value) {
 
 /**
  * The parts of a message that must survive translation unchanged, or the UI breaks: argument
- * placeholders, code spans, links, icons, line breaks, and leading/trailing whitespace.
+ * placeholders, VS Code variables (`${workspaceFolder}`, `${command:pickProcess}`, ... which users
+ * copy into their `launch.json`), code spans, links, icons, line breaks, and leading/trailing
+ * whitespace.
  */
 function getFragile(message) {
     return {
-        'placeholders': [...new Set(message.match(/\{\w+\}/g))].sort().join(' '),
+        'placeholders': [...new Set(message.match(/\{\w+\}/g) ?? [])].sort().join(' '),
+        'variables': [...new Set(message.match(/\$\{[^}]*\}/g) ?? [])].sort().join(' '),
         'code spans': (message.match(/`[^`]*`/g) ?? []).join(' '),
         'links': (message.match(/\]\([^)\s]*\)|https?:\/\/[^\s"'<>)\]，。；：！？]+/g) ?? []).join(' '),
         'icons': (message.match(/\$\([\w-]+\)/g) ?? []).join(' '),
