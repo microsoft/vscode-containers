@@ -134,7 +134,7 @@ export abstract class RegistryV2DataProvider extends CommonRegistryDataProvider 
 
         const digest = response.headers.get('docker-content-digest');
         if (!digest) {
-            throw new Error('Could not find digest');
+            throw new Error(vscode.l10n.t('Could not find digest'));
         }
 
         return digest;

@@ -34,11 +34,11 @@ export abstract class RuntimeManager<TClient extends ClientIdentity> implements 
 
     public registerRuntimeClient(client: TClient): vscode.Disposable {
         if (!client || !client.id) {
-            throw new Error('Invalid client supplied.');
+            throw new Error(vscode.l10n.t('Invalid client supplied.'));
         }
 
         if (this._runtimeClients.has(client.id)) {
-            throw new Error(`A container runtime client with ID '${client.id}' is already registered.`);
+            throw new Error(vscode.l10n.t("A container runtime client with ID '{0}' is already registered.", client.id));
         }
 
         this._runtimeClients.set(client.id, client);

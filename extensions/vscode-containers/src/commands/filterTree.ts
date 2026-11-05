@@ -134,12 +134,20 @@ async function filterTreeView(
     const clearFilterLabel = vscode.l10n.t("$(clear-all) Clear Filter");
 
     const quickPick = vscode.window.createQuickPick();
-    quickPick.placeholder = vscode.l10n.t(
-        "Filter {0}... (Press Enter to apply, Esc to cancel)",
-        treePrefix
-    );
+    // Whole strings per tree, rather than a tree name inserted into one string, so each can be translated naturally
+    quickPick.placeholder =
+        treePrefix === "images"
+            ? vscode.l10n.t(
+                  "Filter images... (Press Enter to apply, Esc to cancel)"
+              )
+            : vscode.l10n.t(
+                  "Filter containers... (Press Enter to apply, Esc to cancel)"
+              );
     quickPick.value = currentFilter.filterText;
-    quickPick.title = vscode.l10n.t("Filter {0}", capitalize(treePrefix));
+    quickPick.title =
+        treePrefix === "images"
+            ? vscode.l10n.t("Filter Images")
+            : vscode.l10n.t("Filter Containers");
 
     if (currentFilter.isActive) {
         quickPick.items = [
@@ -243,10 +251,6 @@ function getTreeRootForPrefix(
         default:
             return undefined;
     }
-}
-
-function capitalize(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 export async function filterContainersTree(

@@ -29,7 +29,7 @@ export async function openDockerHubInBrowser(context: IActionContext, node?: Uni
     } else if (isTag(dockerHubItem)) {
         url = `${url}r/${dockerHubItem.parent.parent.label}/${dockerHubItem.parent.label}/tags`;
     } else {
-        throw new Error(`Unexpected node type ${dockerHubItem.additionalContextValues || ''}`);
+        throw new Error(vscode.l10n.t('Unexpected node type {0}', String(dockerHubItem.additionalContextValues || '')));
     }
 
     await vscode.env.openExternal(vscode.Uri.parse(url));

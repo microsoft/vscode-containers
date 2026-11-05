@@ -5,6 +5,7 @@
 
 /* eslint-disable no-template-curly-in-string */
 
+import * as l10n from '@vscode/l10n';
 import { InsertTextFormat, InsertTextMode } from 'vscode-languageserver';
 import { CompletionCollection } from './CompletionCollection';
 
@@ -35,7 +36,7 @@ export const ServiceCompletionCollection = new CompletionCollection(
             insertText: 'build: ${1:path}$0',
             insertTextFormat: InsertTextFormat.Snippet,
             isAdvancedComposeCompletion: false,
-            detail: 'Short form',
+            get detail() { return l10n.t('Short form'); },
             documentation: 'build: <path>',
         },
         {
@@ -44,7 +45,7 @@ export const ServiceCompletionCollection = new CompletionCollection(
             insertTextFormat: InsertTextFormat.Snippet,
             insertTextMode: InsertTextMode.adjustIndentation,
             isAdvancedComposeCompletion: true,
-            detail: 'Long form',
+            get detail() { return l10n.t('Long form'); },
             documentation: 'build:\n\tcontext: <contextPath>\n\tdockerfile: <Dockerfile>',
         },
         {
@@ -52,7 +53,7 @@ export const ServiceCompletionCollection = new CompletionCollection(
             insertText: 'command: ${1:command}$0',
             insertTextFormat: InsertTextFormat.Snippet,
             isAdvancedComposeCompletion: false,
-            detail: 'String form',
+            get detail() { return l10n.t('String form'); },
             documentation: 'command: echo hello'
         },
         {
@@ -60,7 +61,7 @@ export const ServiceCompletionCollection = new CompletionCollection(
             insertText: 'command: ["${1:executable}", "${2:arg}"]$0',
             insertTextFormat: InsertTextFormat.Snippet,
             isAdvancedComposeCompletion: true,
-            detail: 'List form',
+            get detail() { return l10n.t('List form'); },
             documentation: 'command: ["echo", "hello"]'
         },
         {
@@ -81,7 +82,7 @@ export const ServiceCompletionCollection = new CompletionCollection(
             insertText: 'entrypoint: ${1:entrypoint}$0',
             insertTextFormat: InsertTextFormat.Snippet,
             isAdvancedComposeCompletion: false,
-            detail: 'String form',
+            get detail() { return l10n.t('String form'); },
             documentation: 'entrypoint: /app/start.sh'
         },
         {
@@ -89,7 +90,7 @@ export const ServiceCompletionCollection = new CompletionCollection(
             insertText: 'entrypoint: ["${1:executable}", "${2:arg}"]$0',
             insertTextFormat: InsertTextFormat.Snippet,
             isAdvancedComposeCompletion: true,
-            detail: 'List form',
+            get detail() { return l10n.t('List form'); },
             documentation: 'entrypoint: ["echo", "hello"]'
         },
         {

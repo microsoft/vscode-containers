@@ -100,7 +100,7 @@ export class GenericRegistryV2DataProvider extends RegistryV2DataProvider {
         await wizard.prompt();
 
         if (!wizardContext.registryUri) {
-            throw new Error('Registry URL is invalid');
+            throw new Error(vscode.l10n.t('Registry URL is invalid'));
         }
 
         const registryUriString = wizardContext.registryUri.toString().toLowerCase();

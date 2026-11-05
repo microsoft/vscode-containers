@@ -23,7 +23,7 @@ export async function untagAzureImage(context: IActionContext, node?: UnifiedReg
     const fullTag = getFullImageNameFromRegistryTagItem(node.wrappedItem);
     const confirmUntag: string = l10n.t('Are you sure you want to untag image "{0}"? This does not delete the manifest referenced by the tag.', fullTag);
     // no need to check result - cancel will throw a UserCancelledError
-    await context.ui.showWarningMessage(confirmUntag, { modal: true }, { title: "Untag" });
+    await context.ui.showWarningMessage(confirmUntag, { modal: true }, { title: l10n.t('Untag') });
 
     const untagging = l10n.t('Untagging image "{0}"...', fullTag);
     await window.withProgress({ location: ProgressLocation.Notification, title: untagging }, async () => {

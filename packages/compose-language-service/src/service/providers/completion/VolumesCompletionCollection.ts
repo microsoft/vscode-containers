@@ -5,6 +5,7 @@
 
 /* eslint-disable no-template-curly-in-string */
 
+import * as l10n from '@vscode/l10n';
 import { InsertTextFormat } from 'vscode-languageserver';
 import { CompletionCollection } from './CompletionCollection';
 
@@ -43,7 +44,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             insertText: 'ro',
             insertTextFormat: InsertTextFormat.PlainText,
             isAdvancedComposeCompletion: true,
-            detail: 'Read-only',
+            get detail() { return l10n.t('Read-only'); },
         },
         {
             // Matches `  - "C:\some\path:/another/path:"` or `  - /some/path:/another/path:`, with allowances for other amounts of whitespace/quoting
@@ -52,7 +53,7 @@ export const VolumesCompletionCollection = new CompletionCollection(
             insertText: 'rw',
             insertTextFormat: InsertTextFormat.PlainText,
             isAdvancedComposeCompletion: true,
-            detail: 'Read-write',
+            get detail() { return l10n.t('Read-write'); },
         },
     ]
 );

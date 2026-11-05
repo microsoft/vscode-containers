@@ -102,7 +102,7 @@ export function getFullRepositoryNameFromRepositoryItem(repository: CommonReposi
  */
 export function getResourceGroupFromAzureRegistryItem(node: AzureRegistryItem): string {
     if (!isRegistry(node)) {
-        throw new Error('Unable to get resource group');
+        throw new Error(l10n.t('Unable to get resource group'));
     }
 
     return getResourceGroupFromId(node.id);

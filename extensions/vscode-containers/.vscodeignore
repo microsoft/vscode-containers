@@ -16,6 +16,7 @@ node_modules/**
 out/**
 resources/readme/**
 resources/walkthroughs/*.gif
+scripts/**
 src/**
 stats.json
 test-results.xml

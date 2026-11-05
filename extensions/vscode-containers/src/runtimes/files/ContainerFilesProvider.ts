@@ -105,7 +105,7 @@ export class ContainerFilesProvider extends vscode.Disposable implements vscode.
                     ))?.[0];
 
                     if (inspectInfo?.isolation === 'hyperv') {
-                        throw new CommandNotSupportedError('Writing files is not supported on Windows Hyper-V containers.');
+                        throw new CommandNotSupportedError(vscode.l10n.t('Writing files is not supported on Windows Hyper-V containers.'));
                     }
                 }
 

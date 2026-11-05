@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { azExtEslintRecommended, lazyImportRuleConfig } from '@microsoft/vscode-azext-eng/eslint'; // Other configurations exist
-import { defineConfig } from 'eslint/config';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
     azExtEslintRecommended,
+    globalIgnores(['scripts/**']), // Node scripts outside of the TypeScript project, like esbuild.mjs
     lazyImportRuleConfig([
         '@azure/*',
         'handlebars',

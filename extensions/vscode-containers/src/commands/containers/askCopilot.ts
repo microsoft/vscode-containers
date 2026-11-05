@@ -17,7 +17,7 @@ export async function askCopilot(context: IActionContext, node?: ContainerTreeIt
         context.telemetry.properties.nodeType = 'image';
         prompt = vscode.l10n.t('I want to talk about my container image `{0}` (ID: `{1}`)', node.fullTag, node.imageId.slice(7, 19)); // Image id starts with "sha256:"
     } else {
-        throw new Error('askCopilot command can only be invoked on a container or image node.');
+        throw new Error(vscode.l10n.t('askCopilot command can only be invoked on a container or image node.'));
     }
 
     await vscode.commands.executeCommand("workbench.action.chat.newChat");

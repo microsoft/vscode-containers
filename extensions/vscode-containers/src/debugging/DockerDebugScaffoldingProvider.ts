@@ -93,7 +93,7 @@ export class DockerDebugScaffoldingProvider implements IDockerDebugScaffoldingPr
         if (!added && overwrite === undefined) {
             // If it did not get added due to duplicate, and we haven't prompted yet, prompt now
             const overwriteMessageItem: MessageItem = {
-                title: 'Overwrite'
+                title: l10n.t('Overwrite')
             };
 
             overwrite = (overwriteMessageItem === await window.showWarningMessage(l10n.t('Container launch configurations and/or tasks already exist. Do you want to overwrite them?'), ...[overwriteMessageItem, DialogResponses.no]));

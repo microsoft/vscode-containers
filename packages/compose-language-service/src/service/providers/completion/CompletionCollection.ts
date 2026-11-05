@@ -6,6 +6,10 @@
 import type { CompletionItem } from 'vscode-languageserver';
 import type { ExtendedCompletionParams } from '../../ExtendedParams';
 
+/**
+ * Localized text, such as `detail`, must be a getter: `get detail() { return l10n.t('...'); }`. The collections are created
+ * when their modules are loaded, before the client sends its translations, and a getter runs when the item is sent.
+ */
 interface ExtendedCompletionItem extends CompletionItem {
     /**
      * The matching expression

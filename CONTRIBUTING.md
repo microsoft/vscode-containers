@@ -18,6 +18,11 @@ To contribute bug fixes, features, or design changes:
   * To build, open the Command Palette (<kbd>F1</kbd> by default) and type in `Tasks: Run Build Task`.
   * Debug: press <kbd>F5</kbd> (by default) to start debugging the extension.
 
+## Localization
+Every user-facing string must be localizable: use `vscode.l10n.t('...')` in code, and a `%key%` placeholder in `package.json` with the English text in [`package.nls.json`](extensions/vscode-containers/package.nls.json). After adding or changing a `vscode.l10n.t` string, run `pnpm --filter vscode-containers run l10n` and commit the updated `extensions/vscode-containers/l10n/bundle.l10n.json`. The lint step fails when it is out of date.
+
+Translations are plain JSON files, one per VS Code display language, and strings without a translation fall back to English. Translations of the extension into Simplified Chinese (`zh-cn`) are included, and you are welcome to improve them or add other languages. See [Localization](docs/localization.md) for how.
+
 ## Legal
 
 Before we can accept your pull request you will need to sign a **Contribution License Agreement**. All you need to do is to submit a pull request, then the PR will get appropriately labelled (e.g. `cla-required`, `cla-norequired`, `cla-signed`, `cla-already-signed`). If you already signed the agreement we will continue with reviewing the PR, otherwise system will tell you how you can sign the CLA. Once you sign the CLA all future PR's will be labeled as `cla-signed`.

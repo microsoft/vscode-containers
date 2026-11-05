@@ -33,7 +33,7 @@ export abstract class CommonRegistryDataProvider implements RegistryDataProvider
             } else if (isRepository(element)) {
                 return await this.getTags(element);
             } else {
-                throw new Error(`Unexpected element: ${JSON.stringify(element)}`);
+                throw new Error(vscode.l10n.t('Unexpected element: {0}', JSON.stringify(element)));
             }
         } catch (error: unknown) {
             return getErrorTreeItem(error, element);
@@ -78,7 +78,7 @@ export abstract class CommonRegistryDataProvider implements RegistryDataProvider
                 iconPath: new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground')),
             });
         } else {
-            throw new Error(`Unexpected element: ${JSON.stringify(element)}`);
+            throw new Error(vscode.l10n.t('Unexpected element: {0}', JSON.stringify(element)));
         }
     }
 
