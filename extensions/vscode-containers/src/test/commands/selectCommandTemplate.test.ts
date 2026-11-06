@@ -5,9 +5,10 @@
 
 import { IActionContext, IAzureQuickPickItem } from '@microsoft/vscode-azext-utils';
 import { WslcClient } from '@microsoft/vscode-container-client';
+import { quoted } from '@microsoft/vscode-processutils';
 import assert from 'assert';
 import * as vscode from 'vscode';
-import { CommandTemplate, selectBuildCommand, selectCommandTemplate } from '../../commands/selectCommandTemplate';
+import { CommandTemplate, selectBuildCommand, selectCommandTemplate, selectComposeCommand } from '../../commands/selectCommandTemplate';
 import { ext } from '../../extensionVariables';
 
 const DefaultPickIndex = 0;
@@ -31,6 +32,72 @@ suite("(unit) selectCommandTemplate", () => {
             assert.ok(!result.args.includes('--rm'));
         } finally {
             ext.runtimeManager = originalManager;
+        }
+    });
+
+    test("selectComposeCommand routes 'pull' to composePull template (Compose V2)", async () => {
+        const originalOrchestratorManager = ext.orchestratorManager;
+        ext.orchestratorManager = {
+            getClient: async () => ({ commandName: 'docker', composeV2: true }),
+        } as unknown as typeof ext.orchestratorManager;
+
+        try {
+            const context = {
+                telemetry: { properties: {}, measurements: {} },
+                errorHandling: { issueProperties: {} },
+            } as IActionContext;
+            const folder = { name: 'test', uri: vscode.Uri.file('/test') } as vscode.WorkspaceFolder;
+            const result = await selectComposeCommand(context, folder, 'pull', 'docker-compose.yml');
+
+            assert.equal(result.command, 'docker');
+            assert.ok(result.args);
+            assert.deepStrictEqual(result.args, ['compose', '-f', quoted('docker-compose.yml'), 'pull']);
+        } finally {
+            ext.orchestratorManager = originalOrchestratorManager;
+        }
+    });
+
+    test("selectComposeCommand routes 'pull' to composePull template (Compose V1)", async () => {
+        const originalOrchestratorManager = ext.orchestratorManager;
+        ext.orchestratorManager = {
+            getClient: async () => ({ commandName: 'docker-compose', composeV2: false }),
+        } as unknown as typeof ext.orchestratorManager;
+
+        try {
+            const context = {
+                telemetry: { properties: {}, measurements: {} },
+                errorHandling: { issueProperties: {} },
+            } as IActionContext;
+            const folder = { name: 'test', uri: vscode.Uri.file('/test') } as vscode.WorkspaceFolder;
+            const result = await selectComposeCommand(context, folder, 'pull', 'docker-compose.yml');
+
+            assert.equal(result.command, 'docker-compose');
+            assert.ok(result.args);
+            assert.deepStrictEqual(result.args, ['-f', quoted('docker-compose.yml'), 'pull']);
+        } finally {
+            ext.orchestratorManager = originalOrchestratorManager;
+        }
+    });
+
+    test("selectComposeCommand supports vscode.Uri folder and pre-formatted options", async () => {
+        const originalOrchestratorManager = ext.orchestratorManager;
+        ext.orchestratorManager = {
+            getClient: async () => ({ commandName: 'docker', composeV2: true }),
+        } as unknown as typeof ext.orchestratorManager;
+
+        try {
+            const context = {
+                telemetry: { properties: {}, measurements: {} },
+                errorHandling: { issueProperties: {} },
+            } as IActionContext;
+            const folderUri = vscode.Uri.file('/test/workspace');
+            const result = await selectComposeCommand(context, folderUri, 'pull', '-f "docker-compose.yml"');
+
+            assert.equal(result.command, 'docker');
+            assert.ok(result.args);
+            assert.deepStrictEqual(result.args, ['compose', '-f', quoted('docker-compose.yml'), 'pull']);
+        } finally {
+            ext.orchestratorManager = originalOrchestratorManager;
         }
     });
 
