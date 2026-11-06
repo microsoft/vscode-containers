@@ -6,6 +6,7 @@
 import { IActionContext } from '@microsoft/vscode-azext-utils';
 import { l10n } from 'vscode';
 import { ext } from '../../extensionVariables';
+import { isAppleContainerRuntimeSelected } from '../../utils/isAppleContainerRuntimeSelected';
 import { getDockerOSType } from '../../utils/osUtils';
 
 export async function createNetwork(context: IActionContext): Promise<void> {
@@ -15,28 +16,33 @@ export async function createNetwork(context: IActionContext): Promise<void> {
         prompt: l10n.t('Name of the network')
     });
 
-    const osType = await getDockerOSType();
+    // Apple's `container` has no Docker-style drivers; omitting the driver uses its default plugin.
+    let driver: string | undefined;
+    if (!isAppleContainerRuntimeSelected()) {
+        const osType = await getDockerOSType();
 
-    const drivers: { label: string }[] = osType === 'windows'
-        ? [
-            { label: 'nat' },
-            { label: 'transparent' }
-        ]
-        : [
-            { label: 'bridge' },
-            { label: 'host' },
-            { label: 'macvlan' }
-        ];
+        const drivers: { label: string }[] = osType === 'windows'
+            ? [
+                { label: 'nat' },
+                { label: 'transparent' }
+            ]
+            : [
+                { label: 'bridge' },
+                { label: 'host' },
+                { label: 'macvlan' }
+            ];
 
-    const driverSelection = await context.ui.showQuickPick(
-        drivers,
-        {
-            canPickMany: false,
-            placeHolder: l10n.t('Select the network driver to use (default is "bridge").')
-        }
-    );
+        const driverSelection = await context.ui.showQuickPick(
+            drivers,
+            {
+                canPickMany: false,
+                placeHolder: l10n.t('Select the network driver to use (default is "bridge").')
+            }
+        );
+        driver = driverSelection.label;
+    }
 
     await ext.runWithDefaults(client =>
-        client.createNetwork({ name: name, driver: driverSelection.label })
+        client.createNetwork({ name: name, driver })
     );
 }

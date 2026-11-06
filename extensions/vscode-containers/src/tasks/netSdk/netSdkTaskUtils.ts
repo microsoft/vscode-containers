@@ -11,6 +11,7 @@ import * as path from 'path';
 import { vsDbgInstallBasePath } from "../../debugging/netcore/VsDbgHelper";
 import { ext } from "../../extensionVariables";
 import { getImageNameWithTag, getDefaultContainerName } from "../../utils/getValidImageName";
+import { isAppleContainerRuntimeSelected } from "../../utils/isAppleContainerRuntimeSelected";
 import { isFileBasedApp } from "../../utils/netCoreUtils";
 import { getDockerOSType } from "../../utils/osUtils";
 import { defaultVsCodeLabels } from "../TaskDefinitionBase";
@@ -79,7 +80,7 @@ export async function getNetSdkRunCommand(imageName: string): Promise<{ command:
 
     const options: RunContainerCommandOptions = {
         detached: true,
-        publishAllPorts: true,
+        publishAllPorts: !isAppleContainerRuntimeSelected(),
         name: getDefaultContainerName(imageName, NetSdkDefaultImageTag),
         environmentVariables: {},
         removeOnExit: true,
