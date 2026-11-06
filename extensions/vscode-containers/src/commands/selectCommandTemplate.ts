@@ -5,7 +5,7 @@
 
 import { IActionContext, IAzureQuickPickItem, IAzureQuickPickOptions, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { PortBinding, VoidCommandResponse, WslcClient } from '@microsoft/vscode-container-client';
-import { quoted } from '@microsoft/vscode-processutils';
+import { quoted, toArray } from '@microsoft/vscode-processutils';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { configPrefix } from '../constants';
@@ -85,7 +85,7 @@ export async function selectLogsCommand(context: IActionContext, containerName: 
     );
 }
 
-export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder | vscode.Uri, configurationFile?: string, projectName?: string, envFile?: string): Promise<VoidCommandResponse> {
+export async function selectComposeLogsCommand(context: IActionContext, folder: vscode.WorkspaceFolder | vscode.Uri, configurationFile?: string, projectName?: string, envFile?: string | string[]): Promise<VoidCommandResponse> {
     const orchestratorClient = await ext.orchestratorManager.getClient();
     let fullComposeCommand: string;
     if (isComposeV2ableOrchestratorClient(orchestratorClient) && orchestratorClient.composeV2) {
@@ -104,7 +104,7 @@ export async function selectComposeLogsCommand(context: IActionContext, folder: 
         {
             'configurationFile': configurationFile || '',
             'projectName': projectName ? `-p "${projectName}"` : '',
-            'environmentFile': envFile ? `--env-file "${envFile}"` : '',
+            'environmentFile': toArray(envFile).filter(Boolean).map(file => `--env-file "${file}"`).join(' '),
             'composeCommand': fullComposeCommand
         }
     );

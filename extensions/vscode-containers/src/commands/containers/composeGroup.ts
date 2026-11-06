@@ -131,7 +131,13 @@ export function getComposeProjectName(labels: { [key: string]: string }): string
 }
 
 // Exported only for unit testing; not intended to be called outside this module.
-export function getComposeEnvFile(labels: { [key: string]: string }): string | undefined {
-    // The `com.docker.compose.project.environment_file` label gives the environment file absolute path
-    return labels['com.docker.compose.project.environment_file'] || undefined;
+export function getComposeEnvFile(labels: { [key: string]: string }): string | string[] | undefined {
+    // Compose records absolute paths. Split only before the next absolute path
+    // so a comma within a filename (e.g. /project/base,local.env) is preserved.
+    const files = labels['com.docker.compose.project.environment_file']?.split(/,(?=\/|[a-zA-Z]:[\\/]|\\\\)/).filter(file => file.length > 0);
+    if (!files?.length) {
+        return undefined;
+    }
+
+    return files.length === 1 ? files[0] : files;
 }
