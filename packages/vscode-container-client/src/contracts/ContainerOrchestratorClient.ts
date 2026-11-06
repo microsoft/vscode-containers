@@ -14,9 +14,9 @@ export type CommonOrchestratorCommandOptions = CommonCommandOptions & {
      */
     files?: Array<string>;
     /**
-     * Environment variable file
+     * Environment variable file or files, in precedence order
      */
-    environmentFile?: string;
+    environmentFile?: string | string[];
     /**
      * Project name
      */
