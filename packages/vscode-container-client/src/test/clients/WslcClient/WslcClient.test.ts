@@ -812,6 +812,14 @@ describe('(unit) WslcClient', () => {
         it('restartContainers rejects with CommandNotSupportedError', async () => {
             await expectRejection(client.restartContainers({ container: ['abc'] }));
         });
+
+        it('pauseContainers rejects with CommandNotSupportedError', async () => {
+            await expectRejection(client.pauseContainers({ container: ['abc'] }));
+        });
+
+        it('unpauseContainers rejects with CommandNotSupportedError', async () => {
+            await expectRejection(client.unpauseContainers({ container: ['abc'] }));
+        });
     });
 
     describe('#listVolumes()', () => {

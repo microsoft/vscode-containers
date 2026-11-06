@@ -19,6 +19,7 @@ import { configureContainersExplorer } from "./containers/configureContainersExp
 import { downloadContainerFile } from "./containers/files/downloadContainerFile";
 import { openContainerFile } from "./containers/files/openContainerFile";
 import { inspectContainer } from "./containers/inspectContainer";
+import { pauseContainer } from "./containers/pauseContainer";
 import { pruneContainers } from "./containers/pruneContainers";
 import { removeContainer } from "./containers/removeContainer";
 import { removeContainerGroup } from "./containers/removeContainerGroup";
@@ -27,6 +28,7 @@ import { selectContainer } from "./containers/selectContainer";
 import { startContainer } from "./containers/startContainer";
 import { stats } from "./containers/stats";
 import { stopContainer } from "./containers/stopContainer";
+import { unpauseContainer } from "./containers/unpauseContainer";
 import { viewContainerLogs } from "./containers/viewContainerLogs";
 import { configureDockerContextsExplorer, dockerContextsHelp } from "./context/DockerContextsViewCommands";
 import { inspectDockerContext } from "./context/inspectDockerContext";
@@ -135,6 +137,7 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.containers.filter', filterContainersTree);
     registerCommand('vscode-containers.containers.clearFilter', clearContainersFilter);
     registerCommand('vscode-containers.containers.openFile', openContainerFile);
+    registerCommand('vscode-containers.containers.pause', pauseContainer);
     registerCommand('vscode-containers.containers.prune', pruneContainers);
     registerCommand('vscode-containers.containers.remove', removeContainer);
     registerCommand('vscode-containers.containers.group.remove', removeContainerGroup);
@@ -142,6 +145,7 @@ export function registerCommands(): void {
     registerCommand('vscode-containers.containers.select', selectContainer);
     registerCommand('vscode-containers.containers.start', startContainer);
     registerCommand('vscode-containers.containers.stop', stopContainer);
+    registerCommand('vscode-containers.containers.unpause', unpauseContainer);
     registerWorkspaceCommand('vscode-containers.containers.stats', stats);
     registerWorkspaceCommand('vscode-containers.containers.viewLogs', viewContainerLogs);
     registerWorkspaceCommand('vscode-containers.containers.composeGroup.logs', composeGroupLogs);
