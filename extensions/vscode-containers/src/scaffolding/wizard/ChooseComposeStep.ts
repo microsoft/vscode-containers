@@ -15,8 +15,8 @@ export class ChooseComposeStep extends TelemetryPromptStep<ScaffoldingWizardCont
 
         const response = await wizardContext.ui.showQuickPick(
             [
-                { label: 'No', data: false },
-                { label: 'Yes', data: true }
+                { label: vscode.l10n.t('No'), data: false },
+                { label: vscode.l10n.t('Yes'), data: true }
             ],
             opt
         );

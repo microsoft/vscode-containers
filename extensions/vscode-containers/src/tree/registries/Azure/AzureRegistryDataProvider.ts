@@ -179,7 +179,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         });
 
         if (!reponse.succeeded) {
-            throw new Error(`Failed to delete repository: ${reponse.statusText}`);
+            throw new Error(vscode.l10n.t('Failed to delete repository: {0}', reponse.statusText));
         }
     }
 
@@ -206,7 +206,7 @@ export class AzureRegistryDataProvider extends RegistryV2DataProvider implements
         });
 
         if (!reponse.succeeded) {
-            throw new Error(`Failed to delete tag: ${reponse.statusText}`);
+            throw new Error(vscode.l10n.t('Failed to delete tag: {0}', reponse.statusText));
         }
     }
 

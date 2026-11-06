@@ -31,7 +31,7 @@ export class TaskCommandRunnerFactory implements ICommandRunnerFactory {
     }
 
     public getStreamingCommandRunner(): StreamingCommandRunner {
-        throw new CommandNotSupportedError('Streaming commands are not supported for task runners');
+        throw new CommandNotSupportedError(vscode.l10n.t('Streaming commands are not supported for task runners'));
     }
 }
 

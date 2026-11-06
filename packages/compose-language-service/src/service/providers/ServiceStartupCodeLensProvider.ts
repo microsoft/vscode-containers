@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as l10n from '@vscode/l10n';
 import { type CancellationToken, CodeLens, type CodeLensParams } from 'vscode-languageserver';
 import { ProviderBase } from './ProviderBase';
 import type { ExtendedParams } from '../ExtendedParams';
@@ -46,7 +47,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
                 if (isScalar(servicesKey) && servicesKey.range && isMap(servicesNode.value)) {
                     const lens = CodeLens.create(yamlRangeToLspRange(params.document.textDocument, servicesKey.range));
                     lens.command = {
-                        title: '$(run-all) Run All Services',
+                        title: l10n.t('$(run-all) Run All Services'),
                         command: 'vscode-containers.compose.up',
                         arguments: [
                             /* dockerComposeFileUri: */ params.document.uri
@@ -74,7 +75,7 @@ export class ServiceStartupCodeLensProvider extends ProviderBase<CodeLensParams 
                 if (isScalar(service.key) && typeof service.key.value === 'string' && service.key.range) {
                     const lens = CodeLens.create(yamlRangeToLspRange(params.document.textDocument, service.key.range));
                     lens.command = {
-                        title: '$(play) Run Service',
+                        title: l10n.t('$(play) Run Service'),
                         command: 'vscode-containers.compose.up.subset',
                         arguments: [ // Arguments are from here: https://github.com/microsoft/vscode-docker/blob/a45a3dfc8e582f563292a707bbe56f616f7fedeb/src/commands/compose/compose.ts#L79
                             /* dockerComposeFileUri: */ params.document.uri,

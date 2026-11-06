@@ -327,7 +327,11 @@ function activateComposeLanguageClient(ctx: vscode.ExtensionContext): void {
         };
 
         const clientOptions: LanguageClientOptions = {
-            documentSelector: [{ language: 'dockercompose' }]
+            documentSelector: [{ language: 'dockercompose' }],
+            initializationOptions: {
+                // The language server is a separate process that VS Code does not localize for us, so send it the translations
+                l10nBundle: vscode.l10n.bundle,
+            },
         };
 
         composeLanguageClient = new LanguageClient(

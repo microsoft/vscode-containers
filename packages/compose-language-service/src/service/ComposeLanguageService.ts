@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as l10n from '@vscode/l10n';
 import * as util from 'util';
 import {
     CancellationToken,
@@ -96,6 +97,9 @@ export class ComposeLanguageService implements Disposable {
     private readonly _capabilities: ServerCapabilities = DefaultCapabilities;
 
     public constructor(public readonly connection: Connection, private readonly clientParams: InitializeParams) {
+        // A client that has translations sends them (in the format of `vscode.l10n.bundle`) so that the text of the providers can be localized
+        l10n.config({ contents: (clientParams.initializationOptions as { l10nBundle?: l10n.l10nJsonFormat } | undefined)?.l10nBundle ?? {} });
+
         let altYamlCapabilities = (clientParams.capabilities as ComposeLanguageClientCapabilities).experimental?.alternateYamlLanguageService;
 
         if (altYamlCapabilities) {

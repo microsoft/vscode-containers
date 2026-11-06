@@ -312,7 +312,7 @@ export class RefreshManager extends vscode.Disposable {
                         callback = () => ext.contextsRoot.refresh(context);
                         break;
                     default:
-                        throw new RangeError(`Unexpected view type: ${target}`);
+                        throw new RangeError(vscode.l10n.t('Unexpected view type: {0}', target));
                 }
 
                 if (reason === 'manual') {

@@ -12,6 +12,10 @@ The language service is intended to work primarily for the [Compose file version
 
 The language service is a work-in-progress, and will continue adding new features and functionality each release.
 
+## Localization
+
+The text of the language service is in English. A client that has translations can send them in the `initialize` request, as `initializationOptions.l10nBundle`, in the format of the [`vscode.l10n.bundle`](https://code.visualstudio.com/api/references/vscode-api#l10n) of VS Code: an object that maps each English text to its translation. Any text without a translation stays in English.
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a

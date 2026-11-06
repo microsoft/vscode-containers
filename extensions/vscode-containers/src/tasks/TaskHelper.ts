@@ -266,7 +266,7 @@ export function normalizePlatform(platform: string | ContainerPlatform): Contain
         const architecture = architectureParts.join('/');
 
         if (!os || !architecture) {
-            throw new Error('Platform string is malformed. It should be in the format "{os}/{architecture}".');
+            throw new Error(l10n.t('Platform string is malformed. It should be in the format "{os}/{architecture}".'));
         }
 
         return { os, architecture };
