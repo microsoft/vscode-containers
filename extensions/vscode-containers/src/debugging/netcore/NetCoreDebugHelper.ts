@@ -25,6 +25,8 @@ import { VsDbgType, installDebuggersIfNecessary, vsDbgInstallBasePath } from './
 
 export interface NetCoreDebugOptions extends NetCoreTaskOptions {
     appOutput?: string;
+    args?: string[];
+    sourceFileMap?: { [key: string]: string };
     debuggerPath?: string;
     buildWithSdk?: boolean;
 }
@@ -117,7 +119,7 @@ export class NetCoreDebugHelper implements DebugHelper {
             type: 'coreclr',
             request: 'launch',
             program: debugConfiguration.program || 'dotnet',
-            args: debugConfiguration.args || [...additionalProbingPathsArgs, containerAppOutput], // We don't need to quote things because VsDbg handles things well internally
+            args: debugConfiguration.netCore.args || debugConfiguration.args || [...additionalProbingPathsArgs, containerAppOutput], // We don't need to quote things because VsDbg handles things well internally
             cwd: debugConfiguration.cwd || platformOS === 'Windows' ? 'C:\\app' : '/app',
             dockerOptions: {
                 containerName: containerName,
@@ -133,7 +135,7 @@ export class NetCoreDebugHelper implements DebugHelper {
                     '/remote_debugger/vsdbg',
                 quoteArgs: false,
             },
-            sourceFileMap: debugConfiguration.sourceFileMap || {
+            sourceFileMap: debugConfiguration.netCore.sourceFileMap || debugConfiguration.sourceFileMap || {
                 '/app/Views': path.join(path.dirname(debugConfiguration.netCore.appProject), 'Views'),
             }
         };
