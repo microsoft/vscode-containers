@@ -692,13 +692,6 @@
                 "configurationAttributes": {
                     "launch": {
                         "properties": {
-                            "args": {
-                                "type": "array",
-                                "description": "%vscode-containers.debug.args%",
-                                "items": {
-                                    "type": "string"
-                                }
-                            },
                             "containerName": {
                                 "type": "string",
                                 "description": "%vscode-containers.debug.containerName%"
@@ -739,16 +732,6 @@
                                 "description": "%vscode-containers.debug.removeContainerAfterDebug%",
                                 "default": true
                             },
-                            "sourceFileMap": {
-                                "type": "object",
-                                "description": "%vscode-containers.debug.sourceFileMap%",
-                                "additionalProperties": {
-                                    "type": "string"
-                                },
-                                "default": {
-                                    "<insert-source-path-here>": "<insert-target-path-here>"
-                                }
-                            },
                             "platform": {
                                 "type": "string",
                                 "description": "%vscode-containers.debug.platform%",
@@ -764,6 +747,23 @@
                                     "appProject": {
                                         "type": "string",
                                         "description": "%vscode-containers.debug.netCore.appProject%"
+                                    },
+                                    "args": {
+                                        "type": "array",
+                                        "description": "%vscode-containers.debug.netCore.args%",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "sourceFileMap": {
+                                        "type": "object",
+                                        "description": "%vscode-containers.debug.netCore.sourceFileMap%",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        },
+                                        "default": {
+                                            "<insert-source-path-here>": "<insert-target-path-here>"
+                                        }
                                     }
                                 },
                                 "required": [
