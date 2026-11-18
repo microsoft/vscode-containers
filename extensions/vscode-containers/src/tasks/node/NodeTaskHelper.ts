@@ -6,6 +6,7 @@
 import * as path from 'path';
 import { WorkspaceFolder } from 'vscode';
 import { NodeScaffoldingOptions } from '../../debugging/DockerDebugScaffoldingProvider';
+import { isAppleContainerRuntimeSelected } from '../../utils/isAppleContainerRuntimeSelected';
 import { Lazy } from '../../utils/lazy';
 import { InspectMode, NodePackage, inferCommand, inferPackageName, readPackage } from '../../utils/nodeUtils';
 import { resolveVariables, unresolveWorkspaceFolder } from '../../utils/resolveVariables';
@@ -154,7 +155,7 @@ export class NodeTaskHelper implements TaskHelper {
             // NOTE: By default, if no ports are explicitly published and the options do not say otherwise, all ports will be published.
             //       If we published the inspection port, and it was the only published port, that "publish all" behavior would unintentionally be disabled.
             //       Hence, in that situation, we force "publish all" in addition to the inspection port.
-            if (runOptions.portsPublishAll === undefined && inspectPortPublished && runOptions.ports.length === 1) {
+            if (runOptions.portsPublishAll === undefined && inspectPortPublished && runOptions.ports.length === 1 && !isAppleContainerRuntimeSelected()) {
                 runOptions.portsPublishAll = true;
             }
         }

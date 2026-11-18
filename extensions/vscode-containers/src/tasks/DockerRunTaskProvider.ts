@@ -8,6 +8,7 @@ import { l10n, Task } from 'vscode';
 import { DockerPlatform } from '../debugging/DockerDebugPlatformHelper';
 import { ext } from '../extensionVariables';
 import { cloneObject } from '../utils/cloneObject';
+import { isAppleContainerRuntimeSelected } from '../utils/isAppleContainerRuntimeSelected';
 import { DockerContainerVolume, DockerRunOptions } from './DockerRunTaskDefinitionBase';
 import { DockerTaskProvider } from './DockerTaskProvider';
 import { NetCoreRunTaskDefinition } from './netcore/NetCoreTaskHelper';
@@ -57,7 +58,7 @@ export class DockerRunTaskProvider extends DockerTaskProvider {
         const options = definition.dockerRun;
         const command = await client.runContainer({
             detached: true,
-            publishAllPorts: options.portsPublishAll || (options.portsPublishAll === undefined && (options.ports === undefined || options.ports.length < 1)),
+            publishAllPorts: options.portsPublishAll || (options.portsPublishAll === undefined && !isAppleContainerRuntimeSelected() && (options.ports === undefined || options.ports.length < 1)),
             name: options.containerName,
             network: options.network,
             networkAlias: options.networkAlias,

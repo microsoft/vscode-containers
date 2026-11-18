@@ -45,8 +45,9 @@ describe('(integration) ContainerOrchestratorClientE2E', function () {
     this.timeout(10000); // Set a longer timeout for integration tests
 
     before(async function () {
-        // wslc has no Compose/orchestrator equivalent, so skip the orchestrator suite entirely.
-        if (clientTypeToTest === 'wslc') {
+        // wslc and applecontainer have no Compose/orchestrator equivalent, so skip the
+        // orchestrator suite entirely.
+        if (clientTypeToTest === 'wslc' || clientTypeToTest === 'applecontainer') {
             this.skip();
         }
 
