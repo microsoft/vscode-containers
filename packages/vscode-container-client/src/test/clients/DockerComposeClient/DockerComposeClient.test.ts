@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Bash, Cmd, NoShell, Powershell } from '@microsoft/vscode-processutils';
+import { Bash, Cmd, escaped, NoShell, Powershell, quoted } from '@microsoft/vscode-processutils';
 import { expect } from 'chai';
 
 import { DockerComposeClient } from '../../../clients/DockerComposeClient/DockerComposeClient';
@@ -19,6 +19,32 @@ const commonOptions: CommonOrchestratorCommandOptions = {
 describe('(unit) DockerComposeClient', () => {
     const client = new DockerComposeClient();
     client.composeV2 = false;
+
+    for (const [name, environmentFile, expected] of [
+        ['multiple', ['override env', '.env'], ['--env-file', 'override env', '--env-file', '.env']],
+        ['single', 'base.env', ['--env-file', 'base.env']],
+        ['literal comma', 'base,local.env', ['--env-file', 'base,local.env']],
+        ['absent', undefined, []],
+        ['empty', [], []],
+    ] as const) {
+        it(`Should preserve ${name} environment files in down commands`, async () => {
+            const response = await client.down({
+                environmentFile: typeof environmentFile === 'string' || environmentFile === undefined ? environmentFile : [...environmentFile],
+            });
+            expect(new NoShell(false).quote(response.args)).to.deep.equal([...expected, 'down']);
+        });
+    }
+
+    it('Should strongly quote each environment file for shell runners', async () => {
+        const response = await client.down({ environmentFile: ['base env', '$override.env'] });
+        expect(response.args).to.deep.equal([
+            escaped('--env-file'),
+            quoted('base env'),
+            escaped('--env-file'),
+            quoted('$override.env'),
+            escaped('down'),
+        ]);
+    });
 
     it('Should produce the expected lack of quoting/escaping customOptions', async () => {
         const options: UpCommandOptions = {

@@ -5,12 +5,13 @@
 
 import { AzExtTreeDataProvider, createTestActionContext, IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import { DockerComposeClient, normalizeCommandResponseLike, VoidCommandResponse } from '@microsoft/vscode-container-client';
+import { NoShell } from '@microsoft/vscode-processutils';
 import assert from 'assert';
 import { expect } from 'chai';
 import { mock, Mock } from 'node:test';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { composeGroupLogs, getComposeEnvFile, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory } from '../../commands/containers/composeGroup';
+import { composeGroupDown, composeGroupLogs, getComposeEnvFile, getComposeFiles, getComposeProjectName, getComposeWorkingDirectory } from '../../commands/containers/composeGroup';
 import { ext } from '../../extensionVariables';
 import { OrchestratorRuntimeManager } from '../../runtimes/OrchestratorRuntimeManager';
 import { TaskCommandRunnerFactory } from '../../runtimes/runners/TaskCommandRunnerFactory';
@@ -104,6 +105,74 @@ suite("(unit) composeGroup", () => {
                 }]);
             });
         }
+
+        test("Passes multiple environment files separately to Compose Down", async () => {
+            const envFiles = [path.join(workingDirectory, '.env'), path.join(workingDirectory, 'override env')];
+            inspect.mock.mockImplementation(async () => [{
+                labels: { ...labels, 'com.docker.compose.project.environment_file': envFiles.join(',') },
+            }]);
+
+            await composeGroupDown(context, node);
+
+            assert.strictEqual(commands.length, 1);
+            assert.deepStrictEqual(new NoShell(false).quote(commands[0].args), [
+                'compose', '--file', files[0], '--file', files[1],
+                '--env-file', envFiles[0], '--env-file', envFiles[1],
+                '--project-name', 'testproject', 'down',
+            ]);
+        });
+
+        test("Keeps a comma-containing environment filename intact in group commands", async () => {
+            const commaFile = path.join(workingDirectory, 'base,local.env');
+            inspect.mock.mockImplementation(async () => [{
+                labels: { ...labels, 'com.docker.compose.project.environment_file': commaFile },
+            }]);
+
+            await composeGroupDown(context, node);
+
+            assert.deepStrictEqual(new NoShell(false).quote(commands[0].args), [
+                'compose', '--file', files[0], '--file', files[1],
+                '--env-file', commaFile, '--project-name', 'testproject', 'down',
+            ]);
+        });
+
+        test("Includes each environment file in customized logs commands", async () => {
+            const envFiles = [path.join(workingDirectory, '.env'), path.join(workingDirectory, 'override env')];
+            inspect.mock.mockImplementation(async () => [{
+                labels: { ...labels, 'com.docker.compose.project.environment_file': envFiles.join(',') },
+            }]);
+
+            await composeGroupLogs(context, node);
+
+            assert.deepStrictEqual(commands, [{
+                command: `cd "${workingDirectory}" && docker compose -f "${files[0]}" -f "${files[1]}" -p "testproject" --env-file "${envFiles[0]}" --env-file "${envFiles[1]}" logs --tail 42`,
+                args: undefined,
+            }]);
+        });
+
+        test("Preserves separate environment files in the default logs template", async () => {
+            const envFiles = [path.join(workingDirectory, 'override env'), path.join(workingDirectory, '.env')];
+            inspect.mock.mockImplementation(async () => [{
+                labels: { ...labels, 'com.docker.compose.project.environment_file': envFiles.join(',') },
+            }]);
+            const config = vscode.workspace.getConfiguration('containers');
+            mock.method(vscode.workspace, 'getConfiguration', () => ({
+                ...config,
+                inspect: () => ({
+                    key: 'commands.composeLogs',
+                    // eslint-disable-next-line no-template-curly-in-string
+                    defaultValue: '${composeCommand} ${configurationFile} ${projectName} ${environmentFile} logs --tail 42',
+                }),
+            }));
+
+            await composeGroupLogs(context, node);
+
+            assert.strictEqual(commands[0].command, 'docker');
+            assert.deepStrictEqual(new NoShell(false).quote(commands[0].args), [
+                'compose', '-f', files[0], '-f', files[1], '-p', 'testproject',
+                '--env-file', envFiles[0], '--env-file', envFiles[1], 'logs', '--tail', '42',
+            ]);
+        });
 
         test("Does not run logs when group selection is cancelled", async () => {
             mock.method(ext.containersTree, 'refresh', async () => undefined);
@@ -212,6 +281,42 @@ suite("(unit) composeGroup", () => {
             const result = getComposeFiles({});
 
             expect(result).to.be.undefined;
+        });
+    });
+
+    suite("getComposeEnvFile", () => {
+        test("Preserves the order of multiple environment files", () => {
+            expect(getComposeEnvFile({
+                'com.docker.compose.project.environment_file': '/project/override env,/project/.env',
+            })).to.deep.equal(['/project/override env', '/project/.env']);
+        });
+
+        test("Preserves Windows paths and spaces", () => {
+            expect(getComposeEnvFile({
+                'com.docker.compose.project.environment_file': 'C:\\project dir\\.env,C:\\project dir\\override.env',
+            })).to.deep.equal(['C:\\project dir\\.env', 'C:\\project dir\\override.env']);
+        });
+
+        test("Preserves commas within each of several absolute paths", () => {
+            expect(getComposeEnvFile({
+                'com.docker.compose.project.environment_file': '/project/base,local.env,/project/override,local.env',
+            })).to.deep.equal(['/project/base,local.env', '/project/override,local.env']);
+        });
+
+        test("Preserves a relative single filename containing a comma", () => {
+            expect(getComposeEnvFile({
+                'com.docker.compose.project.environment_file': 'base,local.env',
+            })).to.equal('base,local.env');
+        });
+
+        test("Separates absolute UNC environment paths", () => {
+            expect(getComposeEnvFile({
+                'com.docker.compose.project.environment_file': '\\\\server\\share\\base,local.env,\\\\server\\share\\override.env',
+            })).to.deep.equal(['\\\\server\\share\\base,local.env', '\\\\server\\share\\override.env']);
+        });
+
+        test("Omits empty environment file labels", () => {
+            expect(getComposeEnvFile({ 'com.docker.compose.project.environment_file': '' })).to.be.undefined;
         });
     });
 
