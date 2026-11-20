@@ -747,6 +747,23 @@
                                     "appProject": {
                                         "type": "string",
                                         "description": "%vscode-containers.debug.netCore.appProject%"
+                                    },
+                                    "args": {
+                                        "type": "array",
+                                        "description": "%vscode-containers.debug.netCore.args%",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "sourceFileMap": {
+                                        "type": "object",
+                                        "description": "%vscode-containers.debug.netCore.sourceFileMap%",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        },
+                                        "default": {
+                                            "<insert-source-path-here>": "<insert-target-path-here>"
+                                        }
                                     }
                                 },
                                 "required": [
